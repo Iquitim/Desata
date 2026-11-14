@@ -39,7 +39,7 @@
 .req-host { color: var(--text-2); }
 .req-path { color: var(--cat-prep); }
 .req-param { color: var(--cat-transform); }
-.req-col { padding: 0 2px; font-weight: 700; color: var(--text); background: color-mix(in srgb, var(--brand-gold, #b58a2a) 35%, var(--surface)); border-radius: 3px; }
+.req-col { padding: 0 2px; font-weight: 700; color: var(--text); background: color-mix(in srgb, var(--marca-org, #b58a2a) 35%, var(--surface)); border-radius: 3px; }
 .req-headers { margin-top: 3px; padding-left: 8px; color: var(--text-2); border-left: 2px solid var(--border-strong); overflow-wrap: anywhere; }
 .req-key { color: var(--text-3); }
 .req-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px; font: var(--fs-2xs) var(--font); }
@@ -76,7 +76,7 @@
 
 /* API com e sem parâmetro (spec 023) */
 .api-kind { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; font-size: var(--fs-xs); color: var(--text-2); border: 1px solid var(--border-strong); border-left: 4px solid var(--cat-inout); border-radius: 6px; }
-.api-kind.is-param { border-left-color: var(--brand-gold, #b58a2a); }
+.api-kind.is-param { border-left-color: var(--marca-org, #b58a2a); }
 .api-kind strong { display: flex; align-items: center; gap: 5px; color: var(--text); }
 .api-kind p { margin: 0; }
 .api-group { padding: 6px 12px 2px; font-size: var(--fs-xs); font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; }

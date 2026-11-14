@@ -47,14 +47,14 @@ body.manual-open [data-resize="right"], body.manual-open #slot-right { visibilit
 .manual-text figcaption { margin-top: 3px; color: var(--text-3); font-size: var(--fs-xs); }
 .manual-text .frame { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
 .manual-text img { display: block; width: 100%; height: auto; }
-.manual-text .marker { position: absolute; display: grid; place-items: center; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--brand-gold, #95793c); color: #fff; font-size: var(--fs-2xs); font-weight: 700; }
+.manual-text .marker { position: absolute; display: grid; place-items: center; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--marca-org); color: #fff; font-size: var(--fs-2xs); font-weight: 700; }
 .manual-text .legend > div { display: flex; gap: 7px; margin-bottom: 4px; }
-.manual-text .legend b { display: grid; place-items: center; flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--brand-gold, #95793c); color: #fff; font-size: var(--fs-2xs); }
+.manual-text .legend b { display: grid; place-items: center; flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--marca-org); color: #fff; font-size: var(--fs-2xs); }
 .manual-text .steps { counter-reset: m-step; }
 .manual-text .step { display: grid; grid-template-columns: 22px 1fr; gap: 8px; margin-bottom: 8px; counter-increment: m-step; }
 .manual-text .step::before { content: counter(m-step); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-text); font-size: var(--fs-xs); font-weight: 700; }
 .manual-text .goal, .manual-text .callout, .manual-text .try { margin: 8px 0; padding: 8px 10px; border-radius: var(--radius); }
-.manual-text .goal { border-left: 3px solid var(--brand-gold, #95793c); background: var(--surface-2); }
+.manual-text .goal { border-left: 3px solid var(--marca-org); background: var(--surface-2); }
 .manual-text .callout { background: var(--surface-2); color: var(--text-2); }
 .manual-text .callout > strong:first-child, .manual-text .try > strong:first-child { display: block; }
 .manual-text .try { background: var(--ok-weak); }

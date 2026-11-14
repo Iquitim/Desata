@@ -15,7 +15,8 @@ from pathlib import Path
 import pypdfium2 as pdfium
 from PIL import Image, ImageChops
 
-PDF = Path(__file__).resolve().parent / "PRO.DATA-Guia-do-Produto.pdf"
+# O PDF mais recente da pasta (o nome segue a marca: <nome curto>-Guia-do-Produto.pdf), ou o caminho passado.
+PDF = Path(sys.argv[1]) if len(sys.argv) > 1 else max(Path(__file__).resolve().parent.glob("*-Guia-do-Produto.pdf"), key=lambda p: p.stat().st_mtime)
 MIN_CONTENT = 0.30  # conteúdo até 30% da altura, no mínimo
 MAX_GAP = 0.30  # maior vazio entre dois blocos da mesma página
 MIN_MID_CHAPTER = 0.62  # no meio de um capítulo, a página vai pelo menos até aqui

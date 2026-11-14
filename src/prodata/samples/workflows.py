@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import base64
-from pathlib import Path
 from typing import Any
 
+from prodata.brand import marca
 from prodata.dashboard.layouts import LayoutItem, Rect, VisualHint, arrange
 from prodata.domain.dashboard import DashPage
 from prodata.samples.apis import ESTADOS_ID, MUNICIPIOS_ID
@@ -18,7 +18,8 @@ API_FIRST_NODE = "n_api_estados"
 # Corrida de barras e linha do tempo (spec 030): a demonstração mostra o Replay com dados que já tem.
 RACE_NODE = "n_race"
 DEMO_TIMELINE = {"column": "competencia", "step": "month", "mode": "cumulative", "speed": 1.0}
-LOGO = Path(__file__).resolve().parents[1] / "web" / "brand" / "protege-escudo.svg"
+# Logo da marca ativa no exemplo do dashboard (spec 036).
+LOGO = marca().dir / "logo-claro.svg"
 
 # Colunas do canvas para cartões de 188 px com 60 px de folga (spec 004, RF-403).
 COL = [40 + 248 * i for i in range(9)]

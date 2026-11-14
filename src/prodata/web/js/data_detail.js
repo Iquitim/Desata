@@ -16,6 +16,7 @@ import { addInputNode, openPreview, previewTable, removeDataset, uploadFiles } f
 import { button, fmt, h } from './dom.js';
 import { columnQuality, stat } from './data_stats.js';
 import { icon } from './icons.js';
+import { brand } from './brand.js';
 
 const TONES = { ok: 'check', warn: 'alert', err: 'alert', info: 'link' };
 
@@ -32,13 +33,13 @@ const HOW = {
 };
 const HOW_TEXT = {
   jira: 'A consulta lê demandas, histórico ou comentários do Jira, sem alterar nada, e vira uma tabela no Input Data. A primeira carga traz tudo; as seguintes, só o que mudou. Se cair no meio, continua de onde parou.',
-  jiraconn: 'A conexão guarda o endereço do Jira e, no cofre do Windows, o e-mail e o token. O PRO.DATA só faz leituras, e o Jira só mostra o que a sua conta pode ver.',
+  jiraconn: `A conexão guarda o endereço do Jira e, no cofre do Windows, o e-mail e o token. O ${brand.nome} só faz leituras, e o Jira só mostra o que a sua conta pode ver.`,
   folder: 'Cada arquivo da pasta que casa com o padrão entra inteiro, um embaixo do outro, com as colunas alinhadas pelo nome. A coluna do nome do arquivo diz de onde veio cada linha. Entrou um arquivo novo no mês? A próxima execução já o inclui. A pasta é lida onde está: nada é copiado nem alterado.',
-  file: 'Um arquivo enviado vira uma cópia guardada no PRO.DATA. Um arquivo vinculado é lido onde está, sempre na versão mais nova.',
+  file: `Um arquivo enviado vira uma cópia guardada no ${brand.nome}. Um arquivo vinculado é lido onde está, sempre na versão mais nova.`,
   query: 'A consulta pergunta ao banco, só para ler, e a resposta vira uma tabela no Input Data. A senha fica no cofre do Windows.',
-  api: 'O PRO.DATA faz o pedido, recebe a resposta e transforma a lista que ela traz numa tabela. Com uma variável, como {sigla}, entra no fluxo como API Loop.',
+  api: `O ${brand.nome} faz o pedido, recebe a resposta e transforma a lista que ela traz numa tabela. Com uma variável, como {sigla}, entra no fluxo como API Loop.`,
   conn: 'A conexão guarda onde fica o banco e a senha, no cofre do Windows. As consultas usam a conexão; os fluxos usam as consultas.',
-  const: 'Na execução, o PRO.DATA troca [#nome] pelo valor. Mudou o valor? Só as caixas que usam a constante são refeitas. Cada fluxo guarda o valor que usou, para rodar também num computador sem este cadastro.',
+  const: `Na execução, o ${brand.nome} troca [#nome] pelo valor. Mudou o valor? Só as caixas que usam a constante são refeitas. Cada fluxo guarda o valor que usou, para rodar também num computador sem este cadastro.`,
 };
 
 export function howItWorks(kind) {
@@ -64,7 +65,7 @@ function fileOverview(source) {
         stat('Colunas', fmt.int(preview.columns.length)),
         stat('Tamanho', fmt.bytes(preview.info.size_bytes)),
         stat('Atualizado', preview.info.modified_at ? new Date(preview.info.modified_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—',
-          source.raw.linked_path ? 'lido onde está' : 'cópia no PRO.DATA')),
+          source.raw.linked_path ? 'lido onde está' : `cópia no ${brand.nome}`)),
       h('div', { class: 'dv-split' },
         h('section', { class: 'dv-card dv-grow stack-sm' },
           h('div', { class: 'row space-between' }, h('h3', {}, 'Prévia: primeiras linhas'),

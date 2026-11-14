@@ -136,8 +136,8 @@ function start(data) {
       onClear: () => { for (const f of filters) { f.selected = []; f.min = null; f.max = null; } schedule(); },
     });
     const head = h('header', { class: 'dash-head' }, h('div', { class: 'dash-brand' },
-      data.logo ? h('img', { class: 'dash-logo', src: data.logo, alt: 'Grupo Protege' }) : null,
-      h('div', {}, h('div', { class: 'dash-org' }, 'Grupo Protege'), h('h1', {}, data.name),
+      data.logo ? h('img', { class: 'dash-logo', src: data.logo, alt: data.owner || '' }) : null,
+      h('div', {}, data.org ? h('div', { class: 'dash-org' }, data.org) : null, h('h1', {}, data.name),
         h('p', { class: 'muted' }, `Dados de ${data.exported_at} · ${activeFiltersText(filters) || 'sem filtros aplicados'}`))));
     if (replay && !bar) buildBar();
     root.replaceChildren(...[labelBar(data.label, data.label_name), head, note, filtersEl, bar?.el, sheet].filter(Boolean));

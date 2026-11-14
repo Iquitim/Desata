@@ -8,6 +8,7 @@ import { button, fmt, h } from './dom.js';
 import { icon } from './icons.js';
 import { emit, JIRA_PREFIX, store } from './store.js';
 import { toast, toastError } from './ui.js';
+import { brand } from './brand.js';
 
 const TOKEN_PAGE = 'https://id.atlassian.com/manage-profile/security/api-tokens';
 export const newId = (prefix) => `${prefix}_${Date.now().toString(36)}`;
@@ -45,7 +46,7 @@ function testMessage(res) {
   return h('div', { class: 'stack-xs' },
     h('div', { class: 'jira-ok' }, icon('check', 14), ` Conectado como ${res.display_name} · ${fmt.int(res.projects)} projeto${res.projects === 1 ? '' : 's'}`),
     scoped ? null : h('p', { class: 'field-warn' }, icon('alert', 13),
-      ' Este é um token comum, que também poderia alterar dados. O PRO.DATA só lê, mas o mais seguro é criar um token com escopo só de leitura.'));
+      ` Este é um token comum, que também poderia alterar dados. O ${brand.nome} só lê, mas o mais seguro é criar um token com escopo só de leitura.`));
 }
 
 /** Conexão: endereço, token criado no navegador, teste na hora. O token não volta para a tela. */

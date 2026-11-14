@@ -10,6 +10,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
+from prodata.brand import marca
 from prodata.domain.workflow import Workflow
 from prodata.errors import InvalidInputError, NotFoundError
 
@@ -113,4 +114,4 @@ def load_from_file(raw_path: str) -> tuple[Workflow, Path]:
     try:
         return Workflow.model_validate_json(path.read_text(encoding="utf-8")), path
     except ValidationError as exc:
-        raise InvalidInputError(f"O arquivo não é um fluxo do PRO.DATA válido: {path.name}") from exc
+        raise InvalidInputError(f"O arquivo não é um fluxo do {marca().nome} válido: {path.name}") from exc

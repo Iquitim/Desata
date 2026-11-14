@@ -1,6 +1,6 @@
 """Refaz as capturas do guia e do Manual, no tema claro e no escuro (spec 029, RF-2983).
 
-    uv run --with playwright --with pillow python docs/guia/imagens/gerar_imagens.py [claro|escuro]
+    uv run --with playwright --with pillow python docs/guia/imagens/gerar_imagens.py [claro|escuro] [--marca <id>] [--saida <pasta>]
 
 Sobe o programa num servidor próprio, com a pasta de dados zerada, e usa o fluxo de demonstração. Precisa do Chrome e
 de internet (o exemplo do IBGE). As imagens vão para src/prodata/web/manual/img (claro) e img-escuro. Rodar depois de
@@ -639,7 +639,8 @@ def run_part(browser: Any, theme: str, part: Callable[..., None], *args: Any) ->
 
 def generate(theme: str) -> None:
     global OUT
-    OUT = ROOT / "src/prodata/web/manual" / ("img-escuro" if theme == "escuro" else "img")
+    base = Path(os.environ["IMAGENS_SAIDA"]) if os.environ.get("IMAGENS_SAIDA") else ROOT / "src/prodata/web/manual"
+    OUT = base / ("img-escuro" if theme == "escuro" else "img")
     OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="prodata-imagens-") as folder:
         tmp = Path(folder)
@@ -667,7 +668,15 @@ def generate(theme: str) -> None:
 
 
 def main() -> None:
-    themes = sys.argv[1:] or ["claro", "escuro"]
+    # --marca <id>: prints com outra marca (vai para o servidor por PRODATA_MARCA). --saida <pasta>: grava fora do
+    # repositório, como faz o build de uma marca que não é a padrão (spec 036).
+    args = sys.argv[1:]
+    for flag, env in (("--marca", "PRODATA_MARCA"), ("--saida", "IMAGENS_SAIDA")):
+        if flag in args:
+            i = args.index(flag)
+            os.environ[env] = args[i + 1]
+            del args[i : i + 2]
+    themes = args or ["claro", "escuro"]
     for theme in themes:
         done.clear()
         generate(theme)

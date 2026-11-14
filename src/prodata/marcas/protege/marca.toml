@@ -1,0 +1,52 @@
+# Marca Grupo Protege (spec 011 e spec 036). Reproduz a identidade da versão 0.7.7.
+# Cores do site oficial: marinho #043154, marinho escuro #03223a, dourado #95793c, azul #095d9e. Fonte: Open Sans.
+
+nome = "PRO.DATA"
+nome_curto = "PRO.DATA"
+organizacao = "Grupo Protege"
+site = "https://www.protege.com.br"
+fonte_texto = "Open Sans"
+fonte_codigo = "JetBrains Mono"
+
+[instalacao]
+# Mesmo identificador da 0.7.7: o instalador atualiza a instalação que já existe.
+app_id = "6C1C7E0B-4F9B-4B2A-9C1E-7E3B9D2A5F10"
+editora = "Grupo Protege"
+pasta_dados = "PRO.DATA"
+cofre = "PRODATA"
+
+[cores.claro]
+barra = "#043154"
+barra_borda = "#95793c"
+barra_texto = "#ffffff"
+barra_suave = "#c8d6e5"
+selecao_fundo = "#ffffff"
+selecao_texto = "#043154"
+realce = "#c9b27c"
+realce_texto = "#03223a"
+botao = "#866c33"
+botao_hover = "#74602d"
+botao_texto = "#ffffff"
+organizacao = "#95793c"
+destaque = "#043154"
+destaque_hover = "#0a3f6a"
+destaque_fraco = "#e6edf4"
+destaque_texto = "#ffffff"
+foco = "#095d9e"
+# Paleta de gráficos validada para daltonismo, contraste e luminosidade (spec 011).
+series = ["#1f6fb8", "#eb6834", "#1baf7a", "#a9852f", "#e87ba4", "#008300", "#6250d6", "#e34948"]
+
+[cores.escuro]
+# A barra acompanha o tema escuro; destaque e gráficos ficam com a paleta escura do tema.
+barra = "#21222c"
+barra_borda = "#44475a"
+barra_texto = "#ffffff"
+barra_suave = "#c8d6e5"
+selecao_fundo = "#44475a"
+selecao_texto = "#f8f8f2"
+realce = "#c9b27c"
+realce_texto = "#03223a"
+botao = "#ffb86c"
+botao_hover = "#ffc98e"
+botao_texto = "#21222c"
+organizacao = "#ffb86c"

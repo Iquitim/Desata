@@ -1,3 +1,4 @@
+import { brand } from './brand.js';
 // Cliente da API REST. Erros viram ApiError com a mensagem enviada pelo servidor.
 
 export class ApiError extends Error {
@@ -20,7 +21,7 @@ async function request(method, url, body) {
   try {
     res = await fetch(url, init);
   } catch {
-    throw new ApiError('Servidor indisponível. Verifique se o PRO.DATA está em execução.', 0, 'network');
+    throw new ApiError(`Servidor indisponível. Verifique se o ${brand.nome} está em execução.`, 0, 'network');
   }
   if (res.status === 204) return null;
   const data = await res.json().catch(() => null);

@@ -12,6 +12,7 @@ import sqlglot
 from sqlglot import exp
 from sqlglot.errors import SqlglotError
 
+from prodata.brand import marca
 from prodata.engine.sql.macros import macros_used
 from prodata.engine.sql.plan import SqlPlan
 from prodata.engine.sql.render import DIALECT_NOTE, Part
@@ -25,7 +26,7 @@ _READERS = ("read_csv", "read_parquet", "read_json", "read_xlsx", "read_ndjson")
 def unverified_note(dialect: str) -> str:
     return (
         f"-- Dialeto: {NAMES[dialect]} ({WHERE[dialect]}), convertido do DuckDB. NÃO CONFERIDO: "
-        "este texto não foi executado nem comparado com os resultados do PRO.DATA. Revise antes de usar."
+        f"este texto não foi executado nem comparado com os resultados do {marca().nome}. Revise antes de usar."
     )
 
 
@@ -37,7 +38,9 @@ def _convert(sql: str, dialect: str) -> tuple[str, list[str]]:
     """O SQL convertido e os avisos do bloco. Erro de conversão sobe como ``SqlglotError``."""
     notes: list[str] = []
     if macros_used(sql):
-        notes.append("usa funções do PRO.DATA (pd_…) que não existem neste dialeto: reescreva as chamadas")
+        notes.append(
+            f"usa funções do {marca().nome} (pd_…) que não existem neste dialeto: reescreva as chamadas"
+        )
     if any(f"{reader}(" in sql.lower() for reader in _READERS):
         notes.append("lê um arquivo: troque pela tabela do Fabric que tem esses dados")
     converted = sqlglot.transpile(sql.rstrip().rstrip(";"), read="duckdb", write=dialect, pretty=True)
@@ -114,7 +117,7 @@ def convert_parts(plan: SqlPlan, parts: list[Part], dialect: str) -> list[Part]:
         elif part.kind == "macros":
             out.append(
                 Part(
-                    f"-- O código do DuckDB define aqui funções do PRO.DATA (pd_…). Elas não existem em {NAMES[dialect]}:\n"
+                    f"-- O código do DuckDB define aqui funções do {marca().nome} (pd_…). Elas não existem em {NAMES[dialect]}:\n"
                     "-- os blocos que as usam estão marcados com Atenção e precisam ser reescritos.",
                     kind="macros",
                 )

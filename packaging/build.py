@@ -1,10 +1,11 @@
 """Build do aplicativo de desktop (spec 008).
 
-    uv run python packaging/build.py            # ícone + executável + zip + instalador (se houver Inno Setup)
-    uv run python packaging/build.py --no-setup # sem o instalador
+    uv run python packaging/build.py                 # marca padrão: ícone + executável + zip + instalador
+    uv run python packaging/build.py --marca neutra  # outra marca (spec 036)
+    uv run python packaging/build.py --no-setup      # sem o instalador
 
-Saídas em dist/: PRO.DATA/ (pasta do app), PRO.DATA-<versão>-portable.zip e
-PRO.DATA-<versão>-setup.exe.
+Saídas em dist/: <nome curto>/ (pasta do app), <nome curto>-<versão>-portable.zip e
+<nome curto>-<versão>-setup.exe.
 """
 
 from __future__ import annotations
@@ -14,13 +15,15 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import tomllib
 from pathlib import Path
+
+from prodata.brand import DEFAULT, Brand, check, load
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGING = ROOT / "packaging"
 DIST = ROOT / "dist"
-APP_DIR = DIST / "PRO.DATA"
 
 ISCC_CANDIDATES = [
     Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Inno Setup 6" / "ISCC.exe",
@@ -37,7 +40,7 @@ def step(title: str) -> None:
     print(f"\n=== {title} ===", flush=True)
 
 
-def write_version_info(ver: str) -> None:
+def write_version_info(ver: str, brand: Brand) -> None:
     """Metadados do .exe (Propriedades > Detalhes no Windows Explorer)."""
     parts = [*map(int, ver.split(".")), 0, 0, 0][:4]
     tup = ", ".join(map(str, parts))
@@ -45,16 +48,39 @@ def write_version_info(ver: str) -> None:
         f"""VSVersionInfo(
   ffi=FixedFileInfo(filevers=({tup}), prodvers=({tup})),
   kids=[StringFileInfo([StringTable('041604B0', [
-    StringStruct('CompanyName', 'Grupo Protege'),
-    StringStruct('FileDescription', 'PRO.DATA - pipelines de dados visuais'),
+    StringStruct('CompanyName', '{brand.publisher}'),
+    StringStruct('FileDescription', '{brand.nome} - pipelines de dados visuais'),
     StringStruct('FileVersion', '{ver}'),
-    StringStruct('ProductName', 'PRO.DATA'),
+    StringStruct('ProductName', '{brand.nome}'),
     StringStruct('ProductVersion', '{ver}')])]),
     VarFileInfo([VarStruct('Translation', [1046, 1200])])]
 )
 """,
         encoding="utf-8",
     )
+
+
+def manual_images(brand: Brand, app_dir: Path, ready: Path | None = None) -> None:
+    """Marca que não é a padrão: os prints do Manual no repositório mostram a padrão, então são refeitos (spec 036).
+
+    ``ready``: pasta com prints já feitos para esta marca (img/ e img-escuro/), sem refazer.
+    """
+    if brand.id == DEFAULT:
+        return
+    step(f"Prints do Manual com a marca {brand.id}")
+    target = next(app_dir.rglob("web/manual"))
+    if ready is not None:
+        for theme in ("img", "img-escuro"):
+            shutil.copytree(ready / theme, target / theme, dirs_exist_ok=True)
+        return
+    with tempfile.TemporaryDirectory(prefix="prodata-prints-") as tmp:
+        subprocess.run(
+            ["uv", "run", "--with", "playwright", "--with", "pillow", "python",
+             str(ROOT / "docs/guia/imagens/gerar_imagens.py"), "--marca", brand.id, "--saida", tmp],
+            check=True, cwd=ROOT,
+        )  # fmt: skip
+        for theme in ("img", "img-escuro"):
+            shutil.copytree(Path(tmp) / theme, target / theme, dirs_exist_ok=True)
 
 
 def build_exe() -> None:
@@ -65,12 +91,12 @@ def build_exe() -> None:
     )  # fmt: skip
 
 
-def build_zip(ver: str) -> Path:
-    base = DIST / f"PRO.DATA-{ver}-portable"
-    return Path(shutil.make_archive(str(base), "zip", root_dir=DIST, base_dir="PRO.DATA"))
+def build_zip(ver: str, brand: Brand) -> Path:
+    base = DIST / f"{brand.nome_curto}-{ver}-portable"
+    return Path(shutil.make_archive(str(base), "zip", root_dir=DIST, base_dir=brand.nome_curto))
 
 
-def build_setup(ver: str) -> Path | None:
+def build_setup(ver: str, brand: Brand) -> Path | None:
     iscc = next((p for p in ISCC_CANDIDATES if p.is_file()), None) or shutil.which("ISCC")
     if not iscc:
         print(
@@ -78,10 +104,19 @@ def build_setup(ver: str) -> Path | None:
         )
         return None
     subprocess.run(
-        [str(iscc), f"/DAppVersion={ver}", f"/DSourceDir={APP_DIR}", str(PACKAGING / "installer.iss")],
+        [
+            str(iscc),
+            f"/DAppVersion={ver}",
+            f"/DSourceDir={DIST / brand.nome_curto}",
+            f"/DAppId={brand.instalacao.app_id}",
+            f"/DAppName={brand.nome}",
+            f"/DShortName={brand.nome_curto}",
+            f"/DPublisher={brand.publisher}",
+            str(PACKAGING / "installer.iss"),
+        ],
         check=True,
     )
-    return DIST / f"PRO.DATA-{ver}-setup.exe"
+    return DIST / f"{brand.nome_curto}-{ver}-setup.exe"
 
 
 def main() -> None:
@@ -89,28 +124,43 @@ def main() -> None:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--no-setup", action="store_true", help="não gerar o instalador")
+    parser.add_argument(
+        "--prints", type=Path, default=None, help="pasta com os prints do Manual já feitos para a marca"
+    )
+    parser.add_argument(
+        "--marca", default=None, help=f"marca do programa (padrão: {DEFAULT}); veja src/prodata/marcas/"
+    )
     args = parser.parse_args()
+    os.environ["PRODATA_MARCA"] = args.marca or os.environ.get("PRODATA_MARCA") or DEFAULT
+
+    step("Marca")
+    brand = load(os.environ["PRODATA_MARCA"])
+    for warning in check(brand):
+        print(f"Aviso: {warning}")
+    print(f"{brand.id}: {brand.title}")
+    app_dir = DIST / brand.nome_curto
 
     ver = version()
     step("Ícone e metadados")
     subprocess.run([sys.executable, str(PACKAGING / "make_icon.py")], check=True)
-    write_version_info(ver)
+    write_version_info(ver, brand)
 
     step("Executável (PyInstaller)")
-    shutil.rmtree(APP_DIR, ignore_errors=True)
+    shutil.rmtree(app_dir, ignore_errors=True)
     build_exe()
+    manual_images(brand, app_dir, args.prints)
 
     step("Pacote portátil (.zip)")
-    zip_path = build_zip(ver)
+    zip_path = build_zip(ver, brand)
 
     setup_path = None
     if not args.no_setup:
         step("Instalador (Inno Setup)")
-        setup_path = build_setup(ver)
+        setup_path = build_setup(ver, brand)
 
-    size = sum(f.stat().st_size for f in APP_DIR.rglob("*") if f.is_file()) / 2**20
+    size = sum(f.stat().st_size for f in app_dir.rglob("*") if f.is_file()) / 2**20
     step("Pronto")
-    print(f"App:         {APP_DIR}  ({size:.0f} MB)")
+    print(f"App:         {app_dir}  ({size:.0f} MB)")
     print(f"Portátil:    {zip_path}  ({zip_path.stat().st_size / 2**20:.0f} MB)")
     if setup_path:
         print(f"Instalador:  {setup_path}  ({setup_path.stat().st_size / 2**20:.0f} MB)")

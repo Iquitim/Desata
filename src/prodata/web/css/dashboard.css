@@ -160,11 +160,11 @@
 .h-sw { left: 0; top: 100%; cursor: nesw-resize; }
 .h-nw { left: 0; top: 0; cursor: nwse-resize; }
 .h-se { left: 100%; top: 100%; cursor: nwse-resize; }
-.dash-guide { position: absolute; z-index: 4; pointer-events: none; background: var(--brand-gold, #b58a2a); }
+.dash-guide { position: absolute; z-index: 4; pointer-events: none; background: var(--marca-org, #b58a2a); }
 .dash-guide.v { top: 0; bottom: 0; width: calc(1px * var(--inv)); }
 .dash-guide.h { left: 0; right: 0; height: calc(1px * var(--inv)); }
 /* medidas iguais: espaço entre itens (dourado) e mesma largura ou altura (destaque) */
-.dash-measure { position: absolute; z-index: 4; pointer-events: none; color: var(--brand-gold, #b58a2a); }
+.dash-measure { position: absolute; z-index: 4; pointer-events: none; color: var(--marca-org, #b58a2a); }
 .dash-measure.size { color: var(--accent); }
 .dash-measure.x { height: 0; border-top: calc(1.5px * var(--inv)) solid currentColor; }
 .dash-measure.y { width: 0; border-left: calc(1.5px * var(--inv)) solid currentColor; }
@@ -199,7 +199,7 @@
 .organize-option .muted { font-size: var(--fs-xs); }
 .organize-thumb { width: 100%; height: auto; max-height: 220px; margin-bottom: 6px; }
 .thumb-page { fill: var(--bg); stroke: var(--border-strong); stroke-width: 6; }
-.thumb-kpi { fill: var(--brand-gold, #b58a2a); opacity: 0.6; }
+.thumb-kpi { fill: var(--marca-org, #b58a2a); opacity: 0.6; }
 .thumb-chart { fill: var(--accent); opacity: 0.5; }
 .thumb-table { fill: var(--series-3); opacity: 0.5; }
 .thumb-fixed { fill: var(--text-3); opacity: 0.25; }

@@ -2,30 +2,33 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>PRO.DATA — Guia do Produto · Grupo Protege</title>
+<title>{{titulo_guia}}</title>
 <style>
-  /* Identidade Grupo Protege: Open Sans, azul-marinho #043154 e dourado #95793c. */
+  /* Identidade da marca (spec 036): nome, fonte e paleta vêm do marca.toml, trocados por docs/guia/marca_guia.py. */
   @font-face { font-family: 'Open Sans'; font-weight: 300 800; src: url('../../src/prodata/web/fonts/open-sans-latin-wght-normal.woff2') format('woff2-variations'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212; }
   @font-face { font-family: 'Open Sans'; font-weight: 300 800; src: url('../../src/prodata/web/fonts/open-sans-latin-ext-wght-normal.woff2') format('woff2-variations'); unicode-range: U+0100-02BA, U+1E00-1EFF; }
+{{fontes_marca}}
+  @font-face { font-family: 'Inter'; font-weight: 100 900; src: url('../../src/prodata/web/fonts/inter-latin-wght-normal.woff2') format('woff2-variations'); }
   @font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('../../src/prodata/web/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations'); }
 
   :root {
-    --blue: #043154; --blue-dark: #03223a; --blue-weak: #e6edf4;
-    --gold: #95793c; --gold-strong: #7d6532; --gold-soft: #c9b27c;
+    --blue: {{cor_barra}}; --blue-dark: {{cor_barra_escura}}; --blue-weak: {{cor_destaque_fraco}};
+    --gold: {{cor_org}}; --gold-strong: {{cor_botao}}; --gold-soft: {{cor_realce}};
     --ink: #1b1b19; --ink-2: #4a4a44; --ink-3: #85857d;
     --line: #e4e4df; --paper: #ffffff; --soft: #f6f6f3;
     --green: #1a7f4f; --green-weak: #e6f4ec; --amber: #a3620a; --amber-weak: #fbf0de; --red: #c8302f; --red-weak: #fbeaea;
   }
   @page { size: A4; margin: 18mm 17mm 20mm 17mm;
-    @bottom-left { content: "PRO.DATA · Grupo Protege · Guia do Produto"; font: 500 8pt 'Open Sans'; color: #9a9a92; }
-    @bottom-right { content: counter(page); font: 600 8pt 'Open Sans'; color: #9a9a92; }
+    @bottom-left { content: "{{rodape_pdf}}"; font: 500 8pt '{{fonte}}'; color: #9a9a92; }
+    @bottom-right { content: counter(page); font: 600 8pt '{{fonte}}'; color: #9a9a92; }
   }
   @page cover { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
 
   * { box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { margin: 0; font: 10pt/1.55 'Open Sans', sans-serif; color: var(--ink); background: var(--paper); }
-  h1, h2, h3, h4 { margin: 0; line-height: 1.2; letter-spacing: -0.01em; }
+  body { margin: 0; font: 10pt/1.55 '{{fonte}}', sans-serif; color: var(--ink); background: var(--paper); }
+  h1, h2, h3, h4 { margin: 0; line-height: 1.2; letter-spacing: -0.01em; font-family: '{{fonte_titulos}}', '{{fonte}}', sans-serif; }
+  .brand-name { font-family: '{{fonte_titulos}}', '{{fonte}}', sans-serif; }
   p { margin: 0 0 8pt; }
   ul { margin: 0 0 8pt; padding-left: 14pt; }
   li { margin-bottom: 3pt; }
@@ -35,7 +38,7 @@
 
   /* ---------- capa ---------- */
   .cover { page: cover; height: 297mm; position: relative; overflow: hidden; color: #fff;
-    background: linear-gradient(160deg, #03223a 0%, #043154 55%, #0a4a7a 100%); break-after: page; }
+    background: {{gradiente_capa}}; break-after: page; }
   .cover::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4mm; background: var(--gold); }
   .cover-inner { position: absolute; inset: 0; padding: 26mm 22mm; display: flex; flex-direction: column; }
   .brand { display: flex; align-items: center; gap: 12pt; }
@@ -48,6 +51,23 @@
   .cover .shot { margin-top: auto; border-radius: 8pt; overflow: hidden; box-shadow: 0 18pt 40pt rgb(0 0 0 / 0.35); border: 1px solid rgb(255 255 255 / 0.25); }
   .cover .shot img { display: block; width: 100%; }
   .cover .meta { margin-top: 10mm; display: flex; justify-content: space-between; font-size: 9pt; opacity: 0.85; }
+  .cover .slogan:empty, .cover .brand-org:empty { display: none; }
+  .cover .slogan { font-size: 9pt; opacity: 0.88; }
+  /* Capa centralizada (marca com capa = "centralizada"): logo grande ao centro, brilho e marca-d'água discretos. */
+  .cover-centered { background: radial-gradient(circle at 88% 92%, color-mix(in srgb, var(--gold) 34%, transparent) 0%, transparent 46%),
+    radial-gradient(circle at 10% 6%, rgb(255 255 255 / 0.07) 0%, transparent 38%), {{gradiente_capa}}; }
+  .cover-centered::before { content: ''; position: absolute; left: -58mm; bottom: 78mm; width: 180mm; height: 126mm;
+    background: url('{{logo_escuro}}') center / contain no-repeat; opacity: 0.045; }
+  .cover-centered .cover-inner { align-items: center; text-align: center; padding: 30mm 24mm 22mm; }
+  .cover-centered .brand { flex-direction: column; gap: 10pt; }
+  .cover-centered .brand img { height: 96pt; filter: drop-shadow(0 8pt 18pt rgb(0 0 0 / 0.25)); }
+  .cover-centered .brand-name { font-size: 34pt; font-weight: 800; letter-spacing: 0.01em; }
+  .cover-centered .slogan { margin-top: 5pt; font-size: 11.5pt; letter-spacing: 0.01em; opacity: 0.9; }
+  .cover-centered .kicker { margin-top: 22mm; }
+  .cover-centered h1 { font-size: 36pt; }
+  .cover-centered .rule { margin-left: auto; margin-right: auto; }
+  .cover-centered .lead { margin-left: auto; margin-right: auto; font-size: 13.5pt; max-width: 132mm; }
+  .cover-centered .shot, .cover-centered .meta { width: 100%; text-align: left; }
 
   /* ---------- estrutura ---------- */
   .chapter { break-before: page; }
@@ -152,24 +172,24 @@
   .anatomy { padding: 9pt 11pt; margin: 8pt 0 10pt; font: 9.5pt/1.5 'JetBrains Mono', monospace; background: var(--soft); border: 1px solid var(--line); border-radius: 7pt; overflow-wrap: anywhere; break-inside: avoid; }
   .anatomy .v { padding: 0 2pt; font-weight: 700; background: #e6d9b8; border-radius: 3pt; }
   .anatomy .f { color: #5b3fb5; font-weight: 700; }
-  .anatomy small { display: block; margin-top: 5pt; font: 8.5pt 'Open Sans', sans-serif; color: var(--ink-2); }
+  .anatomy small { display: block; margin-top: 5pt; font: 8.5pt '{{fonte}}', sans-serif; color: var(--ink-2); }
   .manual-only { display: none; } /* só no Manual do programa: no PDF não aparece */
 </style>
 </head>
 <body>
 
 <!-- ================================================================ CAPA -->
-<section class="cover">
+<section class="cover {{capa_classe}}">
   <div class="cover-inner">
     <div class="brand">
-      <img src="../../src/prodata/web/brand/protege-escudo-claro.svg" alt="Grupo Protege">
-      <div><div class="brand-name">PRO.DATA</div><div class="brand-org">Grupo Protege</div></div>
+      <img src="{{logo_escuro}}" alt="{{organizacao}}">
+      <div><div class="brand-name">{{produto}}</div><div class="brand-org">{{organizacao_capa}}</div><div class="slogan">{{slogan}}</div></div>
     </div>
     <div class="kicker">Guia do Produto</div>
     <h1>Do dado bruto à decisão.</h1>
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
-    <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no PRO.DATA"></div>
+    <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
     <div class="meta"><span>Versão 0.7.7 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
@@ -178,10 +198,10 @@
 <section>
   <div class="eyebrow">Visão geral</div>
   <h2>O que muda no seu dia a dia</h2>
-  <p class="intro">O PRO.DATA é para quem trabalha com dados no dia a dia, como analistas, controladoria, comercial e operações, e quer sair da planilha frágil sem virar programador.</p>
+  <p class="intro">O {{produto}} é para quem trabalha com dados no dia a dia, como analistas, controladoria, comercial e operações, e quer sair da planilha frágil sem virar programador.</p>
   <p>Em vez de fórmulas espalhadas por várias abas, você monta um <strong>fluxo</strong>: caixas ligadas por fios, em que cada caixa faz uma coisa. Uma lê o arquivo, outra limpa, outra cruza, outra resume, outra desenha o gráfico. O fluxo fica salvo, roda de novo com dados novos e mostra o resultado de <strong>cada etapa</strong>.</p>
   <table class="ba">
-    <tr><th>Na planilha</th><th>Com o PRO.DATA</th></tr>
+    <tr><th>Na planilha</th><th>Com o {{produto}}</th></tr>
     <tr><td>Refazer o mesmo relatório todo mês, copiando e colando</td><td>Trocar o arquivo e clicar em Executar</td></tr>
     <tr><td>PROCV que quebra ou some com linhas sem avisar</td><td>Join que mostra o que casou e o que ficou sem par</td></tr>
     <tr><td>"De onde veio esse número?"</td><td>Clicar na caixa e ver os dados daquela etapa</td></tr>
@@ -228,11 +248,11 @@
   <h2>O que dá para resolver</h2>
   <p class="intro">Situações comuns, e as ferramentas que resolvem cada uma. Todas aparecem no fluxo de demonstração que acompanha o programa.</p>
   <div class="grid-2">
-    <div class="case"><h4>Fechamento que se refaz sozinho</h4><p>Vincule a planilha da pasta da rede e monte as regras uma vez. No mês seguinte, é só clicar em Executar: o PRO.DATA percebe que o arquivo mudou e recalcula só o que depende dele.</p><small>Input Data · Formula · Summarize · Output Data</small></div>
+    <div class="case"><h4>Fechamento que se refaz sozinho</h4><p>Vincule a planilha da pasta da rede e monte as regras uma vez. No mês seguinte, é só clicar em Executar: o {{produto}} percebe que o arquivo mudou e recalcula só o que depende dele.</p><small>Input Data · Formula · Summarize · Output Data</small></div>
     <div class="case"><h4>Cruzar bases sem perder linhas</h4><p>Clientes com vendas, metas com realizado. O Join separa o que casou do que ficou sem par de cada lado, então a linha que não encontrou correspondência aparece, em vez de sumir.</p><small>Join · Select · Data Cleansing</small></div>
     <div class="case"><h4>Confiar no número antes da reunião</h4><p>O perfil de cada coluna mostra vazios, valores distintos e espaços invisíveis. E, para explicar um total, basta clicar nas caixas e seguir o caminho do dado.</p><small>Perfil · Filtros · Browse</small></div>
     <div class="case"><h4>Trazer dados de sistemas e da web</h4><p>Consulte bancos em modo somente leitura e leia APIs, inclusive uma chamada para cada linha da sua tabela, como buscar o detalhe de cada cliente.</p><small>Consultas de banco · APIs · API Loop</small></div>
-    <div class="case"><h4>Um relatório para mandar a quem decide</h4><p>Monte a página com KPIs, Pareto e Venn. Baixe em imagem para o e-mail ou em HTML, que abre sem o PRO.DATA e mantém os filtros funcionando.</p><small>KPI Card · Chart · Venn · Dashboard</small></div>
+    <div class="case"><h4>Um relatório para mandar a quem decide</h4><p>Monte a página com KPIs, Pareto e Venn. Baixe em imagem para o e-mail ou em HTML, que abre sem o {{produto}} e mantém os filtros funcionando.</p><small>KPI Card · Chart · Venn · Dashboard</small></div>
     <div class="case"><h4>Passar a lógica ao time de dados</h4><p>A aba SQL escreve o que foi construído e confere etapa por etapa se o código dá o mesmo resultado. O protótipo vira especificação, sem reescrever do zero.</p><small>Aba SQL · .sql e .zip</small></div>
   </div>
   <h3>Por que dá certo</h3>
@@ -256,7 +276,7 @@
   <p class="intro">Uma tela só, dividida em áreas com papéis claros. Todos os painéis podem ser movidos ou ocultados (veja o capítulo 17).</p>
   <figure>
     <div class="frame">
-      <img src="../../src/prodata/web/manual/img/overview.png" alt="Tela principal do PRO.DATA">
+      <img src="../../src/prodata/web/manual/img/overview.png" alt="Tela principal do {{produto}}">
       <span class="marker" style="left:15%;top:2.4%">1</span>
       <span class="marker" style="left:10%;top:9.6%">2</span>
       <span class="marker" style="left:47%;top:38%">3</span>
@@ -298,7 +318,7 @@
   <p class="intro">Uma pergunta real: <strong>quanto cada estado representa no faturamento mensal?</strong> Em cinco passos, com os arquivos de exemplo que já vêm no programa.</p>
   <div class="steps">
     <div class="step"><div><h4>Comece um fluxo novo</h4><p>Clique em <strong>+</strong> ao lado das abas. O canvas abre vazio.</p></div></div>
-    <div class="step"><div><h4>Traga os dados</h4><p>Na aba <strong>Fontes</strong>, à esquerda, arraste <code>clientes_enterprise.csv</code> para o canvas. Nasce uma caixa <em>Input Data</em>, e o PRO.DATA já reconheceu separador e acentos.</p></div></div>
+    <div class="step"><div><h4>Traga os dados</h4><p>Na aba <strong>Fontes</strong>, à esquerda, arraste <code>clientes_enterprise.csv</code> para o canvas. Nasce uma caixa <em>Input Data</em>, e o {{produto}} já reconheceu separador e acentos.</p></div></div>
     <div class="step"><div><h4>Resuma por estado</h4><p>Em <strong>Ferramentas</strong>, arraste <em>Summarize</em> e ligue a saída da primeira caixa à entrada dela. Em <strong>Agrupar por</strong>, escolha <code>uf</code>; em <strong>Agregações</strong>, some <code>mrr_mensal</code>. O esquema <strong>Como funciona</strong> já mostra o que vai acontecer.</p></div></div>
     <div class="step"><div><h4>Peça o gráfico</h4><p>Arraste <em>Chart</em>, ligue ao Summarize e escolha <code>uf</code> como categoria e a coluna da soma como valor.</p></div></div>
     <div class="step"><div><h4>Execute</h4><p>Clique em <strong>Executar</strong>. O dado corre pelos fios, cada caixa confirma com um pulso verde, e o gráfico aparece no <strong>Dashboard</strong>. Clique em qualquer caixa para ver a tabela daquela etapa.</p></div></div>
@@ -323,7 +343,7 @@
     <div class="frame"><img src="../../src/prodata/web/manual/img/dados-vista.png" alt="Vista Dados com um arquivo aberto"></div>
     <figcaption>Um arquivo aberto na vista Dados: números, prévia das primeiras linhas e a qualidade de cada coluna.</figcaption>
   </figure>
-  <p><strong>Onde é usada.</strong> A aba <em>Onde é usada</em> desenha a fonte ligada a cada fluxo da biblioteca, com as caixas na ordem em que o dado anda e as cores do Designer. Ela responde à pergunta que vem antes de mudar ou excluir uma fonte: <em>o que deixa de funcionar?</em> Clique numa caixa para abri-la no Designer. Ao excluir uma fonte em uso, o PRO.DATA lista os fluxos afetados antes. A conta inclui os fluxos da biblioteca; os salvos em outras pastas não entram.</p>
+  <p><strong>Onde é usada.</strong> A aba <em>Onde é usada</em> desenha a fonte ligada a cada fluxo da biblioteca, com as caixas na ordem em que o dado anda e as cores do Designer. Ela responde à pergunta que vem antes de mudar ou excluir uma fonte: <em>o que deixa de funcionar?</em> Clique numa caixa para abri-la no Designer. Ao excluir uma fonte em uso, o {{produto}} lista os fluxos afetados antes. A conta inclui os fluxos da biblioteca; os salvos em outras pastas não entram.</p>
   <figure class="m80">
     <div class="frame"><img src="../../src/prodata/web/manual/img/dados-mapa.png" alt="Mapa de uso de um arquivo"></div>
     <figcaption>O arquivo de clientes alimenta 17 caixas e 5 visuais do exemplo. Mudar o arquivo muda tudo isso.</figcaption>
@@ -357,7 +377,7 @@
   <h3>Arquivos</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="adicionar_fonte">Mostrar onde fica</button></div>
   <p>Envie arquivos pela vista <strong>Dados</strong>, em <strong>Adicionar</strong>, ou solte-os direto no canvas. Antes de usar, a <strong>prévia</strong> mostra o que foi detectado e as primeiras linhas — e qualquer ajuste aparece na hora.</p>
-  <p><strong>Enviar ou vincular?</strong> Enviar faz uma <em>cópia</em> do arquivo. Para uma planilha que é atualizada todo dia numa pasta da rede ou no OneDrive, use <strong>Vincular arquivo</strong>: o PRO.DATA lê o original onde ele está, sem copiar. A cada execução, se o arquivo mudou, ele é relido e só o que depende dele roda de novo; a vista Dados e o Configurar mostram quando o arquivo foi modificado e avisam se ele foi movido ou renomeado. O PRO.DATA nunca grava no arquivo vinculado.</p>
+  <p><strong>Enviar ou vincular?</strong> Enviar faz uma <em>cópia</em> do arquivo. Para uma planilha que é atualizada todo dia numa pasta da rede ou no OneDrive, use <strong>Vincular arquivo</strong>: o {{produto}} lê o original onde ele está, sem copiar. A cada execução, se o arquivo mudou, ele é relido e só o que depende dele roda de novo; a vista Dados e o Configurar mostram quando o arquivo foi modificado e avisam se ele foi movido ou renomeado. O {{produto}} nunca grava no arquivo vinculado.</p>
   <figure class="m80">
     <div class="frame"><img src="../../src/prodata/web/manual/img/preview-crop.png" alt="Prévia de arquivo com detecção automática"></div>
     <figcaption>Um CSV no padrão brasileiro (ponto e vírgula, vírgula decimal, Windows-1252) reconhecido sem nenhuma configuração.</figcaption>
@@ -384,7 +404,7 @@
     <div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta-separados.png" alt="Cadastro no modo Um por arquivo"></div>
     <figcaption>Em <em>Um por arquivo</em>, a lista mostra as fontes que serão criadas e a pasta da organização onde elas vão ficar.</figcaption>
   </figure>
-  <p><strong>Uma tabela só, no fluxo.</strong> A pasta entra pelo <em>Input Data</em>, como qualquer fonte. A coluna <code>arquivo</code> diz de onde veio cada linha; coluna que falta num arquivo fica vazia, e a vista Dados e a caixa avisam quais arquivos destoam. A pasta é lida onde está: o PRO.DATA nunca grava, move ou apaga nada nela, e o limite é de 500 arquivos. Se ela sumir ou nenhum arquivo casar, o cartão avisa e a fonte entra no filtro <em>Com problema</em>.</p>
+  <p><strong>Uma tabela só, no fluxo.</strong> A pasta entra pelo <em>Input Data</em>, como qualquer fonte. A coluna <code>arquivo</code> diz de onde veio cada linha; coluna que falta num arquivo fica vazia, e a vista Dados e a caixa avisam quais arquivos destoam. A pasta é lida onde está: o {{produto}} nunca grava, move ou apaga nada nela, e o limite é de 500 arquivos. Se ela sumir ou nenhum arquivo casar, o cartão avisa e a fonte entra no filtro <em>Com problema</em>.</p>
   <figure>
     <div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta.png" alt="Pasta de arquivos aberta na vista Dados"></div>
     <figcaption>A pasta aberta: os arquivos que entram, o que tem colunas diferentes, a qualidade das colunas e a prévia já empilhada.</figcaption>
@@ -396,14 +416,14 @@
     <figcaption>A senha vai para o Gerenciador de Credenciais do Windows — nunca para arquivos do projeto.</figcaption>
   </figure>
   <div class="callout ok"><strong>Seguro por padrão</strong>As conexões são somente leitura: apenas consultas de leitura (<code>SELECT</code>/<code>WITH</code>) são aceitas, e comandos que alteram dados são recusados antes de chegar ao banco. Por padrão, cada execução consulta o banco de novo; a opção "Reaproveitar resultado" evita consultas repetidas quando os dados não mudam.</div>
-  <p><strong>Outros bancos, por ODBC.</strong> Oracle, MySQL e a maioria dos ERPs têm driver ODBC. Crie a fonte de dados em <em>Fontes de Dados ODBC (64 bits)</em>, no Windows, e informe no PRO.DATA só o nome dela (o DSN), com usuário e senha se o banco pedir. A senha fica no cofre, e a conexão continua somente leitura. Esta versão foi conferida com um driver local de teste: em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado que você conhece.</p>
+  <p><strong>Outros bancos, por ODBC.</strong> Oracle, MySQL e a maioria dos ERPs têm driver ODBC. Crie a fonte de dados em <em>Fontes de Dados ODBC (64 bits)</em>, no Windows, e informe no {{produto}} só o nome dela (o DSN), com usuário e senha se o banco pedir. A senha fica no cofre, e a conexão continua somente leitura. Esta versão foi conferida com um driver local de teste: em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado que você conhece.</p>
 
   <h3>Constantes: um valor com nome</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="constantes">Mostrar onde fica</button><button type="button" class="manual-only m-act" data-try="constantes">Experimentar num exemplo</button></div>
   <p>O mês de referência, a meta do trimestre, a taxa de câmbio do fechamento: valores que aparecem em várias fórmulas e mudam de tempos em tempos. Em vez de procurar cada fórmula, cadastre uma <strong>constante</strong> e escreva <code>[#mes_referencia]</code> onde precisar. Para trocar, mude num lugar só.</p>
   <div class="two-col side-figure">
     <div>
-      <p><strong>Compartilhadas</strong> ficam na vista Dados e valem para todos os fluxos deste computador. Ao mudar uma que outros fluxos usam, o PRO.DATA mostra o valor de antes e o novo, e lista as caixas que passam a calcular diferente.</p>
+      <p><strong>Compartilhadas</strong> ficam na vista Dados e valem para todos os fluxos deste computador. Ao mudar uma que outros fluxos usam, o {{produto}} mostra o valor de antes e o novo, e lista as caixas que passam a calcular diferente.</p>
       <p><strong>Do fluxo</strong> ficam no arquivo do fluxo e viajam com ele. O botão <strong>Constantes</strong>, na barra do canvas, mostra as do fluxo e as compartilhadas que ele usa.</p>
       <p>Cada constante tem um tipo: <strong>texto</strong>, <strong>número</strong> ou <strong>data</strong>. No editor de fórmula, o botão <strong>Constante</strong> insere a referência, que tem cor própria. Ela também vale no valor do Filter básico, no nome do arquivo do Output Data e nos parâmetros fixos de uma API.</p>
       <p><code>[#hoje]</code> já vem pronta: vale a data do dia, sem cadastro, e a caixa que a usa refaz quando o dia muda. Serve, por exemplo, para o nome do arquivo: <code>posicao_[#hoje]</code>.</p>
@@ -426,7 +446,7 @@
 <section class="chapter">
   <div class="eyebrow">5 · Dados de APIs</div>
   <h2>Dados de APIs, sem programar</h2>
-  <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O PRO.DATA faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto.</p>
+  <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O {{produto}} faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto.</p>
   <div class="goal"><b>Ao final:</b> <span>você sabe cadastrar uma API, testar, e buscar um dado para cada linha da sua tabela.</span></div>
   <h3>Três conceitos que explicam tudo</h3>
   <div class="anatomy">…/estados/<span class="v">{sigla}</span>/municipios<span class="f">?view=nivelado</span>
@@ -482,7 +502,7 @@
 <section class="chapter">
   <div class="eyebrow">6 · Jira</div>
   <h2>Dados do Jira, sem escrever JQL</h2>
-  <p class="intro">O PRO.DATA lê demandas, histórico e comentários do Jira Cloud e transforma tudo em tabelas. Ele só lê: nenhuma chamada altera o seu Jira.</p>
+  <p class="intro">O {{produto}} lê demandas, histórico e comentários do Jira Cloud e transforma tudo em tabelas. Ele só lê: nenhuma chamada altera o seu Jira.</p>
   <div class="goal"><b>Ao final:</b> <span>você conecta o Jira com um token de leitura, monta uma consulta e leva a tabela para o fluxo.</span></div>
   <h3>Conectar</h3>
   <div class="steps">
@@ -492,9 +512,9 @@
   </div>
   <figure class="m80">
     <div class="frame"><img src="../../src/prodata/web/manual/img/jira-conexao.png" alt="Conexão com o Jira em três passos"></div>
-    <figcaption>Nada é cadastrado no Jira para o PRO.DATA funcionar. O token fica no cofre do Windows e nunca vai para fluxos, arquivos ou registros.</figcaption>
+    <figcaption>Nada é cadastrado no Jira para o {{produto}} funcionar. O token fica no cofre do Windows e nunca vai para fluxos, arquivos ou registros.</figcaption>
   </figure>
-  <p>Um token comum também funciona, mas ele poderia alterar dados em outro programa. Por isso o PRO.DATA avisa e recomenda o token com escopo.</p>
+  <p>Um token comum também funciona, mas ele poderia alterar dados em outro programa. Por isso o {{produto}} avisa e recomenda o token com escopo.</p>
   <h3>Montar a consulta</h3>
   <p>Em <strong>Adicionar &gt; Nova consulta do Jira</strong>, a tela vai em passos: o que trazer, de quais projetos (com busca) e os filtros. Tipos e status só aparecem depois de escolher o projeto, e somente os que existem nele, agrupados em A fazer, Em andamento e Concluído. Uma frase resume o que será trazido. O JQL fica em <strong>Mais opções</strong>, para quem preferir escrever à mão.</p>
   <table>
@@ -559,7 +579,7 @@
       <p>As caixas <em>Formula</em> e <em>Filter</em> têm um editor feito para quem não programa. Para fórmulas longas, <strong>Abrir grande</strong> abre o mesmo editor numa janela larga, com colunas, funções e constantes ao lado:</p>
       <ul>
         <li><strong>Cores</strong> separam colunas, funções, IF/THEN/ELSE, operadores lógicos (AND, OR, NOT), comparações, textos e números. Coluna inexistente e parêntese sem par ficam sublinhados em vermelho.</li>
-        <li><strong>Autocompletar</strong>: comece a digitar e o PRO.DATA sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
+        <li><strong>Autocompletar</strong>: comece a digitar e o {{produto}} sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
         <li><strong>Dica da função</strong>: dentro dos parênteses aparece o que cada argumento espera.</li>
         <li><strong>Assistente</strong>: botões <em>Coluna</em>, <em>Função</em> (82 funções com descrição e exemplo) e operadores. Para calcular entre colunas da mesma linha: <code>Average([jan], [fev], [mar])</code>, <code>Sum</code>, <code>Median</code>, <code>Mode</code> (moda), <code>StdDev</code> (desvio padrão), <code>Max</code>, <code>Min</code>. Diferente é <code>!=</code>. Para juntar textos use <code>Concat</code>.</li>
         <li><strong>Pensadas para o Brasil</strong>: <code>ToNumberBR('1.234,56')</code>, <code>FormatNumber([valor], 2)</code> → 1.234,56, <code>DigitsOnly</code> para CPF e CNPJ, <code>RemoveAccents</code>, e datas em português: <code>DateAdd([data], 1, 'mês')</code>, <code>MonthName</code>, <code>WeekdayName</code>.</li>
@@ -831,8 +851,8 @@
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="editar_layout">Mostrar onde fica</button></div>
   <p>Clique em <strong>Editar layout</strong>. A página vira um canvas: arraste os visuais, redimensione pelas alças e eles se encaixam numa grade, com guias quando se alinham a outro item ou ao centro da página (segure <kbd>Alt</kbd> para posicionar livremente). Ao mover, os espaços iguais entre os itens aparecem medidos; ao redimensionar, o item encaixa na largura ou altura de outro e os dois ficam marcados. <strong>Copiar formato</strong>, no painel ou no botão direito, liga o pincel: cada clique em outra caixa aplica o formato, sem levar título nem nomes, e <kbd>Esc</kbd> encerra. Na lista de cores do gráfico, mude a cor de uma categoria para destacar só ela. Arrastar no vazio seleciona vários; o botão direito alinha, distribui e muda a camada; <kbd>Delete</kbd> tira o visual da página sem apagar a caixa do fluxo — ele fica em <strong>Fora da página</strong> e volta com um clique.</p>
   <div class="grid-3">
-    <div class="card"><h4>Inserir</h4><p>Título (empurra o conteúdo para baixo), texto, imagem PNG/JPG/SVG até 1 MB, o logo do Grupo Protege, retângulos de fundo e linhas divisórias.</p></div>
-    <div class="card"><h4>Página</h4><p>16:9, A4 paisagem, A4 retrato ou altura livre, com cor de fundo. Se os visuais não couberem, a página cresce e o PRO.DATA avisa.</p></div>
+    <div class="card"><h4>Inserir</h4><p>Título (empurra o conteúdo para baixo), texto, imagem PNG/JPG/SVG até 1 MB, o logo de {{organizacao}}, retângulos de fundo e linhas divisórias.</p></div>
+    <div class="card"><h4>Página</h4><p>16:9, A4 paisagem, A4 retrato ou altura livre, com cor de fundo. Se os visuais não couberem, a página cresce e o {{produto}} avisa.</p></div>
     <div class="card"><h4>Baixar imagem</h4><p>No botão <strong>Baixar</strong>, gera um PNG em alta resolução da página — ou de um visual só, pelo botão do cartão — no tema claro ou escuro que estiver na tela.</p></div>
   </div>
   <div class="two-col side-figure">
@@ -862,8 +882,8 @@
   </figure>
   <h3>O dashboard em um arquivo HTML</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="baixar">Mostrar onde fica</button></div>
-  <p>No botão <strong>Baixar</strong>, <strong>Baixar HTML</strong> gera um arquivo só, que abre em qualquer navegador, sem o PRO.DATA e sem internet, com os detalhes ao passar o mouse e os <strong>filtros funcionando</strong>. Para isso, o arquivo leva as colunas que os visuais e os filtros usam, e nada além delas. Antes de salvar, a tela mostra quanto dado vai dentro. Com <strong>senha</strong>, obrigatória nos rótulos Confidencial e Restrito, os dados ficam cifrados até alguém digitá-la.</p>
-  <div class="callout warn"><strong>Cuidado ao compartilhar</strong>Quem abre o arquivo pode ver e copiar todos os dados que ele leva, mesmo o que estiver filtrado fora. Envie a senha por outro canal; quem a perder não recupera o arquivo, mas pode gerar outro no PRO.DATA.</div>
+  <p>No botão <strong>Baixar</strong>, <strong>Baixar HTML</strong> gera um arquivo só, que abre em qualquer navegador, sem o {{produto}} e sem internet, com os detalhes ao passar o mouse e os <strong>filtros funcionando</strong>. Para isso, o arquivo leva as colunas que os visuais e os filtros usam, e nada além delas. Antes de salvar, a tela mostra quanto dado vai dentro. Com <strong>senha</strong>, obrigatória nos rótulos Confidencial e Restrito, os dados ficam cifrados até alguém digitá-la.</p>
+  <div class="callout warn"><strong>Cuidado ao compartilhar</strong>Quem abre o arquivo pode ver e copiar todos os dados que ele leva, mesmo o que estiver filtrado fora. Envie a senha por outro canal; quem a perder não recupera o arquivo, mas pode gerar outro no {{produto}}.</div>
   <figure class="m50" style="max-width:24%">
     <div class="frame"><img src="../../src/prodata/web/manual/img/dash-html.png" alt="Aviso antes de salvar o HTML"></div>
     <figcaption>O aviso lista as colunas e o tamanho antes de gerar o arquivo.</figcaption>
@@ -892,7 +912,7 @@
   <p>Visual cuja tabela não tem a coluna fica parado e ganha a marca <strong>Parado</strong>. O botão de tabela na barra abre os registros daquele momento.</p>
   <h3>Gráficos feitos para o tempo</h3>
   <div class="grid-3">
-    <div class="card"><h4>Corrida de barras</h4><p>Categorias trocando de posição, como projetos ou status. Nunca use para comparar pessoas: o PRO.DATA não traz esse exemplo.</p></div>
+    <div class="card"><h4>Corrida de barras</h4><p>Categorias trocando de posição, como projetos ou status. Nunca use para comparar pessoas: o {{produto}} não traz esse exemplo.</p></div>
     <div class="card"><h4>Bolhas</h4><p>Uma bolha por categoria, com posição em dois valores e tamanho em um terceiro.</p></div>
     <div class="card"><h4>Sankey</h4><p>Quanto passa de cada origem para cada destino, como de um status para outro.</p></div>
   </div>
@@ -923,7 +943,7 @@
 <section class="chapter">
   <div class="eyebrow">14 · Do fluxo ao SQL</div>
   <h2>Levando a lógica para o banco</h2>
-  <p class="intro">O PRO.DATA é onde você constrói rápido e experimenta. A aba <strong>SQL</strong>, ao lado de Designer e Dashboard, mostra o que foi construído escrito em SQL e confere se o código dá o mesmo resultado, para que levar a lógica ao lake seja uma revisão, não uma reescrita.</p>
+  <p class="intro">O {{produto}} é onde você constrói rápido e experimenta. A aba <strong>SQL</strong>, ao lado de Designer e Dashboard, mostra o que foi construído escrito em SQL e confere se o código dá o mesmo resultado, para que levar a lógica ao lake seja uma revisão, não uma reescrita.</p>
   <figure class="m80">
     <div class="frame"><img src="../../src/prodata/web/manual/img/sql.png" alt="Aba SQL"></div>
     <figcaption>À esquerda, as saídas e o caminho no fluxo; à direita, o código daquela saída.</figcaption>
@@ -958,9 +978,9 @@
   </div>
   <div class="try"><strong>Experimente</strong><ol><li>Abra a aba <strong>SQL</strong> e clique na saída <em>Exportar</em>: o caminho para em vermelho, na caixa do modelo.</li><li>Clique em <strong>Mostrar visuais</strong> e escolha <em>Gráfico por UF</em>: esse caminho não passa pelo modelo, e o estado mostra <strong>Conferido, com ressalvas</strong>.</li></ol></div>
   <h3>Spark SQL e T-SQL para o Microsoft Fabric</h3>
-  <p>No topo da aba, escolha o dialeto. <strong>DuckDB</strong> é o código do próprio PRO.DATA, conferido com os resultados. <strong>Spark SQL</strong> (Lakehouse e notebooks) e <strong>T-SQL</strong> (Warehouse) são convertidos dele, bloco a bloco, para encurtar o caminho do time de dados.</p>
-  <div class="callout warn"><strong>Convertido não é conferido</strong>O código em Spark SQL e T-SQL não é executado nem comparado com os resultados, e sai marcado como <strong>não conferido</strong> na tela e no arquivo. Os blocos que leem arquivo pedem a troca pela tabela do Fabric, os que usam funções próprias do PRO.DATA vêm marcados com <em>Atenção</em>, e o que a conversão não entende fica em DuckDB, com o motivo escrito. Revise antes de usar.</div>
-  <figure class="m80">
+  <p>No topo da aba, escolha o dialeto. <strong>DuckDB</strong> é o código do próprio {{produto}}, conferido com os resultados. <strong>Spark SQL</strong> (Lakehouse e notebooks) e <strong>T-SQL</strong> (Warehouse) são convertidos dele, bloco a bloco, para encurtar o caminho do time de dados.</p>
+  <div class="callout warn"><strong>Convertido não é conferido</strong>O código em Spark SQL e T-SQL não é executado nem comparado com os resultados, e sai marcado como <strong>não conferido</strong> na tela e no arquivo. Os blocos que leem arquivo pedem a troca pela tabela do Fabric, os que usam funções próprias do {{produto}} vêm marcados com <em>Atenção</em>, e o que a conversão não entende fica em DuckDB, com o motivo escrito. Revise antes de usar.</div>
+  <figure class="m80" style="max-width:62%">
     <div class="frame"><img src="../../src/prodata/web/manual/img/sql-fabric.png" alt="Aba SQL em T-SQL, com o aviso de não conferido"></div>
     <figcaption>O aviso fica acima do código enquanto o dialeto não é o DuckDB.</figcaption>
   </figure>
@@ -999,7 +1019,7 @@
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/excel-sheets.png" alt="Output Data com duas tabelas"></div><figcaption>Uma caixa, um arquivo, uma planilha por tabela.</figcaption></figure>
   </div>
   <h3>Excel num modelo já formatado</h3>
-  <p>O relatório do fechamento já tem cores, larguras, fórmulas e cabeçalho? No <strong>Output Data</strong>, em <strong>Modelo</strong>, aponte para esse <code>.xlsx</code> e diga a célula inicial. O PRO.DATA grava os dados numa <em>cópia</em> do modelo, mudando só o valor das células.</p>
+  <p>O relatório do fechamento já tem cores, larguras, fórmulas e cabeçalho? No <strong>Output Data</strong>, em <strong>Modelo</strong>, aponte para esse <code>.xlsx</code> e diga a célula inicial. O {{produto}} grava os dados numa <em>cópia</em> do modelo, mudando só o valor das células.</p>
   <ul>
     <li>O formato e as fórmulas em volta continuam, e o modelo nunca é alterado.</li>
     <li>Uma Tabela do Excel que comece na célula inicial acompanha o tamanho dos dados.</li>
@@ -1021,7 +1041,7 @@
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-subflow.png" alt="Esquema do Subflow"></div><figcaption>As caixas do fluxo de origem e por onde os dados entram e saem.</figcaption></figure>
   </div>
   <h3>Executar sem abrir o programa</h3>
-  <p>Para o fechamento estar pronto quando você chega, o fluxo pode rodar sozinho. Em <strong>Arquivo → Executar sem abrir o programa…</strong>, o PRO.DATA mostra a linha de comando do fluxo aberto e o comando que cria a tarefa no <strong>Agendador do Windows</strong>. É só copiar.</p>
+  <p>Para o fechamento estar pronto quando você chega, o fluxo pode rodar sozinho. Em <strong>Arquivo → Executar sem abrir o programa…</strong>, o {{produto}} mostra a linha de comando do fluxo aberto e o comando que cria a tarefa no <strong>Agendador do Windows</strong>. É só copiar.</p>
   <figure class="m50" style="max-width:42%">
     <div class="frame"><img src="../../src/prodata/web/manual/img/cli-dialogo.png" alt="Diálogo Executar sem abrir o programa"></div>
     <figcaption>A linha de comando do fluxo aberto e o comando do Agendador, prontos para copiar.</figcaption>
@@ -1036,7 +1056,7 @@
 <section class="chapter">
   <div class="eyebrow">16 · Previsão</div>
   <h2>Modelos de previsão</h2>
-  <p class="intro">Um modelo aprende com o histórico e aplica o que aprendeu a dados novos: quem tende a atrasar, quanto um cliente deve comprar. No PRO.DATA, treinar, guardar e reaproveitar um modelo são caixas do fluxo.</p>
+  <p class="intro">Um modelo aprende com o histórico e aplica o que aprendeu a dados novos: quem tende a atrasar, quanto um cliente deve comprar. No {{produto}}, treinar, guardar e reaproveitar um modelo são caixas do fluxo.</p>
   <div class="goal"><b>Ao final:</b> <span>você treina um modelo, sabe quando ele muda, usa em outros fluxos e leva para outro computador.</span></div>
   <h3>Do histórico à previsão</h3>
   <div class="steps">
@@ -1061,7 +1081,7 @@
     <div>
       <p>Dê ao modelo um <strong>Nome na biblioteca de modelos</strong>, no Model Trainer. A caixa <strong>Model Input</strong> traz esse modelo pronto em qualquer fluxo, sem treinar, e a saída <strong>M</strong> dela liga num Predictor.</p>
       <p>O esquema mostra a ficha do modelo: o que ele prevê, a qualidade medida, quando foi treinado e de quais colunas ele precisa para prever.</p>
-      <p><strong>Salvar arquivo…</strong>, no Model Trainer, ou <strong>Exportar</strong>, no Model Input, grava um arquivo <code>.modelo</code>. <strong>Importar arquivo…</strong> traz um de outro computador, e a lixeira tira o modelo da biblioteca. O arquivo não é um pickle: ele só é aberto se tudo o que há dentro for um modelo dos tipos que o PRO.DATA treina. Receber um modelo de outra pessoa não dá a ele o poder de executar nada aqui.</p>
+      <p><strong>Salvar arquivo…</strong>, no Model Trainer, ou <strong>Exportar</strong>, no Model Input, grava um arquivo <code>.modelo</code>. <strong>Importar arquivo…</strong> traz um de outro computador, e a lixeira tira o modelo da biblioteca. O arquivo não é um pickle: ele só é aberto se tudo o que há dentro for um modelo dos tipos que o {{produto}} treina. Receber um modelo de outra pessoa não dá a ele o poder de executar nada aqui.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/model-input.png" alt="Caixa Model Input"></div><figcaption>Escolher da biblioteca, importar um arquivo ou exportar.</figcaption></figure>
   </div>
@@ -1096,9 +1116,9 @@
     <figcaption>Um arranjo alternativo: resultados embaixo e gráficos empilhados à direita.</figcaption>
   </figure>
   <h3>Vários fluxos em abas</h3>
-  <p>Cada fluxo aberto ganha uma aba logo abaixo da barra superior, com seu próprio resultado e seu próprio desfazer. Um ponto laranja indica alterações não salvas. Ao fechar uma aba — ou o programa — com alterações, o PRO.DATA pergunta: <strong>Salvar</strong>, <strong>Não salvar</strong> ou <strong>Cancelar</strong>. As abas salvas reabrem sozinhas na próxima vez.</p>
+  <p>Cada fluxo aberto ganha uma aba logo abaixo da barra superior, com seu próprio resultado e seu próprio desfazer. Um ponto laranja indica alterações não salvas. Ao fechar uma aba — ou o programa — com alterações, o {{produto}} pergunta: <strong>Salvar</strong>, <strong>Não salvar</strong> ou <strong>Cancelar</strong>. As abas salvas reabrem sozinhas na próxima vez.</p>
   <h3>Onde ficam seus arquivos</h3>
-  <p><strong>Salvar</strong> guarda o fluxo na biblioteca do PRO.DATA. <strong>Salvar como…</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>) grava um arquivo <code>.prodata.json</code> na pasta que você escolher — do projeto, da rede ou do OneDrive — e daí em diante <kbd>Ctrl</kbd>+<kbd>S</kbd> salva nele. <strong>Abrir arquivo…</strong> abre fluxos de qualquer pasta, e os recentes ficam listados. No <em>Output Data</em>, o campo <strong>Pasta de destino</strong> abre o seletor de pastas do Windows; depois de executar, o botão "Mostrar na pasta" leva até o arquivo gerado.</p>
+  <p><strong>Salvar</strong> guarda o fluxo na biblioteca do {{produto}}. <strong>Salvar como…</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>) grava um arquivo <code>.prodata.json</code> na pasta que você escolher — do projeto, da rede ou do OneDrive — e daí em diante <kbd>Ctrl</kbd>+<kbd>S</kbd> salva nele. <strong>Abrir arquivo…</strong> abre fluxos de qualquer pasta, e os recentes ficam listados. No <em>Output Data</em>, o campo <strong>Pasta de destino</strong> abre o seletor de pastas do Windows; depois de executar, o botão "Mostrar na pasta" leva até o arquivo gerado.</p>
   <h3>Ponto de cache</h3>
   <p>Consultas a banco e arquivos grandes não precisam ser lidos a cada ajuste. Clique com o botão direito numa caixa e escolha <strong>Cachear até aqui e executar</strong>: só o resultado dela fica guardado (inclusive depois de fechar o programa), e por isso as caixas anteriores deixam de executar — aparecem douradas e tracejadas, com "Pulada pelo cache", e a barra de status conta quantas foram puladas. O aviso da caixa lista as puladas e tem o botão <strong>Mostrar as puladas</strong>. Mudou algo antes do ponto, ou um arquivo de origem foi atualizado? O cache se refaz sozinho. Para fontes de banco, que só mudam por dentro, escolha em <strong>Renovar</strong> "também todo dia" ou "a cada hora". Para forçar uma nova leitura, use <strong>Atualizar cache</strong>.</p>
   <figure class="m50">
@@ -1113,26 +1133,26 @@
   <div class="eyebrow">18 · Confiança</div>
   <h2>Segurança e privacidade</h2>
   <div class="grid-3">
-    <div class="card"><h4>Tudo local</h4><p>O PRO.DATA roda inteiramente no seu computador e funciona offline. A única saída para a rede é a que você cadastra: bancos e APIs. O programa não envia nada por conta própria.</p></div>
+    <div class="card"><h4>Tudo local</h4><p>O {{produto}} roda inteiramente no seu computador e funciona offline. A única saída para a rede é a que você cadastra: bancos e APIs. O programa não envia nada por conta própria.</p></div>
     <div class="card"><h4>Senhas no cofre do Windows</h4><p>Senhas de banco ficam no Gerenciador de Credenciais do Windows, criptografadas pelo sistema. Nunca aparecem em arquivos, fluxos ou mensagens de erro.</p></div>
     <div class="card"><h4>APIs sob controle</h4><p>Tokens e senhas ficam no cofre do Windows e nunca viajam por <code>http</code> para fora, nem seguem para outro servidor. APIs públicas funcionam sem configuração; rede interna, só com a lista da TI. POST e API Loop não rodam sozinhos ao abrir um fluxo.</p></div>
     <div class="card"><h4>Rótulos</h4><p>Público, Interno, Confidencial ou Restrito, com uma dica do que cada um faz. No HTML, os dois últimos exigem senha. A imagem e o Excel não têm como levar senha: saem marcados, e a dica avisa.</p></div>
     <div class="card"><h4>Registro das exportações</h4><p><code>logs\exportacoes.log</code> guarda quando, quem, o arquivo, o rótulo, quantas linhas e colunas, e se teve senha. Nunca os dados.</p></div>
     <div class="card"><h4>Bancos somente leitura</h4><p>Comandos que alteram dados (<code>DELETE</code>, <code>UPDATE</code>, <code>DROP</code>…) são recusados antes de chegar ao banco. No PostgreSQL, a sessão é aberta em modo somente leitura.</p></div>
     <div class="card"><h4>Fluxos recebidos</h4><p>Um fluxo que veio de fora abre em modo protegido: nada executa até você conferir e confiar. Fórmulas e a caixa SQL não acessam arquivos nem a internet. Fora da pasta de dados, o programa só grava onde você mandar.</p></div>
-    <div class="card"><h4>Dados preservados</h4><p>Fluxos, arquivos e conexões ficam em <code>%LOCALAPPDATA%\PRO.DATA</code> e sobrevivem a atualizações e à desinstalação.</p></div>
+    <div class="card"><h4>Dados preservados</h4><p>Fluxos, arquivos e conexões ficam em <code>%LOCALAPPDATA%\{{produto}}</code> e sobrevivem a atualizações e à desinstalação.</p></div>
     <div class="card"><h4>Rastreabilidade</h4><p>Fluxos são salvos em JSON legível — dá para versionar, revisar e auditar cada regra aplicada aos dados.</p></div>
   </div>
   <h3>Abertura protegida</h3>
-  <p>Ao abrir um fluxo que não foi criado nem salvo neste computador (recebido por e-mail, baixado ou mudado por fora), o PRO.DATA não executa nada. Uma faixa mostra o que o fluxo <strong>lê</strong>, <strong>calcula</strong> e <strong>grava</strong>; clique num item para ver a caixa. Dá para olhar e editar à vontade. Executar só depois de <strong>Confiar e executar</strong>, e o PRO.DATA lembra da escolha enquanto o arquivo não mudar.</p>
+  <p>Ao abrir um fluxo que não foi criado nem salvo neste computador (recebido por e-mail, baixado ou mudado por fora), o {{produto}} não executa nada. Uma faixa mostra o que o fluxo <strong>lê</strong>, <strong>calcula</strong> e <strong>grava</strong>; clique num item para ver a caixa. Dá para olhar e editar à vontade. Executar só depois de <strong>Confiar e executar</strong>, e o {{produto}} lembra da escolha enquanto o arquivo não mudar.</p>
   <figure class="m80">
     <div class="frame"><img src="../../src/prodata/web/manual/img/abertura-protegida.png" alt="Faixa de abertura protegida"></div>
     <figcaption>Um fluxo recebido: antes de executar, o que ele lê, calcula e grava.</figcaption>
   </figure>
   <h3>Para a TI: liberar APIs internas</h3>
-  <p>A lista fica em <code>%ProgramData%\PRO.DATA\politica.json</code>, que exige administrador para alterar. Aceita nomes, curingas, endereços e faixas. Sem o arquivo, nenhum destino interno é chamado, e as APIs públicas continuam funcionando.</p>
+  <p>A lista fica em <code>%ProgramData%\{{produto}}\politica.json</code>, que exige administrador para alterar. Aceita nomes, curingas, endereços e faixas. Sem o arquivo, nenhum destino interno é chamado, e as APIs públicas continuam funcionando.</p>
   <div class="anatomy">{ "servidores_internos": ["erp.empresa.local", "*.intra.local", "10.1.0.0/16"] }</div>
-  <div class="callout warn"><strong>Até onde vai esta proteção</strong>O PRO.DATA roda no computador de cada pessoa, sem servidor central: estes controles evitam engano e distração, não um usuário decidido a burlar. O rótulo é do PRO.DATA, e não o rótulo de sensibilidade da Microsoft (Purview), que depende de configuração da empresa.</div>
+  <div class="callout warn"><strong>Até onde vai esta proteção</strong>O {{produto}} roda no computador de cada pessoa, sem servidor central: estes controles evitam engano e distração, não um usuário decidido a burlar. O rótulo é do {{produto}}, e não o rótulo de sensibilidade da Microsoft (Purview), que depende de configuração da empresa.</div>
 </section>
 
 <!-- ================================================================ 10. INSTALAÇÃO -->
@@ -1141,9 +1161,9 @@
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>PRO.DATA-0.7.7-setup.exe</code> (200 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>PRO.DATA-0.7.7-portable.zip</code> (283 MB). Descompacte e abra <code>PRO.DATA.exe</code>. Nada é instalado — ideal para testar.</p></div>
-    <div class="card"><h4>Ao abrir</h4><p>Uma tela com o escudo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.7.7-setup.exe</code> (200 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.7.7-portable.zip</code> (283 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
   <table>
@@ -1155,7 +1175,7 @@
   </table>
   <h3>Primeira execução</h3>
   <div class="steps">
-    <div class="step"><div><h4>Abra o PRO.DATA</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 20): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
+    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 20): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
     <div class="step"><div><h4>Explore o exemplo</h4><p>O fluxo de demonstração já vem pronto. Clique em <strong>Executar</strong>, clique nas caixas, abra o Dashboard e siga os quadros <strong>Experimente</strong> deste guia.</p></div></div>
     <div class="step"><div><h4>Comece o seu</h4><p>Siga o capítulo 3 com um arquivo seu: envie na vista Dados e arraste para o canvas.</p></div></div>
   </div>
@@ -1193,7 +1213,7 @@
         <li>Uso em equipe com login e permissões (é um app individual)</li>
         <li>Agendador próprio: o agendamento usa o Agendador do Windows</li>
         <li>Comandos que gravam ou alteram dados na caixa SQL: ela aceita só uma consulta SELECT</li>
-        <li>Gravar dados de volta no banco ou publicar no lake (o PRO.DATA gera o código; quem publica é o time de dados)</li>
+        <li>Gravar dados de volta no banco ou publicar no lake (o {{produto}} gera o código; quem publica é o time de dados)</li>
         <li>Fontes na nuvem e bancos sem driver ODBC</li>
         <li>Escrever no Jira, Jira Data Center e GIF da página inteira</li>
         <li>Versões para macOS e Linux</li>
@@ -1210,7 +1230,7 @@
     <tr><td class="tool">Volume de dados</td><td>Cada caixa ainda carrega a própria tabela inteira na memória. Os resultados intermediários, porém, não ficam mais todos nela: acima de um quarto da memória do computador, os menos usados ficam só em disco e voltam quando uma caixa precisa. Bases muito grandes (dezenas de milhões de linhas) ainda não foram validadas.</td></tr>
     <tr><td class="tool">Modelos de ML</td><td>O modelo fica guardado neste computador, não no arquivo do fluxo. Para outra pessoa usar o mesmo modelo, exporte o arquivo .modelo e ela importa com a caixa Model Input. Sem isso, quem recebe o fluxo treina o próprio modelo, e o resultado pode diferir do seu.</td></tr>
     <tr><td class="tool">ODBC</td><td>Conferido só com um driver local de teste. Em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado conhecido.</td></tr>
-    <tr><td class="tool">SQL para o Fabric</td><td>Spark SQL e T-SQL são convertidos do DuckDB e não foram conferidos num Fabric de verdade. Leitura de arquivos e funções próprias do PRO.DATA precisam ser reescritas.</td></tr>
+    <tr><td class="tool">SQL para o Fabric</td><td>Spark SQL e T-SQL são convertidos do DuckDB e não foram conferidos num Fabric de verdade. Leitura de arquivos e funções próprias do {{produto}} precisam ser reescritas.</td></tr>
     <tr><td class="tool">Subfluxos</td><td>Até 3 entradas e 3 saídas, sem parâmetros. O fluxo de origem precisa estar na biblioteca do computador que executa.</td></tr>
     <tr><td class="tool">Excel em modelo</td><td>Gráficos, imagens e tabelas dinâmicas do modelo nem sempre são preservados. O programa avisa quando o modelo tem algum.</td></tr>
     <tr><td class="tool">Aviso do Windows</td><td>O instalador ainda não é assinado digitalmente; por isso o SmartScreen mostra "Editor desconhecido" na primeira execução.</td></tr>
@@ -1245,7 +1265,7 @@
     <tr><td class="tool">Record ID · Running Total</td><td>Numera as linhas; calcula soma acumulada, recomeçando a cada grupo se quiser.</td></tr>
     <tr><td class="tool">Regex</td><td>Expressão regular numa coluna: extrai grupos para colunas novas, substitui ou marca as linhas que casam.</td></tr>
     <tr><td class="tool">Multi-Field Formula</td><td>Aplica a mesma fórmula a várias colunas de uma vez. <code>[_Atual_]</code> é a coluna da vez.</td></tr>
-    <tr><td class="tool">Mask</td><td>Protege dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.</td></tr>
+    <tr><td class="tool">Mask</td><td>Mascara dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.</td></tr>
     <tr><td colspan="2"><span class="tag">Combinar e transformar</span></td></tr>
     <tr><td class="tool">Join</td><td>Cruza duas tabelas por uma ou mais chaves, com saídas L, J e R. Dá para escolher se o J mantém as chaves dos dois lados, só a da esquerda ou só a da direita, e escolher, renomear, converter e reordenar as colunas do J ali mesmo, como num Select. O Configurar mostra quantas linhas saem em cada uma e avisa quando a chave repetida multiplica linhas.</td></tr>
     <tr><td class="tool">Fuzzy Match</td><td>Cruza duas tabelas por texto parecido, como razão social e endereço, com nota de 0 a 100.</td></tr>
@@ -1292,11 +1312,11 @@
   </table>
   <h3>Perguntas frequentes</h3>
   <div class="avoid"><h4>Preciso saber programar?</h4><p>Não. Tudo é feito por arrastar, ligar e preencher formulários. Quem conhece SQL ou fórmulas tem recursos extras, mas eles são opcionais.</p></div>
-  <div class="avoid"><h4>Meus dados vão para a nuvem?</h4><p>Não. O PRO.DATA roda no seu computador e funciona sem internet. A rede só é usada para as fontes que você cadastrar, como um banco ou uma API. O exemplo do IBGE só chama a internet quando você clica em Executar.</p></div>
+  <div class="avoid"><h4>Meus dados vão para a nuvem?</h4><p>Não. O {{produto}} roda no seu computador e funciona sem internet. A rede só é usada para as fontes que você cadastrar, como um banco ou uma API. O exemplo do IBGE só chama a internet quando você clica em Executar.</p></div>
   <div class="avoid"><h4>Posso estragar meu banco de dados?</h4><p>Não. As conexões são somente leitura; comandos que alteram dados são bloqueados.</p></div>
-  <div class="avoid"><h4>Como atualizo um relatório mensal?</h4><p>Envie o arquivo novo com o mesmo nome (o PRO.DATA pergunta se deve substituir) e clique em Executar. Se a planilha é atualizada sozinha numa pasta, use <strong>Vincular arquivo</strong>: basta clicar em Executar.</p></div>
-  <div class="avoid"><h4>A exportação vai apagar o arquivo de ontem?</h4><p>Não sem perguntar. Se o arquivo de saída já existe, ao clicar em Executar o PRO.DATA pergunta: substituir, criar um novo com data e hora no nome, ou (no Excel) adicionar a planilha. Dá para lembrar a escolha na caixa. Ao abrir o programa, essas exportações esperam o seu Executar.</p></div>
-  <div class="avoid"><h4>Algo deu errado. Onde vejo?</h4><p>A caixa com problema fica vermelha e explica o motivo na aba Configurar; as caixas seguintes aparecem como "não executado". A aba <strong>Log</strong> lista tudo. Se o programa não abrir, o registro fica em <code>%LOCALAPPDATA%\PRO.DATA\logs</code>.</p></div>
+  <div class="avoid"><h4>Como atualizo um relatório mensal?</h4><p>Envie o arquivo novo com o mesmo nome (o {{produto}} pergunta se deve substituir) e clique em Executar. Se a planilha é atualizada sozinha numa pasta, use <strong>Vincular arquivo</strong>: basta clicar em Executar.</p></div>
+  <div class="avoid"><h4>A exportação vai apagar o arquivo de ontem?</h4><p>Não sem perguntar. Se o arquivo de saída já existe, ao clicar em Executar o {{produto}} pergunta: substituir, criar um novo com data e hora no nome, ou (no Excel) adicionar a planilha. Dá para lembrar a escolha na caixa. Ao abrir o programa, essas exportações esperam o seu Executar.</p></div>
+  <div class="avoid"><h4>Algo deu errado. Onde vejo?</h4><p>A caixa com problema fica vermelha e explica o motivo na aba Configurar; as caixas seguintes aparecem como "não executado". A aba <strong>Log</strong> lista tudo. Se o programa não abrir, o registro fica em <code>%LOCALAPPDATA%\{{produto}}\logs</code>.</p></div>
   <div class="avoid"><h4>Posso guardar o fluxo numa pasta da equipe?</h4><p>Sim. Use <strong>Salvar como…</strong> e escolha a pasta (rede, OneDrive, projeto). O arquivo é um JSON legível; quem abrir em outro computador precisa ter os mesmos arquivos e consultas na vista Dados. As constantes vão junto: as do fluxo, e o valor das compartilhadas que ele usa.</p></div>
   <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 18). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
   <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 18). APIs públicas não precisam de nada.</p></div>

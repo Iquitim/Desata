@@ -7,6 +7,7 @@ import { h } from './dom.js';
 import { icon } from './icons.js';
 import { store } from './store.js';
 import { toastError } from './ui.js';
+import { LOGO_LIGHT, logoOwner } from './brand.js';
 
 export function insertItems() {
   return [
@@ -14,7 +15,7 @@ export function insertItems() {
     { label: 'Texto', icon: 'list', onSelect: () => insert({ kind: 'text', w: 480, h: 120, content: 'Escreva aqui', format: {} }) },
     'separator',
     { label: 'Imagem…', icon: 'upload', onSelect: () => pickImage().then((img) => img && insert({ kind: 'image', ...fitBox(img, 360), content: img.data, format: {} })) },
-    { label: 'Logo do Grupo Protege', icon: 'image', onSelect: () => logoImage().then((img) => insert({ kind: 'image', ...fitBox(img, 120), content: img.data, format: {} })) },
+    { label: `Logo de ${logoOwner()}`, icon: 'image', onSelect: () => logoImage().then((img) => insert({ kind: 'image', ...fitBox(img, 120), content: img.data, format: {} })) },
     'separator',
     { label: 'Retângulo (fundo de seção)', icon: 'group', onSelect: () => insert({ kind: 'shape', w: 760, h: 400, format: { shape: 'rect' } }, { back: true }) },
     { label: 'Linha divisória', icon: 'columns', onSelect: () => insert({ kind: 'shape', w: 1520, h: 16, format: { shape: 'line' } }) },
@@ -94,8 +95,10 @@ export function pickImage() {
   });
 }
 
+/** Logo da marca como imagem do dashboard, no tamanho que o próprio SVG declara (viewBox). */
 export async function logoImage() {
-  const blob = await (await fetch('/static/brand/protege-escudo.svg')).blob();
-  const data = await readAsDataUrl(new Blob([blob], { type: 'image/svg+xml' }));
-  return { data, width: 191, height: 241 };
+  const text = await (await fetch(LOGO_LIGHT)).text();
+  const box = /viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(text);
+  const data = await readAsDataUrl(new Blob([text], { type: 'image/svg+xml' }));
+  return { data, width: box ? Math.round(Number(box[1])) : 200, height: box ? Math.round(Number(box[2])) : 200 };
 }

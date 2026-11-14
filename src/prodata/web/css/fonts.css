@@ -1,5 +1,5 @@
 /* Fontes empacotadas com o app (funciona offline). Open Sans, Inter e JetBrains Mono — SIL Open Font License 1.1.
-   Open Sans é a fonte da identidade do Grupo Protege (brand.css); Inter fica como alternativa. */
+   A fonte do texto e a do código vêm da marca (marca.toml, spec 036); as três daqui já vêm com o programa. */
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;

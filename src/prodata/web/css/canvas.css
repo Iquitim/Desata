@@ -116,7 +116,7 @@ body.slot-bottom-collapsed [data-resize="dock"] { visibility: hidden; pointer-ev
 .node.status-skipped .node-card { opacity: 0.55; }
 .node.status-error .node-card { border-color: var(--err); }
 .node.status-error .node-card::before { background: var(--err); }
-.node.status-held .node-card::before { background: var(--brand-gold, #a9852f); }
+.node.status-held .node-card::before { background: var(--marca-org, #a9852f); }
 
 .node-icon {
   display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: var(--radius);
@@ -173,7 +173,7 @@ body.slot-bottom-collapsed [data-resize="dock"] { visibility: hidden; pointer-ev
 .edge:hover .edge-line { stroke-width: 3px; opacity: 1; }
 .edge.selected .edge-line { stroke: var(--accent); stroke-width: 2.75px; opacity: 1; }
 .edge.selected .edge-arrow { stroke: var(--accent) !important; }
-.edge.held .edge-arrow { stroke: var(--brand-gold, #a9852f) !important; }
+.edge.held .edge-arrow { stroke: var(--marca-org, #a9852f) !important; }
 .port.port-lit { transform: scale(1.25); border-color: var(--text); }
 .edge.drop-target .edge-line { stroke: var(--accent); stroke-width: 3px; stroke-dasharray: 6 4; }
 .edge-draft { fill: none; stroke: var(--accent); stroke-width: 2px; stroke-dasharray: 5 4; }
@@ -233,20 +233,20 @@ body.slot-bottom-collapsed [data-resize="dock"] { visibility: hidden; pointer-ev
 /* ponto de cache: selo dourado no canto inferior esquerdo da caixa */
 .node-cache {
   position: absolute; z-index: 3; left: 8px; bottom: -9px; display: inline-flex; align-items: center; gap: 3px;
-  height: 17px; padding: 0 6px; border-radius: 999px; background: var(--brand-gold, #a9852f); color: var(--surface);
+  height: 17px; padding: 0 6px; border-radius: 999px; background: var(--marca-org, #a9852f); color: var(--surface);
   font: 700 var(--fs-xs) var(--font); letter-spacing: .04em; text-transform: uppercase; box-shadow: var(--shadow-sm);
 }
-.node.cache-point .node-card { box-shadow: inset 0 -2px 0 var(--brand-gold, #a9852f), var(--shadow-sm); }
+.node.cache-point .node-card { box-shadow: inset 0 -2px 0 var(--marca-org, #a9852f), var(--shadow-sm); }
 /* antes de um ponto de cache: pulada nesta rodada (spec 016) */
 .node.status-held .node-card {
-  border: 1.5px dashed var(--brand-gold, #a9852f);
-  background: color-mix(in srgb, var(--brand-gold, #a9852f) 9%, var(--surface));
+  border: 1.5px dashed var(--marca-org, #a9852f);
+  background: color-mix(in srgb, var(--marca-org, #a9852f) 9%, var(--surface));
 }
-.node.status-held .node-annot { color: var(--brand-gold-strong, #866c33); font-weight: 600; }
+.node.status-held .node-annot { color: var(--marca-botao); font-weight: 600; }
 .node.status-held .node-icon { opacity: .7; }
-.node.status-held .node-status { background: var(--brand-gold, #a9852f); }
-.node.held-focus .node-card { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-gold, #a9852f) 35%, transparent), var(--shadow-sm); }
-g.edge.held .edge-line { stroke: var(--brand-gold, #a9852f); stroke-dasharray: 6 5; }
+.node.status-held .node-status { background: var(--marca-org, #a9852f); }
+.node.held-focus .node-card { box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-org, #a9852f) 35%, transparent), var(--shadow-sm); }
+g.edge.held .edge-line { stroke: var(--marca-org, #a9852f); stroke-dasharray: 6 5; }
 .port.in { cursor: pointer; }
 
 /* Execução em andamento (spec 018): a caixa da vez brilha; as que faltam ficam esmaecidas. */

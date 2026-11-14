@@ -264,7 +264,7 @@ def _masker(cfg: MaskConfig, key: Callable[[], bytes] | None) -> Callable[[str],
     name="Mask",
     category="prep",
     icon="lock",
-    description="Protege dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.",
+    description="Mascara dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.",
     config=MaskConfig,
     annotate=lambda c: ", ".join(c.columns),
 )

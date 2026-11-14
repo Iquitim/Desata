@@ -12,6 +12,7 @@ import { arrow, linkHover, mini } from './explainers.js';
 import { icon } from './icons.js';
 import { API_PREFIX, commit, emit, placeholdersOf, store } from './store.js';
 import { confirmDialog, openDialog, toast, toastError } from './ui.js';
+import { brand } from './brand.js';
 
 const LOCAL = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i;
 
@@ -145,7 +146,7 @@ function authScheme(state) {
       a.key_in === 'query' ? h('p', {}, 'No endereço, a chave pode aparecer em registros de servidores. Prefira o cabeçalho, se a API aceitar.') : null),
     basic: () => how('Usuário e senha vão codificados em todo pedido:', code(`Authorization: Basic ${DOTS}`)),
     oauth2: () => how(h('div', { class: 'page-flow' }, h('span', { class: 'page-chip' }, 'ID + segredo'), h('span', { class: 'page-arrow' }, '→'), h('span', { class: 'page-chip' }, 'servidor do token'), h('span', { class: 'page-arrow' }, '→'), h('span', { class: 'page-chip' }, 'token'), h('span', { class: 'page-arrow' }, '→'), h('span', { class: 'page-chip' }, 'chamada')),
-      h('p', {}, 'O PRO.DATA pede o token sozinho e renova quando vence.')),
+      h('p', {}, `O ${brand.nome} pede o token sozinho e renova quando vence.`)),
   }[a.type]();
 }
 
@@ -194,7 +195,7 @@ function howItWorks() {
   const stage = (n, title, body) => h('div', { class: 'api-stage' }, h('div', { class: 'x-title' }, `${n}. ${title}`), body);
   const answer = h('pre', { class: 'api-json' }, '[\n  { "sigla": "SP",\n    "nome": "São Paulo",\n    "regiao": { "nome": "Sudeste" } },\n  { "sigla": "RJ",\n    "nome": "Rio de Janeiro",\n    "regiao": { "nome": "Sudeste" } }\n]');
   return h('div', { class: 'api-intro' },
-    h('p', { class: 'api-intro-lead' }, 'Uma API responde a um endereço com dados. O PRO.DATA transforma a resposta em tabela:'),
+    h('p', { class: 'api-intro-lead' }, `Uma API responde a um endereço com dados. O ${brand.nome} transforma a resposta em tabela:`),
     stage(1, 'O pedido', h('div', { class: 'req' }, h('div', { class: 'req-line' }, h('span', { class: 'req-method' }, 'GET'), h('span', { class: 'req-url' }, h('span', { class: 'req-host' }, 'https://servicodados.ibge.gov.br'), h('span', { class: 'req-path' }, '/api/v1/localidades/estados'))))),
     arrow('a API responde'),
     stage(2, 'A resposta', answer),
@@ -328,7 +329,7 @@ function apiNotices(state) {
     ctx.el.replaceChildren(...[
       ...looseVariables(url).filter((v) => !notVariables.has(v.text)).map(looseHint),
       url.toLowerCase().startsWith('http://') && !LOCAL.test(url)
-        ? h('p', { class: 'api-warn' }, icon('alert', 14), ' Endereço sem criptografia (http): os dados viajam abertos na rede, e o PRO.DATA não envia credenciais por ele.') : null,
+        ? h('p', { class: 'api-warn' }, icon('alert', 14), ` Endereço sem criptografia (http): os dados viajam abertos na rede, e o ${brand.nome} não envia credenciais por ele.`) : null,
       state.method === 'POST'
         ? h('p', { class: 'api-warn' }, icon('alert', 14), ' Um POST pode gravar dados no servidor. Ele não roda sozinho ao abrir o fluxo.') : null,
       needed.length

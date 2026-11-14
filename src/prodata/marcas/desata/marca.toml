@@ -1,0 +1,64 @@
+# Marca Desata (spec 036). Desate a complexidade. Conecte possibilidades.
+# Símbolo: a triqueta reinterpretada como um nó que se desata em conexões de dados.
+# Paleta principal: Petróleo #003F46 (institucional), Teal #007E7D (apoio), Verde fluxo #21C7A4 (acento).
+# Tipografia: Manrope nos títulos, Inter no texto, JetBrains Mono em SQL e fórmulas.
+
+nome = "Desata"
+nome_curto = "Desata"
+slogan = "Desate a complexidade. Conecte possibilidades."
+fonte_texto = "Inter"
+fonte_titulos = "Manrope"
+fonte_codigo = "JetBrains Mono"
+# Fundos de identidade (abertura, instalador, capa do guia): de Petróleo a Teal, onde o texto branco lê bem.
+# O Verde fluxo entra como faixa de acento (organizacao), não atrás de texto (contraste 2,2:1 com branco).
+gradiente = ["#003F46", "#007E7D"]
+# Capa do guia com o logo grande ao centro.
+capa = "centralizada"
+
+[instalacao]
+app_id = "F73F722E-C478-445D-A511-5EECD65804F6"
+editora = "Desata"
+pasta_dados = "Desata"
+cofre = "DESATA"
+# Quem já usa o PRO.DATA neste computador pode trazer fontes, fluxos, organização e senhas na primeira abertura.
+migrar_de = [{ pasta = "PRO.DATA", cofre = "PRODATA", nome = "PRO.DATA" }]
+
+[cores.claro]
+barra = "#003F46"
+barra_borda = "#21C7A4"
+barra_texto = "#FFFFFF"
+selecao_fundo = "#FFFFFF"
+selecao_texto = "#003F46"
+realce = "#21C7A4"
+realce_texto = "#003F46"
+botao = "#007E7D"
+botao_texto = "#FFFFFF"
+organizacao = "#21C7A4"
+destaque = "#007E7D"
+destaque_texto = "#FFFFFF"
+foco = "#007E7D"
+fundo = "#F5F8F8"
+superficie = "#FFFFFF"
+bordas = "#DCE6E5"
+texto = "#183439"
+# Teal da marca abrindo a paleta de referência validada para daltonismo (validador da skill de dataviz).
+series = ["#008F88", "#EB6834", "#2A78D6", "#EDA100", "#E87BA4", "#008300", "#6250D6", "#E34948"]
+
+[cores.escuro]
+barra = "#003F46"
+barra_borda = "#007E7D"
+barra_texto = "#FFFFFF"
+selecao_fundo = "#EAF3F2"
+selecao_texto = "#003F46"
+realce = "#21C7A4"
+realce_texto = "#003F46"
+botao = "#21C7A4"
+botao_texto = "#003F46"
+organizacao = "#21C7A4"
+destaque = "#21C7A4"
+foco = "#21C7A4"
+fundo = "#101B1F"
+superficie = "#19282D"
+bordas = "#34464B"
+texto = "#EAF3F2"
+series = ["#0F9D93", "#D95926", "#3987E5", "#C98500", "#D55181", "#008300", "#9085E9", "#E66767"]

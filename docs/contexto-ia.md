@@ -605,7 +605,7 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
 #### `prep.mask`: Mask
 
-Protege dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.
+Mascara dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.
 
 Entradas: `in` (Entrada). Saídas: `out` (Saída).
 

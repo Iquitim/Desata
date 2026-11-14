@@ -24,6 +24,7 @@ from urllib.parse import parse_qsl, quote, urlencode, urljoin, urlsplit, urlunsp
 import httpx
 import polars as pl
 
+from prodata.brand import marca
 from prodata.connectors import api_policy
 from prodata.connectors.api_model import (
     _PLACEHOLDER,
@@ -190,7 +191,7 @@ class ApiClient:
         if where.metadata:
             raise ApiError(
                 f"{where.host} é um endereço de metadados de nuvem, que pode revelar credenciais da máquina. "
-                "O PRO.DATA não chama esse endereço."
+                f"O {marca().nome} não chama esse endereço."
             )
         if where.internal and not where.listed:
             raise ApiError(

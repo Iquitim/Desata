@@ -5,6 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from prodata.brand import available as available_brands
+from prodata.brand import css as brand_css
+from prodata.brand import load as load_brand
+
 WEB = Path(__file__).parents[1] / "src/prodata/web"
 TOKENS = (WEB / "css/tokens.css").read_text(encoding="utf-8")
 
@@ -82,6 +86,8 @@ def test_node_stays_readable(theme: dict[str, str], category: str) -> None:
 def test_every_css_variable_exists() -> None:
     """Uma variável sem definição faz a regra sumir em silêncio, sem erro em lugar nenhum."""
     css = "\n".join(p.read_text(encoding="utf-8") for p in (WEB / "css").glob("*.css"))
+    # Cores da marca: /marca/cores.css, gerado do marca.toml (spec 036). Toda marca define os mesmos papéis.
+    css += "\n".join(brand_css(load_brand(b)) for b in available_brands())
     scripts = "\n".join(p.read_text(encoding="utf-8") for p in (WEB / "js").glob("*.js"))
     defined = set(re.findall(r"(--[\w-]+)\s*:", css)) | set(re.findall(r"[\'\"](--[\w-]+)[\'\"]", scripts))
     defined |= set(re.findall(r"--[\w-]+(?=[\'\"`]?\s*[:,])", scripts))

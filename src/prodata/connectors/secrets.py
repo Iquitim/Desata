@@ -10,7 +10,10 @@ from typing import Protocol
 import keyring
 from keyring.errors import PasswordDeleteError
 
-SERVICE = "PRODATA"
+from prodata.brand import marca
+
+# Serviço no cofre do Windows: um por marca, para duas marcas instaladas não se misturarem (spec 036).
+SERVICE = marca().vault_service
 
 
 class SecretStore(Protocol):
@@ -32,16 +35,21 @@ def installation_key(store: SecretStore) -> bytes:
 
 
 class KeyringSecretStore:
+    """Cofre do sistema. ``service``: o serviço da marca ativa; outro só para a mudança de marca (spec 036)."""
+
+    def __init__(self, service: str = SERVICE) -> None:
+        self.service = service
+
     def get(self, key: str) -> str | None:
-        return keyring.get_password(SERVICE, key)
+        return keyring.get_password(self.service, key)
 
     def set(self, key: str, value: str) -> None:
-        keyring.set_password(SERVICE, key, value)
+        keyring.set_password(self.service, key, value)
 
     def delete(self, key: str) -> None:
         # Se já não existia, o estado desejado (sem segredo) foi atingido.
         with contextlib.suppress(PasswordDeleteError):
-            keyring.delete_password(SERVICE, key)
+            keyring.delete_password(self.service, key)
 
 
 class MemorySecretStore:

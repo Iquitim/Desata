@@ -1,0 +1,17 @@
+# Marca neutra (spec 036): sem empresa, para conferir a troca de marca de ponta a ponta.
+# Só barra e destaque são obrigatórios: os outros papéis da paleta saem deles, e o tema escuro usa a paleta do tema.
+
+nome = "Neutro"
+nome_curto = "Neutro"
+fonte_texto = "Inter"
+fonte_codigo = "JetBrains Mono"
+
+[instalacao]
+app_id = "3F0B8C52-7A41-4D6E-9B1F-2C8E5A7D9013"
+pasta_dados = "Neutro"
+cofre = "NEUTRO"
+
+[cores.claro]
+barra = "#1f2937"
+destaque = "#2a63d6"
+organizacao = "#0b6e64"

@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" {{marca.atributos}}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PRO.DATA · Grupo Protege</title>
+  <title>{{marca.titulo}}</title>
   <meta name="description" content="Pipelines de dados visuais: ingestão, preparação, junção, BI e Machine Learning." />
-  <link rel="icon" type="image/svg+xml" href="/static/brand/protege-escudo.svg" />
-  <link rel="preload" href="/static/fonts/open-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="icon" type="image/svg+xml" href="/marca/logo-claro.svg" />
+  {{marca.preload}}
   <link rel="stylesheet" href="/static/css/fonts.css" />
   <link rel="stylesheet" href="/static/css/tokens.css" />
   <link rel="stylesheet" href="/static/css/app.css" />
@@ -21,12 +21,13 @@
   <link rel="stylesheet" href="/static/css/sql.css" />
   <link rel="stylesheet" href="/static/css/manual.css" />
   <link rel="stylesheet" href="/static/css/brand.css" />
+  <link rel="stylesheet" href="/marca/cores.css" />
 </head>
 <body data-view="designer">
   <header class="topbar">
     <div class="brand">
-      <img class="brand-logo" src="/static/brand/protege-escudo-claro.svg" alt="Grupo Protege" />
-      <div class="brand-text"><span class="brand-name">PRO.DATA</span><span class="brand-org">Grupo Protege</span></div>
+      <img class="brand-logo" src="/marca/logo-escuro.svg" alt="{{marca.nome}}" />
+      <div class="brand-text"><span class="brand-name">{{marca.nome}}</span><span class="brand-org">{{marca.apoio}}</span></div>
     </div>
     <div class="wf-title">
       <input id="wfName" class="wf-name" aria-label="Nome do fluxo" spellcheck="false" />

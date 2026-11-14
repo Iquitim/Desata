@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from prodata import __version__
+from prodata.brand import marca
 from prodata.engine.sql.fragment import comment, q
 from prodata.engine.sql.macros import macros_used, preamble
 from prodata.engine.sql.plan import DISABLED, NO_SQL, NOT_READY, OK, Output, SqlPlan
@@ -73,7 +74,7 @@ def _final(plan: SqlPlan, output: Output) -> list[Part]:
             status, "Etapa a revisar"
         )
         ending = (
-            "Daqui em diante, a lógica fica no PRO.DATA."
+            f"Daqui em diante, a lógica fica no {marca().nome}."
             if status == NO_SQL
             else "O código vai até a etapa anterior."
         )
@@ -85,7 +86,7 @@ def _final(plan: SqlPlan, output: Output) -> list[Part]:
     if tail.fragment.visual_sql:
         return [Part(f"{tail.fragment.visual_sql};", tail.id, "final")]
     written = (
-        f"-- No PRO.DATA, esta saída grava {comment(tail.fragment.export_file)}\n"
+        f"-- No {marca().nome}, esta saída grava {comment(tail.fragment.export_file)}\n"
         if tail.fragment.export_file
         else ""
     )
@@ -94,7 +95,7 @@ def _final(plan: SqlPlan, output: Output) -> list[Part]:
 
 def _header(plan: SqlPlan, outputs: list[Output], steps: list[str], states: dict[str, str]) -> str:
     wf = plan.workflow
-    lines = [f"-- PRO.DATA {__version__} · {comment(wf.name)} · gerado em {date.today():%d/%m/%Y}"]
+    lines = [f"-- {marca().nome} {__version__} · {comment(wf.name)} · gerado em {date.today():%d/%m/%Y}"]
     lines.append(DIALECT_NOTE)
     lines.append(
         ("-- Saídas: " if len(outputs) > 1 else "-- Saída: ") + comment(", ".join(o.name for o in outputs))

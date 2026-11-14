@@ -17,6 +17,7 @@ from typing import Any
 
 import polars as pl
 
+from prodata.brand import marca
 from prodata.errors import InvalidInputError, NotFoundError
 
 SUFFIX = ".modelo"
@@ -71,7 +72,7 @@ def from_bytes(data: bytes) -> tuple[dict[str, Any], dict[str, Any]]:
     """O modelo e as informações dele. Recusa o que não for um modelo feito pelo PRO.DATA."""
     from skops.io import get_untrusted_types, loads
 
-    refuse = "O arquivo não é um modelo do PRO.DATA"
+    refuse = f"O arquivo não é um modelo do {marca().nome}"
     if len(data) > MAX_BYTES:
         raise InvalidInputError("O arquivo do modelo passa de 200 MB.")
     try:

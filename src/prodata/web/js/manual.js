@@ -8,6 +8,7 @@ import { finishedLessons, LESSONS, startLesson } from './lessons.js';
 import { CONTEXT, TARGETS } from './manual_targets.js';
 import { node, on, store, toolOf } from './store.js';
 import { toast, toastError } from './ui.js';
+import { brandText } from './brand.js';
 
 const fold = (text) => String(text ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const RESULTS = 30;
@@ -72,7 +73,8 @@ const chapterTitle = (c) => (c.number ? `Capítulo ${c.number} · ${c.title}` : 
 const isDark = () => (document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
 
 async function ensureData() {
-  if (!data) data = await fetch('/static/manual/manual.json').then((r) => r.json());
+  // O texto guarda as marcações do guia ({{produto}}…): o nome da marca ativa entra aqui (spec 036).
+  if (!data) data = JSON.parse(brandText(await fetch('/static/manual/manual.json').then((r) => r.text()), { json: true }));
   return data;
 }
 

@@ -23,14 +23,28 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-APP_NAME = "PRO.DATA"
+from prodata.brand import marca
+
+APP_NAME = marca().nome
 log = logging.getLogger("prodata.desktop")
+
+
+# O pywebview só aceita letras, dígitos e espaços na descrição do filtro de arquivos.
+_FILTER_NAME = re.sub(r"[^\w ]", "", marca().nome) or "programa"
+
+
+def _window_title() -> str:
+    """ "PRO.DATA 0.7.7 · Grupo Protege", ou sem a organização quando a marca não tem."""
+    from prodata import __version__
+
+    b = marca()
+    return f"{b.nome} {__version__} · {b.organizacao}" if b.organizacao else f"{b.nome} {__version__}"
 
 
 def user_data_dir() -> Path:
     """Dados do usuário fora da pasta do programa (RF-802)."""
     base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
-    return Path(base) / APP_NAME
+    return Path(base) / marca().data_folder
 
 
 def _setup_logging(data_dir: Path) -> Path:
@@ -225,7 +239,7 @@ _GENERATED_FILTERS = {
     ".zip": _ZIP_FILTER,
     ".html": "Página da web (*.html)",
     ".gif": "Imagem GIF (*.gif)",
-    ".modelo": "Modelo do PRO.DATA (*.modelo)",
+    ".modelo": f"Modelo do {_FILTER_NAME} (*.modelo)",
 }
 _GENERATED_MAX_BYTES = 64 * 1024 * 1024
 _PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
@@ -345,9 +359,13 @@ def _splash_failsafe() -> None:
 
 
 def main() -> None:
+    chosen = "PRODATA_STORAGE_DIR" in os.environ  # pasta escolhida à mão: nada de oferta de mudança de marca
     data_dir = Path(os.environ.setdefault("PRODATA_STORAGE_DIR", str(user_data_dir())))
+    source = None if chosen else _brand_source(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
     log_file = _setup_logging(data_dir)
+    if source is not None:
+        _offer_brand_migration(source, data_dir)
     try:
         run(data_dir)
     except Exception as exc:
@@ -360,6 +378,70 @@ def main() -> None:
     # Servidor e janela já foram fechados e o log gravado. A finalização normal do Python
     # (runtime .NET do pythonnet, pools de threads) levava ~5 s sem fazer nada útil.
     os._exit(0)
+
+
+def _ask(text: str) -> bool:
+    """Pergunta Sim/Não numa janela do Windows. Fora dele, não pergunta."""
+    if sys.platform != "win32":
+        return False
+    import ctypes
+
+    return int(getattr(ctypes, "windll").user32.MessageBoxW(None, text, APP_NAME, 0x24)) == 6  # noqa: B009
+
+
+def _tell(text: str) -> None:
+    """Aviso numa janela do Windows (fora dele, só no log)."""
+    log.warning(text)
+    if sys.platform == "win32":
+        import ctypes
+
+        getattr(ctypes, "windll").user32.MessageBoxW(None, text, APP_NAME, 0x40)  # noqa: B009
+
+
+def _brand_source(data_dir: Path) -> Any:
+    from prodata.brand_migration import source_for
+
+    try:
+        return source_for(marca(), data_dir)
+    except OSError:
+        return None
+
+
+def _offer_brand_migration(source: Any, data_dir: Path) -> None:
+    """Primeira abertura desta marca, com dados de outra no computador (spec 036, RF-3622 e RF-3623)."""
+    from prodata.brand_migration import copy_data, copy_secrets, remember, secret_keys
+    from prodata.connectors.secrets import KeyringSecretStore
+
+    close_splash()
+    name = marca().nome
+    if not _ask(
+        f"Encontramos dados do {source.name} neste computador, em {source.folder}.\n\n"
+        f"Trazer para o {name} as fontes, os fluxos, a organização, as constantes e os modelos?\n\n"
+        "É uma cópia: a pasta antiga fica como está."
+    ):
+        remember(data_dir, source, data=False, secrets=False, missing=[])
+        return
+    copy_data(source.folder, data_dir)
+    keys = secret_keys(data_dir)
+    missing: list[str] = []
+    wants = (
+        bool(source.service)
+        and len(keys) > 1
+        and _ask(
+            f"Copiar também as senhas e os tokens das conexões do {source.name}?\n\n"
+            f"Eles vão do cofre do Windows do {source.name} para o do {name}, neste computador e neste usuário. "
+            "Nada sai da máquina. Sem copiar, as conexões aparecem na vista Dados pedindo a senha de novo."
+        )
+    )
+    if wants:
+        _copied, missing = copy_secrets(keys, KeyringSecretStore(source.service), KeyringSecretStore())
+        if missing:
+            _tell(
+                f"{len(missing)} senha(s) não puderam ser copiadas. As conexões que precisam delas aparecem "
+                "no filtro Com problema da vista Dados."
+            )
+    remember(data_dir, source, data=True, secrets=wants, missing=missing)
+    log.info("Dados trazidos de %s (senhas: %s, faltando: %d)", source.folder, wants, len(missing))
 
 
 def run(data_dir: Path) -> None:
@@ -396,7 +478,7 @@ def run(data_dir: Path) -> None:
     webview.settings["ALLOW_DOWNLOADS"] = True  # exportações do Output Data
     api = DesktopApi()
     api._window = webview.create_window(
-        f"{APP_NAME} {__version__} · Grupo Protege",
+        _window_title(),
         url,
         width=1440,
         height=900,

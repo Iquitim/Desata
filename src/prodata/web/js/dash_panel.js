@@ -7,6 +7,7 @@ import { commitLayout, dash, els, nodeLabel, nodeOf, page as dashPage, ui } from
 import { button, h } from './dom.js';
 import { renderFields } from './fields.js';
 import { toastError } from './ui.js';
+import { logoOwner } from './brand.js';
 
 export const PANEL_W = 312;
 let formats = null; // campos do painel Formato por tipo (GET /api/dashboard/formats)
@@ -150,7 +151,7 @@ function imageField(item) {
       button({ icon: 'upload', label: item.content ? 'Trocar imagem' : 'Escolher imagem', size: 'sm', onClick: () => pickImage().then((img) => {
         if (img) commitLayout((d) => { d.items.find((i) => i.id === item.id).content = img.data; });
       }) }),
-      button({ icon: 'image', label: 'Logo Protege', size: 'sm', variant: 'ghost', onClick: () => logoImage().then((img) => {
+      button({ icon: 'image', label: `Logo de ${logoOwner()}`, size: 'sm', variant: 'ghost', onClick: () => logoImage().then((img) => {
         commitLayout((d) => { d.items.find((i) => i.id === item.id).content = img.data; });
       }) })),
     h('p', { class: 'field-help' }, 'PNG, JPG ou SVG até 1 MB. A imagem fica dentro do arquivo do fluxo.'));

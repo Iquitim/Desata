@@ -8,6 +8,7 @@ import { button, debounce, fmt, h, persist, storage } from './dom.js';
 import { icon } from './icons.js';
 import { node, on, store, toolOf } from './store.js';
 import { showMenu, toast, toastError } from './ui.js';
+import { brand } from './brand.js';
 
 const ROW = 54;
 const GAP = 6;
@@ -671,7 +672,7 @@ export function initSqlView(root) {
   }, [['duckdb', 'DuckDB (conferido)'], ['spark', 'Spark SQL · Fabric Lakehouse'], ['tsql', 'T-SQL · Fabric Warehouse']]
     .map(([v, l]) => h('option', { value: v, selected: ui.dialect === v }, l)));
   els.unverified = h('div', { class: 'sql-unverified', role: 'status', hidden: true }, icon('alert', 14),
-    ' Código convertido do DuckDB e não conferido: não foi executado nem comparado com os resultados do PRO.DATA. Os avisos de conferência valem para o DuckDB. Revise antes de usar.');
+    ` Código convertido do DuckDB e não conferido: não foi executado nem comparado com os resultados do ${brand.nome}. Os avisos de conferência valem para o DuckDB. Revise antes de usar.`);
   const head = h('div', { class: 'sql-head' }, els.state, els.sub, dialect, actions);
   els.notes = h('div', { class: 'sql-notes', hidden: true });
   els.searchInput = h('input', {

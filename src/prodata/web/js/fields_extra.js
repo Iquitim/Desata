@@ -5,6 +5,7 @@ import { saveDownload } from './desktop.js';
 import { button, fmt, h } from './dom.js';
 import { store } from './store.js';
 import { confirmDialog, toast, toastError } from './ui.js';
+import { brand } from './brand.js';
 
 const INTERFACE = ['flow.input', 'flow.output'];
 
@@ -97,7 +98,7 @@ export function modelField(field, value, set, ctx, id) {
   load();
   return h('div', { class: 'stack-xs' }, select, picker,
     h('div', { class: 'row' },
-      button({ icon: 'upload', label: 'Importar arquivo…', size: 'sm', title: 'Trazer um arquivo .modelo exportado pelo PRO.DATA', onClick: () => picker.click() }),
+      button({ icon: 'upload', label: 'Importar arquivo…', size: 'sm', title: `Trazer um arquivo .modelo exportado pelo ${brand.nome}`, onClick: () => picker.click() }),
       button({ icon: 'download', label: 'Exportar', size: 'sm', title: 'Salvar o arquivo .modelo para levar a outro computador', onClick: () => select.value && exportIt() }),
       button({ icon: 'trash', title: 'Tirar da biblioteca', size: 'sm', variant: 'ghost', onClick: () => select.value && remove() })),
     note);

@@ -332,11 +332,19 @@ Variáveis de ambiente (ou `.env`, ver `.env.example`): `PRODATA_HOST`,
 - Aplicação local e de usuário único: não há autenticação.
 - Datasets são carregados inteiros em memória pelo Polars.
 
-## Identidade visual
+## Identidade visual e marcas
 
-O tema segue a marca do Grupo Protege: azul-marinho `#043154`, dourado `#95793c`,
-fonte Open Sans e o escudo oficial (`src/prodata/web/brand/`, ver o `LEIA-ME.md`
-da pasta). Tudo fica em `src/prodata/web/css/brand.css`, carregado por último:
-trocar a marca é editar esse arquivo e os arquivos de `brand/`. O ícone do
-executável é gerado de `packaging/brand/protege-escudo-1024.png`.
+O nome, a organização, as cores, as fontes e o logo vêm de uma **marca**, em `src/prodata/marcas/<id>/` (spec 036).
+O mesmo código gera o programa com qualquer marca, e um fluxo feito numa abre em todas:
+
+```powershell
+uv run python packaging/build.py --marca neutra   # instalador, portátil e executável com a marca neutra
+$env:PRODATA_MARCA = "neutra"; uv run prodata     # em desenvolvimento
+```
+
+- `protege`: Grupo Protege (marinho `#043154`, dourado `#95793c`, Open Sans e o escudo). É a marca padrão e reproduz a 0.7.7.
+- `neutra`: sem empresa, para testar a troca de ponta a ponta.
+
+Cada marca tem a sua pasta de dados, o seu serviço no cofre do Windows e o seu identificador de instalador, então
+duas marcas convivem no mesmo computador. Como criar uma marca: [src/prodata/marcas/LEIA-ME.md](src/prodata/marcas/LEIA-ME.md).
 

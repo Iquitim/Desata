@@ -11,6 +11,7 @@ import { button, fmt, h } from './dom.js';
 import { LABELS, labelPicker, passwordRequired } from './label_picker.js';
 import { mutate, store } from './store.js';
 import { openDialog, toast, toastError } from './ui.js';
+import { brand, LOGO_LIGHT, logoOwner } from './brand.js';
 
 const MIN_PASSWORD = 8;
 // O arquivo não busca nada fora dele: nem um dado malicioso consegue mandar o conteúdo para outro endereço.
@@ -23,10 +24,10 @@ const safeJson = (value) => JSON.stringify(value).replace(/</g, '\\u003c').repla
 const escapeHtml = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 async function buildHtml(payload, password) {
-  const [css, script, logo] = await Promise.all([collectCss(), fetch('/api/dashboard/viewer.js').then((r) => r.text()), toDataUri(new URL('/static/brand/protege-escudo.svg', location.href).href)]);
+  const [css, script, logo] = await Promise.all([collectCss(), fetch('/api/dashboard/viewer.js').then((r) => r.text()), toDataUri(new URL(LOGO_LIGHT, location.href).href)]);
   const theme = document.documentElement.getAttribute('data-theme');
   const name = store.workflow.name || 'Dashboard';
-  const data = { ...payload, name, logo };
+  const data = { ...payload, name, logo, org: brand.organizacao, owner: logoOwner() };
   // Com senha, nem o nome do fluxo fica em claro: só o rótulo, para quem recebe saber como tratar o arquivo.
   const block = password
     ? `<script type="application/json" id="prodata-cifrado">${safeJson({ ...(await encryptText(JSON.stringify(data), password)), label: payload.label, label_name: payload.label_name })}</script>`
@@ -36,7 +37,7 @@ async function buildHtml(payload, password) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="PRO.DATA">
+<meta name="generator" content="${escapeHtml(brand.nome)}">
 <meta http-equiv="Content-Security-Policy" content="${VIEWER_CSP}">
 <title>${password ? 'Documento protegido' : escapeHtml(name)}</title>
 <style>${css.replace(/<\/style/gi, '<\\/style')}</style>
@@ -80,7 +81,7 @@ function protection() {
   const current = () => store.workflow.dashboard.confidentiality || 'interno';
   const describe = () => {
     hint.textContent = passwordRequired(current())
-      ? `Obrigatória em ${LABELS[current()]}. Mínimo de ${MIN_PASSWORD} caracteres. Quem perder a senha não recupera o arquivo, mas pode gerar outro no PRO.DATA.`
+      ? `Obrigatória em ${LABELS[current()]}. Mínimo de ${MIN_PASSWORD} caracteres. Quem perder a senha não recupera o arquivo, mas pode gerar outro no ${brand.nome}.`
       : `Opcional neste rótulo. Mínimo de ${MIN_PASSWORD} caracteres, se usar. Envie a senha por outro canal, separada do arquivo.`;
   };
   const select = labelPicker({

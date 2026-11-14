@@ -20,6 +20,7 @@ import { openOrganize } from './dash_organize.js';
 import { applyPaint, startPaint, stopPaint } from './dash_paint.js';
 import { loadFormats, PANEL_W, panelEl } from './dash_panel.js';
 import { exportPage, exportVisual } from './dash_png.js';
+import { brand, LOGO_LIGHT, logoOwner } from './brand.js';
 
 export { AGG_LABELS, chartCard, kpiTile, tableCard, visualCard } from './dash_cards.js';
 
@@ -253,8 +254,8 @@ function headEl() {
   // Com página montada, título e logo estão nela; a barra fica só com a situação e as ações (spec 029, RF-2951).
   if (!d) {
     return h('header', { class: 'dash-head' }, h('div', { class: 'dash-brand' },
-      h('img', { class: 'dash-logo', src: '/static/brand/protege-escudo.svg', alt: 'Grupo Protege' }),
-      h('div', {}, h('div', { class: 'dash-org' }, 'Grupo Protege'), h('h1', {}, store.workflow?.name || 'Dashboard'), h('p', { class: 'muted' }, status))));
+      h('img', { class: 'dash-logo', src: LOGO_LIGHT, alt: logoOwner() }),
+      h('div', {}, h('div', { class: 'dash-org' }, brand.organizacao), h('h1', {}, store.workflow?.name || 'Dashboard'), h('p', { class: 'muted' }, status))));
   }
   const actions = editing ? [
     button({ icon: 'plus', label: 'Inserir', title: 'Texto, imagem, logo ou forma', onClick: menuAt(insertItems) }),

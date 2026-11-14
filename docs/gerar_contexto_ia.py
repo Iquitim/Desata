@@ -1,19 +1,26 @@
 """Gera docs/contexto-ia.md a partir do catálogo de ferramentas: campos, portas e opções nunca ficam desatualizados.
 
-    uv run python docs/gerar_contexto_ia.py
+    uv run python docs/gerar_contexto_ia.py [--marca <id>]
 
 Um teste confere que o arquivo está em dia e que o exemplo dele executa (tests/test_ai_context.py).
+O nome do produto vem da marca (spec 036): o texto-base diz PRO.DATA, trocado pelo nome da marca ativa.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import sys
 from pathlib import Path
 from typing import Any
 
-from prodata import __version__
-from prodata.engine.formula import FUNCTION_DOCS, KEYWORDS, LOGICAL
-from prodata.nodes import CATEGORIES, catalog
+if "--marca" in sys.argv:  # antes de importar o programa: a marca é lida uma vez
+    os.environ["PRODATA_MARCA"] = sys.argv[sys.argv.index("--marca") + 1]
+
+from prodata import __version__  # noqa: E402
+from prodata.brand import marca  # noqa: E402
+from prodata.engine.formula import FUNCTION_DOCS, KEYWORDS, LOGICAL  # noqa: E402
+from prodata.nodes import CATEGORIES, catalog  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "contexto-ia.md"
 
@@ -282,7 +289,7 @@ def render() -> str:
         functions=_functions(),
         example=json.dumps(EXAMPLE, ensure_ascii=False, indent=2),
         tools=_tools(),
-    ).rstrip() + "\n"
+    ).replace("PRO.DATA", marca().nome).rstrip() + "\n"
 
 
 if __name__ == "__main__":

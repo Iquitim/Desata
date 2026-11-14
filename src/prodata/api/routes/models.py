@@ -9,6 +9,7 @@ from fastapi import APIRouter, File, Form, Query, Response, UploadFile
 from fastapi import Path as PathParam
 
 from prodata.api.deps import Services, ServicesDep
+from prodata.brand import marca
 from prodata.domain.workflow import ID_PATTERN
 from prodata.errors import InvalidInputError
 from prodata.nodes import ml_library, ml_store
@@ -32,7 +33,7 @@ async def import_model(
     """Recebe um ``.modelo``. O conteúdo é conferido antes de qualquer coisa ser gravada."""
     filename = file.filename or ""
     if not filename.lower().endswith(ml_library.SUFFIX):
-        raise InvalidInputError(f"Escolha um arquivo {ml_library.SUFFIX}, exportado pelo PRO.DATA.")
+        raise InvalidInputError(f"Escolha um arquivo {ml_library.SUFFIX}, exportado pelo {marca().nome}.")
     data = await file.read(ml_library.MAX_BYTES + 1)
     return ml_library.store(_folder(services), name.strip() or Path(filename).stem, data)
 

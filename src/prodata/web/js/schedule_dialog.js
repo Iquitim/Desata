@@ -3,6 +3,7 @@
 import { button, h } from './dom.js';
 import { isDirty, store } from './store.js';
 import { openDialog, toast } from './ui.js';
+import { brand } from './brand.js';
 
 function copyRow(label, text, help) {
   const code = h('code', { class: 'cli-line mono' }, text);
@@ -33,7 +34,7 @@ export function openScheduleDialog() {
   // Arquivo de fora da biblioteca roda pelo caminho; o da biblioteca, pelo ID, que não muda com o nome.
   const target = store.filePath ? `"${store.filePath}"` : wf.id;
   const run = `${cli} run ${target}`;
-  const task = `schtasks /Create /TN "PRO.DATA ${wf.name.replace(/"/g, '')}" /SC DAILY /ST 06:00 /TR "${run.replace(/"/g, '\\"')}"`;
+  const task = `schtasks /Create /TN "${brand.nome} ${wf.name.replace(/"/g, '')}" /SC DAILY /ST 06:00 /TR "${run.replace(/"/g, '\\"')}"`;
   openDialog({
     title: 'Executar sem abrir o programa',
     size: 'lg',

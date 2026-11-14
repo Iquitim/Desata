@@ -8,6 +8,7 @@ from pathlib import Path
 import duckdb
 import polars as pl
 
+from prodata.brand import marca
 from prodata.connectors.api_model import source_api_id
 from prodata.connectors.queries import source_query_id
 from prodata.engine.sql.fragment import (
@@ -164,7 +165,7 @@ def input_data_sql(ctx: SqlContext, cfg: InputDataConfig) -> dict[str, Fragment]
         sql += f"\nLIMIT {cfg.limit}"
     if opts.format == "excel":
         notes.append(
-            "A planilha é lida pela extensão do DuckDB; os tipos podem diferir da leitura do PRO.DATA."
+            f"A planilha é lida pela extensão do DuckDB; os tipos podem diferir da leitura do {marca().nome}."
         )
     if opts.format == "arrow":
         notes.append(

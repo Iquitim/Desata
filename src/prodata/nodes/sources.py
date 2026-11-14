@@ -12,6 +12,7 @@ from typing import Any, Literal
 import polars as pl
 from pydantic import Field
 
+from prodata.brand import marca
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.forms import ui
 from prodata.ingestion.folders import files_signature, folder_files, odd_warning, read_folder
@@ -28,7 +29,7 @@ class InputFolderConfig(ReadOptions, ToolConfig):
     folder: str = Field(
         "",
         title="Pasta",
-        description="Caminho completo. O PRO.DATA só lê: nunca grava, move ou apaga o que está nela.",
+        description=f"Caminho completo. O {marca().nome} só lê: nunca grava, move ou apaga o que está nela.",
         json_schema_extra=ui(widget="folder", placeholder="D:\\Fechamento\\2026-10"),
     )
     pattern: str = Field(

@@ -1,86 +1,48 @@
-/* Identidade visual Grupo Protege (spec 011). Carregado depois de tokens/app: só sobrescreve.
-   Cores do site oficial: marinho #043154, marinho escuro #03223a, dourado #95793c, azul #095d9e.
-   Paleta de gráficos validada (CVD, contraste, luminosidade) nos dois temas. */
+/* Estrutura da marca (spec 011 e spec 036). As cores vêm de /marca/cores.css, gerado do marca.toml da marca ativa:
+   --marca-* para a barra, o botão principal e a organização; --accent*, --focus e --series-* para o resto. */
 
-:root {
-  --font: 'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-
-  --brand-navy: #043154;
-  --brand-navy-deep: #03223a;
-  --brand-gold: #95793c;
-  --brand-gold-strong: #866c33; /* dourado com contraste para texto branco */
-  --brand-blue: #095d9e;
-  --brand-mist: #e5eaee;
-
-  --accent: #043154;
-  --accent-hover: #0a3f6a;
-  --accent-weak: #e6edf4;
-  --accent-text: #ffffff;
-  --focus: #095d9e;
-
-  --series-1: #1f6fb8;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #a9852f;
-  --series-5: #e87ba4;
-  --series-6: #008300;
-  --series-7: #6250d6;
-  --series-8: #e34948;
-}
-
-
-
-/* ---------------------------------------------------------------- barra superior azul-marinho */
+/* ---------------------------------------------------------------- barra superior */
 .topbar {
-  background: var(--brand-navy);
-  border-bottom: 3px solid var(--brand-gold);
-  color: #fff;
+  background: var(--marca-barra);
+  border-bottom: 3px solid var(--marca-barra-borda);
+  color: var(--marca-barra-texto);
 }
 .brand { gap: 10px; }
 .brand-logo { height: 34px; width: auto; display: block; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-name { font-weight: 800; letter-spacing: .04em; font-size: var(--fs-md); }
-.brand-org { font-size: var(--fs-2xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #c9b27c; }
+.brand-org { font-size: var(--fs-2xs); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--marca-realce); }
+.brand-org:empty { display: none; }
 
-.topbar .wf-name { color: #fff; }
-.topbar .wf-name:hover { border-color: rgb(255 255 255 / .25); }
-.topbar .wf-name:focus { background: rgb(255 255 255 / .1); border-color: #c9b27c; }
-.topbar .file-badge { background: rgb(255 255 255 / .12); color: #dbe5ef; }
-.topbar .dirty { background: #c9b27c; color: var(--brand-navy-deep); font-weight: 600; }
+.topbar .wf-name { color: var(--marca-barra-texto); }
+.topbar .wf-name:hover { border-color: color-mix(in srgb, var(--marca-barra-texto) 25%, transparent); }
+.topbar .wf-name:focus { background: color-mix(in srgb, var(--marca-barra-texto) 10%, transparent); border-color: var(--marca-realce); }
+.topbar .file-badge { background: color-mix(in srgb, var(--marca-barra-texto) 12%, transparent); color: color-mix(in srgb, var(--marca-barra-suave) 70%, var(--marca-barra-texto)); }
+.topbar .dirty { background: var(--marca-realce); color: var(--marca-realce-texto); font-weight: 600; }
 
-.topbar .segmented { background: rgb(255 255 255 / .1); border-color: transparent; }
-.topbar .segment { color: #c8d6e5; }
-.topbar .segment:hover { color: #fff; }
-.topbar .segment[aria-selected="true"] { background: #fff; color: var(--brand-navy); }
+.topbar .segmented { background: color-mix(in srgb, var(--marca-barra-texto) 10%, transparent); border-color: transparent; }
+.topbar .segment { color: var(--marca-barra-suave); }
+.topbar .segment:hover { color: var(--marca-barra-texto); }
+.topbar .segment[aria-selected="true"] { background: var(--marca-selecao-fundo); color: var(--marca-selecao-texto); }
 
-.topbar .btn-ghost { color: #c8d6e5; }
-.topbar .btn-ghost:hover:not(:disabled) { color: #fff; background: rgb(255 255 255 / .1); }
-.topbar .divider-v { background: rgb(255 255 255 / .2); }
-.topbar .btn-primary { background: var(--brand-gold-strong); border-color: var(--brand-gold-strong); color: #fff; }
-.topbar .btn-primary:hover:not(:disabled) { background: #74602d; border-color: #74602d; }
+.topbar .btn-ghost { color: var(--marca-barra-suave); }
+.topbar .btn-ghost:hover:not(:disabled) { color: var(--marca-barra-texto); background: color-mix(in srgb, var(--marca-barra-texto) 10%, transparent); }
+.topbar .divider-v { background: color-mix(in srgb, var(--marca-barra-texto) 20%, transparent); }
+.topbar .btn-primary { background: var(--marca-botao); border-color: var(--marca-botao); color: var(--marca-botao-texto); }
+.topbar .btn-primary:hover:not(:disabled) { background: var(--marca-botao-hover); border-color: var(--marca-botao-hover); }
 
-/* abas de fluxo: detalhe dourado na aba ativa */
-.wf-tab.active::before { background: var(--brand-gold); }
+/* abas de fluxo: detalhe na cor da organização na aba ativa */
+.wf-tab.active::before { background: var(--marca-org); }
 
-/* Dashboard: cabeçalho com a marca, para apresentações */
+/* Dashboard: cabeçalho com a marca, para apresentações. O logo para fundo escuro troca no tema escuro. */
 .dash-brand { display: flex; align-items: center; gap: 14px; }
 .dash-logo { height: 44px; width: auto; }
-.dash-org { font-size: var(--fs-2xs); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--brand-gold); }
+.dash-org { font-size: var(--fs-2xs); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--marca-org); }
+.dash-org:empty { display: none; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .dash-logo { content: url('../brand/protege-escudo-claro.svg'); }
+  :root:not([data-theme="light"]) .dash-logo[src="/marca/logo-claro.svg"] { content: url('/marca/logo-escuro.svg'); }
 }
-:root[data-theme="dark"] .dash-logo { content: url('../brand/protege-escudo-claro.svg'); }
+:root[data-theme="dark"] .dash-logo[src="/marca/logo-claro.svg"] { content: url('/marca/logo-escuro.svg'); }
 
-/* Modo escuro: a barra do topo acompanha a paleta (spec 021). */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --brand-gold: #ffb86c; --brand-gold-strong: #ffb86c; }
-  :root:not([data-theme="light"]) .topbar { background: #21222c; border-bottom-color: #44475a; }
-  :root:not([data-theme="light"]) .topbar .btn-primary { color: #21222c; }
-  :root:not([data-theme="light"]) .topbar .btn-primary:hover:not(:disabled) { background: #ffc98e; border-color: #ffc98e; }
-  :root:not([data-theme="light"]) .topbar .segment[aria-selected="true"] { background: #44475a; color: #f8f8f2; }
-}
-:root[data-theme="dark"] { --brand-gold: #ffb86c; --brand-gold-strong: #ffb86c; }
-:root[data-theme="dark"] .topbar { background: #21222c; border-bottom-color: #44475a; }
-:root[data-theme="dark"] .topbar .btn-primary { color: #21222c; }
-:root[data-theme="dark"] .topbar .btn-primary:hover:not(:disabled) { background: #ffc98e; border-color: #ffc98e; }
-:root[data-theme="dark"] .topbar .segment[aria-selected="true"] { background: #44475a; color: #f8f8f2; }
+/* Títulos na fonte de títulos da marca (sem ela, a fonte do texto). */
+h1, h2, h3, .brand-name { font-family: var(--font-title, var(--font)); }

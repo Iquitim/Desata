@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Literal
 
+from prodata.brand import marca
+
 Confidentiality = Literal["publico", "interno", "confidencial", "restrito"]
 DEFAULT_LABEL: Confidentiality = "interno"
 LABEL_NAMES: dict[str, str] = {
@@ -15,7 +17,7 @@ LABEL_NAMES: dict[str, str] = {
 LABEL_COLORS = {"publico": "#1A7F4F", "interno": "#2A63D6", "confidencial": "#D97706", "restrito": "#C8302F"}
 ORDER = list(LABEL_NAMES)
 # Propriedade do arquivo Excel que guarda o rótulo.
-EXCEL_PROPERTY = "Classificação PRO.DATA"
+EXCEL_PROPERTY = f"Classificação {marca().nome}"
 
 
 def needs_protection(label: str) -> bool:

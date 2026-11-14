@@ -15,6 +15,7 @@ from pathlib import Path
 
 from prodata import __version__
 from prodata.api.deps import Services
+from prodata.brand import marca
 from prodata.config import Settings
 from prodata.domain.execution import ExecutionReport
 from prodata.domain.workflow import ID_PATTERN, Workflow
@@ -97,11 +98,11 @@ def run(args: argparse.Namespace) -> int:
         if not services.trust.opened(workflow):
             print(
                 f"Recusado: '{workflow.name}' veio de fora e ainda não foi conferido neste computador.\n"
-                "Abra o fluxo no PRO.DATA, confira o que ele faz na faixa do topo e escolha Confiar e executar.",
+                f"Abra o fluxo no {marca().nome}, confira o que ele faz na faixa do topo e escolha Confiar e executar.",
                 file=sys.stderr,
             )
             return REFUSED
-        print(f"PRO.DATA {__version__} · {workflow.name} ({len(workflow.nodes)} caixas)")
+        print(f"{marca().nome} {__version__} · {workflow.name} ({len(workflow.nodes)} caixas)")
         report = services.runner.run(workflow, args.ate)
     except ProdataError as exc:
         print(f"Erro: {exc.message}", file=sys.stderr)
@@ -134,9 +135,9 @@ def list_workflows(_args: argparse.Namespace) -> int:
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(
         prog="prodata",
-        description="PRO.DATA: sem comando, abre o servidor web. 'run' executa um fluxo e sai.",
+        description=f"{marca().nome}: sem comando, abre o servidor web. 'run' executa um fluxo e sai.",
     )
-    root.add_argument("--version", action="version", version=f"PRO.DATA {__version__}")
+    root.add_argument("--version", action="version", version=f"{marca().nome} {__version__}")
     commands = root.add_subparsers(dest="command")
     run_cmd = commands.add_parser("run", help="Executa um fluxo e sai (para o Agendador do Windows).")
     run_cmd.add_argument("fluxo", help=f"Arquivo {SUFFIX}, ou ID ou nome de um fluxo da biblioteca.")

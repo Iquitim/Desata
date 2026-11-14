@@ -4,21 +4,25 @@ from __future__ import annotations
 
 import importlib
 import logging
+import re
 import threading
 from collections.abc import Awaitable, Callable
+from html import escape
 from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from prodata import __version__
 from prodata.api.deps import Services
 from prodata.api.errors import install_error_handlers
 from prodata.api.routes import routers
+from prodata.brand import css as brand_css
+from prodata.brand import marca
 from prodata.config import Settings
 from prodata.connectors import ConnectionStore, KeyringSecretStore, MemorySecretStore, SecretStore
 from prodata.connectors.api_store import ApiStore
@@ -124,7 +128,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
     app = FastAPI(
-        title="PRO.DATA",
+        title=marca().nome,
         version=__version__,
         description="API do motor de pipelines visuais (Polars + DuckDB + Arrow).",
     )
@@ -141,6 +145,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.include_router(router)
 
     app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+    install_brand_routes(app)
 
     @app.middleware("http")
     async def refuse_other_sites(
@@ -181,7 +186,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             index_html(), headers={"Cache-Control": "no-cache", "Content-Security-Policy": APP_CSP}
         )
 
-    log.info("PRO.DATA %s pronto (storage: %s)", __version__, settings.storage_dir)
+    log.info("%s %s pronto (storage: %s)", marca().nome, __version__, settings.storage_dir)
     threading.Thread(target=_warm_up, name="prodata-warmup", daemon=True).start()
     return app
 
@@ -243,4 +248,76 @@ def index_html() -> str:
     html = (WEB_DIR / "index.html").read_text(encoding="utf-8")
     modules = sorted(p.name for p in (WEB_DIR / "js").glob("*.js") if p.name != "main.js")
     links = "\n".join(f'  <link rel="modulepreload" href="/static/js/{m}" />' for m in modules)
-    return html.replace(PRELOAD_MARKER, links)
+    return brand_page(html.replace(PRELOAD_MARKER, links))
+
+
+# ------------------------------------------------------------------ marca (spec 036)
+
+BRAND_FILES = {
+    "logo-claro.svg": "image/svg+xml",
+    "logo-escuro.svg": "image/svg+xml",
+    "icone.png": "image/png",
+    "icone-escuro.png": "image/png",
+}
+FONT_FILES = {"Open Sans": "open-sans-latin-wght-normal.woff2", "Inter": "inter-latin-wght-normal.woff2"}
+_FONT_NAME = re.compile(r"^[A-Za-z0-9._-]+\.woff2$")
+
+
+def brand_page(html: str) -> str:
+    """Troca as marcações do index.html pelos dados da marca ativa (texto sempre escapado)."""
+    b = marca()
+    attrs = " ".join(
+        f'data-marca-{k.replace("_", "-")}="{escape(v, quote=True)}"' for k, v in b.public().items()
+    )
+    font = FONT_FILES.get(b.fonte_texto)
+    preload = (
+        f'<link rel="preload" href="/static/fonts/{font}" as="font" type="font/woff2" crossorigin />'
+        if font
+        else ""
+    )
+    return (
+        html.replace("{{marca.atributos}}", attrs)
+        .replace("{{marca.titulo}}", escape(b.title))
+        .replace("{{marca.nome}}", escape(b.nome, quote=True))
+        .replace("{{marca.apoio}}", escape(b.tagline))
+        .replace("{{marca.preload}}", preload)
+    )
+
+
+def _logo_fallback(name: str) -> str:
+    """Logo que falta: o nome do produto escrito, em vez de imagem quebrada (RF-3603)."""
+    color = "#ffffff" if "escuro" in name else "#1b1b19"
+    text = escape(marca().nome)
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 60">'
+        f'<text x="0" y="42" font-family="Segoe UI, sans-serif" font-size="34" font-weight="700" fill="{color}">{text}</text></svg>'
+    )
+
+
+def install_brand_routes(app: FastAPI) -> None:
+    @app.get("/marca/cores.css", include_in_schema=False)
+    def brand_colors() -> Response:
+        return Response(brand_css(marca()), media_type="text/css", headers={"Cache-Control": "no-cache"})
+
+    @app.get("/marca/fontes/{name}", include_in_schema=False)
+    def brand_font(name: str) -> Response:
+        path = marca().dir / "fontes" / name
+        if not _FONT_NAME.match(name) or not path.is_file():
+            return Response(status_code=404)
+        return FileResponse(path, media_type="font/woff2")
+
+    @app.get("/api/marca")
+    def brand_info() -> dict[str, str]:
+        return {**marca().public(), "versao": __version__}
+
+    @app.get("/marca/{name}", include_in_schema=False)
+    def brand_file(name: str) -> Response:
+        media = BRAND_FILES.get(name)
+        if media is None:
+            return Response(status_code=404)
+        path = marca().dir / name
+        if path.is_file():
+            return FileResponse(path, media_type=media, headers={"Cache-Control": "no-cache"})
+        if media == "image/svg+xml":
+            return Response(_logo_fallback(name), media_type=media)
+        return Response(status_code=404)

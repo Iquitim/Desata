@@ -10,6 +10,7 @@ import { FORMAT_ICONS, icon } from './icons.js';
 import { emit, mutate, on, sourceLabel, store } from './store.js';
 import { chooseDataFile } from './desktop.js';
 import { confirmDialog, openDialog, toast, toastError } from './ui.js';
+import { brand } from './brand.js';
 
 const FORMAT_LABELS = {
   csv: 'CSV', excel: 'Excel', parquet: 'Parquet', json: 'JSON', ndjson: 'JSON Lines', arrow: 'Arrow',
@@ -88,7 +89,7 @@ export async function linkFile() {
       info = await api.linkDataset(path, `${base}_vinculado${path.match(/\.[^.\\/]+$/)?.[0] || ''}`);
     }
     await refreshDatasets();
-    toast(`${info.name} vinculado`, { kind: 'success', detail: 'O PRO.DATA lê sempre a versão atual do arquivo, sem cópia.' });
+    toast(`${info.name} vinculado`, { kind: 'success', detail: `O ${brand.nome} lê sempre a versão atual do arquivo, sem cópia.` });
   } catch (err) {
     toastError(err, 'Não foi possível vincular o arquivo');
   }

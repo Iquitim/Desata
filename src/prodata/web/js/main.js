@@ -39,6 +39,7 @@ import {
   canRedo, canUndo, emit, inspect, markSaved, mutate, on, redo, select, selectedIds, selectMany, setExecution, store, undo,
 } from './store.js';
 import { confirmDialog, openDialog, toast, toastError } from './ui.js';
+import { brand } from './brand.js';
 
 const LAST_WORKFLOW = 'prodata.lastWorkflow'; // versões anteriores (antes das abas)
 const RECENT_FILES = 'prodata.recentFiles';
@@ -190,7 +191,7 @@ async function save() {
     markSaved();
     persistTabs();
     emit('tabs');
-    toast('Fluxo salvo', { kind: 'success', detail: `Biblioteca do PRO.DATA · ${saved.id}.prodata.json` });
+    toast('Fluxo salvo', { kind: 'success', detail: `Biblioteca do ${brand.nome} · ${saved.id}.prodata.json` });
     return true;
   } catch (err) {
     toastError(err, 'Não foi possível salvar');
@@ -289,7 +290,7 @@ function buildTabs() {
         const info = tabInfo(i);
         return h('div', {
           class: ['wf-tab', i === activeIndex() && 'active', info.dirty && 'dirty'], role: 'tab',
-          'aria-selected': String(i === activeIndex()), title: info.filePath || `${info.name} · biblioteca do PRO.DATA`,
+          'aria-selected': String(i === activeIndex()), title: info.filePath || `${info.name} · biblioteca do ${brand.nome}`,
           onclick: () => {
             if (store.running && i !== activeIndex()) { toast('Aguarde a execução terminar', { kind: 'info' }); return; }
             switchTab(i);
@@ -358,7 +359,7 @@ async function openDialogList() {
   const dlg = openDialog({
     title: 'Abrir fluxo',
     body: h('div', { class: 'stack-sm' }, h('p', { class: 'muted small' }, 'O fluxo abre numa nova aba.'),
-      h('div', { class: 'panel-subtitle' }, 'Biblioteca do PRO.DATA'), list, recentList),
+      h('div', { class: 'panel-subtitle' }, `Biblioteca do ${brand.nome}`), list, recentList),
     actions: [
       button({ label: 'Abrir arquivo…', icon: 'folder', onClick: () => { dlg.close(); openFile(); } }),
       button({ label: 'Fluxo de demonstração', icon: 'refresh', onClick: async () => {
@@ -420,7 +421,7 @@ function buildTopbar() {
   name.addEventListener('input', () => mutate((wf) => { wf.name = name.value; }, { key: 'wf:name' }));
   on('workflow:loaded', () => { name.value = store.workflow.name; });
   const showFile = () => {
-    name.title = store.filePath ? `Arquivo: ${store.filePath}` : 'Biblioteca do PRO.DATA';
+    name.title = store.filePath ? `Arquivo: ${store.filePath}` : `Biblioteca do ${brand.nome}`;
     $('#fileBadge').hidden = !store.filePath;
     $('#fileBadge').textContent = store.filePath ? basename(store.filePath) : '';
     $('#fileBadge').title = store.filePath || '';

@@ -500,8 +500,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .wf-tab-new { align-self: center; margin-left: 2px; }
 
 /* spec 012: banner do ponto de cache, entrada inspecionada e ações de grupo */
-.banner-cache { background: color-mix(in srgb, var(--brand-gold, #a9852f) 14%, var(--surface)); color: var(--text); }
-.banner-cache .icon { color: var(--brand-gold, #a9852f); }
+.banner-cache { background: color-mix(in srgb, var(--marca-org, #a9852f) 14%, var(--surface)); color: var(--text); }
+.banner-cache .icon { color: var(--marca-org, #a9852f); }
 .results-via { display: inline-flex; align-items: center; gap: 6px; }
 .results-via .icon { color: var(--accent); }
 .multi-actions { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
@@ -549,7 +549,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 }
 .x-table th { font-weight: 600; text-align: left; background: var(--surface-3, var(--surface-2)); }
 .x-table .x-from { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
-.x-table .x-to { background: color-mix(in srgb, var(--brand-gold, #b58a2a) 22%, var(--surface)); }
+.x-table .x-to { background: color-mix(in srgb, var(--marca-org, #b58a2a) 22%, var(--surface)); }
 .x-table .x-match { background: color-mix(in srgb, var(--status-good, #0ca30c) 14%, var(--surface)); }
 .x-table .x-alone { color: var(--text-3); }
 .x-table .x-g0 { background: color-mix(in srgb, #3b82f6 16%, var(--surface)); }
@@ -568,7 +568,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .x-chip > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .x-chip .icon { flex-shrink: 0; color: var(--text-3); }
 .x-chip-from { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
-.x-chip-to { background: color-mix(in srgb, var(--brand-gold, #b58a2a) 22%, var(--surface)); }
+.x-chip-to { background: color-mix(in srgb, var(--marca-org, #b58a2a) 22%, var(--surface)); }
 .x-chip-ok { background: color-mix(in srgb, var(--status-good, #0ca30c) 14%, var(--surface)); }
 .x-chip-ok .icon { color: var(--status-good, #0ca30c); }
 .x-chip-bad { background: var(--err-weak); }
@@ -642,7 +642,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .x-join-part span { grid-area: label; font-weight: 600; }
 .x-join-part strong { grid-area: count; }
 .x-join-part small { grid-area: help; }
-.status-held { color: var(--brand-gold-strong, #866c33); font-weight: 600; }
+.status-held { color: var(--marca-botao); font-weight: 600; }
 
 /* ------------------------------------------------------------------ densidade compacta (spec 016)
    Liga sozinha em telas menores (largura < 1440 ou altura < 800) ou pelo menu Painéis. */

@@ -1,8 +1,23 @@
-# PyInstaller: aplicativo de desktop em pasta única (spec 008). Uso: uv run python packaging/build.py
+# PyInstaller: aplicativo de desktop em pasta única (spec 008). Uso: uv run python packaging/build.py [--marca <id>]
 # ruff: noqa
+import os
+from pathlib import Path
+
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
 
+from prodata.brand import marca
+
 HERE = SPECPATH  # noqa: F821 (injetado pelo PyInstaller)
+BRAND = marca()  # escolhida pelo build.py em PRODATA_MARCA (spec 036)
+# A marca do pacote fica gravada nele: o programa instalado tem uma marca só.
+ACTIVE = Path(workpath) / "_ativa.txt"  # noqa: F821
+ACTIVE.parent.mkdir(parents=True, exist_ok=True)
+ACTIVE.write_text(BRAND.id, encoding="utf-8")
+
+
+def _other_brand(dest: str) -> bool:
+    parts = Path(dest).parts
+    return "marcas" in parts and parts[parts.index("marcas") + 1:][:1] not in ((BRAND.id,), ())
 
 hiddenimports = (
     collect_submodules("prodata")  # ferramentas são registradas por import
@@ -16,7 +31,8 @@ hiddenimports = (
 )
 
 datas = (
-    collect_data_files("prodata")  # interface web (HTML/CSS/JS/fontes)
+    [d for d in collect_data_files("prodata") if not _other_brand(d[1]) and not d[0].endswith("LEIA-ME.md")]  # interface web e só a marca escolhida
+    + [(str(ACTIVE), "prodata/marcas")]
     + collect_data_files("webview")
     + collect_data_files("sklearn")
     # Bibliotecas que leem a própria versão ou usam entry points (keyring acha o cofre do Windows assim).
@@ -44,7 +60,7 @@ splash = Splash(  # noqa: F821
     datas=a.datas,
     text_pos=(203, 262),
     text_size=10,
-    text_color="#C4D2E0",
+    text_color=str(BRAND.light().barra_suave).upper(),
     text_default="Abrindo…",
     always_on_top=False,
 )
@@ -56,7 +72,7 @@ exe = EXE(  # noqa: F821
     window_scripts,
     [],
     exclude_binaries=True,
-    name="PRO.DATA",
+    name=BRAND.nome_curto,
     console=False,  # sem janela de terminal
     icon=f"{HERE}/prodata.ico",
     version=f"{HERE}/version_info.txt",
@@ -73,5 +89,5 @@ cli_exe = EXE(  # noqa: F821
     version=f"{HERE}/version_info.txt",
 )
 coll = COLLECT(  # noqa: F821
-    exe, cli_exe, a.binaries, a.datas, splash.binaries, name="PRO.DATA"
+    exe, cli_exe, a.binaries, a.datas, splash.binaries, name=BRAND.nome_curto
 )

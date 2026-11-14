@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from prodata.brand import marca
+
 log = logging.getLogger(__name__)
 
 POLICY_ENV = "PRODATA_POLICY_FILE"
@@ -33,7 +35,7 @@ def policy_path() -> Path:
     # A variável só vale fora do executável: no programa instalado, o caminho é o protegido.
     if not getattr(sys, "frozen", False) and os.environ.get(POLICY_ENV):
         return Path(os.environ[POLICY_ENV])
-    return Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "PRO.DATA" / "politica.json"
+    return Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / marca().data_folder / "politica.json"
 
 
 @dataclass

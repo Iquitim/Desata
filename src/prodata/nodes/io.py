@@ -10,6 +10,7 @@ from typing import Any, Literal
 import polars as pl
 from pydantic import BaseModel, Field
 
+from prodata.brand import marca
 from prodata.connectors import jira_read, sql
 from prodata.connectors.api import read_api
 from prodata.connectors.api_loop import run_loop
@@ -409,7 +410,7 @@ class OutputDataConfig(ToolConfig):
     folder: str = Field(
         "",
         title="Pasta de destino",
-        description="Vazio = pasta padrão de exportações do PRO.DATA.",
+        description=f"Vazio = pasta padrão de exportações do {marca().nome}.",
         json_schema_extra=ui(widget="folder"),
     )
     format: ExportFormat = Field(
