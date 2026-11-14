@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Leitor de PDF</title>
+  <link rel="stylesheet" href="/static/css/fonts.css" />
+  <link rel="stylesheet" href="/static/css/tokens.css" />
+  <link rel="stylesheet" href="/marca/cores.css" />
+  <link rel="stylesheet" href="/prototipo.css" />
+</head>
+<body>
+  <div class="px-app">
+    <aside class="px-docs" aria-label="Documentos">
+      <header class="px-docs-head">
+        <h2>Documentos</h2>
+        <p class="px-impact" id="impacto" aria-live="polite">Marque um valor no PDF para começar.</p>
+      </header>
+      <ul class="px-doc-list" id="docs"></ul>
+    </aside>
+
+    <main class="px-viewer-wrap">
+      <div class="px-toolbar" role="toolbar" aria-label="Página">
+        <div class="px-title" id="doc-title"></div>
+        <div class="px-tool-group">
+          <button class="px-btn ghost" id="zoom-out" aria-label="Diminuir zoom" title="Diminuir zoom (−)">−</button>
+          <button class="px-btn ghost px-zoom" id="zoom-reset" title="Ajustar à largura">100%</button>
+          <button class="px-btn ghost" id="zoom-in" aria-label="Aumentar zoom" title="Aumentar zoom (+)">+</button>
+        </div>
+        <div class="px-hint" id="hint">Clique ou arraste sobre o texto · setas e Shift para marcar pelo teclado · Enter cria o campo</div>
+      </div>
+      <div class="px-viewer" id="viewer" tabindex="0" role="application"
+           aria-label="Páginas do PDF. Use as setas para andar pelas palavras, Shift para marcar, Enter para criar campo, T para criar tabela, Esc para limpar."
+           aria-describedby="hint">
+        <div class="px-pages" id="pages"></div>
+      </div>
+      <div class="px-sr" id="anuncio" aria-live="polite"></div>
+    </main>
+
+    <aside class="px-data" aria-label="Dados extraídos">
+      <header class="px-data-head">
+        <h2>Dados deste documento</h2>
+        <span class="px-doc-state" id="doc-state"></span>
+      </header>
+      <div class="px-data-body" id="data"></div>
+    </aside>
+  </div>
+  <script type="module" src="/prototipo.js"></script>
+</body>
+</html>
