@@ -15,9 +15,13 @@ localmente.
 - **Manual dentro do programa** (`?` ou `F1`): o guia ao lado do trabalho, com busca, imagens no tema da tela,
   "Mostrar onde fica" e exemplos para experimentar. **Ctrl+K** acha ferramenta, ação, caixa, fonte ou capítulo.
 - **Modo foco** (`F11`), painéis recolhidos em faixa e editor de fórmula em janela larga (**Abrir grande**).
-- **Vista Dados**: a primeira tela reúne arquivos, consultas, APIs, conexões e constantes,
-  com situação, prévia, qualidade das colunas e o **mapa de onde cada fonte é usada** nos
+- **Vista Dados**: a primeira tela reúne arquivos, pastas de arquivos, consultas, APIs, conexões e
+  constantes, com situação, prévia, qualidade das colunas e o **mapa de onde cada fonte é usada** nos
   fluxos da biblioteca. Antes de excluir uma fonte em uso, a tela lista o que deixa de funcionar.
+- **Organização das fontes**: pastas por assunto (arrastar, Ctrl+clique), nome de exibição sem quebrar
+  os fluxos, descrição e responsável, fixadas no topo e filtros "Com problema" e "Sem uso".
+- **Pasta de arquivos**: todos os arquivos de um padrão (`vendas_*.xlsx`) numa tabela só, que inclui
+  sozinha os arquivos novos, ou cada arquivo como uma fonte separada. A pasta é lida onde está.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -26,7 +30,8 @@ localmente.
   P (passou) e F (falhou, com `regra` e `motivo`), e selo no canvas com as falhas.
 - **Abertura protegida**: um fluxo que veio de fora não executa nada até a pessoa conferir o
   que ele lê, calcula e grava e confiar.
-- **Bancos de dados**: conexões com PostgreSQL e SQL Server (somente leitura).
+- **Bancos de dados**: conexões com PostgreSQL, SQL Server e, por ODBC, Oracle, MySQL e ERPs
+  (somente leitura).
   Na vista Dados, **consultas de banco** (uma tabela ou SQL livre, com prévia)
   ficam ao lado dos arquivos, e o mesmo **Input Data** lê qualquer uma dessas
   fontes. A senha fica no Gerenciador de Credenciais do Windows, nunca em
@@ -51,7 +56,15 @@ localmente.
   Text To Columns, Record ID, Running Total, Multi-Row Formula e Data Quality), combinação e transformação (Join
   com saídas L/J/R, Cross Tab, Transpose, Append Fields, Summarize, Union, SQL via
   DuckDB, Fuzzy Match), conferência e reúso (Reconcile, Compare Runs, Subflow), BI (Chart, KPI Card, Venn e Table)
-  e Machine Learning (scikit-learn, com biblioteca de modelos).
+  e Machine Learning (scikit-learn). Entradas sem fonte cadastrada: Text Input e Generate Rows.
+- **Conferência**: Data Quality, Reconcile (linhas, somas e distintos entre duas tabelas) e
+  Compare Runs (o que mudou desde a execução anterior) podem interromper o fluxo em vez de
+  gravar um número errado; o Join avisa quando a chave repetida multiplica linhas.
+- **Modelos de ML guardados**: o Model Trainer guarda cada versão do modelo em disco, e a
+  biblioteca de modelos leva um modelo a qualquer fluxo (Model Input). O arquivo `.modelo`
+  exporta e importa entre computadores sem pickle: nada dele é executado ao abrir.
+- **Execução sem abrir o programa**: `prodata-cli.exe run <fluxo>` executa um fluxo salvo e
+  termina com código 0 ou 1, para o Agendador do Windows; o programa mostra o comando pronto.
 - **Ponto de cache** (como o "Cache and Run" do Alteryx): congela o resultado de
   uma caixa — inclusive em disco — e dispensa tudo o que vem antes dela até alguma
   caixa anterior mudar. Ideal para consultas a banco e arquivos grandes.
@@ -93,13 +106,14 @@ localmente.
   expressões regulares) e botões de operadores. Diferente é `!=` (`<>` também
   vale). A Formula cria colunas novas ou altera colunas existentes, e calcula
   entre colunas da mesma linha com `Average`, `Sum`, `Median`, `Mode`, `StdDev`, `Max` e `Min`.
-- **Esquemas visuais** no Configurar do Cross Tab, do Transpose, do Join, do
-  Summarize e do API Loop: o antes e o depois com uma amostra dos seus dados.
+- **Esquemas visuais** ("Como funciona") no Configurar das ferramentas: o antes e o depois
+  com uma amostra dos seus dados, depois de executar.
 - **Aba SQL**: o fluxo escrito em SQL do DuckDB, com um código por saída (só o
   que existe entre as entradas e ela) ou um código unificado de várias saídas,
   sem repetir etapas. Cada etapa é rodada e comparada com o resultado do fluxo:
   o estado da saída diz se o código deu o mesmo resultado, e caixas sem tradução
-  ficam em vermelho. Copie ou baixe `.sql` ou `.zip` para o time de dados.
+  ficam em vermelho. Copie ou baixe `.sql` ou `.zip` para o time de dados. O código também
+  sai em Spark SQL e T-SQL (Microsoft Fabric), marcado como não conferido.
 - **Join como no Alteryx**: escolha se o J mantém as chaves dos dois lados, só
   da esquerda ou só da direita, e selecione, renomeie, converta e reordene as
   colunas do J sem precisar de um Select depois.
@@ -108,11 +122,11 @@ localmente.
 - **Excel por padrão** no Output Data: ligue várias tabelas na mesma caixa e cada
   uma vira uma planilha do arquivo, ou junte planilhas de caixas diferentes. Se o arquivo de saída já existe, o
   Desata pergunta ao executar: substituir, criar um novo (data e hora no nome)
-  ou adicionar a planilha.
+  ou adicionar a planilha. Também grava num **modelo de Excel** já formatado, numa cópia.
 - **Fontes que se atualizam**: *Vincular arquivo* lê a planilha original (pasta
-  da rede, OneDrive) sem copiar; mudanças no arquivo são percebidas a cada
-  execução e também invalidam o ponto de cache, que pode ainda renovar todo dia
-  ou a cada hora (para bancos de dados).
+  da rede, OneDrive) sem copiar, e a pasta de arquivos percebe arquivo novo, removido ou
+  alterado; as mudanças são percebidas a cada execução e também invalidam o ponto de
+  cache, que pode ainda renovar todo dia ou a cada hora (para bancos de dados).
 - **Dashboard que responde ao clique**: faixa de filtros com valores à mostra e controle
   deslizante; clicar numa barra ou fatia filtra a página, também no HTML.
 - **Multi-Row com receitas**: preencher para baixo, diferença, variação %, valor anterior,
@@ -129,6 +143,8 @@ localmente.
   gráficos podem ser arrastados para esquerda, direita ou embaixo, ou ocultados.
 - **Aplicativo de desktop** para Windows: instalador `.exe` ou `.zip` portátil,
   sem exigir Python na máquina do usuário.
+- **Marca configurável**: nome, cores, fontes e logo vêm de um pacote de marca (veja o fim deste
+  arquivo).
 
 ## Início rápido
 
@@ -141,6 +157,9 @@ uv run prodata
 
 Abra http://127.0.0.1:8765. Na primeira execução são gerados datasets de
 exemplo e o fluxo de demonstração *Pipeline 360° de clientes*.
+
+Para executar um fluxo salvo sem abrir a interface: `uv run prodata run "Pipeline 360° de clientes"`
+(`uv run prodata list` lista a biblioteca).
 
 | Atalho | Ação |
 |--------|------|
@@ -218,8 +237,14 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [026](specs/026-seguranca-e-rotulos/spec.md) | Ordenação, Summarize por tipo, rótulos, segurança de API e HTML; Multi-Row com receitas e clique no gráfico |
 | [027](specs/027-qualidade-do-codigo/spec.md) | Código dividido, limites verificados por teste e fórmulas sem acesso externo |
 | [028](specs/028-dados-e-confianca/spec.md) | Vista Dados com mapa de uso, abertura protegida, Data Quality e constantes |
-| [030](specs/030-jira-e-replay/spec.md) | Conector do Jira (só leitura), Estado por período, linha do tempo, corrida de barras, bolhas, Sankey, destaques, história, GIF por gráfico e lições guiadas. |
 | [029](specs/029-experiencia-e-idioma/spec.md) | Espaço para o fluxo, um nome para cada coisa, letra e contraste, busca Ctrl+K, `[#hoje]` e Manual dentro do programa |
+| [030](specs/030-jira-e-replay/spec.md) | Conector do Jira (só leitura), Estado por período, linha do tempo, corrida de barras, bolhas, Sankey, destaques, história, GIF por gráfico e lições guiadas |
+| [031](specs/031-ajustes-pos-0-7/spec.md) | Ajustes depois da 0.7 |
+| [032](specs/032-polimento-dash-e-design/spec.md) | Polimento do dashboard, do designer e das fórmulas |
+| [033](specs/033-fechamento-sem-clique/spec.md) | Execução sem abrir o programa, pasta inteira, conferência (Reconcile, Compare Runs), Fuzzy Match, Regex, Mask, Subflow, Excel com modelo, ODBC, SQL para o Fabric e biblioteca de modelos |
+| [034](specs/034-organizar-dados/spec.md) | Vista Dados organizada: pastas, nome de exibição, descrição, filtros, ordem e fixadas |
+| [035](specs/035-pasta-na-aba-dados/spec.md) | Pasta de arquivos como fonte da vista Dados: uma tabela só ou um por arquivo |
+| [036](specs/036-marca-configuravel/spec.md) | Marca 100% configurável e marca Desata |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 
@@ -231,14 +256,17 @@ explica o formato do arquivo e todas as ferramentas. É gerado do código por `d
 ```text
 src/prodata/
 ├── config.py          configurações (variáveis PRODATA_*)
+├── brand.py           marca ativa: leitura, paleta, conferência e CSS (spec 036)
+├── marcas/            um pacote por marca: marca.toml, logos, ícone e fontes
 ├── main.py            create_app(): FastAPI + serviços + arquivos estáticos
+├── cli.py             linha de comando: prodata run / list (Agendador do Windows)
 ├── api/               rotas HTTP finas e tradução de erros
 ├── domain/            modelos Pydantic do workflow e do relatório de execução
 ├── engine/            grafo, executor incremental, cache Arrow, perfil, fórmulas
 ├── nodes/             ferramentas (uma família por módulo) + registro declarativo
-├── ingestion/         detecção e leitura de arquivos, repositório de datasets
-├── connectors/        conexões com bancos (connectorx), senhas no cofre do SO
-├── services/          repositório de workflows (biblioteca e arquivos)
+├── ingestion/         detecção e leitura de arquivos, arquivos vinculados e pastas de arquivos
+├── connectors/        bancos (connectorx e ODBC), APIs, Jira e senhas no cofre do SO
+├── services/          workflows, uso das fontes, constantes, organização e abertura protegida
 ├── samples/           datasets e fluxo de demonstração
 ├── desktop.py         app de desktop (servidor local + janela WebView2)
 └── web/               frontend (ES modules nativos, sem build)
@@ -276,7 +304,6 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 | DELETE | `/api/datasets/{nome}` | Excluir arquivo |
 | GET | `/api/workflows` · `/api/workflows/{id}` | Listar · obter fluxo |
 | PUT · DELETE | `/api/workflows/{id}` | Salvar · excluir fluxo |
-| POST | `/api/workflows/assistant` | Gerar fluxo a partir de uma descrição |
 | POST | `/api/execute` | Executar (opcional `target_node_id`) |
 | GET | `/api/results/{wf}/{nó}/{porta}` | Página de resultados com perfil (`offset`, `limit`, `search`, `sort_col`, `filters` em JSON) |
 | GET | `/api/exports/{arquivo}` | Baixar arquivo gerado pelo Output Data |
@@ -295,13 +322,21 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 | GET | `/api/usage` | Onde cada fonte e cada constante é usada nos fluxos da biblioteca |
 | GET · POST · DELETE | `/api/constants[/{nome}]` | Constantes compartilhadas (`previous` no POST renomeia) |
 | POST | `/api/trust/state` · `/confirm` | Abertura protegida: situação do fluxo e confirmação de confiança |
+| GET · POST · PUT · DELETE | `/api/folders[/{id}]` · `/preview` · `/link-each` | Pastas de arquivos: cadastro, prévia empilhada e "um por arquivo" |
+| GET · POST · PUT · DELETE | `/api/organization[...]` | Pastas, nomes de exibição, descrições e fixadas da vista Dados |
+| GET · PUT · DELETE | `/api/jira/connections` · `/queries` | Conexões e consultas do Jira (o token entra no PUT, nunca sai) |
+| GET · POST · DELETE | `/api/models[...]` | Biblioteca de modelos: listar, importar e exportar `.modelo`, versões |
+| POST · GET | `/api/sql/generate` · `/verify` · `/download` | Aba SQL: gerar, conferir e baixar o código |
+| GET | `/api/marca` · `/marca/cores.css` · `/marca/{logo}` | Marca ativa: nome, cores e logos |
 
 Fluxos são salvos na biblioteca `storage/workflows/<id>.prodata.json` ou, com
 *Salvar como…*, em qualquer pasta (JSON legível, versionável em Git). O Input
-Data aponta para um arquivo da vista Dados pelo nome, para uma consulta como
-`sql:<id>` ou para uma API como `api:<id>`; as consultas ficam em
-`storage/queries.json` e as APIs, sem segredos, em `storage/apis.json`. As constantes compartilhadas ficam em
-`storage/constantes.json` e os fluxos confirmados na abertura protegida, em `storage/confianca.json`.
+Data aponta para um arquivo da vista Dados pelo nome, para uma pasta de arquivos como `folder:<id>`,
+para uma consulta como `sql:<id>`, para uma API como `api:<id>` ou para o Jira como `jira:<id>`. As
+consultas ficam em `storage/queries.json`, as APIs, sem segredos, em `storage/apis.json`, os arquivos
+vinculados e as pastas de arquivos em `storage/datasets_vinculos.json` e `storage/datasets_pastas.json`,
+a organização da vista Dados em `storage/organizacao.json`, as constantes compartilhadas em
+`storage/constantes.json` e os fluxos confirmados na abertura protegida em `storage/confianca.json`.
 
 ## Desempenho
 
@@ -317,20 +352,26 @@ Decisões medidas (detalhes nos comentários do código):
 - Conexões com banco fazem uma checagem TCP de 5 s antes do driver: servidor
   inacessível falha em ~2 s em vez de ~30 s.
 - Execução incremental: reexecutar um fluxo sem mudanças leva ~9 ms.
+- Os resultados de cada caixa ficam na memória até um quarto da RAM (ajustável com
+  `PRODATA_CACHE_MEMORY_MB`); acima disso, os usados há mais tempo ficam só no disco, em
+  Arrow, e voltam quando pedidos.
 
 ## Configuração
 
 Variáveis de ambiente (ou `.env`, ver `.env.example`): `PRODATA_HOST`,
 `PRODATA_PORT`, `PRODATA_STORAGE_DIR`, `PRODATA_MAX_UPLOAD_MB`,
 `PRODATA_CORS_ORIGINS`, `PRODATA_LOG_LEVEL`, `PRODATA_SEED_SAMPLES`,
-`PRODATA_RELOAD`, `PRODATA_SECRETS_BACKEND` (`keyring` ou `memory`).
+`PRODATA_RELOAD`, `PRODATA_SECRETS_BACKEND` (`keyring` ou `memory`), `PRODATA_CACHE_MEMORY_MB`
+(limite de resultados na memória; 0 = um quarto da RAM) e `PRODATA_MARCA` (marca em desenvolvimento).
+Os nomes `PRODATA_*` são identificadores técnicos e valem para qualquer marca.
 
 ## Limitações conhecidas
 
-- Modelos de ML ficam só em memória (não são serializados em disco) e são
-  retreinados após reiniciar o servidor.
 - Aplicação local e de usuário único: não há autenticação.
-- Datasets são carregados inteiros em memória pelo Polars.
+- Cada arquivo de entrada é lido inteiro pelo Polars, e a pasta de arquivos aceita até 500 arquivos.
+  Os resultados intermediários grandes vão para o disco, mas o arquivo lido precisa caber na memória.
+- ODBC, SQL para o Fabric e o Jira Cloud foram conferidos com drivers e serviços de teste: no
+  primeiro uso num sistema real, confira a primeira leitura com um resultado que você conhece.
 
 ## Identidade visual e marcas
 
