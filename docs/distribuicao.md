@@ -4,15 +4,15 @@ Ver [spec 008](../specs/008-app-desktop/spec.md).
 
 ## Para quem usa
 
-- **Instalador** `PRO.DATA-<versão>-setup.exe`: instala só para o usuário atual
-  (sem administrador) em `%LOCALAPPDATA%\Programs\PRO.DATA`, cria atalho no Menu
+- **Instalador** `Desata-<versão>-setup.exe`: instala só para o usuário atual
+  (sem administrador) em `%LOCALAPPDATA%\Programs\Desata`, cria atalho no Menu
   Iniciar (e, se marcado, na área de trabalho) e aparece em
   *Configurações → Aplicativos* para desinstalar.
-- **Portátil** `PRO.DATA-<versão>-portable.zip`: descompacte e abra
-  `PRO.DATA\PRO.DATA.exe`. Nada é instalado.
+- **Portátil** `Desata-<versão>-portable.zip`: descompacte e abra
+  `Desata\Desata.exe`. Nada é instalado.
 
 Nos dois casos os dados do usuário (fluxos, arquivos, conexões, cache, logs)
-ficam em `%LOCALAPPDATA%\PRO.DATA` e **sobrevivem** a atualizações e à
+ficam em `%LOCALAPPDATA%\Desata` e **sobrevivem** a atualizações e à
 desinstalação. Senhas de banco ficam no Gerenciador de Credenciais do Windows.
 
 Requisitos: Windows 10/11 64 bits com o **WebView2 Runtime** (já vem no Windows
@@ -51,7 +51,7 @@ Saídas em `dist/`. Para testar sem empacotar: `uv run prodata-desktop`.
 
 ### Diagnóstico
 
-Log do app: `%LOCALAPPDATA%\PRO.DATA\logs\prodata.log`. Se o app não abrir, ele
+Log do app: `%LOCALAPPDATA%\Desata\logs\prodata.log`. Se o app não abrir, ele
 mostra uma caixa de mensagem com o motivo e o caminho do log.
 
 Ao adicionar uma dependência que leia a própria versão (`importlib.metadata`) ou

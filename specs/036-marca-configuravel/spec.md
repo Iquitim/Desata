@@ -1,6 +1,6 @@
 # Spec 036: marca 100% configurável
 
-Status: Proposta · Criada: 2026-11-14
+Status: Implementada · Criada: 2026-11-14
 
 ## Contexto
 
@@ -110,4 +110,4 @@ Trocar a marca muda **tudo o que uma pessoa vê** e nada do que um fluxo guarda.
 
 1. **Nome da marca pessoal:** Desata (nome curto para arquivos: `Desata`).
 2. **Senhas na mudança de marca:** copiar com a confirmação da pessoa (RF-3623).
-3. **Marca padrão do repositório:** `protege` durante a etapa 1; a troca para `desata` é confirmada pelo dono na etapa 3.
+3. **Marca padrão do repositório:** `protege` durante as etapas 1 e 2; `desata` desde a 0.8.0 (etapa 3, confirmada pelo dono).

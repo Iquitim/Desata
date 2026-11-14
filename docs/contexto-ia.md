@@ -1,8 +1,8 @@
-# PRO.DATA: contexto para assistentes de IA
+# Desata: contexto para assistentes de IA
 
-Versão do programa: 0.7.7. Este arquivo é gerado a partir do código.
+Versão do programa: 0.8.0. Este arquivo é gerado a partir do código.
 
-Você está ajudando alguém que usa o PRO.DATA, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
+Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
 ## Regras que evitam a maioria dos erros
 
@@ -387,7 +387,7 @@ Grava o resultado em Parquet, CSV, Excel, JSON ou Arrow, na pasta padrão ou num
 Entradas: `in` (Entrada), `in2` (Planilha 2, opcional, conforme a configuração), `in3` (Planilha 3, opcional, conforme a configuração), `in4` (Planilha 4, opcional, conforme a configuração), `in5` (Planilha 5, opcional, conforme a configuração), `in6` (Planilha 6, opcional, conforme a configuração), `in7` (Planilha 7, opcional, conforme a configuração), `in8` (Planilha 8, opcional, conforme a configuração). Saídas: `out` (Saída).
 
 - `filename` ("resultado"): Nome do arquivo. A extensão segue o formato
-- `folder` (""): Pasta de destino. Vazio = pasta padrão de exportações do PRO.DATA
+- `folder` (""): Pasta de destino. Vazio = pasta padrão de exportações do Desata
 - `format` ("excel"): Formato. Opções: `parquet`, `csv`, `excel`, `json`, `arrow`
 - `confidentiality` ("interno"): Rótulo de confidencialidade. Opções: `publico`, `interno`, `confidencial`, `restrito`. No Excel, fica nas propriedades do arquivo, na impressão e na cor da aba. Nos outros formatos, Confidencial e Restrito entram no nome do arquivo
 - `sheet_name` ("Dados"): Nome da planilha. Aparece se `format` em excel

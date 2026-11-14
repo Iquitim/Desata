@@ -624,9 +624,9 @@ def test_model_file_with_something_else_inside_is_refused(tmp_path: Path) -> Non
     class Stranger:
         pass
 
-    with pytest.raises(InvalidInputError, match="não é um modelo do PRO"):
+    with pytest.raises(InvalidInputError, match="não é um modelo do"):
         ml_library.from_bytes(dumps({"model": Stranger()}))
-    with pytest.raises(InvalidInputError, match="não é um modelo do PRO"):
+    with pytest.raises(InvalidInputError, match="não é um modelo do"):
         ml_library.from_bytes(dumps({"model": 1, "task_type": "x"}))
 
 

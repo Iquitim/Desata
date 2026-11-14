@@ -17,7 +17,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 MARCAS_DIR = Path(__file__).resolve().parent / "marcas"
-DEFAULT = "protege"  # marca padrão do repositório (spec 036, decisão 3)
+DEFAULT = "desata"  # marca padrão do repositório (spec 036, decisão 3; Desata desde a 0.8.0)
 ACTIVE_FILE = MARCAS_DIR / "_ativa.txt"
 FILES = ("logo-claro.svg", "logo-escuro.svg", "icone.png")
 HEX = re.compile(r"^#[0-9a-fA-F]{6}$")

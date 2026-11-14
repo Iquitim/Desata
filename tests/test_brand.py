@@ -110,17 +110,20 @@ def test_missing_file_is_reported(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
 
 
 def test_page_and_brand_routes(client: TestClient) -> None:
+    active = brand.marca()
     page = client.get("/").text
-    assert (
-        "<title>PRO.DATA · Grupo Protege</title>" in page and 'data-marca-organizacao="Grupo Protege"' in page
-    )
+    assert f"<title>{active.title}</title>" in page and f'data-marca-nome="{active.nome}"' in page
     assert "{{marca." not in page and 'src="/marca/logo-escuro.svg"' in page
     css = client.get("/marca/cores.css")
-    assert css.status_code == 200 and "--marca-barra: #043154;" in css.text
+    assert css.status_code == 200 and f"--marca-barra: {active.light().barra};" in css.text
     assert client.get("/marca/logo-claro.svg").headers["content-type"].startswith("image/svg+xml")
     assert client.get("/marca/marca.toml").status_code == 404
     assert client.get("/marca/fontes/..%2Fmarca.toml").status_code == 404
-    assert client.get("/api/marca").json()["nome"] == "PRO.DATA"
+    assert client.get("/api/marca").json()["nome"] == active.nome
+
+
+def test_desata_is_the_default_brand() -> None:
+    assert brand.DEFAULT == "desata"
 
 
 # ------------------------------------------------------------------ marca neutra, de ponta a ponta

@@ -1,6 +1,6 @@
-# PRO.DATA
+# Desata
 
-*Ferramenta de dados do Grupo Protege.*
+*Desate a complexidade. Conecte possibilidades.*
 
 Plataforma visual de pipelines de dados: monte fluxos arrastando ferramentas
 em um canvas, conecte entradas e saídas, execute e inspecione o resultado de
@@ -107,7 +107,7 @@ localmente.
   contagens, mínimo, máximo e concatenação.
 - **Excel por padrão** no Output Data: ligue várias tabelas na mesma caixa e cada
   uma vira uma planilha do arquivo, ou junte planilhas de caixas diferentes. Se o arquivo de saída já existe, o
-  PRO.DATA pergunta ao executar: substituir, criar um novo (data e hora no nome)
+  Desata pergunta ao executar: substituir, criar um novo (data e hora no nome)
   ou adicionar a planilha.
 - **Fontes que se atualizam**: *Vincular arquivo* lê a planilha original (pasta
   da rede, OneDrive) sem copiar; mudanças no arquivo são percebidas a cada
@@ -121,7 +121,7 @@ localmente.
   internet, e a interface e o HTML exportado têm política de conteúdo.
 - **Segurança**: rótulos de confidencialidade na exportação e no dashboard, com dica do que
   cada um faz, HTML com senha, registro local das exportações e destinos de API controlados: públicas livres,
-  rede interna só com a lista da TI (`%ProgramData%\PRO.DATA\politica.json`).
+  rede interna só com a lista da TI (`%ProgramData%\Desata\politica.json`).
 - **Conectores e animações**: os fios levam a cor de uma família de ferramentas à
   outra, com seta na chegada. Ao executar, o dado corre pelo fio até a caixa da vez;
   com o programa parado, nada se move, e as animações respeitam a opção do Windows.
@@ -155,7 +155,7 @@ exemplo e o fluxo de demonstração *Pipeline 360° de clientes*.
 
 ## Aplicativo de desktop (Windows)
 
-O PRO.DATA também roda como programa instalável, em janela própria e offline:
+O Desata também roda como programa instalável, em janela própria e offline:
 
 ```powershell
 uv sync --extra desktop --group build
@@ -163,7 +163,7 @@ uv run prodata-desktop                 # testar a janela a partir do código
 uv run python packaging/build.py       # gera dist/: instalador .exe, .zip portátil e a pasta do app
 ```
 
-Os dados do usuário ficam em `%LOCALAPPDATA%\PRO.DATA`. Detalhes, requisitos e
+Os dados do usuário ficam em `%LOCALAPPDATA%\Desata`. Detalhes, requisitos e
 diagnóstico em [docs/distribuicao.md](docs/distribuicao.md).
 
 ## Desenvolvimento
@@ -342,7 +342,8 @@ uv run python packaging/build.py --marca neutra   # instalador, portátil e exec
 $env:PRODATA_MARCA = "neutra"; uv run prodata     # em desenvolvimento
 ```
 
-- `protege`: Grupo Protege (marinho `#043154`, dourado `#95793c`, Open Sans e o escudo). É a marca padrão e reproduz a 0.7.7.
+- `desata`: a marca padrão desde a 0.8.0 (Petróleo `#003F46`, Teal `#007E7D`, Verde fluxo `#21C7A4`, Manrope e Inter).
+- `protege`: Grupo Protege, o PRO.DATA (marinho `#043154`, dourado `#95793c`, Open Sans e o escudo). Reproduz a 0.7.7.
 - `neutra`: sem empresa, para testar a troca de ponta a ponta.
 
 Cada marca tem a sua pasta de dados, o seu serviço no cofre do Windows e o seu identificador de instalador, então

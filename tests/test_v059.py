@@ -13,6 +13,7 @@ import polars as pl
 import pytest
 from openpyxl import load_workbook
 
+from prodata.brand import marca
 from prodata.connectors import api as api_module
 from prodata.connectors import api_policy
 from prodata.connectors.api import ApiClient, read_api
@@ -156,7 +157,7 @@ def test_policy_path_ignores_the_variable_in_the_installed_program(
     monkeypatch.setenv(api_policy.POLICY_ENV, str(tmp_path / "meu.json"))
     monkeypatch.setenv("PROGRAMDATA", str(tmp_path / "pd"))
     monkeypatch.setattr("sys.frozen", True, raising=False)
-    assert api_policy.policy_path() == tmp_path / "pd" / "PRO.DATA" / "politica.json"
+    assert api_policy.policy_path() == tmp_path / "pd" / marca().data_folder / "politica.json"
 
 
 @pytest.mark.parametrize("target", ["https://10.0.0.5/admin", "https://127.0.0.1:8765/api/x"])

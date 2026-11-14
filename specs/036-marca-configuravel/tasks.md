@@ -17,8 +17,8 @@
 - [x] T20 Pacote `desata`: símbolo para fundo claro e escuro e ícone a partir das imagens do dono do projeto, paleta da identidade, Manrope (OFL) nos títulos, slogan e gradiente; conferido pelo build (RF-3607..3609)
 - [x] T21 Paleta de gráficos da Desata validada para daltonismo nos dois temas (teal da marca + paleta de referência)
 - [x] T22 Conferência no navegador nos dois temas; capa do guia com o gradiente e a Manrope
-- [ ] T23 Prints, Manual e PDF com a Desata (junto com a etapa 3, quando ela vira a marca padrão)
+- [x] T23 Prints, Manual e PDF com a Desata (junto com a etapa 3, quando ela vira a marca padrão)
 
 ## Etapa 3
 
-- [ ] T30 Marca padrão do repositório e publicação
+- [x] T30 Desata como marca padrão do repositório e publicação da 0.8.0
