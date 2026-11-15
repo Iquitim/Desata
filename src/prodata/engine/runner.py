@@ -568,7 +568,8 @@ class WorkflowRunner:
         rows = sum(a.row_count for a in result.anchors.values() if a.kind == "data")
         match result.status:
             case "executed":
-                text = f"{rows:,} linha(s) em {result.elapsed_ms} ms".replace(",", ".")
+                # o tempo fica na coluna própria do Log, formatado na tela com o separador escolhido (spec 038)
+                text = f"{rows:,} linha(s)".replace(",", ".")
                 warnings = result.extra.get("warnings") or []
                 return f"{text} · atenção: {' '.join(warnings)}" if warnings else text
             case "cached":

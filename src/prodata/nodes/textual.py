@@ -6,7 +6,7 @@ import hashlib
 import hmac
 import re
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import polars as pl
 from pydantic import Field
@@ -16,34 +16,42 @@ from prodata.engine.sql.fragment import Fragment, NoTranslationError, SqlContext
 from prodata.errors import InvalidInputError
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, ToolConfig, tool
+from prodata.nodes.regex_pieces import RegexPiece, names_of, pattern_of
+from prodata.nodes.regex_pieces import catalog as piece_catalog
 
 # ------------------------------------------------------------------ Regex
 
 
 class RegexConfig(ToolConfig):
     column: str = Field("", title="Coluna", json_schema_extra=ui(widget="column"))
-    pattern: str = Field(
-        "",
-        title="Padrão (expressão regular)",
-        description="Parênteses formam grupos. Ex.: (\\d{2})/(\\d{4}) separa mês e ano de 10/2026.",
-        json_schema_extra=ui(placeholder="(\\d{2})/(\\d{4})"),
-    )
     mode: Literal["extract", "replace", "match"] = Field(
         "extract",
         title="O que fazer",
         json_schema_extra=ui(
             labels={
-                "extract": "Extrair os grupos para colunas",
-                "replace": "Substituir o que casar",
-                "match": "Marcar as linhas que casam",
+                "extract": "Pegar um trecho (vira coluna)",
+                "replace": "Trocar um trecho",
+                "match": "Marcar as linhas que têm o trecho",
             }
         ),
+    )
+    # spec 039: o trecho descrito por peças, marcando num exemplo ou escolhendo cartões; a tela grava também o padrão
+    pieces: list[RegexPiece] = Field(
+        default_factory=list,
+        title="O trecho",
+        json_schema_extra={**ui(widget="regex_builder"), "catalog": cast(Any, piece_catalog())},
+    )
+    pattern: str = Field(
+        "",
+        title="Expressão regular",
+        description="Montada pelas peças. Quem já sabe pode escrever direto: parênteses formam as colunas novas.",
+        json_schema_extra=ui(group="Avançado", placeholder="(\\d{2})/(\\d{4})"),
     )
     names: list[str] = Field(
         default_factory=list,
         title="Nomes das colunas novas",
         description="Um por grupo, na ordem. Vazio = grupo_1, grupo_2…",
-        json_schema_extra=ui(show_if={"mode": ["extract"]}),
+        json_schema_extra=ui(group="Avançado", show_if={"mode": ["extract"]}),
     )
     replacement: str = Field(
         "",
@@ -59,6 +67,13 @@ class RegexConfig(ToolConfig):
     )
     ignore_case: bool = Field(False, title="Ignorar maiúsculas e minúsculas")
 
+    def regex(self) -> str:
+        """O padrão escrito vale; sem ele, o que as peças descrevem (fluxo montado sem a tela, por exemplo)."""
+        return self.pattern or pattern_of(self.pieces)
+
+    def new_names(self) -> list[str]:
+        return self.names or (names_of(self.pieces) if not self.pattern else [])
+
 
 def _regex_error(exc: Exception) -> InvalidInputError:
     detail = " ".join(str(exc).split())
@@ -71,9 +86,9 @@ def _regex_error(exc: Exception) -> InvalidInputError:
     name="Regex",
     category="prep",
     icon="search",
-    description="Expressão regular numa coluna de texto: extrai grupos para colunas, substitui ou marca as linhas que casam.",
+    description="Pega, troca ou marca um trecho de texto: mostre o trecho num exemplo e a caixa acha nas outras linhas.",
     config=RegexConfig,
-    annotate=lambda c: c.pattern,
+    annotate=lambda c: c.regex(),
 )
 def regex(ctx: NodeContext, cfg: RegexConfig) -> NodeOutput:
     df = ctx.input()
@@ -81,9 +96,11 @@ def regex(ctx: NodeContext, cfg: RegexConfig) -> NodeOutput:
         raise InvalidInputError(
             f"Coluna '{cfg.column}' não existe na entrada." if cfg.column else "Escolha a coluna."
         )
-    if not cfg.pattern:
-        raise InvalidInputError("Escreva o padrão.")
-    pattern = ("(?i)" if cfg.ignore_case else "") + cfg.pattern
+    if not cfg.regex():
+        raise InvalidInputError(
+            "Marque o trecho num exemplo, escolha uma peça ou escreva a expressão no Avançado."
+        )
+    pattern = ("(?i)" if cfg.ignore_case else "") + cfg.regex()
     text = pl.col(cfg.column).cast(pl.String)
     try:
         if cfg.mode == "match":
@@ -105,7 +122,7 @@ def regex(ctx: NodeContext, cfg: RegexConfig) -> NodeOutput:
     if not groups.width:
         # Sem parênteses, o que casou inteiro vira uma coluna.
         groups = df.select(text.str.extract(pattern, 0).alias("1"))
-    names = [n.strip() for n in cfg.names if n.strip()]
+    names = [n.strip() for n in cfg.new_names() if n.strip()]
     renamed = {
         old: (names[i] if i < len(names) else (old if not old.isdigit() else f"grupo_{i + 1}"))
         for i, old in enumerate(groups.columns)
@@ -147,13 +164,13 @@ def regex_sql(ctx: SqlContext, cfg: RegexConfig) -> dict[str, Fragment]:
         raise ValueError("Escolha a coluna.")
     if cfg.column not in source.columns:
         raise ValueError(f"Coluna '{cfg.column}' não existe na entrada.")
-    if not cfg.pattern:
-        raise ValueError("Escreva o padrão.")
+    if not cfg.regex():
+        raise ValueError("Marque o trecho num exemplo, escolha uma peça ou escreva a expressão no Avançado.")
     try:
-        compiled = re.compile(cfg.pattern)
+        compiled = re.compile(cfg.regex())
     except re.error as exc:
         raise NoTranslationError(f"O padrão usa recursos que o SQL não confere: {exc}") from None
-    pattern = lit(("(?i)" if cfg.ignore_case else "") + cfg.pattern)
+    pattern = lit(("(?i)" if cfg.ignore_case else "") + cfg.regex())
     text = text_cast(q(cfg.column), source.kinds.get(cfg.column, ""))
     block = q(source.block)
     if cfg.mode == "match":
@@ -173,7 +190,7 @@ def regex_sql(ctx: SqlContext, cfg: RegexConfig) -> dict[str, Fragment]:
     groups = compiled.groups
     by_index = {i: name for name, i in compiled.groupindex.items()}
     raw = [by_index.get(i, str(i)) for i in range(1, groups + 1)] or ["1"]
-    names = [n.strip() for n in cfg.names if n.strip()]
+    names = [n.strip() for n in cfg.new_names() if n.strip()]
     final = [
         names[i] if i < len(names) else (old if not old.isdigit() else f"grupo_{i + 1}")
         for i, old in enumerate(raw)

@@ -1,0 +1,56 @@
+/* Regex sem escrever expressão regular (spec 039). Cores das colunas novas: as séries dos gráficos. */
+
+.rx { display: flex; flex-direction: column; gap: 12px; }
+.rx-step { display: flex; flex-direction: column; gap: 6px; }
+.rx-c0 { --rx: var(--series-1); }
+.rx-c1 { --rx: var(--series-2); }
+.rx-c2 { --rx: var(--series-3); }
+.rx-c3 { --rx: var(--series-4); }
+.rx-c4 { --rx: var(--series-5); }
+.rx-c5 { --rx: var(--series-7); }
+
+/* exemplos selecionáveis */
+.rx-samples { display: flex; flex-direction: column; gap: 3px; }
+.rx-sample {
+  display: flex; align-items: baseline; gap: 6px; padding: 5px 8px; font-family: var(--mono); font-size: var(--fs-sm);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 7px; cursor: text; user-select: text;
+}
+.rx-sample:hover { border-color: var(--cat-prep); }
+.rx-sample.miss { color: var(--text-3); }
+.rx-mark { flex: none; width: 12px; color: var(--ok); }
+.rx-sample.miss .rx-mark { color: var(--text-3); }
+.rx-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.rx-hit { color: inherit; background: color-mix(in srgb, var(--cat-prep) 16%, transparent); border-radius: 3px; padding: 0 1px; }
+.rx-g { color: inherit; background: color-mix(in srgb, var(--rx) 30%, transparent); border-bottom: 2px solid var(--rx); border-radius: 2px; }
+.rx-tally { margin: 0; }
+
+/* peças */
+.rx-say { margin: 0; font-size: var(--fs-sm); }
+.rx-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.rx-chip {
+  display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 8px; font: inherit; font-size: var(--fs-xs);
+  color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; cursor: pointer;
+}
+.rx-chip[class*="rx-c"] { background: color-mix(in srgb, var(--rx) 16%, var(--surface)); border-color: var(--rx); }
+.rx-chip.open { outline: 2px solid var(--focus); outline-offset: 1px; }
+.rx-chip small { color: var(--text-2); font-weight: 600; }
+.rx-palette { display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--surface-2); border-radius: 8px; }
+.rx-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
+.rx-card {
+  display: flex; flex-direction: column; gap: 2px; padding: 7px 9px; font: inherit; text-align: left; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+}
+.rx-card:hover { border-color: var(--cat-prep); }
+.rx-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.rx-card-head { display: flex; align-items: center; gap: 5px; }
+.rx-card small { color: var(--text-2); font-size: var(--fs-2xs); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rx-editor { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.rx-editor-row { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); }
+.rx-editor-row .input { flex: 1; min-width: 0; }
+.rx-whole { display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-xs); font-weight: 600; }
+.rx-insert { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.rx-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 7px 9px; font-size: var(--fs-xs);
+  color: var(--warn); background: var(--warn-weak); border-radius: 8px;
+}
+.rx-note { display: flex; gap: 4px; align-items: flex-start; }

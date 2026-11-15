@@ -36,7 +36,8 @@ wf.nodes.push(
   T('x_erp', 'ERP', Y + 560, ['nome', 'codigo'], [['PADARIA PAO QUENTE', 1], ['Mercado Bom Preco', 2], ['Transportadora Rapdio Sul', 3], ['Farmácia Central', 4]]),
   { id: 'x_fuzzy', type: 'transform.fuzzy_match', label: 'Mesma empresa?', x: 360, y: Y + 510, config: { left: 'razao', right: 'nome' } },
   T('x_txt', 'Notas', Y + 690, ['ref', 'cliente', 'cidade', 'cpf'], [['NF 10/2026', ' ana souza ', ' recife', '123.456.789-09'], ['NF 03/2025', 'BRUNO LIMA', 'Natal ', '987.654.321-00'], ['sem data', 'carla dias', 'olinda', '111']]),
-  { id: 'x_regex', type: 'prep.regex', label: 'Mês e ano', x: 360, y: Y + 660, config: { column: 'ref', pattern: '(\\\\d{2})/(\\\\d{4})', names: ['mes', 'ano'] } },
+  { id: 'x_regex', type: 'prep.regex', label: 'Mês e ano', x: 360, y: Y + 660, config: { column: 'ref', names: ['mes', 'ano'], pieces: [
+    { kind: 'digits', count: 2, take: true, name: 'mes' }, { kind: 'literal', text: '/' }, { kind: 'digits', count: 4, take: true, name: 'ano' }] } },
   { id: 'x_multi', type: 'prep.multi_field', label: 'Padroniza textos', x: 360, y: Y + 760, config: { columns: ['cliente', 'cidade'], expression: 'Trim(Uppercase([_Atual_]))' } },
   { id: 'x_mask', type: 'prep.mask', label: 'LGPD', x: 660, y: Y + 710, config: { columns: ['cpf'], method: 'cpf' } },
   { id: 'x_model', type: 'ml.model_input', label: 'Modelo de churn', x: 60, y: Y + 900, config: { model: 'churn_clientes' } },
@@ -111,6 +112,13 @@ def part_new_tools(pg: Any, tmp: Path, shot: Callable[..., None]) -> None:
     for node, name in SHOTS.items():
         _run_to(pg, node)
         _explainer(pg, shot, name)
+        if node == "x_regex":  # spec 039: o trecho marcado no exemplo, peça por peça
+            builder = pg.locator("#leftPanel .rx")
+            builder.scroll_into_view_if_needed()
+            pg.wait_for_selector("#leftPanel .rx-sample.hit", timeout=20000)
+            pg.locator("#leftPanel .rx-chip").last.click()
+            pg.wait_for_timeout(500)
+            shot(pg.locator("#leftPanel .rx"), "regex-pecas")
 
     # Model Input: o campo com importar e exportar, e a ficha do modelo
     _run_to(pg, "x_model")

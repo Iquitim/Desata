@@ -151,6 +151,7 @@ export const api = {
   savePdfRecipe: (id, recipe) => request('PUT', `/api/pdfs/${enc(id)}/recipe`, recipe),
   suggestPdfField: (id, doc, words) => request('POST', `/api/pdfs/${enc(id)}/suggest/field`, { doc, words }),
   suggestPdfTable: (id, doc, page, area, name) => request('POST', `/api/pdfs/${enc(id)}/suggest/table`, { doc, page, area, name }),
+  adjustPdfTable: (id, body) => request('POST', `/api/pdfs/${enc(id)}/suggest/table_edge`, body),
   evaluatePdf: (id, recipe, { docs = [], limit = 12, signal } = {}) => request('POST', `/api/pdfs/${enc(id)}/evaluate`, { recipe, docs, limit }, signal),
   pdfOutput: (id, output, rows = 100) => request('GET', `/api/pdfs/${enc(id)}/outputs/${enc(output)}?rows=${rows}`),
   pdfCorrections: (id) => request('GET', `/api/pdfs/${enc(id)}/corrections`),

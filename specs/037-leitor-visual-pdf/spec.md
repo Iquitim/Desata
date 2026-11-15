@@ -78,6 +78,7 @@ confiável. Nenhum valor é escolhido em silêncio quando há dúvida.
 | RF-3731 | Linhas quebradas (célula com texto em duas ou mais linhas) são unidas por uma regra visível: "nova linha começa quando a coluna X tem valor". A pessoa escolhe a coluna e vê o resultado na hora; casos duvidosos ficam destacados. |
 | RF-3732 | Cabeçalhos repetidos, rodapés e subtotais são **sugeridos** para exclusão, com confirmação; nada é excluído sozinho. |
 | RF-3733 | A tabela pode continuar nas páginas seguintes: começa pelo cabeçalho e termina num texto que a pessoa marca ("Total geral") ou no fim do documento. |
+| RF-3735 | **A tabela vai até onde a pessoa marcou.** Se há mais linhas de dados logo abaixo da seleção, o corte é dela: a tabela termina **depois de N linhas**. A caixa da tabela tem bordas arrastáveis, com prévia ao vivo: a de baixo encaixa entre as linhas (antes de uma linha de texto vira "termina antes de '…'"; no meio dos dados, "depois de N linhas"), a de cima escolhe a linha do cabeçalho e as laterais limitam a largura. No cartão, **Termina em** oferece num texto, depois de N linhas ou no fim do documento. |
 | RF-3734 | Nenhuma linha é inventada: se a geometria não permite reconstruir a tabela, a área mostra o problema e pede ajuste. |
 
 ### Prévia, impacto e testes
@@ -155,4 +156,5 @@ confiável. Nenhum valor é escolhido em silêncio quando há dúvida.
 | CA-14 | Fonte arrastada para o canvas cria Input Data; as saídas campos, itens, falhas e origem aparecem na lista. | RF-3770, RF-3771 |
 | CA-15 | Duplicar a fonte para outra pasta aplica a mesma extração; os resultados identificam a revisão. | RF-3704, RF-3783 |
 | CA-17 | Tirar um PDF da pasta: ele sai das saídas e da contagem, o arquivo continua no disco e Trazer de volta o recoloca. Adicionar dois PDFs a uma fonte de um PDF: três documentos, a pasta original intacta. | RF-3706 |
+| CA-18 | Marcar o cabeçalho e 4 linhas de uma tabela de 32 dá 4 linhas; arrastar a borda de baixo até o fim volta às 32; soltar antes de "Total geral" vira o texto de fim. | RF-3735 |
 | CA-16 | Correção só neste documento aparece marcada e deixa de valer quando o documento muda. | RF-3762 |

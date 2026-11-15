@@ -25,13 +25,17 @@ localmente.
 - **Leitor de PDF**: marque no próprio documento o valor ou a tabela e veja a coluna nascer na hora,
   com o valor convertido e o original ao lado. O Desata aprende onde achar o dado ("à direita de
   'Total líquido'"), testa nos outros PDFs da pasta e mostra o impacto de cada mudança com desfazer.
-  Tabelas em várias páginas, linhas quebradas, campos ambíguos (nenhum valor escolhido em silêncio),
+  Tabelas que vão até onde você marcou, com bordas e guias arrastáveis, em várias páginas, linhas quebradas,
+  campos ambíguos (nenhum valor escolhido em silêncio),
   correção só num documento e "de onde veio" em um clique. Extrações salvas: reaproveitar, copiar, exportar,
   importar e excluir. Documentos um a um: tirar um PDF da fonte sem apagar o arquivo, trazer de volta e
   adicionar outros. O PDF é lido num processo separado, com tempo e memória limitados, sem executar
   conteúdo ativo. O exemplo traz três relatórios reais da Receita Federal com a extração pronta.
 - **Vírgula ou ponto**: em Exibir → Números, os números aparecem como 1.234,56 ou 1,234.56 em toda
   a tela, no dashboard e no HTML exportado. O Output Data em CSV escolhe o próprio separador decimal.
+- **Regex sem expressão regular**: marque o trecho num valor de verdade ("10/2026" em "NF 10/2026") e a caixa
+  monta as peças ("2 dígitos, uma barra, 4 dígitos"), mostra onde achou em cada linha e deixa cada peça virar coluna.
+  Peças prontas para data, CPF, CNPJ, CEP, e-mail, telefone e valor; a expressão fica no Avançado.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -263,6 +267,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [036](specs/036-marca-configuravel/spec.md) | Marca 100% configurável e marca Desata |
 | [037](specs/037-leitor-visual-pdf/spec.md) | Leitor visual de PDF: marcar no documento, ver o dado nascer e rastrear a origem |
 | [038](specs/038-separador-decimal/spec.md) | Separador decimal escolhido pela pessoa: vírgula ou ponto |
+| [039](specs/039-regex-didatico/spec.md) | Regex sem escrever expressão regular: marcar o trecho no exemplo e ajustar as peças |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 

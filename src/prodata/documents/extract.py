@@ -260,6 +260,9 @@ class TableResult:
     problema: str | None = None
     ignoradas: list[dict[str, Any]] = field(default_factory=list)  # cabeçalho repetido, exclusões, fim
     fim: str = ""  # como a tabela terminou
+    cabecalho: list[dict[str, Any]] = field(
+        default_factory=list
+    )  # onde está o cabeçalho (a borda de cima, RF-3735)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -269,6 +272,7 @@ class TableResult:
             "problema": self.problema,
             "ignoradas": self.ignoradas,
             "fim": self.fim,
+            "cabecalho": self.cabecalho,
         }
 
 
@@ -285,6 +289,7 @@ def _table_lines(spec: TableSpec, lines: Sequence[Line], result: TableResult) ->
     header_page = lines[start].page
     body: list[Line] = []
     extra = spec.linhas_cabecalho - 1  # as outras linhas do cabeçalho, logo abaixo da primeira
+    result.cabecalho = [o for ln in lines[start : start + extra + 1] for o in _origin(ln.words)]
     skip_until = start + extra
     result.fim = "fim do documento"
     for i in range(start + 1, len(lines)):
@@ -345,6 +350,9 @@ def extract_table(spec: TableSpec, lines: Sequence[Line]) -> TableResult:
         if not any(c.words for c in cells):
             continue
         if start_col is None or cells[start_col].words:
+            if spec.max_linhas is not None and len(result.linhas) >= spec.max_linhas:
+                result.fim = f"depois de {spec.max_linhas} linha(s)"  # o corte da pessoa (RF-3735)
+                break
             result.linhas.append(Row(cells))
             continue
         if not result.linhas:
@@ -358,6 +366,13 @@ def extract_table(spec: TableSpec, lines: Sequence[Line]) -> TableResult:
             if row.cells[k].words and kinds[k] != "texto":
                 row.duvida = f"{names[k]} tem valor em mais de uma linha"
             row.cells[k].words += extra.words
+    _convert_rows(result, kinds)
+    if not result.problema and not result.linhas:
+        result.problema = "nenhuma linha entre o cabeçalho e o fim"
+    return result
+
+
+def _convert_rows(result: TableResult, kinds: Sequence[Any]) -> None:
     for row in result.linhas:
         for cell, kind in zip(row.cells, kinds, strict=True):
             if not cell.words or cell.texto.strip() in _EMPTY:  # "-" em relatório é célula vazia, não erro
@@ -367,9 +382,6 @@ def extract_table(spec: TableSpec, lines: Sequence[Line]) -> TableResult:
             except InvalidValueError as exc:
                 cell.erro = str(exc)
                 row.duvida = row.duvida or "valor que não converte"
-    if not result.problema and not result.linhas:
-        result.problema = "nenhuma linha entre o cabeçalho e o fim"
-    return result
 
 
 # ------------------------------------------------------------------ documento

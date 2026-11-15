@@ -4,6 +4,7 @@
 import { api } from './api.js';
 import { fmt, h } from './dom.js';
 import { icon } from './icons.js';
+import { patternOf, sayPiece } from './regex_builder.js';
 import { nodeResult, store } from './store.js';
 
 // Tabela pequena e seta do explainers.js, entregues por ele a cada desenho.
@@ -232,7 +233,11 @@ async function regex(n, cfg) {
   const real = Boolean(rows?.length && cfg.column && cfg.column in rows[0]);
   const values = real ? [...new Set(rows.map((r) => r[cfg.column]).filter((v) => v !== null && v !== undefined).map(String))].slice(0, 5)
     : ['NF 10/2026', 'NF 03/2025', 'sem data'];
-  const pattern = cfg.pattern || '(\\d{2})/(\\d{4})';
+  // spec 039: montado por peças, o esquema lê o padrão em português; escrito à mão, mostra a expressão
+  const cat = store.tools['prep.regex']?.config_fields?.find((f) => f.name === 'pieces')?.catalog;
+  const pieces = cat && Array.isArray(cfg.pieces) ? cfg.pieces : [];
+  const pattern = cfg.pattern || (pieces.length ? patternOf(pieces, cat) : '(\\d{2})/(\\d{4})');
+  const readable = pieces.length && (!cfg.pattern || cfg.pattern === patternOf(pieces, cat)) ? pieces.map((p) => sayPiece(p, cat)).join(', ') : pattern;
   let re = null;
   try { re = new RegExp(pattern, cfg.ignore_case ? 'iu' : 'u'); } catch { re = null; }
   const mode = cfg.mode || 'extract';
@@ -250,9 +255,9 @@ async function regex(n, cfg) {
     return [{ text: v, title: v, link: `r${i}` }, ...out.map((c) => ({ ...c, link: `r${i}` }))];
   }));
   return {
-    body: [chips('O padrão', [chip('search', pattern, { tone: re ? 'from' : 'bad' })]), arrow({ extract: 'cada grupo vira uma coluna', replace: 'troca o que casar', match: 'marca quem casa' }[mode]), table],
+    body: [chips(readable === pattern ? 'O padrão' : 'O trecho', [chip('search', readable, { tone: re ? 'from' : 'bad' })]), arrow({ extract: 'cada grupo vira uma coluna', replace: 'troca o que casar', match: 'marca quem casa' }[mode]), table],
     caption: (re ? '' : 'Este padrão não é uma expressão regular válida. ')
-      + { extract: 'Cada par de parênteses do padrão é um grupo, e cada grupo vira uma coluna nova. Linha que não casa fica vazia.',
+      + { extract: readable === pattern ? 'Cada par de parênteses do padrão é um grupo, e cada grupo vira uma coluna nova. Linha que não casa fica vazia.' : 'Cada peça marcada como coluna vira uma coluna nova (sem nenhuma, o trecho inteiro). Linha sem o trecho fica vazia.',
         replace: 'Tudo o que casar com o padrão é trocado. $1, $2… repetem os grupos no texto novo.',
         match: 'A coluna nova diz, linha a linha, se o texto casa com o padrão.' }[mode]
       + ' O esquema usa o navegador para ilustrar; o resultado de verdade é o do motor.',

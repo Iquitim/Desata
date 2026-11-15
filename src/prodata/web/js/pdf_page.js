@@ -505,6 +505,12 @@ export function createViewer(opts) {
         marks.append(h('div', { class: 'pv-region', dataset: { owner: tb.spec.nome }, style: { ...boxStyle(toScreen(reading, t)), '--c': tb.color } },
           h('span', { class: 'pv-mark-tag right' }, `${tb.spec.nome} · ${tb.rows} linhas`)));
         tb.spec.guias.forEach((_, gi) => marks.append(guideHandle(tb, gi, p, reading, t)));
+        // RF-3735: a borda de cima na página do cabeçalho, a de baixo na última página, as laterais em todas
+        const pages = Object.keys(tb.regions).map(Number);
+        const edges = ['left', 'right'];
+        if (p === Math.min(...pages)) edges.push('top');
+        if (p === Math.max(...pages)) edges.push('bottom');
+        for (const edge of edges) marks.append(edgeHandle(tb, edge, p, reading, t));
       }
       for (const ig of tb.ignored) {
         for (const o of ig.origem.filter((x) => x.p === p)) {
@@ -514,6 +520,70 @@ export function createViewer(opts) {
         }
       }
     }
+  }
+
+  /** Borda da tabela: cima e baixo vão ao motor (cabeçalho e fim); as laterais mudam a faixa da tabela na hora. */
+  function edgeHandle(tb, edge, p, reading, t) {
+    const spec = tb.spec;
+    const side = edge === 'left' || edge === 'right';
+    const LABEL = {
+      top: 'Borda de cima: a primeira linha abaixo dela é o cabeçalho',
+      bottom: 'Borda de baixo: a tabela termina aqui (antes de um texto, ou depois de N linhas)',
+      left: 'Borda da esquerda da tabela', right: 'Borda da direita da tabela',
+    };
+    let cur = { top: reading[1], bottom: reading[3], left: spec.limites[0], right: spec.limites[1] }[edge];
+    const node = h('button', { type: 'button', class: ['pv-edge', `pv-edge-${edge}`], style: { '--c': tb.color },
+      'aria-label': `${LABEL[edge]}, da tabela ${spec.nome}. Setas movem a borda.`, title: `${LABEL[edge]}. Arraste para ajustar.` });
+    const place = () => {
+      const box = side ? [cur, reading[1], cur, reading[3]] : [reading[0], cur, reading[2], cur];
+      const [x0, y0, x1, y1] = toScreen(box, t);
+      const upright = Math.abs(x1 - x0) < Math.abs(y1 - y0);
+      node.classList.toggle('upright', upright);
+      Object.assign(node.style, upright
+        ? { left: `${x0 * 100}%`, top: `${y0 * 100}%`, height: `${(y1 - y0) * 100}%`, width: '' }
+        : { left: `${x0 * 100}%`, top: `${y0 * 100}%`, width: `${(x1 - x0) * 100}%`, height: '' });
+    };
+    place();
+    const clamp = (v) => {
+      if (edge === 'left') return Math.min(Math.max(v, 0), (spec.guias[0] ?? spec.limites[1]) - 0.01);
+      if (edge === 'right') return Math.max(Math.min(v, 1), (spec.guias.at(-1) ?? spec.limites[0]) + 0.01);
+      return Math.min(Math.max(v, 0), 1);
+    };
+    const set = (v, final) => {
+      cur = Math.round(clamp(v) * 10000) / 10000;
+      place();
+      if (side) {
+        spec.limites = edge === 'left' ? [cur, spec.limites[1]] : [spec.limites[0], cur];
+        tb.onMove?.(final);
+      } else if (final) {
+        tb.onEdge?.(edge, p, cur);
+      }
+    };
+    node.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      node.setPointerCapture(e.pointerId);
+      const page = node.closest('.pv-page');
+      const move = (ev) => {
+        const pt = pagePoint(page, ev);
+        const r = toReading([pt.x, pt.y, pt.x, pt.y], t);
+        set(side ? r[0] : r[1], false);
+      };
+      const up = () => { node.removeEventListener('pointermove', move); node.removeEventListener('pointerup', up); set(cur, true); };
+      node.addEventListener('pointermove', move);
+      node.addEventListener('pointerup', up);
+    });
+    let idle = null;
+    node.addEventListener('keydown', (e) => {
+      const keys = side ? { ArrowRight: 1, ArrowLeft: -1 } : { ArrowDown: 1, ArrowUp: -1 };
+      if (!(e.key in keys)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      set(cur + keys[e.key] * (e.shiftKey ? 0.01 : 0.003), false);
+      clearTimeout(idle);
+      idle = setTimeout(() => set(cur, true), 450); // espera parar de teclar para ir ao motor
+    });
+    return node;
   }
 
   function guideHandle(tb, gi, p, reading, t) {

@@ -92,6 +92,9 @@ class TableSpec(_Model):
     coluna_inicio: str | None = None  # "nova linha começa quando esta coluna tem valor"
     excluir: list[str] = Field(default_factory=list)  # linhas que começam com estes textos (subtotal, rodapé)
     fim: list[str] = Field(default_factory=list)  # texto que encerra a tabela ("Total geral")
+    max_linhas: int | None = Field(
+        None, ge=1, le=100_000
+    )  # corte da pessoa: termina depois de N linhas (RF-3735)
     continua: bool = True  # segue nas páginas seguintes
 
     @model_validator(mode="after")

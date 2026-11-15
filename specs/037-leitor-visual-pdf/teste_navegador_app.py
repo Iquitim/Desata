@@ -42,14 +42,15 @@ def shot(page: Page, name: str) -> None:
         page.screenshot(path=OUT / f"{name}.png")
 
 
-def word(page: Page, doc: str, text: str) -> int:
+def word(page: Page, doc: str, text: str, last: bool = False) -> int:
     index: int = page.evaluate(
-        """async ([doc, t]) => {
+        """async ([doc, t, last]) => {
           const id = (await (await fetch('/api/pdfs')).json()).find((p) => p.name.startsWith('Relatórios de exemplo')).id;
           const info = await (await fetch(`/api/pdfs/${id}/docs/words?doc=${encodeURIComponent(doc)}`)).json();
-          return info.words.findIndex((w) => w.t === t && w.p === 0);
+          const hit = (w) => w.t === t && w.p === 0;
+          return last ? info.words.findLastIndex(hit) : info.words.findIndex(hit);
         }""",
-        [doc, text],
+        [doc, text, last],
     )
     return index
 
@@ -92,7 +93,7 @@ def run(page: Page) -> None:
 
     # CA-04/05: tabela por arraste, com a célula de duas linhas unida e a página 2 sem o cabeçalho repetido
     a = page.locator(f'.pv-w[data-i="{word(page, doc, "Filial")}"]').bounding_box()
-    z = page.locator(f'.pv-w[data-i="{word(page, doc, "semanas")}"]').bounding_box()
+    z = page.locator(f'.pv-w[data-i="{word(page, doc, "semanas", last=True)}"]').bounding_box()
     assert a and z
     page.mouse.move(a["x"] - 12, a["y"] - 6)
     page.mouse.down()

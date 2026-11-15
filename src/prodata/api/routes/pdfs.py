@@ -12,7 +12,7 @@ import time
 import unicodedata
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote
 
 from fastapi import APIRouter, Body, File, Form, Query, Response, UploadFile
@@ -24,10 +24,10 @@ from prodata.documents.cache import failure_text
 from prodata.documents.extract import APROVADO, FALHOU, REVISAR
 from prodata.documents.outputs import build_outputs
 from prodata.documents.reader import PdfReadError
-from prodata.documents.recipe import Recipe
+from prodata.documents.recipe import Recipe, TableSpec
 from prodata.documents.sources import MAIN_OUTPUT, Correction, PdfEntry, PdfSource, outputs_of
 from prodata.documents.store import PdfStore
-from prodata.documents.suggest import suggest_field, suggest_table
+from prodata.documents.suggest import adjust_edge, suggest_field, suggest_table
 from prodata.documents.types import TYPE_LABELS
 from prodata.engine.profiling import schema_of
 from prodata.engine.serialize import json_rows
@@ -338,6 +338,29 @@ class TableSuggestion(BaseModel):
     page: int = Field(ge=0)
     area: tuple[float, float, float, float]
     name: str = "tabela"
+
+
+class TableEdge(BaseModel):
+    doc: str
+    page: int = Field(ge=0)
+    edge: Literal["top", "bottom"]
+    pos: float = Field(ge=0, le=1)
+    tabela: TableSpec
+
+
+@router.post("/{source_id}/suggest/table_edge")
+def table_edge_route(source_id: str, req: TableEdge, services: ServicesDep) -> dict[str, Any]:
+    """Borda de cima ou de baixo da tabela arrastada no documento (RF-3735): devolve a tabela ajustada."""
+    store = _store(services)
+    path = store.document_path(store.get(source_id), req.doc)
+    try:
+        info = store.cache.words(path)
+        spec = adjust_edge(info, req.tabela, req.page, req.edge, req.pos)
+    except PdfReadError as exc:
+        raise InvalidInputError(failure_text(exc.code)) from None
+    except ValueError as exc:
+        raise InvalidInputError(str(exc)) from None
+    return {"tabela": spec.model_dump(mode="json")}
 
 
 @router.post("/{source_id}/suggest/table")

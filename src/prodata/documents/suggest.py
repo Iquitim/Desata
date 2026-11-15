@@ -260,8 +260,12 @@ def suggest_table(
         guias=guides,
         limites=(round(x0, 4), round(x1, 4)),
         coluna_inicio=start,
-        fim=_end_hint(lines, inside[-1]),
     )
+    # RF-3735: com mais conteúdo da tabela logo abaixo da seleção, o corte é da pessoa: a tabela para onde ela soltou
+    if _content_below(lines, inside[-1], spec):
+        spec = spec.model_copy(update={"max_linhas": _rows_until(spec, lines, inside[-1])})
+    else:
+        spec = spec.model_copy(update={"fim": _end_hint(lines, inside[-1], spec)})
     return {
         "tabela": spec.model_dump(mode="json"),
         "resultado": extract_table(spec, lines).as_dict(),
@@ -270,6 +274,98 @@ def suggest_table(
             + (f"; nova linha quando “{start}” tem valor" if start else "; cada linha do PDF é uma linha")
         ),
     }
+
+
+def _same_line(a: Line, b: Line) -> bool:
+    return a.page == b.page and abs(a.middle - b.middle) < 1e-6
+
+
+def _within(line: Line, x0: float, x1: float) -> bool:
+    return any(x0 <= (w["b"][0] + w["b"][2]) / 2 <= x1 for w in line.words)
+
+
+def _is_total(line: Line) -> bool:
+    tokens = norm_tokens(line.text)
+    return bool(tokens) and tokens[0] in {"total", "totais", "subtotal"}
+
+
+def _is_content(line: Line, spec: TableSpec) -> bool:
+    """A linha é da tabela: tem números, ou é a continuação de uma célula quebrada (nada na coluna que inicia
+    linha). Um total, uma nota ou um rodapé não é."""
+    if _is_total(line):
+        return False
+    if _has_numbers(line):
+        return True
+    if spec.coluna_inicio is None:
+        return False
+    k = [c.nome for c in spec.colunas].index(spec.coluna_inicio)
+    lo = spec.guias[k - 1] if k > 0 else spec.limites[0]
+    hi = spec.guias[k] if k < len(spec.guias) else spec.limites[1]
+    inside = [w for w in line.words if spec.limites[0] <= (w["b"][0] + w["b"][2]) / 2 <= spec.limites[1]]
+    return bool(inside) and not any(lo <= (w["b"][0] + w["b"][2]) / 2 < hi for w in inside)
+
+
+def _content_below(lines: Sequence[Line], last: Line, spec: TableSpec) -> bool:
+    """Logo abaixo da seleção, na mesma página, vem mais conteúdo da tabela?"""
+    after = False
+    for ln in lines:
+        if _same_line(ln, last):
+            after = True
+            continue
+        if after and _within(ln, *spec.limites):
+            return ln.page == last.page and _is_content(ln, spec)
+    return False
+
+
+def _rows_until(spec: TableSpec, lines: Sequence[Line], last: Line) -> int:
+    """Quantas linhas da tabela começam até ``last`` (as linhas quebradas contam junto com a sua)."""
+    upto = []
+    for ln in lines:
+        upto.append(ln)
+        if _same_line(ln, last):
+            break
+    free = spec.model_copy(update={"fim": [], "max_linhas": None})
+    return max(1, len(extract_table(free, upto).linhas))
+
+
+def adjust_edge(info: dict[str, Any], table: TableSpec, page: int, edge: str, pos: float) -> TableSpec:
+    """Borda da tabela arrastada (RF-3735). ``pos`` é a altura na página, no espaço de leitura.
+
+    - ``bottom``: soltar antes de uma linha de texto termina antes dela; no meio dos dados, depois de N linhas;
+      abaixo da última linha da página, a tabela segue a regra de fim (ou até o fim do documento).
+    - ``top``: a linha logo abaixo da borda vira o cabeçalho, com as colunas de hoje.
+    """
+    lines = group_lines(info["words"], info["pages"])
+    lo, hi = table.limites
+    on_page = [ln for ln in lines if ln.page == page and _within(ln, lo, hi)]
+    if edge == "top":
+        header = next((ln for ln in on_page if ln.middle >= pos), None)
+        if header is None:
+            raise ValueError("solte a borda de cima acima de uma linha")
+        titles: list[list[str]] = [[] for _ in table.colunas]
+        for w in header.words:
+            middle = (w["b"][0] + w["b"][2]) / 2
+            if lo <= middle <= hi:
+                titles[sum(1 for g in table.guias if g < middle)].append(w["t"])
+        phrases = [" ".join(t) for t in titles if t]
+        return table.model_copy(update={"cabecalho": phrases or [header.text], "linhas_cabecalho": 1})
+    if edge != "bottom":
+        raise ValueError("borda desconhecida")
+    free = table.model_copy(update={"max_linhas": None})
+    rows = extract_table(free, lines).linhas
+    starts = [min((w["p"], w["b"][1]) for c in r.cells for w in c.words) for r in rows]
+    count = sum(1 for p, y in starts if (p, y) < (page, pos))
+    below = next((ln for ln in on_page if ln.middle > pos), None)
+    if (
+        below is None
+    ):  # depois da última linha da página: sem corte, com a regra de fim (sugerida de novo se não há)
+        last = next((ln for ln in reversed(on_page) if ln.middle < pos), None)
+        return free.model_copy(update={"fim": table.fim or (_end_hint(lines, last, table) if last else [])})
+    if count < 1:
+        raise ValueError("solte a borda de baixo depois de pelo menos uma linha da tabela")
+    if not _is_content(below, table):
+        return table.model_copy(update={"fim": [" ".join(below.text.split()[:2])], "max_linhas": None})
+    return table.model_copy(update={"fim": [], "max_linhas": count})
 
 
 _DECIMAL = re.compile(r"^[-(]?[\d.]+,\d+\)?$")
@@ -318,7 +414,7 @@ def _start_column(body: Sequence[Line], guides: Sequence[float], names: Sequence
     return names[chosen] if chosen is not None else None
 
 
-def _end_hint(lines: Sequence[Line], last: Line) -> list[str]:
+def _end_hint(lines: Sequence[Line], last: Line, spec: TableSpec | None = None) -> list[str]:
     """Sugere onde a tabela termina: a linha "Total…" depois da área ou, na mesma página, a primeira linha logo
     abaixo que não é dado (uma nota ou um rodapé). A pessoa confirma ou troca."""
     after = False
@@ -331,7 +427,8 @@ def _end_hint(lines: Sequence[Line], last: Line) -> list[str]:
             tokens = norm_tokens(ln.text)
             if tokens and tokens[0] in {"total", "totais", "subtotal"}:
                 return [" ".join(ln.text.split()[:2])]
-            if below is None and ln.page == last.page and not _has_numbers(ln):
+            content = _is_content(ln, spec) if spec is not None else _has_numbers(ln)
+            if below is None and ln.page == last.page and not content:
                 below = ln
     if below is not None and norm_tokens(below.text):
         return [" ".join(below.text.split()[:2])]

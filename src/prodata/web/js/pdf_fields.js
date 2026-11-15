@@ -161,8 +161,29 @@ export function tableCard(ctx, spec, t) {
       if (!parts.length) { e.target.value = spec.cabecalho.join(', '); return; }
       edit('mudar onde a tabela começa', (tb) => { tb.cabecalho = parts; });
     } });
-  const endInput = h('input', { class: 'input input-sm', value: spec.fim.join(', '), placeholder: 'fim do documento', 'aria-label': 'Texto que encerra a tabela',
-    onchange: (e) => edit('mudar onde a tabela termina', (tb) => { tb.fim = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); }) });
+  // RF-3735: num texto, depois de N linhas (o corte da pessoa) ou no fim do documento; a borda de baixo faz o mesmo
+  const endKind = spec.max_linhas ? 'linhas' : spec.fim.length ? 'texto' : 'documento';
+  const endText = h('input', { class: 'input input-sm', value: spec.fim.join(', '), placeholder: 'ex.: Total geral', 'aria-label': 'Texto que encerra a tabela',
+    hidden: endKind !== 'texto',
+    onchange: (e) => edit('mudar onde a tabela termina', (tb) => { tb.fim = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); tb.max_linhas = null; }) });
+  const endCount = h('input', { class: 'input input-sm pe-end-n', type: 'number', min: 1, step: 1, value: spec.max_linhas || rows.length || 10, 'aria-label': 'Quantas linhas',
+    hidden: endKind !== 'linhas',
+    onchange: (e) => { const n = Math.max(1, Math.round(Number(e.target.value) || 1)); edit(`terminar depois de ${n} linhas`, (tb) => { tb.max_linhas = n; tb.fim = []; }); } });
+  const endSelect = h('select', { class: 'input input-sm', 'aria-label': 'Onde a tabela termina',
+    onchange: (e) => {
+      const kind = e.target.value;
+      if (kind === 'texto') { endText.hidden = false; endCount.hidden = true; endText.focus(); return; } // grava ao escrever
+      if (kind === 'linhas') {
+        const n = rows.length || 10;
+        edit(`terminar depois de ${n} linhas`, (tb) => { tb.max_linhas = n; tb.fim = []; });
+        return;
+      }
+      edit('ir até o fim do documento', (tb) => { tb.max_linhas = null; tb.fim = []; });
+    } },
+  h('option', { value: 'texto', selected: endKind === 'texto' }, 'num texto'),
+  h('option', { value: 'linhas', selected: endKind === 'linhas' }, 'depois de N linhas'),
+  h('option', { value: 'documento', selected: endKind === 'documento' }, 'no fim do documento'));
+  const endInput = h('span', { class: 'pe-end' }, endSelect, endText, endCount);
   const suggestions = exclusionHints(ctx, spec, t);
   const firstCell = rows.flatMap((r) => Object.values(r.celulas)).find((cell) => cell.origem?.length);
   return h('article', { class: ['pe-card', 'pe-card-table', E.focus === spec.nome && 'active'], dataset: { table: spec.nome }, style: { '--c': c },
@@ -189,7 +210,7 @@ export function tableCard(ctx, spec, t) {
     h('label', { class: 'pe-check' }, h('input', { type: 'checkbox', checked: spec.continua,
       onchange: (e) => edit(e.target.checked ? 'seguir nas páginas seguintes' : 'ficar só na página do cabeçalho', (tb) => { tb.continua = e.target.checked; }) }), ' continua nas páginas seguintes')),
   h('details', { class: 'pe-more', open: spec.colunas.length <= 4 }, h('summary', {}, `Colunas (${spec.colunas.length})`), columns,
-    h('p', { class: 'field-help' }, 'Arraste as guias tracejadas na página, ou foque uma guia e use as setas.')),
+    h('p', { class: 'field-help' }, 'Arraste as guias tracejadas na página, ou foque uma guia e use as setas. As bordas da caixa da tabela também se arrastam: a de cima escolhe o cabeçalho, a de baixo onde termina.')),
   spec.excluir.length ? h('div', { class: 'pe-excl' }, h('span', { class: 'field-help' }, 'Linhas excluídas:'),
     spec.excluir.map((x) => h('span', { class: 'pe-tag' }, `começa com “${x}”`,
       button({ icon: 'x', title: 'Voltar a incluir', variant: 'ghost', size: 'sm', onClick: () => edit(`voltar a incluir “${x}”`, (tb) => { tb.excluir = tb.excluir.filter((y) => y !== x); }) })))) : null,

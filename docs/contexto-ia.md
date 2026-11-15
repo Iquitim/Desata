@@ -581,13 +581,19 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
 #### `prep.regex`: Regex
 
-Expressão regular numa coluna de texto: extrai grupos para colunas, substitui ou marca as linhas que casam.
+Pega, troca ou marca um trecho de texto: mostre o trecho num exemplo e a caixa acha nas outras linhas.
 
 Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
 - `column` (""): Coluna [nome de coluna]
-- `pattern` (""): Padrão (expressão regular). Parênteses formam grupos. Ex.: (\d{2})/(\d{4}) separa mês e ano de 10/2026
 - `mode` ("extract"): O que fazer. Opções: `extract`, `replace`, `match`
+- `pieces` ([]): O trecho
+  - `kind` ("digits"): Kind. Opções: `digits`, `word`, `alnum`, `space`, `literal`, `any`, `start`, `end`, `date`, `cpf`, `cnpj`, `cep`, `email`, `phone`, `decimal`
+  - `text` (""): Text
+  - `count` (null): Count. De 1 a 99
+  - `take` (false): Take
+  - `name` (""): Name
+- `pattern` (""): Expressão regular. Montada pelas peças. Quem já sabe pode escrever direto: parênteses formam as colunas novas
 - `names` ([]): Nomes das colunas novas. Aparece se `mode` em extract. Um por grupo, na ordem. Vazio = grupo_1, grupo_2…
 - `replacement` (""): Trocar por. Aparece se `mode` em replace. $1, $2… repetem os grupos
 - `output` (""): Coluna do resultado. Aparece se `mode` em replace, match. Vazio = a própria coluna (Substituir) ou 'casou' (Marcar)

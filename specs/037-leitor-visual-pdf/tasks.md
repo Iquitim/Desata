@@ -30,6 +30,7 @@
 - [x] T13 Testes de navegador (`teste_navegador_app.py`, 17 conferências) e roteiro de teste com pessoas (`roteiro-teste-pessoas.md`)
 - [ ] T14 Rodar as sessões com pessoas do roteiro e transformar os achados em ajustes
 - [x] T15 Extrações salvas: escolher ao criar, copiar, trocar, exportar, importar e excluir (RF-3705)
+- [x] T22 Tabela respeita a seleção: "depois de N linhas", bordas arrastáveis (baixo, cima e laterais) e Termina em com três opções (RF-3735)
 - [x] T21 SQL do Regex e do Generate Rows (previsto na spec 033), conferidos com o motor; Generate Rows recusa nome de coluna de datas igual ao de uma coluna do calendário
 - [x] T20 Aba SQL: a fonte PDF vira tabela de origem (como API e Jira), em vez de "nome de arquivo inválido"
 - [x] T19 Documentos da fonte um a um: tirar, trazer de volta e adicionar PDFs; cartões de saída sem espremer (RF-3706)

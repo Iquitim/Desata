@@ -10,13 +10,14 @@ from typing import Any
 SID_JS = "window.__pdfId"
 
 
-def _word(pg: Any, doc: str, text: str) -> int:
+def _word(pg: Any, doc: str, text: str, last: bool = False) -> int:
     index: int = pg.evaluate(
-        """async ([doc, t]) => {
+        """async ([doc, t, last]) => {
           const info = await (await fetch(`/api/pdfs/${window.__pdfId}/docs/words?doc=${encodeURIComponent(doc)}`)).json();
-          return info.words.findIndex((w) => w.t === t && w.p === 0);
+          const hit = (w) => w.t === t && w.p === 0;
+          return last ? info.words.findLastIndex(hit) : info.words.findIndex(hit);
         }""",
-        [doc, text],
+        [doc, text, last],
     )
     return index
 
@@ -53,7 +54,8 @@ def part_pdf_reader(pg: Any, shot: Callable[..., None]) -> None:
     pg.wait_for_timeout(800)
     # a tabela, arrastando do cabeçalho até o fim da página
     first = pg.locator(f'.pv-w[data-i="{_word(pg, doc, "Filial")}"]').bounding_box()
-    last = pg.locator(f'.pv-w[data-i="{_word(pg, doc, "semanas")}"]').bounding_box()
+    # até a última linha da página: a tabela segue nas páginas seguintes (marcar só parte corta, RF-3735)
+    last = pg.locator(f'.pv-w[data-i="{_word(pg, doc, "semanas", last=True)}"]').bounding_box()
     pg.mouse.move(first["x"] - 12, first["y"] - 6)
     pg.mouse.down()
     pg.mouse.move(last["x"] + 300, last["y"] + last["height"] + 4, steps=10)

@@ -278,6 +278,18 @@ button.pe-mcell:hover { border-color: var(--border-strong); }
 .pv-guide:focus-visible { outline: 2px solid var(--focus); }
 .pv-guide.across { width: auto; height: 14px; margin: -7px 0 0; cursor: row-resize; }
 .pv-guide.across::before { left: 0; right: 0; top: 6px; bottom: auto; border-left: 0; border-top: 2px dashed var(--c); }
+/* RF-3735: bordas da caixa da tabela (cima e baixo encaixam nas linhas; as laterais limitam a largura) */
+.pv-edge { position: absolute; height: 12px; margin-top: -6px; padding: 0; pointer-events: auto; cursor: row-resize; background: none; border: 0; z-index: 2; }
+.pv-edge::before { content: ""; position: absolute; left: 0; right: 0; top: 5px; border-top: 2px solid var(--c); opacity: 0; transition: opacity .12s; }
+.pv-edge::after { content: ""; position: absolute; right: 18px; top: 3px; width: 26px; height: 6px; background: var(--c); border: 1.5px solid #fff; border-radius: 4px; box-shadow: 0 1px 2px rgb(0 0 0 / 25%); }
+.pv-edge:hover::before, .pv-edge:focus-visible::before { opacity: 1; }
+.pv-edge:focus-visible { outline: 2px solid var(--focus); }
+.pv-edge.upright { width: 12px; height: auto; margin: 0 0 0 -6px; cursor: col-resize; }
+.pv-edge.upright::before { left: 5px; right: auto; top: 0; bottom: 0; border-top: 0; border-left: 2px solid var(--c); }
+.pv-edge-top:not(.upright)::after { left: 18px; right: auto; } /* a etiqueta da tabela fica à direita */
+.pv-edge.upright::after { left: 3px; right: auto; top: 50%; width: 6px; height: 26px; margin: -13px 0 0; }
+.pe-end { display: inline-flex; gap: 4px; align-items: center; }
+.pe-end-n { width: 72px; }
 .pv-guide.across::after { content: "⇕"; left: -18px; top: 50%; transform: translateY(-50%); }
 .pv-guide.across:hover::before, .pv-guide.across:focus-visible::before { border-top-style: solid; }
 

@@ -44,7 +44,7 @@ def recipe() -> Recipe:
     info = reader.inspect(str(FIX / "relatorio_outubro.pdf"))
     total = suggest_field(info, [w for w in info["words"] if w["t"] == "834.086,00" and w["p"] == 0])
     comp = suggest_field(info, [w for w in info["words"] if w["t"] == "10/2026"])
-    table = suggest_table(info, 0, (0.05, 0.18, 0.95, 0.40), "vendas")
+    table = suggest_table(info, 0, (0.05, 0.18, 0.95, 0.97), "vendas")
     return Recipe(
         id="x",
         nome="Relatório de vendas",
@@ -552,3 +552,29 @@ def test_api_documentos_um_a_um(client: TestClient, month: Path) -> None:
     assert back["status"]["files"] == 5 and back["status"]["left_out"] == 0
     bad = client.post(f"/api/pdfs/{sid}/docs/add", files=[("files", ("x.pdf", b"nada", "application/pdf"))])
     assert bad.status_code == 400
+
+
+def test_api_borda_da_tabela(client: TestClient, month: Path) -> None:
+    """RF-3735: a borda de baixo arrastada até o meio dos dados corta em N linhas; a de cima escolhe o cabeçalho."""
+    sid = client.post("/api/pdfs", json={"name": "R", "mode": "pasta", "path": str(month)}).json()["id"]
+    table = recipe().tabelas[0].model_dump(mode="json")
+    doc = "relatorio_outubro.pdf"
+    out = client.post(
+        f"/api/pdfs/{sid}/suggest/table_edge",
+        json={"doc": doc, "page": 0, "edge": "bottom", "pos": 0.30, "tabela": table},
+    )
+    assert (
+        out.status_code == 200
+        and out.json()["tabela"]["max_linhas"] >= 1
+        and out.json()["tabela"]["fim"] == []
+    )
+    top = client.post(
+        f"/api/pdfs/{sid}/suggest/table_edge",
+        json={"doc": doc, "page": 0, "edge": "top", "pos": 0.0, "tabela": table},
+    )
+    assert top.status_code == 200 and top.json()["tabela"]["linhas_cabecalho"] == 1
+    bad = client.post(
+        f"/api/pdfs/{sid}/suggest/table_edge",
+        json={"doc": doc, "page": 0, "edge": "meio", "pos": 0.5, "tabela": table},
+    )
+    assert bad.status_code == 422

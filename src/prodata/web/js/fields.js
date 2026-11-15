@@ -10,6 +10,7 @@ import { icon } from './icons.js';
 import { labelPicker } from './label_picker.js';
 import { RECIPES } from './multirow_recipes.js';
 import { qualityRulesField } from './quality_ui.js';
+import { regexBuilder } from './regex_builder.js';
 import { allowedValuesField } from './quality_values.js';
 import { columnValues, renameLabels } from './fields_values.js';
 import { fileField, modelField, modelSaveField, modelVersionsField, subflowField } from './fields_extra.js';
@@ -711,6 +712,7 @@ const WIDGETS = {
   text, textarea, number, toggle, select, column, columns, tags, expression, sql, template, dataset, sheet, folder,
   recipe_cards: recipeCards, confidentiality,
   quality_rules: (f, v, s, c) => qualityRulesField(f, v, s, c, { renderFields }),
+  regex_builder: regexBuilder,
   allowed_values: allowedValuesField,
   list, select_columns: selectColumns, sheet_ports: sheetPorts, api_source: apiSource, api_params: apiParams, grid, object, connection: connectionField, db_table: dbTable, db_query: dbQuery,
 };

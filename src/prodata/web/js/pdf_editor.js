@@ -458,7 +458,8 @@ export function pdfEditor(source, opts = {}) {
       const t = r.tabelas?.[k];
       if (!t) return null;
       const regions = {};
-      for (const row of t.linhas) {
+      const head = { celulas: { _: { origem: t.cabecalho || [] } } }; // a caixa começa no cabeçalho (RF-3735)
+      for (const row of [head, ...t.linhas]) {
         for (const cell of Object.values(row.celulas)) {
           for (const o of cell.origem) {
             const b = toReading(o.b, viewer.pageAngle(o.p));
@@ -471,9 +472,30 @@ export function pdfEditor(source, opts = {}) {
       return {
         spec, color: colorOf(spec.nome), regions, rows: t.linhas.length, ignored: t.ignoradas,
         onMove: (final, extra) => moveGuide(spec, final, extra),
+        onEdge: (edge, page, pos) => moveEdge(spec, edge, page, pos),
       };
     }).filter(Boolean);
     viewer.setMarks({ fields, tables });
+  }
+
+  /** Borda de cima (cabeçalho) ou de baixo (fim) arrastada: o motor devolve a tabela ajustada (RF-3735). */
+  async function moveEdge(spec, edge, page, pos) {
+    gesture('tabela');
+    const label = edge === 'top' ? `mudar o cabeçalho de ${spec.nome}` : `mudar onde ${spec.nome} termina`;
+    try {
+      const out = await api.adjustPdfTable(source.id, { doc: E.doc, page, edge, pos, tabela: spec });
+      const k = E.recipe.tabelas.findIndex((x) => x.nome === spec.nome);
+      E.history.push({ recipe: clone(E.recipe), label });
+      E.future = [];
+      E.recipe.tabelas[k] = out.tabela;
+      save();
+      await evaluateCurrent();
+      runSample({ compare: label });
+      drawSave();
+    } catch (err) {
+      toastError(err, 'Não foi possível ajustar a tabela');
+      drawMarks();
+    }
   }
 
   let guideBusy = false;

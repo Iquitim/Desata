@@ -578,10 +578,13 @@
   <h3>Tabelas, mesmo em várias páginas</h3>
   <div class="side">
     <div>
-      <p>Arraste sobre a tabela, do cabeçalho até a última linha, e tecle <kbd>T</kbd>. O {{produto}} propõe as colunas pelos espaços em branco e desenha <strong>guias</strong> tracejadas na página. Arraste uma guia (ou foque e use as setas) e a prévia muda na hora.</p>
+      <p>Arraste sobre a tabela, do cabeçalho até a última linha que você quer, e tecle <kbd>T</kbd>. O {{produto}} propõe as colunas pelos espaços em branco e desenha <strong>guias</strong> tracejadas na página. Arraste uma guia (ou foque e use as setas) e a prévia muda na hora.</p>
       <ul>
+        <li><strong>A tabela vai até onde você marcou.</strong> Marcou só parte das linhas? Ela termina <strong>depois dessas linhas</strong>. Marcou até a última linha da página? Ela segue nas páginas seguintes até o fim.</li>
+        <li><strong>As bordas da caixa se arrastam</strong>, como as guias: a de baixo encaixa entre as linhas (antes de uma linha de texto, como “Total geral”, a tabela termina antes dela), a de cima escolhe a linha do cabeçalho e as laterais limitam a largura.</li>
+        <li><strong>Termina em</strong> mostra a regra: num texto, depois de N linhas ou no fim do documento.</li>
         <li><strong>Nova linha quando</strong>: uma observação escrita em duas linhas vira uma célula só, porque a linha nova começa quando a coluna escolhida tem valor.</li>
-        <li>A tabela segue nas páginas seguintes, ignora o cabeçalho repetido e termina no texto que você indicar, como “Total geral”.</li>
+        <li>Nas páginas seguintes, o cabeçalho repetido é ignorado.</li>
         <li><strong>Começa em</strong> diz quais textos identificam o cabeçalho. Se ele muda de um mês para outro, deixe só o que se repete, como “VAR., PARTICIPAÇÃO”.</li>
         <li>Subtotais e rodapés são <strong>sugeridos</strong> para exclusão; nada sai sem a sua confirmação.</li>
         <li>Nenhuma linha é inventada: se a tabela não pode ser montada, ela mostra o problema e pede ajuste.</li>
@@ -776,15 +779,17 @@
   <h3>Trechos de um texto: Regex</h3>
   <div class="side feature">
     <div>
-      <p>O <strong>Regex</strong> aplica uma expressão regular a uma coluna de texto. Serve para tirar o mês e o ano de "NF 10/2026", o número de um pedido no meio de uma descrição ou o domínio de um e-mail.</p>
+      <p>O <strong>Regex</strong> acha um trecho dentro de um texto: o mês e o ano de "NF 10/2026", o número de um pedido no meio de uma descrição, um CPF ou um e-mail. Você não precisa escrever expressão regular: <strong>mostre o trecho num exemplo</strong>.</p>
       <ul>
-        <li><strong>Extrair</strong>: cada par de parênteses do padrão vira uma coluna nova.</li>
-        <li><strong>Substituir</strong>: o que casar é trocado, e <code>$1</code> repete um grupo.</li>
-        <li><strong>Marcar</strong>: uma coluna diz se a linha casa com o padrão.</li>
+        <li><strong>Marque no exemplo</strong>: a caixa mostra valores reais da coluna. Selecione com o mouse o trecho que você quer, e ela monta as peças que o descrevem, como "2 dígitos, uma barra, 4 dígitos".</li>
+        <li><strong>Ajuste as peças</strong>: clique numa peça para trocar o tipo, a quantidade ou marcar <strong>Vira coluna</strong>, com um nome. Peças prontas entram por cartões: data, CPF, CNPJ, CEP, e-mail, telefone e valor com vírgula.</li>
+        <li><strong>Confira ao vivo</strong>: os exemplos mostram onde o trecho foi achado, com a cor de cada coluna, e a caixa diz em quantas linhas ele aparece.</li>
       </ul>
+      <p>Os modos são <strong>Pegar um trecho</strong> (vira coluna), <strong>Trocar um trecho</strong> e <strong>Marcar as linhas que têm o trecho</strong>. Quem já sabe expressão regular encontra a expressão montada pelas peças no <strong>Avançado</strong> e pode escrever direto.</p>
     </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-regex.png" alt="Esquema do Regex"></div><figcaption>Cada linha, antes e depois: linha que não casa fica vazia.</figcaption></figure>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/regex-pecas.png" alt="Regex: exemplos com o trecho destacado e as peças"></div><figcaption>O trecho marcado num exemplo vira peças; mês e ano viram colunas, cada um com a sua cor.</figcaption></figure>
   </div>
+  <figure class="m50"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-regex.png" alt="Esquema do Regex"></div><figcaption>Como funciona: cada linha, antes e depois. Linha sem o trecho fica vazia.</figcaption></figure>
   <h3>Dados pessoais: Mask</h3>
   <div class="side feature">
     <div>
@@ -1389,7 +1394,7 @@
     <tr><td class="tool">Sort · Sample</td><td>Ordena por uma ou mais colunas (o <em>order by</em>); tira amostras (primeiras, últimas, aleatórias, percentual).</td></tr>
     <tr><td class="tool">Text To Columns</td><td>Divide um texto por um separador em novas colunas ou linhas (ex.: "SP - São Paulo").</td></tr>
     <tr><td class="tool">Record ID · Running Total</td><td>Numera as linhas; calcula soma acumulada, recomeçando a cada grupo se quiser.</td></tr>
-    <tr><td class="tool">Regex</td><td>Expressão regular numa coluna: extrai grupos para colunas novas, substitui ou marca as linhas que casam.</td></tr>
+    <tr><td class="tool">Regex</td><td>Pega, troca ou marca um trecho de texto (mês e ano, CPF, e-mail): marque o trecho num exemplo e a caixa acha nas outras linhas, sem escrever expressão regular.</td></tr>
     <tr><td class="tool">Multi-Field Formula</td><td>Aplica a mesma fórmula a várias colunas de uma vez. <code>[_Atual_]</code> é a coluna da vez.</td></tr>
     <tr><td class="tool">Mask</td><td>Mascara dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.</td></tr>
     <tr><td colspan="2"><span class="tag">Combinar e transformar</span></td></tr>

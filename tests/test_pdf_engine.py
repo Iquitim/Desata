@@ -112,7 +112,7 @@ def _recipe(docs: dict) -> Recipe:
     out = docs["outubro"]
     total = suggest_field(out, _words(out, "834.086,00"))
     comp = suggest_field(out, _words(out, "10/2026"))
-    table = suggest_table(out, 0, (0.05, 0.18, 0.95, 0.40), "vendas")
+    table = suggest_table(out, 0, (0.05, 0.18, 0.95, 0.97), "vendas")
     return Recipe(
         id="vendas",
         nome="Relatório de vendas",
@@ -297,3 +297,71 @@ def test_tabela_marcada_em_pagina_girada() -> None:
     table = suggest_table(info, 0, area, "vendas")
     assert [c["nome"] for c in table["tabela"]["colunas"]] == ["filial", "valor", "observacao"]
     assert len(table["resultado"]["linhas"]) == 7
+
+
+# ------------------------------------------------------------------ a tabela respeita a seleção (RF-3735)
+
+SAMPLE = Path(__file__).parents[1] / "src" / "prodata" / "samples" / "pdf" / "relatorio_2026-10.pdf"
+
+
+def _table_lines() -> tuple[dict, list]:
+    from prodata.documents.layout import group_lines
+
+    info = reader.inspect(str(SAMPLE))
+    return info, group_lines(info["words"], info["pages"])
+
+
+def _rows(info: dict, spec: dict | TableSpec) -> list:
+    table = spec if isinstance(spec, TableSpec) else TableSpec.model_validate(spec)
+    return extract(Recipe(id="x", nome="x", tabelas=[table]), info).as_dict()["tabelas"][0]["linhas"]
+
+
+def test_tabela_vai_ate_onde_a_pessoa_marcou() -> None:
+    """CA-18: cabeçalho e 4 filiais de uma tabela de 32 dão 4 linhas; marcar até o fim da página segue até o total."""
+    info, lines = _table_lines()
+    page = [ln for ln in lines if ln.page == 0]
+    head = next(i for i, ln in enumerate(page) if ln.text.startswith("Filial"))
+    top = page[head].words[0]["b"][1] - 0.004
+    cut = suggest_table(info, 0, (0.05, top, 0.95, page[head + 5].words[0]["b"][3] + 0.004), "vendas")[
+        "tabela"
+    ]
+    assert cut["max_linhas"] == 4 and cut["fim"] == []
+    assert [r["celulas"]["filial"]["valor"] for r in _rows(info, cut)] == [
+        "São Paulo",
+        "Rio de Janeiro",
+        "Belo Horizonte",
+        "Curitiba",
+    ]
+    whole = suggest_table(info, 0, (0.05, top, 0.95, page[-1].words[0]["b"][3] + 0.004), "vendas")["tabela"]
+    assert whole["max_linhas"] is None and whole["fim"] == ["Total geral"]
+    assert len(_rows(info, whole)) == 32
+
+
+def test_bordas_da_tabela_arrastadas() -> None:
+    from prodata.documents.suggest import adjust_edge
+
+    info, lines = _table_lines()
+    page0 = [ln for ln in lines if ln.page == 0]
+    head = next(i for i, ln in enumerate(page0) if ln.text.startswith("Filial"))
+    top = page0[head].words[0]["b"][1] - 0.004
+    cut = TableSpec.model_validate(
+        suggest_table(info, 0, (0.05, top, 0.95, page0[head + 5].words[0]["b"][3] + 0.004), "vendas")[
+            "tabela"
+        ]
+    )
+    # baixo, no meio dos dados: depois de N linhas (as linhas quebradas contam junto)
+    tenth = page0[head + 12]
+    middle = adjust_edge(info, cut, 0, "bottom", tenth.words[0]["b"][3] + 0.002)
+    assert middle.max_linhas == len(_rows(info, middle)) and 8 <= middle.max_linhas <= 11
+    # baixo, depois da última linha da página: sem corte, e o "Total geral" volta a ser o fim
+    end = adjust_edge(info, cut, 0, "bottom", 0.999)
+    assert end.max_linhas is None and end.fim == ["Total geral"] and len(_rows(info, end)) == 32
+    # baixo, logo antes de uma linha de texto (o total, na página 2): termina antes dela
+    total = next(ln for ln in lines if ln.page == 1 and ln.text.startswith("Total geral"))
+    before = adjust_edge(info, cut, 1, "bottom", total.words[0]["b"][1] - 0.002)
+    assert before.fim == ["Total geral"] and before.max_linhas is None
+    # cima: a linha logo abaixo da borda vira o cabeçalho
+    header = adjust_edge(info, cut, 0, "top", top)
+    assert header.cabecalho == cut.cabecalho and header.linhas_cabecalho == 1
+    with pytest.raises(ValueError):
+        adjust_edge(info, cut, 0, "bottom", page0[head].words[0]["b"][3] + 0.001)  # antes de qualquer linha
