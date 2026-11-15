@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal
 
 import polars as pl
@@ -9,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from prodata.engine import formula, multirow
 from prodata.engine.convert import convert
+from prodata.engine.dates import date_or_error, moment_or_error
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
 
@@ -146,10 +148,12 @@ class FilterConfig(ToolConfig):
         "",
         title="Valor",
         json_schema_extra=ui(
+            widget="filter_value",  # spec 040: calendário quando a coluna é data
+            source="column",  # trocar a coluna redesenha o campo (texto ou calendário)
             show_if={
                 "mode": ["simple"],
                 "operator": ["==", "!=", ">", ">=", "<", "<=", "contains", "starts_with"],
-            }
+            },
         ),
     )
     expression: str = Field(
@@ -195,6 +199,15 @@ def _simple_mask(df: pl.DataFrame, cfg: FilterConfig) -> pl.Series:
             raise ValueError(f"'{cfg.value}' não é um número válido para a coluna '{cfg.column}'.") from exc
     elif s.dtype == pl.Boolean:
         value = cfg.value.strip().lower() in ("true", "1", "sim", "verdadeiro")
+    elif s.dtype == pl.Date or isinstance(s.dtype, pl.Datetime):
+        # spec 040: data compara como data, nunca como texto ("07/08/2026" contra "2026-08-07")
+        value = (
+            moment_or_error(cfg.value, cfg.column)
+            if isinstance(s.dtype, pl.Datetime)
+            else date_or_error(cfg.value, cfg.column)
+        )
+        if isinstance(s.dtype, pl.Datetime) and not isinstance(value, datetime):
+            s = s.dt.date()  # só a data: compara o dia, não o instante
     else:
         s = s.cast(pl.String)
     ops = {

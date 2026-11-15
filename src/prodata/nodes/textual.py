@@ -386,3 +386,61 @@ def mask(ctx: NodeContext, cfg: MaskConfig) -> NodeOutput:
         masked = text.to_frame("__v").join(mapping, on="__v", how="left", maintain_order="left")["__m"]
         out = out.with_columns(masked.alias(column))
     return NodeOutput(tables={"out": out})
+
+
+# ------------------------------------------------------------------ máscara da amostra (spec 040, RF-4019)
+
+_CPF = re.compile(r"^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$")
+_EMAIL = re.compile(r"^[\w.+-]+@[\w-]+(\.[\w-]+)+$")
+_PHONE = re.compile(r"^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$")
+_BY_NAME = (
+    (("cpf",), "cpf"),
+    (("cnpj",), "cnpj"),
+    (("email", "e_mail", "e-mail"), "email"),
+    (("telefone", "fone", "celular", "whatsapp"), "keep_last"),
+    (("nome", "name", "razao", "responsavel", "contato"), "keep_first"),
+)
+
+
+def guess_personal(df: pl.DataFrame) -> dict[str, str]:
+    """As colunas que parecem dados pessoais e o método da caixa Mask para cada uma. Só sugere: a pessoa decide."""
+    found: dict[str, str] = {}
+    for column, dtype in df.schema.items():
+        if dtype != pl.String:
+            continue
+        name = column.lower()
+        by_name = next((m for keys, m in _BY_NAME if any(k in name for k in keys)), None)
+        if by_name:
+            found[column] = by_name
+            continue
+        values = [v.strip() for v in df[column].drop_nulls().head(50).to_list() if v and v.strip()]
+        if len(values) >= 2:
+            for pattern, method in ((_CPF, "cpf"), (_EMAIL, "email"), (_PHONE, "keep_last")):
+                if sum(1 for v in values if pattern.match(v)) >= len(values) * 0.8:
+                    found[column] = method
+                    break
+    return found
+
+
+def mask_frame(
+    df: pl.DataFrame, methods: dict[str, str], key: Callable[[], bytes] | None = None
+) -> pl.DataFrame:
+    """Mascara as colunas escolhidas com os métodos da caixa Mask (só os 4 últimos ou 2 primeiros caracteres)."""
+    out = df
+    for column, method in methods.items():
+        if column not in df.columns or not method:
+            continue
+        keep = 4 if method == "keep_last" else 2
+        apply = _masker(MaskConfig(columns=[column], method=method, keep=keep), key)
+        text = df[column].cast(pl.String)
+        distinct = text.drop_nulls().unique().to_list()
+        mapping = pl.DataFrame(
+            {"__v": distinct, "__m": [apply(v) for v in distinct]},
+            schema={"__v": pl.String, "__m": pl.String},
+        )
+        out = out.with_columns(
+            text.to_frame("__v")
+            .join(mapping, on="__v", how="left", maintain_order="left")["__m"]
+            .alias(column)
+        )
+    return out

@@ -223,6 +223,7 @@ _ANY_TYPE = ["count", "count_all", "n_unique", "first", "last", "mode"]
 AGG_BY_TYPE: dict[str, list[str]] = {
     "String": [*_ANY_TYPE, "concat", "min", "max"],
     "Date": [*_ANY_TYPE, "min", "max"],
+    "Datetime": [*_ANY_TYPE, "min", "max"],
     "Boolean": [*_ANY_TYPE, "sum", "mean"],
 }
 
@@ -252,9 +253,13 @@ def _check_operation(item: Aggregation, df: pl.DataFrame) -> None:
     if item.agg == "count_all":
         return
     kind = simple_type(df.schema[item.column])
-    impossible = {"String": ("sum", "mean", "median", "std"), "Date": ("sum", "std")}.get(kind, ())
+    impossible = {
+        "String": ("sum", "mean", "median", "std"),
+        "Date": ("sum", "std"),
+        "Datetime": ("sum", "std"),
+    }.get(kind, ())
     if item.agg in impossible:
-        name = {"String": "texto", "Date": "data"}[kind]
+        name = {"String": "texto", "Date": "data", "Datetime": "data e hora"}[kind]
         raise ValueError(
             f'"{_AGG_LABELS[item.agg]}" não se aplica à coluna [{item.column}], que é de {name}. '
             f"Escolha outra operação, como Contagem ou Valores distintos, ou converta a coluna com um Select."

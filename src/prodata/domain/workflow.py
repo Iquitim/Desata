@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from prodata.domain.constants import Constant, ConstantValue
 from prodata.domain.dashboard import Dashboard
+from prodata.domain.samples import MAX_BYTES as MAX_SAMPLE_BYTES
+from prodata.domain.samples import SourceSample
 
 ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 
@@ -62,6 +64,8 @@ class Workflow(BaseModel):
     # Constantes do fluxo e o valor das compartilhadas que ele usa (spec 028). Ausentes em fluxos antigos.
     constants: list[Constant] = Field(default_factory=list)
     shared_constants: dict[str, ConstantValue] = Field(default_factory=dict)
+    # Amostra das fontes, só em "Salvar com amostra dos dados" (spec 040). Chave: a fonte, como no Input Data.
+    samples: dict[str, SourceSample] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _check_references(self) -> Workflow:
@@ -80,6 +84,8 @@ class Workflow(BaseModel):
             raise ValueError(f"Constantes do fluxo com o mesmo nome: {', '.join(repeated)}")
         if self.dashboard:
             self.dashboard.prune(known)
+        if sum(s.size() for s in self.samples.values()) > MAX_SAMPLE_BYTES:
+            raise ValueError("A amostra do fluxo passa de 5 MB: tire fontes da amostra.")
         return self
 
     def node(self, node_id: str) -> Node:

@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.8.5. Este arquivo é gerado a partir do código.
+Versão do programa: 0.8.6. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -163,6 +163,7 @@ Se você escrever a fórmula da Multi-Row à mão, use `"recipe": "custom"`. Com
 - `ToNumber(valor)`: Converte para número (inválido vira nulo). Ex.: `ToNumber([codigo])`
 - `ToString(valor)`: Converte para texto. Ex.: `ToString([valor])`
 - `ToDate(valor)`: Converte para data (AAAA-MM-DD; inválido vira nulo). Ex.: `ToDate([data_texto])`
+- `ToDateTime(valor)`: Converte para data e hora (AAAA-MM-DD HH:MM:SS; inválido vira nulo). Ex.: `ToDateTime('2026-07-08 14:30:00')`
 - `ToInteger(valor)`: Converte para inteiro, cortando as casas decimais. Ex.: `ToInteger([valor])`
 - `ToNumberBR(texto)`: Lê números no padrão brasileiro ('1.234,56' → 1234.56). Ex.: `ToNumberBR([valor_br])`
 - `IsNumber(valor)`: Verdadeiro se o valor pode ser lido como número (12.5 ou 12,5). Ex.: `IsNumber([valor_br])`
@@ -534,8 +535,8 @@ Entradas: `in` (Entrada), `L` (Lista de valores, opcional, conforme a configura�
   - `also` ([]): Junto com [lista de colunas]. Aparece se `kind` em unique. Opcional: a repetição conta a combinação destas colunas com a coluna acima
   - `min` (null): Mínimo. Aparece se `kind` em number_range
   - `max` (null): Máximo. Aparece se `kind` em number_range
-  - `date_min` (""): A partir de. Aparece se `kind` em date. AAAA-MM-DD. Vazio: sem limite
-  - `date_max` (""): Até. Aparece se `kind` em date. AAAA-MM-DD. Vazio: sem limite
+  - `date_min` (""): A partir de. Aparece se `kind` em date. Vazio: sem limite
+  - `date_max` (""): Até. Aparece se `kind` em date. Vazio: sem limite
   - `not_future` (false): Não pode ser no futuro. Aparece se `kind` em date
   - `values_from` ("list"): De onde vem a lista. Opções: `list`, `table`. Aparece se `kind` em allowed
   - `values` ([]): Valores permitidos. Aparece se `kind` em allowed; `values_from` em list

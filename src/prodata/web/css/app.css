@@ -212,6 +212,10 @@ select.input { padding-right: 24px; }
   white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
 }
 .btn-caret { width: 22px; margin-left: -4px; }
+/* spec 040: calendário com hora opcional */
+.date-row { display: flex; gap: 6px; align-items: center; }
+.date-row .input[type="date"] { flex: 1; min-width: 0; }
+.date-row .date-time { width: 118px; flex: none; }
 .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
 .topbar-actions .btn-primary { margin-left: 6px; }
 .top-menu > svg:first-child { display: none; } /* ícone do menu: só em janela estreita */
@@ -418,6 +422,7 @@ body[data-view="dashboard"] .dashboard { display: block; }
 .dialog:not([open]) { display: none; }
 .dialog::backdrop { background: rgb(10 10 8 / 0.42); }
 .dialog-sm { width: min(420px, calc(100vw - 32px)); }
+.dialog-lg { width: min(860px, calc(100vw - 32px)); }
 .dialog-xl { width: min(1180px, calc(100vw - 32px)); height: min(760px, calc(100vh - 64px)); }
 .dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 12px 12px 18px; border-bottom: 1px solid var(--border); }
 .dialog-header h2 { font-size: var(--fs-lg); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

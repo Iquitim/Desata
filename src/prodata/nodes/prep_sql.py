@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from prodata.engine import formula, multirow
+from prodata.engine.dates import date_or_error, moment_or_error
 from prodata.engine.sql.fragment import (
     NUMERIC_KINDS,
     ROW_POSITION,
@@ -133,6 +135,14 @@ def _simple_condition(source: SqlInput, cfg: FilterConfig) -> str:
             raise ValueError(f"'{cfg.value}' não é um número válido para a coluna '{cfg.column}'.") from exc
     if kind == "Boolean":
         return f"{column} {operator} {lit(cfg.value.strip().lower() in ('true', '1', 'sim', 'verdadeiro'))}"
+    if kind in ("Date", "Datetime"):  # spec 040: data compara como data
+        moment = (
+            date_or_error(cfg.value, cfg.column) if kind == "Date" else moment_or_error(cfg.value, cfg.column)
+        )
+        if isinstance(moment, datetime):  # com hora: o instante exato
+            return f"{column} {operator} TIMESTAMP {lit(moment.isoformat(sep=' '))}"
+        target = column if kind == "Date" else f"CAST({column} AS DATE)"
+        return f"{target} {operator} DATE {lit(moment.isoformat())}"
     return (
         f"{text_cast(column, kind)} {operator} {lit(cfg.value)}"
         if kind != "String"

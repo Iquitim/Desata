@@ -107,6 +107,10 @@ export const api = {
   previewQuery: (definition, rows = 100) => request('POST', `/api/queries/preview?rows=${rows}`, definition),
 
   saveWorkflowFile: (path, workflow) => request('POST', '/api/files/workflow/save', { path, workflow }),
+  portableSources: (workflow) => request('POST', '/api/portable/sources', { workflow }),
+  portablePreview: (workflow) => request('POST', '/api/portable/share/preview', { workflow }),
+  portableShare: (workflow, path, sources) => request('POST', '/api/portable/share/save', { workflow, path, sources }),
+  portableMaskPreview: (workflow, key, mask) => request('POST', '/api/portable/share/mask-preview', { workflow, key, mask }),
   openWorkflowFile: (path) => request('POST', '/api/files/workflow/open', { path }),
 
   refreshCache: (wfId, nodeId) => request('DELETE', `/api/cache/${enc(wfId)}/${enc(nodeId)}`),

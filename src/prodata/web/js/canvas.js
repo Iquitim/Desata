@@ -636,6 +636,7 @@ export function initCanvas(root, opts = {}) {
   on('inspect', () => render());
   on('execution', () => render());
   on('numbers', () => render());
+  on('sources', () => render()); // fonte que falta neste computador (spec 040)
 
   root.classList.toggle('tool-select', tool === 'select');
   const saved = storage('prodata.view', null);

@@ -36,6 +36,16 @@ localmente.
 - **Regex sem expressão regular**: marque o trecho num valor de verdade ("10/2026" em "NF 10/2026") e a caixa
   monta as peças ("2 dígitos, uma barra, 4 dígitos"), mostra onde achou em cada linha e deixa cada peça virar coluna.
   Peças prontas para data, CPF, CNPJ, CEP, e-mail, telefone e valor; a expressão fica no Avançado.
+- **Datas do seu jeito**: escreva `07/08/2026`, `'2026-08-07'` ou `jul/26` numa fórmula e aparece "Você quis
+  dizer 7 de agosto de 2026?", com a forma certa (`ToDate('2026-08-07')`) a um clique, sem trocar nada sozinho. Com
+  hora também (`ToDateTime`), e ano com dois dígitos. O Filter básico ganha calendário (com hora opcional em data e
+  hora) e compara data com data, nunca texto com texto.
+- **Fluxo em outro computador**: o que falta aparece de cara (selo vermelho na aba Dados, seção "Faltam neste
+  computador" e a caixa em vermelho), com a ação para resolver cada fonte. "Salvar com amostra dos dados" leva uma
+  amostra de 100, 500 ou 1.000 linhas por fonte (5 MB no total), com as colunas pessoais já marcadas para mascarar e
+  prévia mascarada. Onde a fonte não existe, o fluxo roda com a amostra, marcada em laranja na caixa e na vista Dados.
+  Fonte que é arquivo vinculado ganha aviso para quem compartilha e para quem recebe (o caminho nunca vai no arquivo).
+  Caminhos, senhas e conexões nunca vão no arquivo.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -268,6 +278,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [037](specs/037-leitor-visual-pdf/spec.md) | Leitor visual de PDF: marcar no documento, ver o dado nascer e rastrear a origem |
 | [038](specs/038-separador-decimal/spec.md) | Separador decimal escolhido pela pessoa: vírgula ou ponto |
 | [039](specs/039-regex-didatico/spec.md) | Regex sem escrever expressão regular: marcar o trecho no exemplo e ajustar as peças |
+| [040](specs/040-datas-e-fluxo-portatil/spec.md) | Datas sem formato certo ("Você quis dizer…", calendário) e fluxo que viaja entre computadores (o que falta e amostra) |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 
@@ -346,6 +357,8 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 | GET | `/api/usage` | Onde cada fonte e cada constante é usada nos fluxos da biblioteca |
 | GET · POST · DELETE | `/api/constants[/{nome}]` | Constantes compartilhadas (`previous` no POST renomeia) |
 | POST | `/api/trust/state` · `/confirm` | Abertura protegida: situação do fluxo e confirmação de confiança |
+| POST | `/api/portable/sources` | Fontes do fluxo neste computador: ok, faltando ou com amostra |
+| POST | `/api/portable/share/preview` · `/mask-preview` · `/save` | Salvar com amostra: fontes e tamanhos, prévia mascarada e gravação |
 | GET · POST · PUT · DELETE | `/api/folders[/{id}]` · `/preview` · `/link-each` | Pastas de arquivos: cadastro, prévia empilhada e "um por arquivo" |
 | GET · POST · PUT · DELETE | `/api/pdfs[/{id}]` · `/upload` · `/example` · `/duplicate` | Leitores de PDF: cadastro, cópia enviada, exemplo e duplicar |
 | GET · POST · PUT | `/api/pdfs/{id}/docs` · `/recipe` · `/suggest/*` · `/evaluate` · `/outputs/{saida}` · `/corrections` | Editor do PDF: palavras, páginas, extração, sugestões, impacto, saídas e correções |

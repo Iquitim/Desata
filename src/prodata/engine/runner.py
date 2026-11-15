@@ -448,6 +448,7 @@ class WorkflowRunner:
             input_fingerprints=inputs.fingerprints,
             injected=self.injected,
             secret_key=self.secret_key,
+            samples=workflow.samples,  # spec 040: só valem quando a fonte não está neste computador
         )
         ctx.run_subflow = lambda child: subflow.run(self, workflow, node, child, ctx)
         ctx.subflow_signature = lambda child: subflow.signature(self, child)

@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from leitor_pdf import part_pdf_reader as pdf_reader  # noqa: E402
 from novas_075 import part_new_tools  # noqa: E402
+from novas_086 import part_086 as new_086  # noqa: E402
 from organizar_dados import part_organize as organize  # noqa: E402
 from pasta_dados import part_folder_source as folder_source  # noqa: E402
 
@@ -562,9 +563,13 @@ def part_pdf(pg: Pg) -> None:
     pdf_reader(pg, shot)
 
 
+def part_086(pg: Pg) -> None:
+    new_086(pg, shot)
+
+
 def PARTS(tmp):  # noqa: N802
     every = ((part_screen, ()), (part_cache_dashboard, ()), (part_sql, ()), (part_tools, ()), (part_quality_lists, ()), (part_data_trust, (tmp,)), (part_manual, ()))
-    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()))
+    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()))
     only = os.environ.get("IMAGENS_SO")
     return [e for e in every if not only or e[0].__name__ in only.split(",")]
 

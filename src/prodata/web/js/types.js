@@ -7,6 +7,7 @@ const LABELS = {
   String: ['abc', 'texto'],
   Boolean: ['v/f', 'verdadeiro ou falso'],
   Date: ['data', 'data'],
+  Datetime: ['data e hora', 'data e hora'],
 };
 
 /** Rótulo curto: 123, 1,2, abc, v/f ou data. Tipo desconhecido aparece como veio. */

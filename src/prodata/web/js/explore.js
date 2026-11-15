@@ -1,6 +1,7 @@
 // Filtros exploratórios da tabela de resultados (spec 007): só mudam a visualização,
 // nunca o fluxo — a não ser que o usuário peça "Criar nó Filter".
 
+import { joinDateTime, parseDateText, splitDateTime } from './date_hints.js';
 import { button, h, parseLocalNumber } from './dom.js';
 import { icon } from './icons.js';
 import { typeLabel } from './types.js';
@@ -23,9 +24,10 @@ export const OPS = {
 };
 
 const NUMERIC = new Set(['Int64', 'Float64']);
+const DATES = new Set(['Date', 'Datetime']); // spec 040: calendário e ToDate('AAAA-MM-DD')
 
 export function opsFor(type) {
-  if (NUMERIC.has(type) || type === 'Date') return ['eq', 'ne', 'gt', 'ge', 'lt', 'le', 'between', 'is_null', 'not_null'];
+  if (NUMERIC.has(type) || type === 'Date' || type === 'Datetime') return ['eq', 'ne', 'gt', 'ge', 'lt', 'le', 'between', 'is_null', 'not_null'];
   if (type === 'Boolean') return ['eq', 'ne', 'is_null', 'not_null'];
   return ['eq', 'ne', 'contains', 'not_contains', 'starts_with', 'ends_with', 'in', 'is_null', 'not_null'];
 }
@@ -72,8 +74,11 @@ export function openFilterEditor(x, y, { columns, initial = {}, onApply }) {
     const info = colInfo();
     const listId = `vals_${Math.random().toString(36).slice(2, 7)}`;
     const suggestions = !NUMERIC.has(info.type) ? (info.histogram || []).map((b) => b.label) : [];
+    const isDate = DATES.has(info.type) && cond.op !== 'in';
+    if (isDate) return drawDate(info);
     const valueInput = (key, placeholder) => h('input', {
       class: 'input input-sm', value: cond[key], placeholder, list: suggestions.length ? listId : null,
+      type: 'text', 'aria-label': placeholder,
       oninput: (e) => { cond[key] = e.target.value; },
       onkeydown: (e) => { if (e.key === 'Enter') apply(); },
     });
@@ -94,6 +99,35 @@ export function openFilterEditor(x, y, { columns, initial = {}, onApply }) {
         button({ label: 'Cancelar', size: 'sm', variant: 'ghost', onClick: closeFilterEditor }),
         button({ label: 'Aplicar', size: 'sm', variant: 'primary', onClick: apply })),
     );
+    body.querySelector('input')?.focus();
+  };
+
+  // RF-4007: data com calendário; data e hora com hora opcional (sem hora, o dia inteiro)
+  const drawDate = (info) => {
+    const withTime = info.type === 'Datetime';
+    const dateInput = (key, label) => {
+      const parts = splitDateTime(cond[key]);
+      const day = h('input', { class: 'input input-sm', type: 'date', value: parts.day, 'aria-label': label,
+        onchange: () => { cond[key] = joinDateTime(day.value, withTime ? clock?.value : ''); } });
+      const clock = withTime ? h('input', { class: 'input input-sm date-time', type: 'time', step: 60, value: parts.time, 'aria-label': `${label}: hora (opcional)`,
+        onchange: () => { cond[key] = joinDateTime(day.value, clock.value); } }) : null;
+      return h('div', { class: 'date-row' }, day, clock);
+    };
+    const op = OPS[cond.op];
+    body.replaceChildren(...[
+      h('select', { class: 'input input-sm', 'aria-label': 'Coluna', onchange: (e) => {
+        cond.column = e.target.value;
+        if (!opsFor(colInfo().type).includes(cond.op)) cond.op = opsFor(colInfo().type)[0];
+        draw();
+      } }, columns.map((c) => h('option', { value: c.name, selected: c.name === cond.column }, `${c.name}  ·  ${typeLabel(c.type)}`))),
+      h('select', { class: 'input input-sm', 'aria-label': 'Operador', onchange: (e) => { cond.op = e.target.value; draw(); } },
+        opsFor(info.type).map((k) => h('option', { value: k, selected: k === cond.op }, OPS[k].label))),
+      op.noValue ? null : cond.op === 'between' ? h('div', { class: 'stack-xs' }, dateInput('value', 'de'), dateInput('value2', 'até')) : dateInput('value', 'data'),
+      withTime && !op.noValue ? h('small', { class: 'field-help' }, 'Sem hora, vale o dia inteiro.') : null,
+      h('div', { class: 'row end' },
+        button({ label: 'Cancelar', size: 'sm', variant: 'ghost', onClick: closeFilterEditor }),
+        button({ label: 'Aplicar', size: 'sm', variant: 'primary', onClick: apply })),
+    ].filter(Boolean));
     body.querySelector('input')?.focus();
   };
 
@@ -125,7 +159,9 @@ export function toExpression(filters, columns) {
   return filters.map((f) => {
     const col = `[${f.column}]`;
     const numeric = NUMERIC.has(typeOf(f.column));
+    const day = DATES.has(typeOf(f.column));
     const lit = (v) => {
+      if (day) { const p = parseDateText(v); return p && !p.invalid ? `${p.time ? 'ToDateTime' : 'ToDate'}('${p.iso}')` : quote(v); }
       if (!numeric) return quote(v);
       const n = parseLocalNumber(v);
       return Number.isNaN(n) ? String(v).replace(',', '.') : String(n);

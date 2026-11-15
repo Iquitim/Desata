@@ -12,6 +12,7 @@ from prodata.api.routes import (
     models,
     organization,
     pdfs,
+    portable,
     queries,
     sql,
     trust,
@@ -38,4 +39,5 @@ routers = [
     sql.router,
     trust.router,
     usage.router,
+    portable.router,
 ]

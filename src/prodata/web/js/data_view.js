@@ -16,6 +16,7 @@ import { accept, linkFile, refreshDatasets, uploadFiles } from './datasets.js';
 import { button, h } from './dom.js';
 import { icon } from './icons.js';
 import { forgetSources } from './organization.js';
+import { initPortable, missingSection } from './portable.js';
 import { on, store } from './store.js';
 import { confirmDialog, showMenu, toast, toastError } from './ui.js';
 
@@ -82,7 +83,7 @@ function listPane() {
     h('div', { class: 'dv-list-head' },
       h('div', {}, h('h1', {}, 'Seus dados'), h('p', {}, 'Valem para todos os fluxos deste computador')),
       button({ icon: 'plus', label: 'Adicionar', variant: 'primary', onClick: addMenu })),
-    search, list.el, fileInput);
+    missingSection(), search, list.el, fileInput);
 }
 
 /** Primeira vez, ou nenhuma fonte escolhida: explica os tipos de fonte e leva a cada um (RF-2809). */
@@ -224,9 +225,11 @@ function refreshKeepingEditor() {
 export function initDataView(el, opts) {
   root = el;
   handlers = { ...handlers, ...opts };
+  initPortable(); // o que falta neste computador, para o fluxo aberto (spec 040)
   for (const event of ['datasets', 'queries', 'apis', 'connections', 'constants', 'organization', 'folders']) on(event, () => renderDataView());
   on('pdfs', () => refreshKeepingEditor());
   on('numbers', () => refreshKeepingEditor());
+  on('sources', () => refreshKeepingEditor()); // o que falta neste computador (spec 040)
 }
 
 /** Ao entrar na vista: dados de uso frescos, porque outro fluxo pode ter sido salvo. */

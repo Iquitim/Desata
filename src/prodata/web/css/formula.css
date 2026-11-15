@@ -1,5 +1,15 @@
 /* Editor de fórmulas (spec 010) e referência a constante (spec 028). Saiu de app.css. */
 
+/* "Você quis dizer…" (spec 040): datas escritas de outro jeito, logo abaixo do campo */
+.fx-dates { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+.fx-date { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 5px 8px; font-size: var(--fs-xs); color: var(--text); background: var(--accent-weak); border-radius: 7px; }
+.fx-date.bad { color: var(--warn); background: var(--warn-weak); }
+.fx-date small { flex-basis: 100%; color: var(--text-2); }
+.fx-date-use { padding: 1px 7px; font: inherit; background: var(--surface); border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; }
+.fx-date-use:hover, .fx-date-use:focus-visible { background: var(--accent); color: var(--accent-text); }
+.fx-date-use code { font-size: var(--fs-xs); color: inherit; }
+.fx-date-x { margin-left: auto; padding: 2px; display: inline-flex; background: none; border: 0; color: var(--text-2); cursor: pointer; border-radius: 4px; }
+
 /* código sem ligaduras: "!=", ">=" e "<=" aparecem como digitados (spec 010, RF-1010) */
 code, kbd, pre, textarea, .mono, .code, .input.code, .input.mono { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
 

@@ -160,6 +160,7 @@
   .side.wide { grid-template-columns: 1fr 84mm; }
   .grid-2.tight { max-width: 88%; margin-left: auto; margin-right: auto; }
   .side figure { margin: 0; }
+  .stack-figs { display: flex; flex-direction: column; gap: 8pt; } /* duas figuras uma sobre a outra, ao lado do texto */
   .side.feature { break-inside: avoid; grid-template-columns: 1fr 62mm; margin-bottom: 4pt; }
   .side.feature.wide { grid-template-columns: 1fr 70mm; }
   .side.feature.slim { grid-template-columns: 1fr 50mm; }
@@ -204,7 +205,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.8.5 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.8.6 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -235,25 +236,26 @@
     <div><span>2</span>Conhecendo a tela</div>
     <div><span>3</span>Seu primeiro fluxo</div>
     <div><span>4</span>Trazendo dados</div>
-    <div><span>5</span>Dados de APIs</div>
-    <div><span>6</span>Dados do Jira</div>
-    <div><span>7</span>Dados de PDFs</div>
-    <div><span>8</span>Montando o fluxo</div>
-    <div><span>9</span>Cruzando e tratando textos</div>
-    <div><span>10</span>Dados que dá para confiar</div>
-    <div><span>11</span>Explorando os resultados</div>
-    <div><span>12</span>Indicadores e visuais</div>
-    <div><span>13</span>Montando o dashboard</div>
-    <div><span>14</span>Linha do tempo e história</div>
+    <div><span>5</span>Montando o fluxo</div>
+    <div><span>6</span>Cruzando e tratando textos</div>
+    <div><span>7</span>Dados que dá para confiar</div>
+    <div><span>8</span>Explorando os resultados</div>
+    <div><span>9</span>Indicadores e visuais</div>
+    <div><span>10</span>Montando o dashboard</div>
+    <div><span>11</span>Linha do tempo e história</div>
+    <div><span>12</span>Dados de APIs</div>
+    <div><span>13</span>Dados do Jira</div>
+    <div><span>14</span>Dados de PDFs</div>
     <div><span>15</span>Do fluxo ao SQL</div>
     <div><span>16</span>O fechamento que se refaz sozinho</div>
     <div><span>17</span>Modelos de previsão</div>
     <div><span>18</span>Organização</div>
-    <div><span>19</span>Segurança e privacidade</div>
-    <div><span>20</span>Instalação e requisitos</div>
-    <div><span>21</span>Escopo e limitações</div>
-    <div><span>22</span>Todas as ferramentas</div>
-    <div><span>23</span>Atalhos e perguntas</div>
+    <div><span>19</span>Compartilhar o fluxo</div>
+    <div><span>20</span>Segurança e privacidade</div>
+    <div><span>21</span>Instalação e requisitos</div>
+    <div><span>22</span>Escopo e limitações</div>
+    <div><span>23</span>Todas as ferramentas</div>
+    <div><span>24</span>Atalhos e perguntas</div>
   </div>
 </section>
 
@@ -282,7 +284,6 @@
     <div class="card"><h4>Ensina enquanto você usa</h4><p>Cross Tab, Join, Summarize e API Loop mostram um esquema do antes e depois com os seus próprios dados.</p></div>
   </div>
 </section>
-
 <!-- ================================================================ 2. TELA -->
 <section class="chapter">
   <div class="eyebrow">2 · Primeiros passos</div>
@@ -324,7 +325,6 @@
     <figcaption>O Manual ao lado do fluxo. Aqui, Mostrar onde fica acendeu o botão Constantes.</figcaption>
   </figure>
 </section>
-
 <!-- ================================================================ 3. PRIMEIRO FLUXO -->
 <section class="chapter">
   <div class="eyebrow">3 · Mão na massa</div>
@@ -345,7 +345,6 @@
   <div class="callout ok"><strong>No mês seguinte</strong>Se o arquivo mudar, é só clicar em Executar. Nada precisa ser refeito: é essa a diferença para a planilha.</div>
   <p><strong>Agora veja um fluxo completo.</strong> O exemplo <em>Pipeline 360° de clientes</em> vem pronto, separado em etapas, e os próximos capítulos o usam nos quadros <strong>Experimente</strong>.</p>
 </section>
-
 <!-- ================================================================ 4. DADOS -->
 <section class="chapter">
   <div class="eyebrow">4 · Entrada de dados</div>
@@ -456,10 +455,430 @@
 
   <div class="try"><strong>Experimente</strong><ol><li>Abra a vista <strong>Dados</strong> e clique em <code>metas_regionais_br.csv</code>.</li><li>Veja na prévia o que foi detectado sozinho: separador, codificação e decimal.</li><li>Abra <em>Onde é usada</em>: o mapa mostra as caixas do exemplo que dependem dele.</li><li>Em <strong>Adicionar → Pasta de arquivos</strong>, aponte para uma pasta sua com vários arquivos e alterne entre <em>Uma tabela só</em> e <em>Um por arquivo</em>: o desenho e a lista mostram o que cada opção faz antes de você confirmar. Nada é criado até você clicar no botão.</li></ol></div>
 </section>
+<!-- ================================================================ 5. FLUXO -->
+<section class="chapter">
+  <div class="eyebrow">5 · Ferramentas</div>
+  <h2>Montando o fluxo</h2>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_ferramentas">Mostrar onde fica</button></div>
+  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 43 ferramentas está no capítulo 23.</p>
+  <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e escreve fórmulas sem decorar funções.</span></div>
 
+  <h3>Configurando uma caixa</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_configurar">Mostrar onde fica</button></div>
+  <p>Clique na caixa e a aba <strong>Configurar</strong> abre ao lado, com um formulário só dela. Na direita, a tabela já mostra o resultado — no exemplo, as três saídas do Join com a contagem de cada uma.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/join.png" alt="Configuração do Join"></div>
+    <figcaption>As chaves de junção são escolhidas em listas que já conhecem as colunas de cada lado.</figcaption>
+  </figure>
+  <h3>Entendendo o que a caixa faz</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="juntar">Experimentar num exemplo</button></div>
+  <p>Cross Tab, Transpose, Join e Summarize são conceitos que confundem quem não trabalha com dados todo dia. No Configurar, essas caixas mostram um <strong>esquema</strong> do que acontece com a tabela, montado com as colunas escolhidas e uma amostra dos seus dados. Passar o mouse num valor destaca para onde ele vai; no Join, clicar em L, J ou R abre aquelas linhas.</p>
+  <div class="grid-2 tight" style="max-width:66%">
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/explain-crosstab.png" alt="Esquema do Cross Tab"></div>
+      <figcaption>Cross Tab: cada segmento vira uma coluna. O valor destacado mostra onde cai na tabela nova.</figcaption>
+    </figure>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/explain-join.png" alt="Esquema do Join"></div>
+      <figcaption>Join: quantas linhas casaram e quais chaves ficaram sem par de cada lado.</figcaption>
+    </figure>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/explain-summarize.png" alt="Esquema do Summarize"></div>
+      <figcaption>Summarize: as linhas de cada grupo (cores) viram uma só, com a soma e a contagem calculadas.</figcaption>
+    </figure>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/join-select.png" alt="Colunas do J no Join"></div>
+      <figcaption>Join: as colunas do J com a origem (L ou R) para manter, renomear, converter e arrastar para mudar a ordem.</figcaption>
+    </figure>
+  </div>
+  <div class="callout tip"><strong>Dica</strong>Soltar uma ferramenta em cima de uma ligação existente encaixa a caixa no meio, já conectada, e abre espaço empurrando o restante do fluxo. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz qualquer alteração.</div>
+
+  <h3>Escrevendo fórmulas</h3>
+  <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
+    <div>
+      <p>As caixas <em>Formula</em> e <em>Filter</em> têm um editor feito para quem não programa. Para fórmulas longas, <strong>Abrir grande</strong> abre o mesmo editor numa janela larga, com colunas, funções e constantes ao lado:</p>
+      <ul>
+        <li><strong>Cores</strong> separam colunas, funções, IF/THEN/ELSE, operadores lógicos (AND, OR, NOT), comparações, textos e números. Coluna inexistente e parêntese sem par ficam sublinhados em vermelho.</li>
+        <li><strong>Autocompletar</strong>: comece a digitar e o {{produto}} sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
+        <li><strong>Dica da função</strong>: dentro dos parênteses aparece o que cada argumento espera.</li>
+        <li><strong>Assistente</strong>: botões <em>Coluna</em>, <em>Função</em> (85 funções com descrição e exemplo) e operadores. Para calcular entre colunas da mesma linha: <code>Average([jan], [fev], [mar])</code>, <code>Sum</code>, <code>Median</code>, <code>Mode</code> (moda), <code>StdDev</code> (desvio padrão), <code>Max</code>, <code>Min</code>. Diferente é <code>!=</code>. Para juntar textos use <code>Concat</code>.</li>
+        <li><strong>Pensadas para o Brasil</strong>: <code>ToNumberBR('1.234,56')</code>, <code>FormatNumber([valor], 2)</code> → 1.234,56, <code>DigitsOnly</code> para CPF e CNPJ, <code>RemoveAccents</code>, e datas em português: <code>DateAdd([data], 1, 'mês')</code>, <code>MonthName</code>, <code>WeekdayName</code>.</li>
+      </ul>
+    </div>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/formula-crop.png" alt="Editor de fórmulas com sugestões"></div><figcaption>Sugestão de função enquanto se digita, com descrição e exemplo.</figcaption></figure>
+  </div>
+
+  <h3>Datas escritas do seu jeito</h3>
+  <div class="side">
+    <div>
+      <p>Para comparar com uma data, o {{produto}} entende <code>ToDate('2026-08-07')</code>. Mas ninguém precisa decorar isso: escreva a data como estiver acostumado, como <code>07/08/2026</code>, <code>'2026-08-07'</code> ou <code>jul/26</code>, e logo abaixo do campo aparece <strong>Você quis dizer 7 de agosto de 2026?</strong>. Clique na sugestão e só aquele trecho é trocado. Ignore, e nada muda.</p>
+      <ul>
+        <li>Dia e mês seguem o padrão do Brasil: <code>07/08/2026</code> é 7 de agosto. A sugestão escreve a data por extenso para você conferir antes de clicar.</li>
+        <li>Mês e ano (<code>jul/26</code>, <code>07/2026</code>) viram o primeiro dia do mês, com a dica de comparar o mês inteiro com <code>DateTrunc('mês', [coluna])</code>.</li>
+        <li>Uma data que não existe, como <code>31/02/2026</code>, ganha um aviso. Textos que só parecem data, como <code>'NF 07/08'</code>, ficam de fora.</li>
+      </ul>
+      <p>Com hora também: <code>08/07/2026 14:30</code> ou <code>2026-07-08T14:30</code> sugerem <code>ToDateTime('2026-07-08 14:30:00')</code>. Ano com dois dígitos (<code>8/7/26</code>) vale como 2026. No <em>Filter</em> básico, colunas de data têm calendário (veja <em>Datas no Filter básico</em>).</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/data-sugestao.png" alt="Sugestão de data abaixo do editor de fórmulas"></div><figcaption>A data escrita de outro jeito e a forma certa, a um clique.</figcaption></figure>
+  </div>
+
+  <h3>Datas no Filter básico</h3>
+  <div class="side">
+    <div>
+      <p>No modo simples do <em>Filter</em>, numa coluna de data, o campo Valor é um <strong>calendário</strong>: não há formato para lembrar. Em coluna de <strong>data e hora</strong>, a hora é opcional: sem hora, a comparação vale para o dia inteiro; com hora, para aquele instante.</p>
+      <p>A comparação é sempre de data com data, nunca de texto com texto. Um fluxo antigo com o valor escrito como <code>07/08/2026</code> abre já no calendário, em 7 de agosto.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/filtro-calendario.png" alt="Calendário com hora opcional no Filter básico"></div><figcaption>Data e hora no Filter básico: sem hora, vale o dia inteiro.</figcaption></figure>
+  </div>
+  <h3>A mesma fórmula em várias colunas</h3>
+  <div class="side feature slim">
+    <div>
+      <p>Padronizar dez colunas do mesmo jeito não pede dez fórmulas. Na <strong>Multi-Field Formula</strong>, você escreve a conta uma vez, com <code>[_Atual_]</code> no lugar da coluna, e marca em quais colunas ela roda.</p>
+      <ul>
+        <li><strong>A própria coluna</strong> troca os valores no lugar.</li>
+        <li><strong>Uma coluna nova para cada uma</strong> mantém a original e cria outra, com o prefixo ou sufixo que você escolher.</li>
+        <li>O esquema mostra o antes e o depois com as suas linhas.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-multifield.png" alt="Esquema da Multi-Field Formula"></div><figcaption>Antes, a fórmula e depois: <code>[_Atual_]</code> vira cada coluna escolhida.</figcaption></figure>
+  </div>
+  <h3>Fórmula que olha outras linhas</h3>
+  <p>A <strong>Multi-Row Formula</strong> compara uma linha com as vizinhas. Você não precisa escrever nada: escolha o que quer fazer, escolha a coluna, e a fórmula sai pronta, à vista.</p>
+  <ul>
+    <li>Em <strong>Ordenar por</strong>, diga a ordem, com uma ou mais colunas: "a linha anterior" depende dela.</li>
+    <li>Com <strong>Agrupar por</strong>, as contas não atravessam grupos.</li>
+    <li><strong>Escrever a minha</strong> abre a fórmula livre, com botões para inserir <code>[Row-1:coluna]</code> e <code>[Row+1:coluna]</code>.</li>
+  </ul>
+  <div class="grid-2 tight" style="max-width:48%">
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/multirow.png" alt="Receitas da Multi-Row Formula"></div><figcaption>As receitas: a pergunta vem antes da fórmula.</figcaption></figure>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-multirow.png" alt="Esquema da Multi-Row Formula"></div><figcaption>O esquema, como no Join: passe o mouse no resultado para ver as células que ele usou.</figcaption></figure>
+  </div>
+  <h3>Editando com agilidade</h3>
+  <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
+    <ul>
+      <li><strong>Lixeira na caixa</strong>: passe o mouse sobre uma caixa e clique no ícone de lixeira (ou use <kbd>Delete</kbd>).</li>
+      <li><strong>Copiar e colar</strong>: <kbd>Ctrl</kbd>+<kbd>C</kbd> e <kbd>Ctrl</kbd>+<kbd>V</kbd> copiam uma caixa — ou uma etapa inteira, com as ligações internas. Dá para colar em outro fluxo.</li>
+      <li><strong>Botão direito</strong>: configurar, executar até ali, copiar, recortar, colar, duplicar, renomear, desativar e excluir. Num fio, insere uma ferramenta no meio; no espaço vazio, cola ou cria caixas.</li>
+      <li><strong>Várias caixas</strong>: <kbd>Shift</kbd> + clique (ou <kbd>Shift</kbd> + arrastar no vazio, ou o modo <strong>Selecionar</strong> da barra do canvas, tecla <kbd>V</kbd>) seleciona várias; a tecla <kbd>H</kbd> volta a <strong>Navegar</strong>; arraste para mover todas, alinhe, distribua, agrupe numa etapa ou tire delas.</li>
+      <li><strong>Ver o que entra</strong>: clique numa porta de entrada para ver, na tabela, os dados que chegam por ela.</li>
+    </ul>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/menu-crop.png" alt="Menu do botão direito numa caixa"></div><figcaption>Menu do botão direito numa caixa.</figcaption></figure>
+  </div>
+
+</section>
+<!-- ================================================================ CRUZAR E TRATAR -->
+<section class="chapter">
+  <div class="eyebrow">6 · Cruzar e tratar</div>
+  <h2>Cruzando tabelas e tratando textos</h2>
+  <p class="intro">Juntar duas bases é onde os números mais mudam sem ninguém perceber. Estas quatro caixas mostram, no próprio esquema, o que casou, o que multiplicou e o que foi escondido.</p>
+  <div class="goal"><b>Ao final:</b> <span>você cruza bases sem dobrar somas, casa nomes escritos de jeitos diferentes, separa trechos de um texto e protege dados pessoais.</span></div>
+  <h3>Junção que multiplica linhas</h3>
+  <div class="side feature">
+    <div>
+      <p>No PROCV, cada linha encontra um valor só. No <strong>Join</strong>, se a chave aparece duas vezes na direita, a linha da esquerda sai duas vezes, e qualquer soma feita depois conta em dobro.</p>
+      <p>O Join avisa quando isso acontece e diz quantas linhas viraram quantas, como em <em>"2 linhas de [L] viraram 3 no J"</em>.</p>
+      <ul>
+        <li>Se a direita é um cadastro, ponha um <strong>Unique</strong> antes.</li>
+        <li>Se a chave repete dos dois lados, resuma um deles com <strong>Summarize</strong>.</li>
+        <li>Se a repetição é esperada, como clientes e pedidos, marque <strong>Repetição da chave é esperada</strong> em Avançado.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-join-multiplica.png" alt="Join avisando que a chave repete"></div><figcaption>O aviso fica no esquema do Join, junto das contagens de L, J e R.</figcaption></figure>
+  </div>
+  <h3>Textos parecidos: Fuzzy Match</h3>
+  <div class="side feature">
+    <div>
+      <p>"Padaria Pão Quente LTDA" e "PADARIA PAO QUENTE" são a mesma empresa, mas um Join comum não casa as duas. O <strong>Fuzzy Match</strong> limpa os dois lados (acentos, maiúsculas, pontuação e, se você quiser, LTDA e S.A.) e dá a cada par uma nota de 0 a 100.</p>
+      <ul>
+        <li>Só entram no J os pares com nota igual ou acima da mínima, cada linha da esquerda com o seu melhor par.</li>
+        <li>Comece com a nota padrão e confira o J: abaixo de 85 começam os casamentos errados.</li>
+        <li>Em tabelas grandes, escolha em Avançado uma <strong>coluna de bloco</strong>, como UF: a comparação fica só dentro dela. Acima de 25 milhões de comparações, a caixa pede o bloco.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-fuzzy.png" alt="Esquema do Fuzzy Match"></div><figcaption>A limpeza antes da comparação e a nota de cada par, com os seus dados.</figcaption></figure>
+  </div>
+  <h3>Trechos de um texto: Regex</h3>
+  <div class="side feature">
+    <div>
+      <p>O <strong>Regex</strong> acha um trecho dentro de um texto: o mês e o ano de "NF 10/2026", o número de um pedido no meio de uma descrição, um CPF ou um e-mail. Você não precisa escrever expressão regular: <strong>mostre o trecho num exemplo</strong>.</p>
+      <ul>
+        <li><strong>Marque no exemplo</strong>: a caixa mostra valores reais da coluna. Selecione com o mouse o trecho que você quer, e ela monta as peças que o descrevem, como "2 dígitos, uma barra, 4 dígitos".</li>
+        <li><strong>Ajuste as peças</strong>: clique numa peça para trocar o tipo, a quantidade ou marcar <strong>Vira coluna</strong>, com um nome. Peças prontas entram por cartões: data, CPF, CNPJ, CEP, e-mail, telefone e valor com vírgula.</li>
+        <li><strong>Confira ao vivo</strong>: os exemplos mostram onde o trecho foi achado, com a cor de cada coluna, e a caixa diz em quantas linhas ele aparece.</li>
+      </ul>
+      <p>Os modos são <strong>Pegar um trecho</strong> (vira coluna), <strong>Trocar um trecho</strong> e <strong>Marcar as linhas que têm o trecho</strong>. Quem já sabe expressão regular encontra a expressão montada pelas peças no <strong>Avançado</strong> e pode escrever direto.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/regex-pecas.png" alt="Regex: exemplos com o trecho destacado e as peças"></div><figcaption>O trecho marcado num exemplo vira peças; mês e ano viram colunas, cada um com a sua cor.</figcaption></figure>
+  </div>
+  <figure class="m50"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-regex.png" alt="Esquema do Regex"></div><figcaption>Como funciona: cada linha, antes e depois. Linha sem o trecho fica vazia.</figcaption></figure>
+  <h3>Dados pessoais: Mask</h3>
+  <div class="side feature">
+    <div>
+      <p>Antes de mandar uma base para fora da área, o <strong>Mask</strong> esconde o que identifica alguém: CPF vira <code>***.456.789-**</code>, CNPJ vira <code>**.345.678/****-**</code> e e-mail vira <code>a***@empresa.com.br</code>. Também mostra só o início ou o fim, ou troca tudo por um texto fixo.</p>
+      <p>O <strong>código estável</strong> troca cada valor por um código: o mesmo CPF dá sempre o mesmo código, e assim dá para cruzar e contar sem expor o dado. A chave fica no cofre do Windows deste computador, então o código de um computador não bate com o de outro.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-mask.png" alt="Esquema do Mask"></div><figcaption>O esquema usa exemplos inventados: os seus dados pessoais nunca aparecem nele.</figcaption></figure>
+  </div>
+  <div class="try"><strong>Experimente</strong><ol><li>Ligue dois <em>Text Input</em> num <em>Join</em>, com a mesma chave repetida no da direita.</li><li>Execute e abra o <strong>Como funciona</strong>: o aviso mostra quantas linhas viraram quantas.</li><li>Ponha um <em>Unique</em> antes da entrada direita e execute de novo: o aviso some.</li></ol></div>
+</section>
+<!-- ================================================================ 7. DATA QUALITY -->
+<section class="chapter">
+  <div class="eyebrow">7 · Qualidade</div>
+  <h2>Dados que dá para confiar</h2>
+  <p class="intro">Um CPF inválido, um setor em branco ou um estado fora da lista chegam ao relatório sem ninguém ver. A ferramenta <strong>Data Quality</strong> confere regras antes de o dado seguir e separa o que passou do que falhou, com o motivo.</p>
+  <div class="goal"><b>Ao final:</b> <span>você sabe montar regras de qualidade sem escrever fórmulas e decidir o que fazer com as linhas que falharam.</span></div>
+  <div class="two-col side-figure">
+    <div>
+      <h3>Escolha as regras pelos cartões</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="qualidade">Experimentar num exemplo</button></div>
+      <p>Cada cartão mostra um exemplo do que passa (✓) e do que falha (✗). Clique para adicionar a regra e escolha a coluna. O número no cartão diz quantas vezes ela já está na caixa. Só aparecem as colunas que servem: a faixa de número oferece só números.</p>
+      <table>
+        <tr><th>Regra</th><th>Confere</th></tr>
+        <tr><td class="tool">Não vazio</td><td>Preenchido. Espaços em branco contam como vazio.</td></tr>
+        <tr><td class="tool">Sem duplicados</td><td>Cada valor uma vez só, numa coluna ou na combinação de várias. Todas as cópias falham.</td></tr>
+        <tr><td class="tool">CPF · CNPJ</td><td>Dígitos verificadores, com ou sem máscara. Aceita o CNPJ com letras, que começa a valer em 2026.</td></tr>
+        <tr><td class="tool">E-mail</td><td>Formato de endereço de e-mail.</td></tr>
+        <tr><td class="tool">Número na faixa</td><td>Entre um mínimo e um máximo, ou só um dos dois.</td></tr>
+        <tr><td class="tool">Data válida</td><td>Data que existe, entre duas datas ou que não está no futuro.</td></tr>
+        <tr><td class="tool">Valor permitido</td><td>Está na lista digitada ou numa coluna de outra tabela, diferenciando ou não maiúsculas.</td></tr>
+        <tr><td class="tool">Fórmula livre</td><td>Qualquer condição na linguagem de fórmula, com a sua mensagem.</td></tr>
+      </table>
+    </div>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dq-regras.png" alt="Cartões de regra do Data Quality"></div>
+      <figcaption>Os cartões de regra, com o que passa e o que falha em cada um.</figcaption>
+    </figure>
+  </div>
+  <h3>A lista de valores permitidos</h3>
+  <div class="two-col side-figure">
+    <div>
+      <p>Em <strong>De onde vem a lista</strong>, escolha um de dois jeitos:</p>
+      <ul>
+        <li><strong>Digitar os valores</strong>: um por linha, como ao colar uma coluna do Excel, ou separados por vírgula ou ponto e vírgula. Embaixo, cada valor aparece numa etiqueta, do jeito que foi entendido. Um repetido conta uma vez, e o <strong>×</strong> tira um valor. Depois de executar, <strong>Trazer os valores de [coluna]</strong> preenche a lista com o que aparece nos dados: aí é só tirar os que não valem.</li>
+        <li><strong>De outra tabela, pela entrada L</strong>: a caixa ganha a entrada <strong>L</strong>. Ligue nela um Text Input, um arquivo ou uma consulta com a lista, como o cadastro de estados atendidos, e escolha a coluna. Quando o cadastro muda, a regra acompanha sem editar a caixa. Vazios na lista são ignorados.</li>
+      </ul>
+      <figure>
+        <div class="frame"><img src="../../src/prodata/web/manual/img/dq-lista-tabela.png" alt="Lista de valores permitidos vinda da coluna sigla da entrada L"></div>
+        <figcaption>Com a lista em outra tabela, basta escolher a coluna da entrada L.</figcaption>
+      </figure>
+    </div>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dq-lista.png" alt="Lista de valores permitidos digitada, com as etiquetas"></div>
+      <figcaption>Um valor por linha. As etiquetas mostram como a lista foi entendida.</figcaption>
+    </figure>
+  </div>
+  <h3>O que sai da caixa</h3>
+  <p><strong>P</strong> leva as linhas que passaram em todas as regras e segue no fluxo. <strong>F</strong> leva as que falharam em pelo menos uma, com duas colunas a mais: <code>regra</code> e <code>motivo</code>, como <em>"Vazio em [setor]"</em>. Ligue o F a um Output Data para mandar a lista de correções a quem cuida do cadastro.</p>
+  <p>Depois de executar, a caixa ganha no canvas um selo vermelho com quantas linhas falharam, e o esquema <strong>Como funciona</strong> mostra as contas da última execução, regra por regra. As células reprovadas ficam em vermelho na amostra.</p>
+  <p>Para as regras de formato (CPF, e-mail, data…), o vazio passa: use <strong>Não vazio</strong> para cobrar o preenchimento. Assim cada falha tem um motivo só.</p>
+  <figure class="m50" style="max-width:46%">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dq-resultado.png" alt="Esquema do Data Quality depois de executar"></div>
+    <figcaption>Quantas linhas passaram e quantas falharam, e em qual regra.</figcaption>
+  </figure>
+  <div class="try"><strong>Experimente</strong><ol><li>Arraste <em>Data Quality</em> e ligue à saída de <em>Clientes</em>.</li><li>Clique no cartão <strong>Não vazio</strong> e escolha <code>setor</code>.</li><li>Execute até a caixa: as linhas sem setor saem pelo F, cada uma com o motivo.</li></ol></div>
+  <h3>Parar o fluxo quando o dado não presta</h3>
+  <p>Separar P e F não impede que o relatório saia com metade da base. Em <strong>Controle</strong>, o Data Quality pode <strong>interromper o fluxo</strong>: se qualquer linha falhar, ou só quando a falha passar de uma porcentagem que você aceita. A caixa fica em erro, diz quantas linhas falharam e em quais regras, e nada do que vem depois dela executa.</p>
+  <h3>Conferir se entrada e saída fecham</h3>
+  <div class="side feature">
+    <div>
+      <p>A caixa <strong>Reconcile</strong> responde à pergunta de toda conciliação: o que saiu bate com o que entrou? Ligue em <strong>A</strong> a referência e em <strong>B</strong> o que você quer conferir.</p>
+      <ul>
+        <li>Cada <strong>controle</strong> é o mesmo número calculado dos dois lados: linhas, soma de uma coluna ou valores distintos, com a diferença que você aceita.</li>
+        <li>A saída <strong>C</strong> traz uma linha por controle, com os dois valores e a diferença.</li>
+        <li>A saída <strong>O</strong> repassa a tabela B: o que vem depois passa a depender da conferência.</li>
+        <li>Com <strong>Interromper o fluxo aqui</strong>, o que não fecha vira erro, com os números na mensagem.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-reconcile.png" alt="Esquema do Reconcile"></div><figcaption>Cada controle nos dois lados e o que acontece quando não fecha.</figcaption></figure>
+  </div>
+  <h3>O que mudou desde a última execução</h3>
+  <div class="side feature">
+    <div>
+      <p>A caixa <strong>Compare Runs</strong> guarda a tabela a cada dia em que o fluxo executa e compara a de agora com a de um dia anterior, ou de um mês anterior.</p>
+      <ul>
+        <li>A saída <strong>T</strong> traz os totais: linhas e soma de cada coluna numérica, antes, agora e a variação.</li>
+        <li>Com as colunas que identificam cada linha, a saída <strong>D</strong> lista o que entrou, o que saiu e o que mudou, com o valor de antes e o de agora.</li>
+        <li>Na primeira execução ainda não há base, e a caixa avisa.</li>
+        <li>As tabelas guardadas ficam neste computador, não no arquivo do fluxo: os últimos 62 dias e o último dia de cada mês por 13 meses. O limite é de 2 milhões de linhas.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-compare.png" alt="Esquema do Compare Runs"></div><figcaption>A execução guardada, a de agora e o que mudou entre elas.</figcaption></figure>
+  </div>
+</section>
+<!-- ================================================================ 6. RESULTADOS -->
+<section class="chapter">
+  <div class="eyebrow">8 · Análise</div>
+  <h2>Explorando os resultados</h2>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="aba_resultado">Mostrar a tabela</button><button type="button" class="manual-only m-act" data-show="filtros_resultado">Mostrar os filtros</button></div>
+  <p class="intro">Cada caixa guarda o resultado da última execução. Clique nela — ou em uma de suas saídas — e a tabela mostra os dados correspondentes.</p>
+  <div class="grid-2">
+    <div>
+      <h3 style="margin-top:0">Filtros exploratórios</h3>
+      <p>Para investigar sem mexer no fluxo, use o botão <strong>Filtros</strong> da tabela, o funil no cabeçalho de cada coluna ou o botão direito sobre uma célula ("Filtrar = valor", "Excluir valor").</p>
+      <p>As condições viram etiquetas que você edita ou remove, e o contador mostra quantas linhas sobraram. Esses filtros <strong>não alteram o fluxo salvo</strong>, e o perfil passa a considerar só as linhas filtradas.</p>
+    </div>
+    <div>
+      <h3 style="margin-top:0">Perfil de qualidade</h3>
+      <p>A aba <strong>Perfil</strong> descreve cada coluna: percentual preenchido, vazio e nulo, valores distintos, mais frequentes e estatísticas (mínimo, média, mediana, máximo).</p>
+      <p>Espaços invisíveis aparecem: células só com espaços mostram <em>vazio (espaços)</em>, espaço sobrando no início ou no fim aparece como ␣ e o cabeçalho da coluna traz um aviso com as contagens — "SP " não casa com "SP" num Join.</p>
+    </div>
+    <figure class="m60" style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/filters-crop.png" alt="Filtros exploratórios"></div>
+      <figcaption>"uf = SP" e "mrr_mensal ≥ 3000": 105 de 500 clientes.</figcaption></figure>
+    <figure class="m60" style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/profile-crop.png" alt="Perfil das colunas"></div>
+      <figcaption>Perfil da saída combinada do Join.</figcaption></figure>
+  </div>
+  <div class="callout ok"><strong>Da exploração para o processo</strong>Quando a investigação vira regra, o botão <strong>Criar caixa Filter</strong> transforma os filtros em uma caixa Filter já conectada ao fluxo.</div>
+  <h3>Tabela em tela cheia</h3>
+  <p>Para mostrar um resultado numa reunião, ou explorar uma tabela larga, o botão de tela cheia, no topo da tabela (as duas setas), a abre na janela inteira, com a busca, os filtros, o perfil e as páginas. <kbd>Shift</kbd>+<kbd>F11</kbd> faz o mesmo, e <kbd>Esc</kbd> volta ao fluxo, do jeito que estava.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/tabela-cheia.png" alt="Tabela de resultados em tela cheia"></div>
+    <figcaption>A tabela na janela inteira: é o modo foco do resultado, como o F11 é o do fluxo.</figcaption>
+  </figure>
+  <div class="try"><strong>Experimente</strong><ol><li>Clique na caixa <em>Clientes</em> e, na tabela, em <strong>Filtros</strong>: filtre <code>uf</code> por SP.</li><li>Repare que o cabeçalho das colunas passa a mostrar a soma e a contagem só das linhas filtradas.</li></ol></div>
+</section>
+<!-- ================================================================ 7. DASHBOARD -->
+<section class="chapter">
+  <div class="eyebrow">9 · Visuais</div>
+  <h2>Indicadores e visuais</h2>
+  <p class="intro">Os números nascem dentro do fluxo: as caixas de BI calculam e o Dashboard mostra. Quando os dados mudam, basta executar de novo.</p>
+  <table>
+    <tr><th style="width:24%">Caixa</th><th>O que publica</th></tr>
+    <tr><td class="tool">KPI Card</td><td>Um número em destaque (soma, média, contagem…). Opcionalmente compara com uma <strong>meta</strong> ou com o <strong>período anterior</strong> (dia, semana, mês, trimestre ou ano), mostrando a variação com seta verde ou vermelha conforme "maior é melhor" ou "menor é melhor", e um <strong>minigráfico</strong> da tendência. Também pode virar um <strong>medidor</strong>.</td></tr>
+    <tr><td class="tool">Chart</td><td>Colunas, barras, linha e rosca; com uma <strong>2ª dimensão</strong>, colunas empilhadas, agrupadas ou 100%, várias linhas e áreas; e ainda <strong>Pareto</strong>, <strong>funil</strong> e <strong>dispersão</strong>.</td></tr>
+    <tr><td class="tool">Venn</td><td>Quantos estão em cada combinação de 2 ou 3 grupos — por exemplo, clientes que compraram Cloud, AutoML ou os dois.</td></tr>
+    <tr><td class="tool">Table</td><td>Uma tabela com as colunas escolhidas, ordenação, linha de totais e cores por faixa de valor.</td></tr>
+  </table>
+  <div class="grid-2">
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-kpi.png" alt="Big number com variação e tendência"></div>
+      <figcaption>Faturamento do mês contra o mês anterior, com a tendência dos últimos meses.</figcaption>
+    </figure>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-venn.png" alt="Diagrama de Venn"></div>
+      <figcaption>Venn: 69 clientes contrataram os três produtos; 126 só o Cloud.</figcaption>
+    </figure>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-pareto.png" alt="Gráfico de Pareto"></div>
+      <figcaption>Pareto: cada coluna é a participação no total e a linha, o acumulado. As UFs destacadas somam 80%.</figcaption>
+    </figure>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-stacked.png" alt="Colunas empilhadas"></div>
+      <figcaption>Colunas empilhadas: faturamento por mês, dividido por produto.</figcaption>
+    </figure>
+  </div>
+  <ul>
+    <li>Todo visual tem o botão <strong>Ver tabela</strong>, com os números exatos — o dado nunca depende só do desenho.</li>
+    <li>Passar o mouse mostra o valor de cada barra, ponto ou região. Clicar no título leva à caixa que gerou o visual.</li>
+    <li>O painel <strong>Gráficos e resumos</strong>, abaixo do canvas, mostra os visuais das caixas de BI. Um botão no fim dele mostra também um gráfico automático para cada <strong>Summarize</strong>, o que é opcional.</li>
+  </ul>
+  <figure class="m50">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-export.png" alt="Imagem PNG do dashboard"></div>
+    <figcaption>A imagem que sai do botão <strong>Baixar imagem</strong> no dashboard da demonstração, pronta para o e-mail ou a apresentação.</figcaption>
+  </figure>
+</section>
+<!-- ================================================================ 8. DASHBOARD -->
+<section class="chapter">
+  <div class="eyebrow">10 · Dashboard</div>
+  <h2>Montando o dashboard</h2>
+  <p class="intro">O fluxo define <strong>o que</strong> mostrar; o dashboard define <strong>onde e como</strong>. Mudar cores ou posições não executa nada de novo.</p>
+  <div class="goal"><b>Ao final:</b> <span>você monta a página, filtra e entrega em imagem ou em um arquivo que abre em qualquer navegador.</span></div>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-guides.png" alt="Dashboard no modo Editar, com guias de alinhamento"></div>
+    <figcaption>O dashboard da demonstração no modo Editar: ao arrastar um gráfico, as guias douradas mostram o alinhamento com os vizinhos.</figcaption>
+  </figure>
+  <h3>Editar o layout</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="editar_layout">Mostrar onde fica</button></div>
+  <p>Clique em <strong>Editar layout</strong>. A página vira um canvas: arraste os visuais, redimensione pelas alças e eles se encaixam numa grade, com guias quando se alinham a outro item ou ao centro da página (segure <kbd>Alt</kbd> para posicionar livremente). Ao mover, os espaços iguais entre os itens aparecem medidos; ao redimensionar, o item encaixa na largura ou altura de outro e os dois ficam marcados. <strong>Copiar formato</strong>, no painel ou no botão direito, liga o pincel: cada clique em outra caixa aplica o formato, sem levar título nem nomes, e <kbd>Esc</kbd> encerra. Na lista de cores do gráfico, mude a cor de uma categoria para destacar só ela. Arrastar no vazio seleciona vários; o botão direito alinha, distribui e muda a camada; <kbd>Delete</kbd> tira o visual da página sem apagar a caixa do fluxo — ele fica em <strong>Fora da página</strong> e volta com um clique.</p>
+  <div class="grid-3">
+    <div class="card"><h4>Inserir</h4><p>Título (empurra o conteúdo para baixo), texto, imagem PNG/JPG/SVG até 1 MB, o logo de {{organizacao}}, retângulos de fundo e linhas divisórias.</p></div>
+    <div class="card"><h4>Página</h4><p>16:9, A4 paisagem, A4 retrato ou altura livre, com cor de fundo. Se os visuais não couberem, a página cresce e o {{produto}} avisa.</p></div>
+    <div class="card"><h4>Baixar imagem</h4><p>No botão <strong>Baixar</strong>, gera um PNG em alta resolução da página — ou de um visual só, pelo botão do cartão — no tema claro ou escuro que estiver na tela.</p></div>
+  </div>
+  <div class="two-col side-figure">
+    <div>
+      <h3>Organizar com um clique</h3>
+      <p>O botão <strong>Organizar</strong> mostra os seus visuais em seis arranjos — Automático, KPIs no topo com 2 ou 3 colunas, Destaque, KPIs na lateral e Relatório — e aplica o escolhido.</p>
+      <p>Textos, imagens e o que não estiver selecionado ficam onde estão; um <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
+    </div>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-organize.png" alt="Galeria de layouts"></div>
+      <figcaption>Cada opção é desenhada com os visuais do próprio dashboard.</figcaption>
+    </figure>
+  </div>
+  <h3>Formatar cada visual</h3>
+  <p>Com um item selecionado, o painel <strong>Formato</strong> ajusta título, subtítulo, fundo, borda, cantos e sombra; os <strong>nomes na legenda e nas categorias</strong> (ex.: SP → São Paulo) e a posição da legenda; cores (paleta da marca, paleta alternativa, uma cor ou uma cor por categoria — com aviso quando a cor some no fundo); rótulos de dados, formato dos números, legenda e eixos; e, em tabelas e KPIs, <strong>cores por faixa</strong> (bom, atenção, crítico, sempre com ícone).</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-edit.png" alt="Modo Editar com o painel Formato"></div>
+    <figcaption>O Pareto selecionado e o painel Formato à direita.</figcaption>
+  </figure>
+
+  <h3>Filtros na página</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="filtros_dash">Mostrar onde fica</button></div>
+  <p>Em <strong>Adicionar filtro</strong>, escolha uma coluna: a faixa no topo mostra seus valores como botões ou, em número e data, um controle deslizante. Ou clique direto numa <strong>barra ou fatia</strong> de um gráfico: a página filtra por aquele valor, <kbd>Ctrl</kbd>+clique soma outros, e clicar de novo tira. O gráfico clicado mantém as demais categorias apagadas, para dar para trocar. O filtro vale para todos os visuais cuja tabela tem aquela coluna, sem executar o fluxo de novo. Quem não tem a coluna não muda e mostra um aviso discreto, <strong>Sem filtro</strong>. A escolha fica salva no fluxo e aparece no alto da imagem PNG.</p>
+  <figure class="m60">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-filters.png" alt="Barra de filtros do dashboard"></div>
+    <figcaption>Filtro por UF: os visuais com a coluna mudam na hora, e o aviso marca o que ficou de fora.</figcaption>
+  </figure>
+  <h3>O dashboard em um arquivo HTML</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="baixar">Mostrar onde fica</button></div>
+  <p>No botão <strong>Baixar</strong>, <strong>Baixar HTML</strong> gera um arquivo só, que abre em qualquer navegador, sem o {{produto}} e sem internet, com os detalhes ao passar o mouse e os <strong>filtros funcionando</strong>. Para isso, o arquivo leva as colunas que os visuais e os filtros usam, e nada além delas. Antes de salvar, a tela mostra quanto dado vai dentro. Com <strong>senha</strong>, obrigatória nos rótulos Confidencial e Restrito, os dados ficam cifrados até alguém digitá-la.</p>
+  <div class="callout warn"><strong>Cuidado ao compartilhar</strong>Quem abre o arquivo pode ver e copiar todos os dados que ele leva, mesmo o que estiver filtrado fora. Envie a senha por outro canal; quem a perder não recupera o arquivo, mas pode gerar outro no {{produto}}.</div>
+  <figure class="m50" style="max-width:24%">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-html.png" alt="Aviso antes de salvar o HTML"></div>
+    <figcaption>O aviso lista as colunas e o tamanho antes de gerar o arquivo.</figcaption>
+  </figure>
+  <div class="try"><strong>Experimente</strong><ol><li>Abra o <strong>Dashboard</strong>, clique em <strong>Adicionar filtro</strong> e escolha <code>uf</code>.</li><li>Marque SP: os visuais com a coluna mudam na hora, sem executar o fluxo.</li><li>Clique em <strong>Baixar</strong>, depois em <strong>Baixar HTML</strong>, e abra o arquivo: o filtro continua funcionando.</li></ol></div>
+</section>
+<!-- ================================================================ REPLAY -->
+<section class="chapter">
+  <div class="eyebrow">11 · Replay</div>
+  <h2>Linha do tempo e história</h2>
+  <p class="intro">O dashboard pode andar no tempo. Os visuais acompanham a reprodução sem executar o fluxo, com o mesmo cálculo do resto do programa.</p>
+  <div class="goal"><b>Ao final:</b> <span>você reproduz o dashboard, encontra os momentos que importam, gera um GIF de um gráfico e conta o que viu em cenas.</span></div>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="replay">Abrir um exemplo pronto</button></div>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/replay-dash.png" alt="Dashboard com a linha do tempo, corrida de barras e Sankey"></div>
+    <figcaption>O exemplo do programa, com dados fictícios: envelhecimento do backlog e tempo parado em cada status.</figcaption>
+  </figure>
+  <h3>Ligar a linha do tempo</h3>
+  <p>No dashboard, clique em <strong>Linha do tempo</strong> e diga qual coluna é a data. A lista traz as colunas que chegam aos visuais, com exemplos dos valores e quais visuais vão acompanhar. Vale coluna de data ou texto como <code>2026-05</code> e <code>29/10/2026</code>. A escolha fica salva no fluxo. Depois, defina o passo: dia, semana ou mês. Reproduza, pause, troque a velocidade ou arraste para qualquer momento. Filtros continuam valendo.</p>
+  <table>
+    <tr><th>Modo</th><th>O que mostra</th><th>Quando usar</th></tr>
+    <tr><td class="tool">Acumulado</td><td>Tudo o que veio até aquele momento</td><td>Vendas, entregas, eventos que se somam</td></tr>
+    <tr><td class="tool">Só no período</td><td>Só o que aconteceu naquele período</td><td>Fotos, como as do Estado por período, que não podem ser somadas</td></tr>
+  </table>
+  <p>Visual cuja tabela não tem a coluna fica parado e ganha a marca <strong>Parado</strong>. O botão de tabela na barra abre os registros daquele momento.</p>
+  <h3>Gráficos feitos para o tempo</h3>
+  <div class="grid-3">
+    <div class="card"><h4>Corrida de barras</h4><p>Categorias trocando de posição, como projetos ou status. Nunca use para comparar pessoas: o {{produto}} não traz esse exemplo.</p></div>
+    <div class="card"><h4>Bolhas</h4><p>Uma bolha por categoria, com posição em dois valores e tamanho em um terceiro.</p></div>
+    <div class="card"><h4>Sankey</h4><p>Quanto passa de cada origem para cada destino, como de um status para outro.</p></div>
+  </div>
+  <p>Barras, linhas, áreas e dispersão também têm transição. Cada gráfico pode desligar a animação no painel Formato. Se o Windows estiver pedindo menos movimento, os valores mudam sem transição.</p>
+  <h3>Destaques</h3>
+  <p>Pontos sobre a linha do tempo marcam picos, viradas de tendência e valores fora do padrão do primeiro visual que acompanha o tempo. Clique num ponto e o critério aparece, por exemplo: <em>2,3 desvios acima da média das últimas 8 marcações</em>.</p>
+  <h3>GIF de um gráfico</h3>
+  <div class="two-col side-figure">
+    <div>
+      <p>O botão de filme, no canto do gráfico, gera um GIF só daquele visual. Escolha período, duração, tamanho e quadros por segundo, e veja a estimativa antes de gerar.</p>
+      <p>O GIF não tem senha. Em <strong>Confidencial</strong> ele pede confirmação; em <strong>Restrito</strong> fica bloqueado. Toda imagem sai com a faixa do rótulo.</p>
+    </div>
+    <figure>
+      <div class="frame"><img src="../../src/prodata/web/manual/img/replay-gif.png" alt="Opções do GIF com o tamanho estimado"></div>
+      <figcaption>Os limites aparecem na tela antes de gerar.</figcaption>
+    </figure>
+  </div>
+  <h3>Contar uma história</h3>
+  <p>Pare num momento e clique em <strong>Guardar cena</strong>: ela lembra o momento, os filtros e o visual em destaque, com título e anotação. Em <strong>Cenas</strong>, reordene e clique em <strong>Apresentar</strong>. De cada cena dá para voltar à caixa de origem.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/replay-historia.png" alt="Apresentação de uma cena com um visual em destaque"></div>
+    <figcaption>Na apresentação, o visual escolhido fica em destaque e as setas do teclado trocam de cena.</figcaption>
+  </figure>
+  <p>O <strong>HTML</strong> exportado leva a linha do tempo, os destaques e a história, com filtros, senha e rótulo como sempre. O arquivo inclui as colunas usadas pelos visuais, e o diálogo mostra quais são antes de gerar.</p>
+</section>
 <!-- ================================================================ 5. APIS -->
 <section class="chapter">
-  <div class="eyebrow">5 · Dados de APIs</div>
+  <div class="eyebrow">12 · Dados de APIs</div>
   <h2>Dados de APIs, sem programar</h2>
   <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O {{produto}} faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto.</p>
   <div class="goal"><b>Ao final:</b> <span>você sabe cadastrar uma API, testar, e buscar um dado para cada linha da sua tabela.</span></div>
@@ -512,10 +931,9 @@
   </div>
   <div class="try"><strong>Experimente</strong><ol><li>No exemplo, clique em <strong>Executar</strong>: a etapa <em>5 · API pública do IBGE</em> busca os estados e os municípios de cada um. Abrir o fluxo não chama a internet; sem rede, só essa etapa dá erro.</li><li>Clique na caixa <em>Municípios por estado</em> e passe o mouse num valor do esquema para ver o caminho dele.</li></ol></div>
 </section>
-
 <!-- ================================================================ JIRA -->
 <section class="chapter">
-  <div class="eyebrow">6 · Jira</div>
+  <div class="eyebrow">13 · Jira</div>
   <h2>Dados do Jira, sem escrever JQL</h2>
   <p class="intro">O {{produto}} lê demandas, histórico e comentários do Jira Cloud e transforma tudo em tabelas. Ele só lê: nenhuma chamada altera o seu Jira.</p>
   <div class="goal"><b>Ao final:</b> <span>você conecta o Jira com um token de leitura, monta uma consulta e leva a tabela para o fluxo.</span></div>
@@ -549,10 +967,9 @@
   <p>O Jira guarda mudanças; muitas análises precisam de fotos: como cada demanda estava no fim de cada mês. A caixa <strong>Estado por período</strong> faz essa passagem para qualquer tabela de eventos. Na entrada <strong>I</strong> vão os itens; na <strong>E</strong>, os eventos. Com o histórico do Jira, use <code>campo</code> igual a <code>status</code>.</p>
   <p>O que os eventos não explicam fica <strong>sem histórico</strong>. O valor de hoje nunca é usado para preencher o passado, a menos que a demanda nunca tenha mudado e você escolha a coluna de estado atual.</p>
 </section>
-
 <!-- ================================================================ PDF -->
 <section class="chapter">
-  <div class="eyebrow">7 · PDF</div>
+  <div class="eyebrow">14 · PDF</div>
   <h2>Dados de PDFs, apontando no documento</h2>
   <p class="intro">Relatórios, extratos e documentos chegam em PDF e costumam ser copiados à mão para planilhas. No {{produto}}, você ensina a extração apontando no próprio documento: clica no valor, vê a coluna nascer e confere de onde ela veio. Depois, a mesma extração vale para os próximos PDFs com o mesmo layout.</p>
   <div class="goal"><b>Ao final:</b> <span>você sabe tirar campos e tabelas de um PDF, testar nos outros arquivos e usar o resultado em qualquer fluxo.</span></div>
@@ -654,413 +1071,6 @@
   <p>No fluxo de exemplo, a etapa <em>6 · PDFs da Receita Federal</em> lê três relatórios reais da <strong>Análise da Arrecadação das Receitas Federais</strong> (julho a setembro de 2026), publicados pela Receita Federal no gov.br, com reprodução autorizada mediante citação da fonte. A extração já vem pronta, e os dados do PDF entram no resto do fluxo: a arrecadação de cada mês é cruzada com o faturamento das <em>Transações</em> (quanto a empresa fatura para cada R$ 1 bilhão arrecadado pela União), e a tabela por tributo vira o gráfico dos principais tributos. Os três gráficos estão no dashboard do exemplo. Em setembro o cabeçalho da tabela mudou de formato, e a mesma extração continua funcionando.</p>
   <div class="try"><strong>Experimente</strong><ol><li>Em <strong>Dados &gt; Adicionar &gt; PDF</strong>, clique em <strong>Usar os PDFs de exemplo</strong>.</li><li>Clique no valor ao lado de “Total líquido” e tecle <kbd>Enter</kbd>. Depois arraste sobre a tabela e tecle <kbd>T</kbd>.</li><li>Abra <strong>Testar em outros arquivos</strong>: o relatório de dezembro tem dois totais e fica Ambíguo.</li><li>Na lista da vista Dados, abra <strong>Arrecadação federal (Receita Federal)</strong> e clique num valor da tabela para ver de onde ele veio no relatório.</li></ol></div>
 </section>
-
-<!-- ================================================================ 5. FLUXO -->
-<section class="chapter">
-  <div class="eyebrow">8 · Ferramentas</div>
-  <h2>Montando o fluxo</h2>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_ferramentas">Mostrar onde fica</button></div>
-  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 43 ferramentas está no capítulo 22.</p>
-  <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e escreve fórmulas sem decorar funções.</span></div>
-
-  <h3>Configurando uma caixa</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_configurar">Mostrar onde fica</button></div>
-  <p>Clique na caixa e a aba <strong>Configurar</strong> abre ao lado, com um formulário só dela. Na direita, a tabela já mostra o resultado — no exemplo, as três saídas do Join com a contagem de cada uma.</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/join.png" alt="Configuração do Join"></div>
-    <figcaption>As chaves de junção são escolhidas em listas que já conhecem as colunas de cada lado.</figcaption>
-  </figure>
-  <h3>Entendendo o que a caixa faz</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="juntar">Experimentar num exemplo</button></div>
-  <p>Cross Tab, Transpose, Join e Summarize são conceitos que confundem quem não trabalha com dados todo dia. No Configurar, essas caixas mostram um <strong>esquema</strong> do que acontece com a tabela, montado com as colunas escolhidas e uma amostra dos seus dados. Passar o mouse num valor destaca para onde ele vai; no Join, clicar em L, J ou R abre aquelas linhas.</p>
-  <div class="grid-2 tight" style="max-width:66%">
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/explain-crosstab.png" alt="Esquema do Cross Tab"></div>
-      <figcaption>Cross Tab: cada segmento vira uma coluna. O valor destacado mostra onde cai na tabela nova.</figcaption>
-    </figure>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/explain-join.png" alt="Esquema do Join"></div>
-      <figcaption>Join: quantas linhas casaram e quais chaves ficaram sem par de cada lado.</figcaption>
-    </figure>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/explain-summarize.png" alt="Esquema do Summarize"></div>
-      <figcaption>Summarize: as linhas de cada grupo (cores) viram uma só, com a soma e a contagem calculadas.</figcaption>
-    </figure>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/join-select.png" alt="Colunas do J no Join"></div>
-      <figcaption>Join: as colunas do J com a origem (L ou R) para manter, renomear, converter e arrastar para mudar a ordem.</figcaption>
-    </figure>
-  </div>
-  <div class="callout tip"><strong>Dica</strong>Soltar uma ferramenta em cima de uma ligação existente encaixa a caixa no meio, já conectada, e abre espaço empurrando o restante do fluxo. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz qualquer alteração.</div>
-
-  <h3>Escrevendo fórmulas</h3>
-  <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
-    <div>
-      <p>As caixas <em>Formula</em> e <em>Filter</em> têm um editor feito para quem não programa. Para fórmulas longas, <strong>Abrir grande</strong> abre o mesmo editor numa janela larga, com colunas, funções e constantes ao lado:</p>
-      <ul>
-        <li><strong>Cores</strong> separam colunas, funções, IF/THEN/ELSE, operadores lógicos (AND, OR, NOT), comparações, textos e números. Coluna inexistente e parêntese sem par ficam sublinhados em vermelho.</li>
-        <li><strong>Autocompletar</strong>: comece a digitar e o {{produto}} sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
-        <li><strong>Dica da função</strong>: dentro dos parênteses aparece o que cada argumento espera.</li>
-        <li><strong>Assistente</strong>: botões <em>Coluna</em>, <em>Função</em> (82 funções com descrição e exemplo) e operadores. Para calcular entre colunas da mesma linha: <code>Average([jan], [fev], [mar])</code>, <code>Sum</code>, <code>Median</code>, <code>Mode</code> (moda), <code>StdDev</code> (desvio padrão), <code>Max</code>, <code>Min</code>. Diferente é <code>!=</code>. Para juntar textos use <code>Concat</code>.</li>
-        <li><strong>Pensadas para o Brasil</strong>: <code>ToNumberBR('1.234,56')</code>, <code>FormatNumber([valor], 2)</code> → 1.234,56, <code>DigitsOnly</code> para CPF e CNPJ, <code>RemoveAccents</code>, e datas em português: <code>DateAdd([data], 1, 'mês')</code>, <code>MonthName</code>, <code>WeekdayName</code>.</li>
-      </ul>
-    </div>
-    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/formula-crop.png" alt="Editor de fórmulas com sugestões"></div><figcaption>Sugestão de função enquanto se digita, com descrição e exemplo.</figcaption></figure>
-  </div>
-
-  <h3>A mesma fórmula em várias colunas</h3>
-  <div class="side feature slim">
-    <div>
-      <p>Padronizar dez colunas do mesmo jeito não pede dez fórmulas. Na <strong>Multi-Field Formula</strong>, você escreve a conta uma vez, com <code>[_Atual_]</code> no lugar da coluna, e marca em quais colunas ela roda.</p>
-      <ul>
-        <li><strong>A própria coluna</strong> troca os valores no lugar.</li>
-        <li><strong>Uma coluna nova para cada uma</strong> mantém a original e cria outra, com o prefixo ou sufixo que você escolher.</li>
-        <li>O esquema mostra o antes e o depois com as suas linhas.</li>
-      </ul>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-multifield.png" alt="Esquema da Multi-Field Formula"></div><figcaption>Antes, a fórmula e depois: <code>[_Atual_]</code> vira cada coluna escolhida.</figcaption></figure>
-  </div>
-  <h3>Fórmula que olha outras linhas</h3>
-  <p>A <strong>Multi-Row Formula</strong> compara uma linha com as vizinhas. Você não precisa escrever nada: escolha o que quer fazer, escolha a coluna, e a fórmula sai pronta, à vista.</p>
-  <ul>
-    <li>Em <strong>Ordenar por</strong>, diga a ordem, com uma ou mais colunas: "a linha anterior" depende dela.</li>
-    <li>Com <strong>Agrupar por</strong>, as contas não atravessam grupos.</li>
-    <li><strong>Escrever a minha</strong> abre a fórmula livre, com botões para inserir <code>[Row-1:coluna]</code> e <code>[Row+1:coluna]</code>.</li>
-  </ul>
-  <div class="grid-2 tight" style="max-width:48%">
-    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/multirow.png" alt="Receitas da Multi-Row Formula"></div><figcaption>As receitas: a pergunta vem antes da fórmula.</figcaption></figure>
-    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-multirow.png" alt="Esquema da Multi-Row Formula"></div><figcaption>O esquema, como no Join: passe o mouse no resultado para ver as células que ele usou.</figcaption></figure>
-  </div>
-  <h3>Editando com agilidade</h3>
-  <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
-    <ul>
-      <li><strong>Lixeira na caixa</strong>: passe o mouse sobre uma caixa e clique no ícone de lixeira (ou use <kbd>Delete</kbd>).</li>
-      <li><strong>Copiar e colar</strong>: <kbd>Ctrl</kbd>+<kbd>C</kbd> e <kbd>Ctrl</kbd>+<kbd>V</kbd> copiam uma caixa — ou uma etapa inteira, com as ligações internas. Dá para colar em outro fluxo.</li>
-      <li><strong>Botão direito</strong>: configurar, executar até ali, copiar, recortar, colar, duplicar, renomear, desativar e excluir. Num fio, insere uma ferramenta no meio; no espaço vazio, cola ou cria caixas.</li>
-      <li><strong>Várias caixas</strong>: <kbd>Shift</kbd> + clique (ou <kbd>Shift</kbd> + arrastar no vazio, ou o modo <strong>Selecionar</strong> da barra do canvas, tecla <kbd>V</kbd>) seleciona várias; a tecla <kbd>H</kbd> volta a <strong>Navegar</strong>; arraste para mover todas, alinhe, distribua, agrupe numa etapa ou tire delas.</li>
-      <li><strong>Ver o que entra</strong>: clique numa porta de entrada para ver, na tabela, os dados que chegam por ela.</li>
-    </ul>
-    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/menu-crop.png" alt="Menu do botão direito numa caixa"></div><figcaption>Menu do botão direito numa caixa.</figcaption></figure>
-  </div>
-
-</section>
-
-<!-- ================================================================ CRUZAR E TRATAR -->
-<section class="chapter">
-  <div class="eyebrow">9 · Cruzar e tratar</div>
-  <h2>Cruzando tabelas e tratando textos</h2>
-  <p class="intro">Juntar duas bases é onde os números mais mudam sem ninguém perceber. Estas quatro caixas mostram, no próprio esquema, o que casou, o que multiplicou e o que foi escondido.</p>
-  <div class="goal"><b>Ao final:</b> <span>você cruza bases sem dobrar somas, casa nomes escritos de jeitos diferentes, separa trechos de um texto e protege dados pessoais.</span></div>
-  <h3>Junção que multiplica linhas</h3>
-  <div class="side feature">
-    <div>
-      <p>No PROCV, cada linha encontra um valor só. No <strong>Join</strong>, se a chave aparece duas vezes na direita, a linha da esquerda sai duas vezes, e qualquer soma feita depois conta em dobro.</p>
-      <p>O Join avisa quando isso acontece e diz quantas linhas viraram quantas, como em <em>"2 linhas de [L] viraram 3 no J"</em>.</p>
-      <ul>
-        <li>Se a direita é um cadastro, ponha um <strong>Unique</strong> antes.</li>
-        <li>Se a chave repete dos dois lados, resuma um deles com <strong>Summarize</strong>.</li>
-        <li>Se a repetição é esperada, como clientes e pedidos, marque <strong>Repetição da chave é esperada</strong> em Avançado.</li>
-      </ul>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-join-multiplica.png" alt="Join avisando que a chave repete"></div><figcaption>O aviso fica no esquema do Join, junto das contagens de L, J e R.</figcaption></figure>
-  </div>
-  <h3>Textos parecidos: Fuzzy Match</h3>
-  <div class="side feature">
-    <div>
-      <p>"Padaria Pão Quente LTDA" e "PADARIA PAO QUENTE" são a mesma empresa, mas um Join comum não casa as duas. O <strong>Fuzzy Match</strong> limpa os dois lados (acentos, maiúsculas, pontuação e, se você quiser, LTDA e S.A.) e dá a cada par uma nota de 0 a 100.</p>
-      <ul>
-        <li>Só entram no J os pares com nota igual ou acima da mínima, cada linha da esquerda com o seu melhor par.</li>
-        <li>Comece com a nota padrão e confira o J: abaixo de 85 começam os casamentos errados.</li>
-        <li>Em tabelas grandes, escolha em Avançado uma <strong>coluna de bloco</strong>, como UF: a comparação fica só dentro dela. Acima de 25 milhões de comparações, a caixa pede o bloco.</li>
-      </ul>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-fuzzy.png" alt="Esquema do Fuzzy Match"></div><figcaption>A limpeza antes da comparação e a nota de cada par, com os seus dados.</figcaption></figure>
-  </div>
-  <h3>Trechos de um texto: Regex</h3>
-  <div class="side feature">
-    <div>
-      <p>O <strong>Regex</strong> acha um trecho dentro de um texto: o mês e o ano de "NF 10/2026", o número de um pedido no meio de uma descrição, um CPF ou um e-mail. Você não precisa escrever expressão regular: <strong>mostre o trecho num exemplo</strong>.</p>
-      <ul>
-        <li><strong>Marque no exemplo</strong>: a caixa mostra valores reais da coluna. Selecione com o mouse o trecho que você quer, e ela monta as peças que o descrevem, como "2 dígitos, uma barra, 4 dígitos".</li>
-        <li><strong>Ajuste as peças</strong>: clique numa peça para trocar o tipo, a quantidade ou marcar <strong>Vira coluna</strong>, com um nome. Peças prontas entram por cartões: data, CPF, CNPJ, CEP, e-mail, telefone e valor com vírgula.</li>
-        <li><strong>Confira ao vivo</strong>: os exemplos mostram onde o trecho foi achado, com a cor de cada coluna, e a caixa diz em quantas linhas ele aparece.</li>
-      </ul>
-      <p>Os modos são <strong>Pegar um trecho</strong> (vira coluna), <strong>Trocar um trecho</strong> e <strong>Marcar as linhas que têm o trecho</strong>. Quem já sabe expressão regular encontra a expressão montada pelas peças no <strong>Avançado</strong> e pode escrever direto.</p>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/regex-pecas.png" alt="Regex: exemplos com o trecho destacado e as peças"></div><figcaption>O trecho marcado num exemplo vira peças; mês e ano viram colunas, cada um com a sua cor.</figcaption></figure>
-  </div>
-  <figure class="m50"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-regex.png" alt="Esquema do Regex"></div><figcaption>Como funciona: cada linha, antes e depois. Linha sem o trecho fica vazia.</figcaption></figure>
-  <h3>Dados pessoais: Mask</h3>
-  <div class="side feature">
-    <div>
-      <p>Antes de mandar uma base para fora da área, o <strong>Mask</strong> esconde o que identifica alguém: CPF vira <code>***.456.789-**</code>, CNPJ vira <code>**.345.678/****-**</code> e e-mail vira <code>a***@empresa.com.br</code>. Também mostra só o início ou o fim, ou troca tudo por um texto fixo.</p>
-      <p>O <strong>código estável</strong> troca cada valor por um código: o mesmo CPF dá sempre o mesmo código, e assim dá para cruzar e contar sem expor o dado. A chave fica no cofre do Windows deste computador, então o código de um computador não bate com o de outro.</p>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-mask.png" alt="Esquema do Mask"></div><figcaption>O esquema usa exemplos inventados: os seus dados pessoais nunca aparecem nele.</figcaption></figure>
-  </div>
-  <div class="try"><strong>Experimente</strong><ol><li>Ligue dois <em>Text Input</em> num <em>Join</em>, com a mesma chave repetida no da direita.</li><li>Execute e abra o <strong>Como funciona</strong>: o aviso mostra quantas linhas viraram quantas.</li><li>Ponha um <em>Unique</em> antes da entrada direita e execute de novo: o aviso some.</li></ol></div>
-</section>
-
-<!-- ================================================================ 7. DATA QUALITY -->
-<section class="chapter">
-  <div class="eyebrow">10 · Qualidade</div>
-  <h2>Dados que dá para confiar</h2>
-  <p class="intro">Um CPF inválido, um setor em branco ou um estado fora da lista chegam ao relatório sem ninguém ver. A ferramenta <strong>Data Quality</strong> confere regras antes de o dado seguir e separa o que passou do que falhou, com o motivo.</p>
-  <div class="goal"><b>Ao final:</b> <span>você sabe montar regras de qualidade sem escrever fórmulas e decidir o que fazer com as linhas que falharam.</span></div>
-  <div class="two-col side-figure">
-    <div>
-      <h3>Escolha as regras pelos cartões</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="qualidade">Experimentar num exemplo</button></div>
-      <p>Cada cartão mostra um exemplo do que passa (✓) e do que falha (✗). Clique para adicionar a regra e escolha a coluna. O número no cartão diz quantas vezes ela já está na caixa. Só aparecem as colunas que servem: a faixa de número oferece só números.</p>
-      <table>
-        <tr><th>Regra</th><th>Confere</th></tr>
-        <tr><td class="tool">Não vazio</td><td>Preenchido. Espaços em branco contam como vazio.</td></tr>
-        <tr><td class="tool">Sem duplicados</td><td>Cada valor uma vez só, numa coluna ou na combinação de várias. Todas as cópias falham.</td></tr>
-        <tr><td class="tool">CPF · CNPJ</td><td>Dígitos verificadores, com ou sem máscara. Aceita o CNPJ com letras, que começa a valer em 2026.</td></tr>
-        <tr><td class="tool">E-mail</td><td>Formato de endereço de e-mail.</td></tr>
-        <tr><td class="tool">Número na faixa</td><td>Entre um mínimo e um máximo, ou só um dos dois.</td></tr>
-        <tr><td class="tool">Data válida</td><td>Data que existe, entre duas datas ou que não está no futuro.</td></tr>
-        <tr><td class="tool">Valor permitido</td><td>Está na lista digitada ou numa coluna de outra tabela, diferenciando ou não maiúsculas.</td></tr>
-        <tr><td class="tool">Fórmula livre</td><td>Qualquer condição na linguagem de fórmula, com a sua mensagem.</td></tr>
-      </table>
-    </div>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dq-regras.png" alt="Cartões de regra do Data Quality"></div>
-      <figcaption>Os cartões de regra, com o que passa e o que falha em cada um.</figcaption>
-    </figure>
-  </div>
-  <h3>A lista de valores permitidos</h3>
-  <div class="two-col side-figure">
-    <div>
-      <p>Em <strong>De onde vem a lista</strong>, escolha um de dois jeitos:</p>
-      <ul>
-        <li><strong>Digitar os valores</strong>: um por linha, como ao colar uma coluna do Excel, ou separados por vírgula ou ponto e vírgula. Embaixo, cada valor aparece numa etiqueta, do jeito que foi entendido. Um repetido conta uma vez, e o <strong>×</strong> tira um valor. Depois de executar, <strong>Trazer os valores de [coluna]</strong> preenche a lista com o que aparece nos dados: aí é só tirar os que não valem.</li>
-        <li><strong>De outra tabela, pela entrada L</strong>: a caixa ganha a entrada <strong>L</strong>. Ligue nela um Text Input, um arquivo ou uma consulta com a lista, como o cadastro de estados atendidos, e escolha a coluna. Quando o cadastro muda, a regra acompanha sem editar a caixa. Vazios na lista são ignorados.</li>
-      </ul>
-      <figure>
-        <div class="frame"><img src="../../src/prodata/web/manual/img/dq-lista-tabela.png" alt="Lista de valores permitidos vinda da coluna sigla da entrada L"></div>
-        <figcaption>Com a lista em outra tabela, basta escolher a coluna da entrada L.</figcaption>
-      </figure>
-    </div>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dq-lista.png" alt="Lista de valores permitidos digitada, com as etiquetas"></div>
-      <figcaption>Um valor por linha. As etiquetas mostram como a lista foi entendida.</figcaption>
-    </figure>
-  </div>
-  <h3>O que sai da caixa</h3>
-  <p><strong>P</strong> leva as linhas que passaram em todas as regras e segue no fluxo. <strong>F</strong> leva as que falharam em pelo menos uma, com duas colunas a mais: <code>regra</code> e <code>motivo</code>, como <em>"Vazio em [setor]"</em>. Ligue o F a um Output Data para mandar a lista de correções a quem cuida do cadastro.</p>
-  <p>Depois de executar, a caixa ganha no canvas um selo vermelho com quantas linhas falharam, e o esquema <strong>Como funciona</strong> mostra as contas da última execução, regra por regra. As células reprovadas ficam em vermelho na amostra.</p>
-  <p>Para as regras de formato (CPF, e-mail, data…), o vazio passa: use <strong>Não vazio</strong> para cobrar o preenchimento. Assim cada falha tem um motivo só.</p>
-  <figure class="m50" style="max-width:46%">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dq-resultado.png" alt="Esquema do Data Quality depois de executar"></div>
-    <figcaption>Quantas linhas passaram e quantas falharam, e em qual regra.</figcaption>
-  </figure>
-  <div class="try"><strong>Experimente</strong><ol><li>Arraste <em>Data Quality</em> e ligue à saída de <em>Clientes</em>.</li><li>Clique no cartão <strong>Não vazio</strong> e escolha <code>setor</code>.</li><li>Execute até a caixa: as linhas sem setor saem pelo F, cada uma com o motivo.</li></ol></div>
-  <h3>Parar o fluxo quando o dado não presta</h3>
-  <p>Separar P e F não impede que o relatório saia com metade da base. Em <strong>Controle</strong>, o Data Quality pode <strong>interromper o fluxo</strong>: se qualquer linha falhar, ou só quando a falha passar de uma porcentagem que você aceita. A caixa fica em erro, diz quantas linhas falharam e em quais regras, e nada do que vem depois dela executa.</p>
-  <h3>Conferir se entrada e saída fecham</h3>
-  <div class="side feature">
-    <div>
-      <p>A caixa <strong>Reconcile</strong> responde à pergunta de toda conciliação: o que saiu bate com o que entrou? Ligue em <strong>A</strong> a referência e em <strong>B</strong> o que você quer conferir.</p>
-      <ul>
-        <li>Cada <strong>controle</strong> é o mesmo número calculado dos dois lados: linhas, soma de uma coluna ou valores distintos, com a diferença que você aceita.</li>
-        <li>A saída <strong>C</strong> traz uma linha por controle, com os dois valores e a diferença.</li>
-        <li>A saída <strong>O</strong> repassa a tabela B: o que vem depois passa a depender da conferência.</li>
-        <li>Com <strong>Interromper o fluxo aqui</strong>, o que não fecha vira erro, com os números na mensagem.</li>
-      </ul>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-reconcile.png" alt="Esquema do Reconcile"></div><figcaption>Cada controle nos dois lados e o que acontece quando não fecha.</figcaption></figure>
-  </div>
-  <h3>O que mudou desde a última execução</h3>
-  <div class="side feature">
-    <div>
-      <p>A caixa <strong>Compare Runs</strong> guarda a tabela a cada dia em que o fluxo executa e compara a de agora com a de um dia anterior, ou de um mês anterior.</p>
-      <ul>
-        <li>A saída <strong>T</strong> traz os totais: linhas e soma de cada coluna numérica, antes, agora e a variação.</li>
-        <li>Com as colunas que identificam cada linha, a saída <strong>D</strong> lista o que entrou, o que saiu e o que mudou, com o valor de antes e o de agora.</li>
-        <li>Na primeira execução ainda não há base, e a caixa avisa.</li>
-        <li>As tabelas guardadas ficam neste computador, não no arquivo do fluxo: os últimos 62 dias e o último dia de cada mês por 13 meses. O limite é de 2 milhões de linhas.</li>
-      </ul>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-compare.png" alt="Esquema do Compare Runs"></div><figcaption>A execução guardada, a de agora e o que mudou entre elas.</figcaption></figure>
-  </div>
-</section>
-
-<!-- ================================================================ 6. RESULTADOS -->
-<section class="chapter">
-  <div class="eyebrow">11 · Análise</div>
-  <h2>Explorando os resultados</h2>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="aba_resultado">Mostrar a tabela</button><button type="button" class="manual-only m-act" data-show="filtros_resultado">Mostrar os filtros</button></div>
-  <p class="intro">Cada caixa guarda o resultado da última execução. Clique nela — ou em uma de suas saídas — e a tabela mostra os dados correspondentes.</p>
-  <div class="grid-2">
-    <div>
-      <h3 style="margin-top:0">Filtros exploratórios</h3>
-      <p>Para investigar sem mexer no fluxo, use o botão <strong>Filtros</strong> da tabela, o funil no cabeçalho de cada coluna ou o botão direito sobre uma célula ("Filtrar = valor", "Excluir valor").</p>
-      <p>As condições viram etiquetas que você edita ou remove, e o contador mostra quantas linhas sobraram. Esses filtros <strong>não alteram o fluxo salvo</strong>, e o perfil passa a considerar só as linhas filtradas.</p>
-    </div>
-    <div>
-      <h3 style="margin-top:0">Perfil de qualidade</h3>
-      <p>A aba <strong>Perfil</strong> descreve cada coluna: percentual preenchido, vazio e nulo, valores distintos, mais frequentes e estatísticas (mínimo, média, mediana, máximo).</p>
-      <p>Espaços invisíveis aparecem: células só com espaços mostram <em>vazio (espaços)</em>, espaço sobrando no início ou no fim aparece como ␣ e o cabeçalho da coluna traz um aviso com as contagens — "SP " não casa com "SP" num Join.</p>
-    </div>
-    <figure class="m60" style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/filters-crop.png" alt="Filtros exploratórios"></div>
-      <figcaption>"uf = SP" e "mrr_mensal ≥ 3000": 105 de 500 clientes.</figcaption></figure>
-    <figure class="m60" style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/profile-crop.png" alt="Perfil das colunas"></div>
-      <figcaption>Perfil da saída combinada do Join.</figcaption></figure>
-  </div>
-  <div class="callout ok"><strong>Da exploração para o processo</strong>Quando a investigação vira regra, o botão <strong>Criar caixa Filter</strong> transforma os filtros em uma caixa Filter já conectada ao fluxo.</div>
-  <h3>Tabela em tela cheia</h3>
-  <p>Para mostrar um resultado numa reunião, ou explorar uma tabela larga, o botão de tela cheia, no topo da tabela (as duas setas), a abre na janela inteira, com a busca, os filtros, o perfil e as páginas. <kbd>Shift</kbd>+<kbd>F11</kbd> faz o mesmo, e <kbd>Esc</kbd> volta ao fluxo, do jeito que estava.</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/tabela-cheia.png" alt="Tabela de resultados em tela cheia"></div>
-    <figcaption>A tabela na janela inteira: é o modo foco do resultado, como o F11 é o do fluxo.</figcaption>
-  </figure>
-  <div class="try"><strong>Experimente</strong><ol><li>Clique na caixa <em>Clientes</em> e, na tabela, em <strong>Filtros</strong>: filtre <code>uf</code> por SP.</li><li>Repare que o cabeçalho das colunas passa a mostrar a soma e a contagem só das linhas filtradas.</li></ol></div>
-</section>
-
-<!-- ================================================================ 7. DASHBOARD -->
-<section class="chapter">
-  <div class="eyebrow">12 · Apresentação</div>
-  <h2>Indicadores e visuais</h2>
-  <p class="intro">Os números nascem dentro do fluxo: as caixas de BI calculam e o Dashboard mostra. Quando os dados mudam, basta executar de novo.</p>
-  <table>
-    <tr><th style="width:24%">Caixa</th><th>O que publica</th></tr>
-    <tr><td class="tool">KPI Card</td><td>Um número em destaque (soma, média, contagem…). Opcionalmente compara com uma <strong>meta</strong> ou com o <strong>período anterior</strong> (dia, semana, mês, trimestre ou ano), mostrando a variação com seta verde ou vermelha conforme "maior é melhor" ou "menor é melhor", e um <strong>minigráfico</strong> da tendência. Também pode virar um <strong>medidor</strong>.</td></tr>
-    <tr><td class="tool">Chart</td><td>Colunas, barras, linha e rosca; com uma <strong>2ª dimensão</strong>, colunas empilhadas, agrupadas ou 100%, várias linhas e áreas; e ainda <strong>Pareto</strong>, <strong>funil</strong> e <strong>dispersão</strong>.</td></tr>
-    <tr><td class="tool">Venn</td><td>Quantos estão em cada combinação de 2 ou 3 grupos — por exemplo, clientes que compraram Cloud, AutoML ou os dois.</td></tr>
-    <tr><td class="tool">Table</td><td>Uma tabela com as colunas escolhidas, ordenação, linha de totais e cores por faixa de valor.</td></tr>
-  </table>
-  <div class="grid-2">
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-kpi.png" alt="Big number com variação e tendência"></div>
-      <figcaption>Faturamento do mês contra o mês anterior, com a tendência dos últimos meses.</figcaption>
-    </figure>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-venn.png" alt="Diagrama de Venn"></div>
-      <figcaption>Venn: 69 clientes contrataram os três produtos; 126 só o Cloud.</figcaption>
-    </figure>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-pareto.png" alt="Gráfico de Pareto"></div>
-      <figcaption>Pareto: cada coluna é a participação no total e a linha, o acumulado. As UFs destacadas somam 80%.</figcaption>
-    </figure>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-stacked.png" alt="Colunas empilhadas"></div>
-      <figcaption>Colunas empilhadas: faturamento por mês, dividido por produto.</figcaption>
-    </figure>
-  </div>
-  <ul>
-    <li>Todo visual tem o botão <strong>Ver tabela</strong>, com os números exatos — o dado nunca depende só do desenho.</li>
-    <li>Passar o mouse mostra o valor de cada barra, ponto ou região. Clicar no título leva à caixa que gerou o visual.</li>
-    <li>O painel <strong>Gráficos e resumos</strong>, abaixo do canvas, mostra os visuais das caixas de BI. Um botão no fim dele mostra também um gráfico automático para cada <strong>Summarize</strong>, o que é opcional.</li>
-  </ul>
-  <figure class="m50">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-export.png" alt="Imagem PNG do dashboard"></div>
-    <figcaption>A imagem que sai do botão <strong>Baixar imagem</strong> no dashboard da demonstração, pronta para o e-mail ou a apresentação.</figcaption>
-  </figure>
-</section>
-
-<!-- ================================================================ 8. DASHBOARD -->
-<section class="chapter">
-  <div class="eyebrow">13 · Apresentação</div>
-  <h2>Montando o dashboard</h2>
-  <p class="intro">O fluxo define <strong>o que</strong> mostrar; o dashboard define <strong>onde e como</strong>. Mudar cores ou posições não executa nada de novo.</p>
-  <div class="goal"><b>Ao final:</b> <span>você monta a página, filtra e entrega em imagem ou em um arquivo que abre em qualquer navegador.</span></div>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-guides.png" alt="Dashboard no modo Editar, com guias de alinhamento"></div>
-    <figcaption>O dashboard da demonstração no modo Editar: ao arrastar um gráfico, as guias douradas mostram o alinhamento com os vizinhos.</figcaption>
-  </figure>
-  <h3>Editar o layout</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="editar_layout">Mostrar onde fica</button></div>
-  <p>Clique em <strong>Editar layout</strong>. A página vira um canvas: arraste os visuais, redimensione pelas alças e eles se encaixam numa grade, com guias quando se alinham a outro item ou ao centro da página (segure <kbd>Alt</kbd> para posicionar livremente). Ao mover, os espaços iguais entre os itens aparecem medidos; ao redimensionar, o item encaixa na largura ou altura de outro e os dois ficam marcados. <strong>Copiar formato</strong>, no painel ou no botão direito, liga o pincel: cada clique em outra caixa aplica o formato, sem levar título nem nomes, e <kbd>Esc</kbd> encerra. Na lista de cores do gráfico, mude a cor de uma categoria para destacar só ela. Arrastar no vazio seleciona vários; o botão direito alinha, distribui e muda a camada; <kbd>Delete</kbd> tira o visual da página sem apagar a caixa do fluxo — ele fica em <strong>Fora da página</strong> e volta com um clique.</p>
-  <div class="grid-3">
-    <div class="card"><h4>Inserir</h4><p>Título (empurra o conteúdo para baixo), texto, imagem PNG/JPG/SVG até 1 MB, o logo de {{organizacao}}, retângulos de fundo e linhas divisórias.</p></div>
-    <div class="card"><h4>Página</h4><p>16:9, A4 paisagem, A4 retrato ou altura livre, com cor de fundo. Se os visuais não couberem, a página cresce e o {{produto}} avisa.</p></div>
-    <div class="card"><h4>Baixar imagem</h4><p>No botão <strong>Baixar</strong>, gera um PNG em alta resolução da página — ou de um visual só, pelo botão do cartão — no tema claro ou escuro que estiver na tela.</p></div>
-  </div>
-  <div class="two-col side-figure">
-    <div>
-      <h3>Organizar com um clique</h3>
-      <p>O botão <strong>Organizar</strong> mostra os seus visuais em seis arranjos — Automático, KPIs no topo com 2 ou 3 colunas, Destaque, KPIs na lateral e Relatório — e aplica o escolhido.</p>
-      <p>Textos, imagens e o que não estiver selecionado ficam onde estão; um <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
-    </div>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/dash-organize.png" alt="Galeria de layouts"></div>
-      <figcaption>Cada opção é desenhada com os visuais do próprio dashboard.</figcaption>
-    </figure>
-  </div>
-  <h3>Formatar cada visual</h3>
-  <p>Com um item selecionado, o painel <strong>Formato</strong> ajusta título, subtítulo, fundo, borda, cantos e sombra; os <strong>nomes na legenda e nas categorias</strong> (ex.: SP → São Paulo) e a posição da legenda; cores (paleta da marca, paleta alternativa, uma cor ou uma cor por categoria — com aviso quando a cor some no fundo); rótulos de dados, formato dos números, legenda e eixos; e, em tabelas e KPIs, <strong>cores por faixa</strong> (bom, atenção, crítico, sempre com ícone).</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-edit.png" alt="Modo Editar com o painel Formato"></div>
-    <figcaption>O Pareto selecionado e o painel Formato à direita.</figcaption>
-  </figure>
-
-  <h3>Filtros na página</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="filtros_dash">Mostrar onde fica</button></div>
-  <p>Em <strong>Adicionar filtro</strong>, escolha uma coluna: a faixa no topo mostra seus valores como botões ou, em número e data, um controle deslizante. Ou clique direto numa <strong>barra ou fatia</strong> de um gráfico: a página filtra por aquele valor, <kbd>Ctrl</kbd>+clique soma outros, e clicar de novo tira. O gráfico clicado mantém as demais categorias apagadas, para dar para trocar. O filtro vale para todos os visuais cuja tabela tem aquela coluna, sem executar o fluxo de novo. Quem não tem a coluna não muda e mostra um aviso discreto, <strong>Sem filtro</strong>. A escolha fica salva no fluxo e aparece no alto da imagem PNG.</p>
-  <figure class="m60">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-filters.png" alt="Barra de filtros do dashboard"></div>
-    <figcaption>Filtro por UF: os visuais com a coluna mudam na hora, e o aviso marca o que ficou de fora.</figcaption>
-  </figure>
-  <h3>O dashboard em um arquivo HTML</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="baixar">Mostrar onde fica</button></div>
-  <p>No botão <strong>Baixar</strong>, <strong>Baixar HTML</strong> gera um arquivo só, que abre em qualquer navegador, sem o {{produto}} e sem internet, com os detalhes ao passar o mouse e os <strong>filtros funcionando</strong>. Para isso, o arquivo leva as colunas que os visuais e os filtros usam, e nada além delas. Antes de salvar, a tela mostra quanto dado vai dentro. Com <strong>senha</strong>, obrigatória nos rótulos Confidencial e Restrito, os dados ficam cifrados até alguém digitá-la.</p>
-  <div class="callout warn"><strong>Cuidado ao compartilhar</strong>Quem abre o arquivo pode ver e copiar todos os dados que ele leva, mesmo o que estiver filtrado fora. Envie a senha por outro canal; quem a perder não recupera o arquivo, mas pode gerar outro no {{produto}}.</div>
-  <figure class="m50" style="max-width:24%">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dash-html.png" alt="Aviso antes de salvar o HTML"></div>
-    <figcaption>O aviso lista as colunas e o tamanho antes de gerar o arquivo.</figcaption>
-  </figure>
-  <div class="try"><strong>Experimente</strong><ol><li>Abra o <strong>Dashboard</strong>, clique em <strong>Adicionar filtro</strong> e escolha <code>uf</code>.</li><li>Marque SP: os visuais com a coluna mudam na hora, sem executar o fluxo.</li><li>Clique em <strong>Baixar</strong>, depois em <strong>Baixar HTML</strong>, e abra o arquivo: o filtro continua funcionando.</li></ol></div>
-</section>
-
-<!-- ================================================================ REPLAY -->
-<section class="chapter">
-  <div class="eyebrow">14 · Replay</div>
-  <h2>Linha do tempo e história</h2>
-  <p class="intro">O dashboard pode andar no tempo. Os visuais acompanham a reprodução sem executar o fluxo, com o mesmo cálculo do resto do programa.</p>
-  <div class="goal"><b>Ao final:</b> <span>você reproduz o dashboard, encontra os momentos que importam, gera um GIF de um gráfico e conta o que viu em cenas.</span></div>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="replay">Abrir um exemplo pronto</button></div>
-  <figure>
-    <div class="frame"><img src="../../src/prodata/web/manual/img/replay-dash.png" alt="Dashboard com a linha do tempo, corrida de barras e Sankey"></div>
-    <figcaption>O exemplo do programa, com dados fictícios: envelhecimento do backlog e tempo parado em cada status.</figcaption>
-  </figure>
-  <h3>Ligar a linha do tempo</h3>
-  <p>No dashboard, clique em <strong>Linha do tempo</strong> e diga qual coluna é a data. A lista traz as colunas que chegam aos visuais, com exemplos dos valores e quais visuais vão acompanhar. Vale coluna de data ou texto como <code>2026-05</code> e <code>29/10/2026</code>. A escolha fica salva no fluxo. Depois, defina o passo: dia, semana ou mês. Reproduza, pause, troque a velocidade ou arraste para qualquer momento. Filtros continuam valendo.</p>
-  <table>
-    <tr><th>Modo</th><th>O que mostra</th><th>Quando usar</th></tr>
-    <tr><td class="tool">Acumulado</td><td>Tudo o que veio até aquele momento</td><td>Vendas, entregas, eventos que se somam</td></tr>
-    <tr><td class="tool">Só no período</td><td>Só o que aconteceu naquele período</td><td>Fotos, como as do Estado por período, que não podem ser somadas</td></tr>
-  </table>
-  <p>Visual cuja tabela não tem a coluna fica parado e ganha a marca <strong>Parado</strong>. O botão de tabela na barra abre os registros daquele momento.</p>
-  <h3>Gráficos feitos para o tempo</h3>
-  <div class="grid-3">
-    <div class="card"><h4>Corrida de barras</h4><p>Categorias trocando de posição, como projetos ou status. Nunca use para comparar pessoas: o {{produto}} não traz esse exemplo.</p></div>
-    <div class="card"><h4>Bolhas</h4><p>Uma bolha por categoria, com posição em dois valores e tamanho em um terceiro.</p></div>
-    <div class="card"><h4>Sankey</h4><p>Quanto passa de cada origem para cada destino, como de um status para outro.</p></div>
-  </div>
-  <p>Barras, linhas, áreas e dispersão também têm transição. Cada gráfico pode desligar a animação no painel Formato. Se o Windows estiver pedindo menos movimento, os valores mudam sem transição.</p>
-  <h3>Destaques</h3>
-  <p>Pontos sobre a linha do tempo marcam picos, viradas de tendência e valores fora do padrão do primeiro visual que acompanha o tempo. Clique num ponto e o critério aparece, por exemplo: <em>2,3 desvios acima da média das últimas 8 marcações</em>.</p>
-  <h3>GIF de um gráfico</h3>
-  <div class="two-col side-figure">
-    <div>
-      <p>O botão de filme, no canto do gráfico, gera um GIF só daquele visual. Escolha período, duração, tamanho e quadros por segundo, e veja a estimativa antes de gerar.</p>
-      <p>O GIF não tem senha. Em <strong>Confidencial</strong> ele pede confirmação; em <strong>Restrito</strong> fica bloqueado. Toda imagem sai com a faixa do rótulo.</p>
-    </div>
-    <figure>
-      <div class="frame"><img src="../../src/prodata/web/manual/img/replay-gif.png" alt="Opções do GIF com o tamanho estimado"></div>
-      <figcaption>Os limites aparecem na tela antes de gerar.</figcaption>
-    </figure>
-  </div>
-  <h3>Contar uma história</h3>
-  <p>Pare num momento e clique em <strong>Guardar cena</strong>: ela lembra o momento, os filtros e o visual em destaque, com título e anotação. Em <strong>Cenas</strong>, reordene e clique em <strong>Apresentar</strong>. De cada cena dá para voltar à caixa de origem.</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/replay-historia.png" alt="Apresentação de uma cena com um visual em destaque"></div>
-    <figcaption>Na apresentação, o visual escolhido fica em destaque e as setas do teclado trocam de cena.</figcaption>
-  </figure>
-  <p>O <strong>HTML</strong> exportado leva a linha do tempo, os destaques e a história, com filtros, senha e rótulo como sempre. O arquivo inclui as colunas usadas pelos visuais, e o diálogo mostra quais são antes de gerar.</p>
-</section>
-
 <!-- ================================================================ 10. SQL -->
 <section class="chapter">
   <div class="eyebrow">15 · Do fluxo ao SQL</div>
@@ -1107,7 +1117,6 @@
     <figcaption>O aviso fica acima do código enquanto o dialeto não é o DuckDB.</figcaption>
   </figure>
 </section>
-
 <!-- ================================================================ FECHAMENTO -->
 <section class="chapter">
   <div class="eyebrow">16 · Automação</div>
@@ -1173,7 +1182,6 @@
     <li>Saída em <strong>Perguntar ao executar</strong> nunca sobrescreve sem alguém para responder: cria um arquivo novo com data e hora. Para manter sempre o mesmo nome, escolha <strong>Substituir o arquivo</strong>. Com <strong>Data Quality</strong> ou <strong>Reconcile</strong> em modo de interromper, a tarefa falha em vez de gravar um número errado.</li>
   </ul>
 </section>
-
 <!-- ================================================================ MODELOS -->
 <section class="chapter">
   <div class="eyebrow">17 · Previsão</div>
@@ -1258,42 +1266,78 @@
   </figure>
   <p class="muted">Também disponíveis: tema claro e escuro, desfazer/refazer, zoom e "ajustar à tela".</p>
 </section>
+<!-- ================================================================ COMPARTILHAR -->
+<section class="chapter">
+  <div class="eyebrow">19 · Compartilhar</div>
+  <h2>Compartilhar o fluxo</h2>
+  <p class="intro">Um fluxo é um arquivo pequeno: dá para mandar por e-mail, pelo Teams ou deixar numa pasta da equipe. Este capítulo mostra o que acontece do outro lado: quem recebe vê o que falta no computador dele, pode rodar com uma amostra dos dados e confere o que o fluxo faz antes de executar.</p>
+  <div class="goal"><b>Ao final:</b> <span>você manda um fluxo que roda no computador de outra pessoa e sabe o que ela vai ver ao abrir.</span></div>
+
+  <h3>Levar o fluxo para outro computador</h3>
+  <div class="side">
+    <div>
+      <p>O fluxo guarda o nome de cada fonte, não os dados. Quem abre o arquivo noutro computador vê na hora o que falta: a aba <strong>Dados</strong> ganha um selo vermelho com a quantidade, a vista Dados abre com <strong>Faltam neste computador</strong> no topo, e no Designer a caixa fica em vermelho, com “fonte ausente”.</p>
+      <ul>
+        <li><strong>Escolher o arquivo</strong>: o arquivo entra com o nome que o fluxo espera, e o fluxo funciona sem mudar nada.</li>
+        <li><strong>Usar uma fonte daqui</strong>: troca a fonte em todas as caixas que a usam, por uma que já está cadastrada neste computador.</li>
+        <li>Consultas, APIs e PDFs se cadastram na vista Dados (Adicionar) e depois se escolhem na lista.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/faltam-aqui.png" alt="Seção Faltam neste computador na vista Dados"></div><figcaption>Cada fonte que falta, com a ação para resolver.</figcaption></figure>
+  </div>
+  <h3>Salvar com amostra dos dados</h3>
+  <div class="side">
+    <div>
+      <p>Para quem não tem as fontes conseguir rodar o fluxo, use <strong>Arquivo → Salvar com amostra dos dados…</strong>. Sem amostra, vale o <em>Salvar como</em> de sempre. Fonte a fonte, você escolhe:</p>
+      <ul>
+        <li><strong>Quantas linhas</strong>: 100, 500 ou 1.000 (até 5 MB no total, com o tamanho à vista).</li>
+        <li><strong>O que mascarar</strong>: colunas que parecem dados pessoais (CPF, CNPJ, e-mail, telefone, nome) já vêm marcadas, com os métodos da caixa <em>Mask</em>. Ajuste coluna a coluna e confira na prévia. Só a amostra é mascarada: a fonte e o fluxo não mudam.</li>
+      </ul>
+      <p>Noutro computador, sem a fonte, o fluxo lê a amostra: a aba Dados ganha o selo laranja, a fonte aparece como <strong>Amostra</strong> (quantas linhas e de quando) e a caixa no Designer fica em laranja, escrito “amostra”. Com a fonte de verdade presente, ela sempre vence.</p>
+      <div class="avoid"><h4>A amostra leva dados de verdade</h4><p>Confira as colunas mascaradas antes de salvar. O salvamento entra no registro de exportações. Caminhos, senhas e conexões nunca vão no arquivo.</p></div>
+    </div>
+    <div class="stack-figs">
+      <figure><div class="frame"><img src="../../src/prodata/web/manual/img/compartilhar.png" alt="Salvar com amostra dos dados: linhas e máscara por fonte"></div><figcaption>Linhas por fonte e as colunas pessoais já marcadas, com a prévia mascarada.</figcaption></figure>
+      <figure><div class="frame"><img src="../../src/prodata/web/manual/img/amostra-dados.png" alt="Vista Dados com a fonte lida da amostra"></div><figcaption>Noutro computador, na vista Dados: a fonte lida da amostra, com quantas linhas e de quando.</figcaption></figure>
+    </div>
+  </div>
+  <figure class="m50"><div class="frame"><img src="../../src/prodata/web/manual/img/amostra-caixa.png" alt="Caixa no Designer lendo a amostra"></div><figcaption>No Designer, a caixa que lê a amostra fica em laranja, escrito “amostra”.</figcaption></figure>
+  <h3>Quem recebe: abertura protegida</h3>
+  <p>Ao abrir um fluxo que não foi criado nem salvo neste computador (recebido por e-mail, baixado ou mudado por fora), o {{produto}} não executa nada. Uma faixa mostra o que o fluxo <strong>lê</strong>, <strong>calcula</strong> e <strong>grava</strong>; clique num item para ver a caixa. Dá para olhar e editar à vontade. Executar só depois de <strong>Confiar e executar</strong>, e o {{produto}} lembra da escolha enquanto o arquivo não mudar.</p>
+  <figure class="m60">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/abertura-protegida.png" alt="Faixa de abertura protegida"></div>
+    <figcaption>Um fluxo recebido: antes de executar, o que ele lê, calcula e grava.</figcaption>
+  </figure>
+</section>
 
 <!-- ================================================================ 9. SEGURANÇA -->
 <section class="chapter">
-  <div class="eyebrow">19 · Confiança</div>
+  <div class="eyebrow">20 · Confiança</div>
   <h2>Segurança e privacidade</h2>
   <div class="grid-3">
     <div class="card"><h4>Tudo local</h4><p>O {{produto}} roda inteiramente no seu computador e funciona offline. A única saída para a rede é a que você cadastra: bancos e APIs. O programa não envia nada por conta própria.</p></div>
     <div class="card"><h4>Senhas no cofre do Windows</h4><p>Senhas de banco ficam no Gerenciador de Credenciais do Windows, criptografadas pelo sistema. Nunca aparecem em arquivos, fluxos ou mensagens de erro.</p></div>
     <div class="card"><h4>APIs sob controle</h4><p>Tokens e senhas ficam no cofre do Windows e nunca viajam por <code>http</code> para fora, nem seguem para outro servidor. APIs públicas funcionam sem configuração; rede interna, só com a lista da TI. POST e API Loop não rodam sozinhos ao abrir um fluxo.</p></div>
-    <div class="card"><h4>Rótulos</h4><p>Público, Interno, Confidencial ou Restrito, com uma dica do que cada um faz. No HTML, os dois últimos exigem senha. A imagem e o Excel não têm como levar senha: saem marcados, e a dica avisa.</p></div>
+    <div class="card"><h4>Rótulos</h4><p>Público, Interno, Confidencial ou Restrito. No HTML, os dois últimos exigem senha; a imagem e o Excel saem marcados, e a dica avisa.</p></div>
     <div class="card"><h4>Registro das exportações</h4><p><code>logs\exportacoes.log</code> guarda quando, quem, o arquivo, o rótulo, quantas linhas e colunas, e se teve senha. Nunca os dados.</p></div>
     <div class="card"><h4>Bancos somente leitura</h4><p>Comandos que alteram dados (<code>DELETE</code>, <code>UPDATE</code>, <code>DROP</code>…) são recusados antes de chegar ao banco. No PostgreSQL, a sessão é aberta em modo somente leitura.</p></div>
-    <div class="card"><h4>Fluxos recebidos</h4><p>Um fluxo que veio de fora abre em modo protegido: nada executa até você conferir e confiar. Fórmulas e a caixa SQL não acessam arquivos nem a internet. Fora da pasta de dados, o programa só grava onde você mandar.</p></div>
-    <div class="card"><h4>Dados preservados</h4><p>Fluxos, arquivos e conexões ficam em <code>%LOCALAPPDATA%\{{produto}}</code> e sobrevivem a atualizações e à desinstalação.</p></div>
+    <div class="card"><h4>Fluxos recebidos</h4><p>Um fluxo de fora abre em modo protegido (capítulo 19): nada executa até você confiar. Fórmulas e a caixa SQL não acessam arquivos nem a internet.</p></div>
+    <div class="card"><h4>Dados preservados</h4><p>Fluxos, arquivos e conexões ficam em <code>%LOCALAPPDATA%\{{produto}}</code> e sobrevivem a atualizações e à desinstalação. Fora dela, o programa só grava onde você mandar.</p></div>
     <div class="card"><h4>Rastreabilidade</h4><p>Fluxos são salvos em JSON legível — dá para versionar, revisar e auditar cada regra aplicada aos dados.</p></div>
   </div>
-  <h3>Abertura protegida</h3>
-  <p>Ao abrir um fluxo que não foi criado nem salvo neste computador (recebido por e-mail, baixado ou mudado por fora), o {{produto}} não executa nada. Uma faixa mostra o que o fluxo <strong>lê</strong>, <strong>calcula</strong> e <strong>grava</strong>; clique num item para ver a caixa. Dá para olhar e editar à vontade. Executar só depois de <strong>Confiar e executar</strong>, e o {{produto}} lembra da escolha enquanto o arquivo não mudar.</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/abertura-protegida.png" alt="Faixa de abertura protegida"></div>
-    <figcaption>Um fluxo recebido: antes de executar, o que ele lê, calcula e grava.</figcaption>
-  </figure>
   <h3>Para a TI: liberar APIs internas</h3>
   <p>A lista fica em <code>%ProgramData%\{{produto}}\politica.json</code>, que exige administrador para alterar. Aceita nomes, curingas, endereços e faixas. Sem o arquivo, nenhum destino interno é chamado, e as APIs públicas continuam funcionando.</p>
   <div class="anatomy">{ "servidores_internos": ["erp.empresa.local", "*.intra.local", "10.1.0.0/16"] }</div>
   <div class="callout warn"><strong>Até onde vai esta proteção</strong>O {{produto}} roda no computador de cada pessoa, sem servidor central: estes controles evitam engano e distração, não um usuário decidido a burlar. O rótulo é do {{produto}}, e não o rótulo de sensibilidade da Microsoft (Purview), que depende de configuração da empresa.</div>
 </section>
-
 <!-- ================================================================ 10. INSTALAÇÃO -->
 <section class="chapter">
-  <div class="eyebrow">20 · Comece agora</div>
+  <div class="eyebrow">21 · Comece agora</div>
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.8.5-setup.exe</code> (211 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.8.5-portable.zip</code> (296 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.8.6-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.8.6-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
@@ -1306,15 +1350,14 @@
   </table>
   <h3>Primeira execução</h3>
   <div class="steps">
-    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 21): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
+    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 22): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
     <div class="step"><div><h4>Explore o exemplo</h4><p>O fluxo de demonstração já vem pronto. Clique em <strong>Executar</strong>, clique nas caixas, abra o Dashboard e siga os quadros <strong>Experimente</strong> deste guia.</p></div></div>
     <div class="step"><div><h4>Comece o seu</h4><p>Siga o capítulo 3 com um arquivo seu: envie na vista Dados e arraste para o canvas.</p></div></div>
   </div>
 </section>
-
 <!-- ================================================================ 11. ESCOPO E LIMITAÇÕES -->
 <section class="chapter">
-  <div class="eyebrow">21 · Transparência</div>
+  <div class="eyebrow">22 · Transparência</div>
   <h2>Escopo e limitações</h2>
   <p class="intro">O que esta versão faz, o que não faz e onde ela tem limites — para você decidir com clareza.</p>
   <div class="two-col">
@@ -1326,9 +1369,14 @@
         <li>Pastas de arquivos na vista Dados: todos os arquivos de um padrão de nome numa tabela só</li>
         <li>Consultas a PostgreSQL, SQL Server e, por ODBC, a outros bancos</li>
         <li>APIs em JSON, CSV ou XML, com paginação e uma chamada por linha</li>
+        <li>Leitor visual de PDF: tabelas e campos de documentos, marcando na página, com correções guardadas</li>
+        <li>Números com vírgula ou ponto decimal, conforme o arquivo</li>
         <li>Exportação nesses formatos, em qualquer pasta, e Excel num modelo já formatado</li>
         <li>Vista Dados com pastas, nome de exibição, descrição, mapa de uso, constantes, Data Quality e abertura protegida</li>
         <li>Abas, copiar/colar, fórmulas com autocompletar, perfil e filtros</li>
+        <li>Datas escritas do seu jeito, com "Você quis dizer…", calendário no Filter básico e colunas de data e hora</li>
+        <li>Expressões regulares montadas sem escrever a expressão</li>
+        <li>Fluxo em outro computador: o que falta aparece em vermelho, e dá para salvar com amostra dos dados, com máscara por coluna</li>
         <li>Dashboard com filtros, 18 tipos de visual, linha do tempo, história, PNG, GIF por gráfico e HTML</li>
         <li>Leitura do Jira Cloud com token e lições guiadas no Manual</li>
         <li>Modelos de ML guardados com versão, biblioteca de modelos com importar e exportar, execução incremental e ponto de cache</li>
@@ -1368,10 +1416,9 @@
     <tr><td class="tool">Visuais com muitos dados</td><td>A dispersão desenha até 2.000 pontos e avisa; gráficos mostram até 50 categorias e 8 séries. No Venn de 3 grupos, os círculos são ilustrativos.</td></tr>
   </table>
 </section>
-
 <!-- ================================================================ FERRAMENTAS -->
 <section class="chapter">
-  <div class="eyebrow">22 · Referência</div>
+  <div class="eyebrow">23 · Referência</div>
   <h2>Todas as ferramentas</h2>
   <p class="intro">As 43 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
   <table>
@@ -1385,10 +1432,10 @@
     <tr><td class="tool">Generate Rows</td><td>Cria um calendário ou uma sequência de números, sem ler arquivo. Veja o capítulo 16.</td></tr>
     <tr><td colspan="2"><span class="tag">Preparação</span></td></tr>
     <tr><td class="tool">Select</td><td>Escolhe, renomeia, reordena (arrastando) e muda o tipo das colunas. Entende números no padrão brasileiro, datas como 29/10/2026 e sim/não, e avisa quantos valores não converteram.</td></tr>
-    <tr><td class="tool">Filter</td><td>Separa linhas por condição, com modo simples ou expressão.</td></tr>
+    <tr><td class="tool">Filter</td><td>Separa linhas por condição, com modo simples ou expressão. No simples, coluna de data tem calendário (com hora opcional em data e hora).</td></tr>
     <tr><td class="tool">Formula</td><td>Cria colunas calculadas ou altera colunas existentes (SE/ENTÃO, texto, matemática, datas).</td></tr>
     <tr><td class="tool">Multi-Row Formula</td><td>Olha outras linhas, com receitas prontas: preencher para baixo, diferença, variação %, valor anterior, próximo valor e "mudou?". Tem o próprio <strong>Ordenar por</strong>.</td></tr>
-    <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 10.</td></tr>
+    <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 7.</td></tr>
     <tr><td class="tool">Data Cleansing</td><td>Remove espaços, padroniza maiúsculas e trata vazios em um passo.</td></tr>
     <tr><td class="tool">Unique</td><td>Separa a primeira ocorrência de cada chave das duplicadas.</td></tr>
     <tr><td class="tool">Sort · Sample</td><td>Ordena por uma ou mais colunas (o <em>order by</em>); tira amostras (primeiras, últimas, aleatórias, percentual).</td></tr>
@@ -1407,8 +1454,8 @@
     <tr><td class="tool">Append Fields</td><td>Anexa uma tabela pequena (parâmetros, taxa do mês) a todas as linhas.</td></tr>
     <tr><td class="tool">SQL</td><td>Para quem conhece SQL: consulta livre sobre os dados do fluxo.</td></tr>
     <tr><td colspan="2"><span class="tag">Conferência e reúso</span></td></tr>
-    <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 10.</td></tr>
-    <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 10.</td></tr>
+    <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 7.</td></tr>
+    <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 7.</td></tr>
     <tr><td class="tool">Subflow · Subflow Input · Subflow Output</td><td>Executa outro fluxo da biblioteca como uma etapa, para manter num lugar só o que vários fluxos usam.</td></tr>
     <tr><td colspan="2"><span class="tag">BI e indicadores</span></td></tr>
     <tr><td class="tool">Chart</td><td>Colunas, barras, linha, rosca, empilhado, agrupado, 100%, área, Pareto, funil e dispersão.</td></tr>
@@ -1420,10 +1467,9 @@
     <tr><td class="tool">Model Input</td><td>Traz um modelo da biblioteca de modelos, treinado noutro fluxo ou importado de um arquivo <code>.modelo</code>, sem treinar de novo.</td></tr>
   </table>
 </section>
-
 <!-- ================================================================ 12. ATALHOS E FAQ -->
 <section class="chapter">
-  <div class="eyebrow">23 · Referência rápida</div>
+  <div class="eyebrow">24 · Referência rápida</div>
   <h2>Atalhos e perguntas frequentes</h2>
   <h3>Atalhos de teclado</h3>
   <table>
@@ -1448,13 +1494,14 @@
   <div class="avoid"><h4>Como atualizo um relatório mensal?</h4><p>Envie o arquivo novo com o mesmo nome (o {{produto}} pergunta se deve substituir) e clique em Executar. Se a planilha é atualizada sozinha numa pasta, use <strong>Vincular arquivo</strong>: basta clicar em Executar.</p></div>
   <div class="avoid"><h4>A exportação vai apagar o arquivo de ontem?</h4><p>Não sem perguntar. Se o arquivo de saída já existe, ao clicar em Executar o {{produto}} pergunta: substituir, criar um novo com data e hora no nome, ou (no Excel) adicionar a planilha. Dá para lembrar a escolha na caixa. Ao abrir o programa, essas exportações esperam o seu Executar.</p></div>
   <div class="avoid"><h4>Algo deu errado. Onde vejo?</h4><p>A caixa com problema fica vermelha e explica o motivo na aba Configurar; as caixas seguintes aparecem como "não executado". A aba <strong>Log</strong> lista tudo. Se o programa não abrir, o registro fica em <code>%LOCALAPPDATA%\{{produto}}\logs</code>.</p></div>
-  <div class="avoid"><h4>Posso guardar o fluxo numa pasta da equipe?</h4><p>Sim. Use <strong>Salvar como…</strong> e escolha a pasta (rede, OneDrive, projeto). O arquivo é um JSON legível; quem abrir em outro computador precisa ter os mesmos arquivos e consultas na vista Dados. As constantes vão junto: as do fluxo, e o valor das compartilhadas que ele usa.</p></div>
+  <div class="avoid"><h4>Posso guardar o fluxo numa pasta da equipe?</h4><p>Sim. Use <strong>Salvar como…</strong> e escolha a pasta (rede, OneDrive, projeto). O arquivo é um JSON legível; quem abrir em outro computador vê o que falta na vista Dados e aponta cada fonte; para rodar sem os originais, use <strong>Salvar com amostra dos dados…</strong> (capítulo 19). As constantes vão junto: as do fluxo, e o valor das compartilhadas que ele usa.</p></div>
   <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 19). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
-  <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 19). APIs públicas não precisam de nada.</p></div>
+  <div class="avoid"><h4>Abri um fluxo de outra pessoa e as caixas estão vermelhas.</h4><p>As fontes que ele usa não estão neste computador. A aba <strong>Dados</strong> ganha um selo e a seção <em>Faltam neste computador</em>, com o botão para resolver cada uma (escolher o arquivo, usar uma fonte daqui ou cadastrar). Se veio com amostra, a caixa fica laranja e o fluxo roda com ela até você apontar a fonte (capítulo 19).</p></div>
+  <div class="avoid"><h4>Como escrevo uma data numa fórmula?</h4><p>Como preferir: <code>ToDate('2026-07-08')</code>, <code>08/07/2026</code>, <code>8/7/26</code> ou <code>jul/26</code>. Se o formato não for o que a fórmula espera, aparece <em>Você quis dizer…?</em> com a correção num clique. Com hora, use <code>ToDateTime('2026-07-08 14:30')</code>. No Filter básico, escolha no calendário (capítulo 5).</p></div>
+  <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 20). APIs públicas não precisam de nada.</p></div>
   <div class="avoid"><h4>Posso pedir ajuda a uma IA sobre um fluxo?</h4><p>Sim. Envie o arquivo <code>.prodata.json</code> junto com o <code>contexto-ia.md</code>, publicado com cada versão. Ele ensina a IA a mexer no fluxo; depois, é só salvar a resposta e abrir no programa. Confira o resultado, e lembre que o fluxo mostra nomes de colunas e fórmulas, além dos dados digitados em Text Input.</p></div>
   <div class="avoid"><h4>Como mando o dashboard por e-mail?</h4><p>No Dashboard, <strong>Baixar imagem</strong> gera um PNG em alta resolução, pronto para o e-mail ou a apresentação. <strong>Baixar HTML</strong> gera um arquivo que abre em qualquer navegador, com os filtros funcionando; a tela avisa quais dados vão dentro dele.</p></div>
   <div class="avoid"><h4>Desinstalar apaga meus fluxos?</h4><p>Não. Fluxos, arquivos e conexões ficam na sua pasta de dados e continuam lá para uma futura reinstalação.</p></div>
 </section>
-
 </body>
 </html>

@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from prodata.api.deps import Services, ServicesDep
 from prodata.domain.workflow import Workflow
+from prodata.services.portable import check_sources
 from prodata.services.trust import summary
 
 router = APIRouter(prefix="/api/trust", tags=["confiança"])
@@ -33,7 +34,10 @@ def _names(services: Services) -> dict[str, str]:
 
 def state(services: Services, workflow: Workflow) -> dict[str, Any]:
     protected = services.trust.is_blocked(workflow.id)
-    return {"protected": protected, "summary": summary(workflow, _names(services)) if protected else []}
+    if not protected:
+        return {"protected": False, "summary": []}
+    missing = {s["key"] for s in check_sources(workflow, services) if s["state"] != "ok"}
+    return {"protected": True, "summary": summary(workflow, _names(services), missing)}
 
 
 @router.post("/state")

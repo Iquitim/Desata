@@ -53,6 +53,8 @@ ALTERYX_FUNCTIONS: dict[str, tuple[str, str]] = {
     "tonumber": ("ax_tonumber", "ax_tonumber(x) AS TRY_CAST(x AS DOUBLE)"),
     "tostring": ("ax_tostring", "ax_tostring(x) AS CAST(x AS VARCHAR)"),
     "todate": ("ax_todate", "ax_todate(x) AS TRY_CAST(x AS DATE)"),
+    # spec 040: data e hora ("2026-07-08 14:30:00"); inválido vira nulo, como o ToDate
+    "todatetime": ("ax_todatetime", "ax_todatetime(x) AS TRY_CAST(x AS TIMESTAMP)"),
     "left": ("ax_left", "ax_left(s, n) AS left(CAST(s AS VARCHAR), n)"),
     "right": ("ax_right", "ax_right(s, n) AS right(CAST(s AS VARCHAR), n)"),
     # Spec 015: funções comuns no Alteryx e no KNIME, com unidades de data também em português.
@@ -219,6 +221,8 @@ FUNCTION_DOCS: list[FunctionDoc] = [
     FunctionDoc("ToString", "ToString(valor)", "Conversão", "Converte para texto.", "ToString([valor])"),
     FunctionDoc("ToDate", "ToDate(valor)", "Conversão",
                 "Converte para data (AAAA-MM-DD; inválido vira nulo).", "ToDate([data_texto])"),
+    FunctionDoc("ToDateTime", "ToDateTime(valor)", "Conversão",
+                "Converte para data e hora (AAAA-MM-DD HH:MM:SS; inválido vira nulo).", "ToDateTime('2026-07-08 14:30:00')"),
     FunctionDoc("Today", "Today()", "Datas", "Data de hoje.", "Today()"),
     FunctionDoc("Year", "Year(data)", "Datas", "Ano da data.", "Year([data])"),
     FunctionDoc("Month", "Month(data)", "Datas", "Mês da data (1 a 12).", "Month([data])"),

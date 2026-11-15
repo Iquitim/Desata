@@ -136,10 +136,13 @@ class TrustRegistry:
 _FORMULA_TOOLS = {"prep.formula", "prep.filter", "prep.multirow", "prep.multi_field"}
 
 
-def summary(workflow: Workflow, names: dict[str, str]) -> list[dict[str, Any]]:
+def summary(
+    workflow: Workflow, names: dict[str, str], missing: set[str] | None = None
+) -> list[dict[str, Any]]:
     """O que alguém precisa conferir antes de confiar: o que lê, o que chama, o que calcula e onde grava.
 
     ``names``: nome legível das consultas e APIs cadastradas (``sql:id`` e ``api:id``), quando existem aqui.
+    ``missing``: as fontes que não estão neste computador, de todos os tipos (spec 040, RF-4017).
     """
     items: list[dict[str, Any]] = []
     for node in workflow.nodes:
@@ -158,8 +161,10 @@ def summary(workflow: Workflow, names: dict[str, str]) -> list[dict[str, Any]]:
                 else "file"
             )
             known = names.get(source, source)
-            missing = kind != "file" and source not in names
-            item = {"kind": kind, "detail": known or "sem fonte escolhida", "missing": missing}
+            absent = source in missing if missing is not None else kind != "file" and source not in names
+            item = {"kind": kind, "detail": known or "sem fonte escolhida", "missing": absent}
+            if source in workflow.samples:  # veio a amostra: o fluxo roda com ela até apontar a fonte
+                item["sample"] = workflow.samples[source].rows
         elif node.type == "io.api_loop":
             key = f"api:{cfg.get('source') or ''}"
             item = {

@@ -11,6 +11,7 @@ import { labelPicker } from './label_picker.js';
 import { RECIPES } from './multirow_recipes.js';
 import { qualityRulesField } from './quality_ui.js';
 import { regexBuilder } from './regex_builder.js';
+import { joinDateTime, parseDateText, sayDate, splitDateTime } from './date_hints.js';
 import { allowedValuesField } from './quality_values.js';
 import { columnValues, renameLabels } from './fields_values.js';
 import { fileField, modelField, modelSaveField, modelVersionsField, subflowField } from './fields_extra.js';
@@ -93,6 +94,35 @@ function fieldRow(field, value, set, ctx, values) {
 }
 
 // ------------------------------------------------------------------ widgets simples
+
+/** Data com calendário (spec 040): grava AAAA-MM-DD; valor antigo em outro formato é convertido. */
+function dateField(field, value, set, _ctx, id) {
+  const parsed = value ? parseDateText(value) : null;
+  const iso = parsed && !parsed.invalid ? parsed.iso : '';
+  if (iso && iso !== value) queueMicrotask(() => set(iso));
+  return h('div', { class: 'date-value' },
+    h('input', { id, class: 'input', type: 'date', value: iso, onchange: (e) => set(e.target.value) }),
+    value && !iso ? h('p', { class: 'field-warn' }, icon('alert', 13), ` “${value}” não é uma data: escolha no calendário.`) : null);
+}
+
+/** Valor do Filter básico (spec 040, RF-4001): coluna de data ganha calendário e grava AAAA-MM-DD. */
+function filterValue(field, value, set, ctx, id, values) {
+  const col = (ctx.columns?.('in') || []).find((c) => c.name === values?.column);
+  if (!col || !['Date', 'Datetime'].includes(col.type)) return text(field, value, set, ctx, id);
+  const withTime = col.type === 'Datetime'; // RF-4007: hora opcional; sem hora, o dia inteiro
+  const { day, time, parsed } = splitDateTime(value);
+  const canonical = joinDateTime(day, withTime ? time : '');
+  if (canonical && canonical !== value) queueMicrotask(() => set(canonical)); // fluxo antigo com 07/08/2026: grava na forma do calendário
+  const dayInput = h('input', { id, class: 'input', type: 'date', value: day, 'aria-label': `Data para comparar com ${col.name}`,
+    onchange: (e) => set(joinDateTime(e.target.value, withTime ? timeInput?.value : '')) });
+  const timeInput = withTime ? h('input', { class: 'input date-time', type: 'time', step: 60, value: time, 'aria-label': 'Hora (opcional)',
+    title: 'Opcional. Sem hora, vale o dia inteiro.', onchange: (e) => set(joinDateTime(dayInput.value, e.target.value)) }) : null;
+  const help = !day ? '' : withTime && !time ? `${sayDate(parsed)} (o dia inteiro)` : sayDate(parsed);
+  return h('div', { class: 'date-value' },
+    h('div', { class: 'date-row' }, dayInput, timeInput),
+    value && !day ? h('p', { class: 'field-warn' }, icon('alert', 13), ` “${value}” não é uma data: escolha no calendário.`) : null,
+    help ? h('small', { class: 'field-help' }, help) : null);
+}
 
 function text(field, value, set, _ctx, id) {
   return h('input', {
@@ -710,7 +740,7 @@ const WIDGETS = {
   color, optional_number: optionalNumber, category_colors: categoryColors, column_values: columnValues,
   rename_labels: renameLabels, subflow: subflowField, file: fileField, model: modelField, model_save: modelSaveField, model_versions: modelVersionsField,
   text, textarea, number, toggle, select, column, columns, tags, expression, sql, template, dataset, sheet, folder,
-  recipe_cards: recipeCards, confidentiality,
+  recipe_cards: recipeCards, confidentiality, filter_value: filterValue, date: dateField,
   quality_rules: (f, v, s, c) => qualityRulesField(f, v, s, c, { renderFields }),
   regex_builder: regexBuilder,
   allowed_values: allowedValuesField,

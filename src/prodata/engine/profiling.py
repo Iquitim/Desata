@@ -18,6 +18,8 @@ def simple_type(dtype: pl.DataType) -> str:
         return "Float64"
     if dtype == pl.Boolean:
         return "Boolean"
+    if isinstance(dtype, pl.Datetime):  # spec 040: data e hora tem calendário com hora no Filter básico
+        return "Datetime"
     if dtype.is_temporal():
         return "Date"
     return "String"

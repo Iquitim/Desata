@@ -1,6 +1,7 @@
 // Menus do topo (spec 029, RF-2981): Arquivo e Exibir, com texto, e os comandos que a busca (Ctrl+K) também usa.
 // O botão de tema fica fora dos menus, à vista no topo.
 
+import { shareDialog } from './portable.js';
 import { openScheduleDialog } from './schedule_dialog.js';
 import { NUMBER_STYLES, button, getNumberStyle, setNumberStyle } from './dom.js';
 import { icon } from './icons.js';
@@ -30,6 +31,7 @@ const fileItems = (a) => [
   'separator',
   { label: 'Salvar', icon: 'save', shortcut: 'Ctrl+S', onSelect: a.save },
   { label: 'Salvar como…', icon: 'directory', shortcut: 'Ctrl+Shift+S', onSelect: a.saveAs },
+  { label: 'Salvar com amostra dos dados…', icon: 'database', onSelect: () => shareDialog() },
   'separator',
   { label: 'Executar sem abrir o programa…', icon: 'clock', onSelect: openScheduleDialog },
 ];

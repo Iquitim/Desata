@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal
 
 import polars as pl
@@ -9,6 +10,7 @@ from pydantic import BaseModel
 
 from prodata.engine import profiling
 from prodata.engine.cache import ResultCache
+from prodata.engine.dates import date_or_error, moment_or_error
 from prodata.engine.serialize import json_rows
 from prodata.errors import InvalidInputError, NotFoundError
 
@@ -38,7 +40,18 @@ def _typed(series_dtype: pl.DataType, raw: Any, column: str) -> Any:
             raise InvalidInputError(f"'{raw}' não é um número válido para '{column}'.") from exc
     if series_dtype == pl.Boolean:
         return str(raw).strip().lower() in ("true", "1", "sim", "verdadeiro")
+    if _is_date(series_dtype):  # spec 040: "07/08/2026" e "2026-08-07" são o mesmo dia; com hora, o instante
+        try:
+            if isinstance(series_dtype, pl.Datetime):
+                return moment_or_error(str(raw), column)
+            return date_or_error(str(raw), column)
+        except ValueError as exc:
+            raise InvalidInputError(str(exc)) from None
     return str(raw)
+
+
+def _is_date(dtype: pl.DataType) -> bool:
+    return dtype == pl.Date or isinstance(dtype, pl.Datetime)
 
 
 def _expr(f: ExploreFilter, dtype: pl.DataType) -> pl.Expr:
@@ -64,8 +77,13 @@ def _expr(f: ExploreFilter, dtype: pl.DataType) -> pl.Expr:
             values = [str(v).strip() for v in items if str(v).strip()]
             return col.cast(pl.String).is_in(values)
 
-    # Comparações: números comparam como número; datas e textos como texto (ISO ordena certo).
-    target = col if dtype.is_numeric() or dtype == pl.Boolean else col.cast(pl.String)
+    # Comparações: números como número, datas como data (spec 040) e textos como texto.
+    if _is_date(dtype):
+        value = _typed(dtype, f.value, f.column)
+        # data e hora sem hora no valor: compara o dia inteiro; com hora, o instante
+        target = col.dt.date() if isinstance(dtype, pl.Datetime) and not isinstance(value, datetime) else col
+    else:
+        target = col if dtype.is_numeric() or dtype == pl.Boolean else col.cast(pl.String)
     value = _typed(dtype, f.value, f.column)
     match f.op:
         case "eq":

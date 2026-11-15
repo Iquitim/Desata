@@ -3,7 +3,9 @@
 // fonte, padding e quebra de linha, então o cursor e a seleção continuam nativos.
 
 import { knownConstants } from './constants.js';
+import { findDateHints, sayDate } from './date_hints.js';
 import { h } from './dom.js';
+import { icon } from './icons.js';
 import { formulaToolbar } from './formula_toolbar.js';
 import { store } from './store.js';
 
@@ -284,7 +286,8 @@ export function formulaEditor({ id, value = '', placeholder = '', rows = 3, maxH
     ed.hl.innerHTML = highlight(area.value, columns(), area.selectionStart === area.selectionEnd ? area.selectionStart : -1);
     ed.hl.scrollTop = area.scrollTop;
   };
-  ed.changed = () => { ed.fit(); ed.paint(); onChange(area.value); };
+  const dates = dateHintBox(ed);
+  ed.changed = () => { ed.fit(); ed.paint(); dates.refresh(); onChange(area.value); };
   ed.updateHint = () => drawSignature(hint, area);
   ed.replaceRange = (start, end, text, caretOffset = text.length) => {
     area.setRangeText(text, start, end, 'end');
@@ -303,7 +306,7 @@ export function formulaEditor({ id, value = '', placeholder = '', rows = 3, maxH
     ed.updateHint();
   };
   bindKeys(ed, suggestPopup(ed));
-  const root = h('div', { class: 'fx' }, h('div', { class: 'fx-box' }, ed.hl, ed.mirror, area), hint, formulaToolbar({ columns, insert, rowRefs, onExpand }));
+  const root = h('div', { class: 'fx' }, h('div', { class: 'fx-box' }, ed.hl, ed.mirror, area), dates.el, hint, formulaToolbar({ columns, insert, rowRefs, onExpand }));
   // Para o editor grande: ler, trocar o texto, inserir no cursor e pôr o foco.
   root.fx = {
     value: () => area.value,
@@ -312,6 +315,31 @@ export function formulaEditor({ id, value = '', placeholder = '', rows = 3, maxH
     focus: () => { area.focus(); area.selectionStart = area.selectionEnd = area.value.length; },
   };
   ed.paint();
+  dates.refresh();
   requestAnimationFrame(ed.fit); // altura certa só depois de entrar no documento
   return root;
+}
+
+/**
+ * "Você quis dizer…" (spec 040, RF-4003): datas escritas de outro jeito ganham, logo abaixo, a forma que o programa
+ * entende. Clicar troca só aquele trecho; ignorar não muda nada; o × esconde a sugestão daquele texto.
+ */
+function dateHintBox(ed) {
+  const el = h('div', { class: 'fx-dates', hidden: true, role: 'status', 'aria-live': 'polite' });
+  const dismissed = new Set();
+  const refresh = () => {
+    const hints = findDateHints(ed.area.value).filter((x) => !dismissed.has(x.text)).slice(0, 3);
+    el.hidden = !hints.length;
+    el.replaceChildren(...hints.map((x) => (x.invalid
+      ? h('div', { class: 'fx-date bad' }, icon('alert', 13), h('span', {}, `“${x.text}” não é uma data que existe.`))
+      : h('div', { class: 'fx-date' }, icon('clock', 13),
+        h('span', {}, 'Você quis dizer ', h('b', {}, sayDate(x.parsed)), '?'),
+        h('button', {
+          type: 'button', class: 'fx-date-use', title: `Trocar ${x.text} por ${x.replacement}`,
+          onclick: () => { const at = ed.area.value.indexOf(x.text); if (at >= 0) ed.replaceRange(at, at + x.text.length, x.replacement); },
+        }, h('code', {}, x.replacement)),
+        x.parsed.month ? h('small', {}, "Para o mês inteiro, compare DateTrunc('mês', [coluna]) com essa data.") : null,
+        h('button', { type: 'button', class: 'fx-date-x', title: 'Não é uma data', 'aria-label': 'Ignorar esta sugestão', onclick: () => { dismissed.add(x.text); refresh(); } }, icon('x', 12))))));
+  };
+  return { el, refresh };
 }

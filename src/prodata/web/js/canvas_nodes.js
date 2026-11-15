@@ -3,6 +3,7 @@
 import { removeNodes } from './actions.js';
 import { h } from './dom.js';
 import { icon } from './icons.js';
+import { sourceProblem } from './portable_state.js';
 import { isSelected, nodeResult, store, toolOf, visibleInputs } from './store.js';
 import { els, nodeEls, state } from './canvas_state.js';
 import { NODE_W, nodeHeight } from './canvas_geometry.js';
@@ -82,6 +83,7 @@ function buildNode(n) {
     class: ['node', `status-${status}`, cp && store.selection.nodeId === cp.id && 'held-focus',
       isSelected(n.id) && 'selected',
       n.cache_point && 'cache-point',
+      sourceProblem(n.id) && (sourceProblem(n.id).state === 'sample' ? 'source-sample' : 'source-missing'),
       !store.inspect.via && store.inspect.nodeId === n.id && 'inspected'],
     dataset: { id: n.id, category: spec?.category || 'prep' },
     style: { transform: `translate(${n.x}px, ${n.y}px)`, width: `${NODE_W}px`, height: `${nodeHeight(n)}px` },
@@ -99,6 +101,7 @@ function buildNode(n) {
   h('span', { class: 'node-status', title: STATUS_TITLES[status] })),
   res?.extra?.dq_failed ? h('span', { class: 'node-alert', title: 'Linhas que falharam nas regras: saem por [F]' },
     `${res.extra.dq_failed} falharam`) : null,
+  missingBadge(n),
   n.cache_point ? h('span', {
     class: 'node-cache', title: res?.extra?.frozen_at
       ? `Ponto de cache · resultado guardado em ${new Date(res.extra.frozen_at).toLocaleString('pt-BR')}`
@@ -117,7 +120,7 @@ function nodeKey(n) {
   return JSON.stringify([n.type, n.label, n.disabled, n.cache_point, statusOf(n), res?.annotation, res?.error, visibleInputs(n).map((p) => p.id),
     res?.extra?.frozen_at, res?.extra?.dq_failed, isSelected(n.id), !store.inspect.via && store.inspect.nodeId === n.id && store.inspect.anchor,
     state.held.get(n.id)?.id, state.held.get(n.id) && store.selection.nodeId === state.held.get(n.id).id,
-    store.inspect.via?.nodeId === n.id && store.inspect.via.port]);
+    store.inspect.via?.nodeId === n.id && store.inspect.via.port, sourceProblem(n.id)?.state || null]); // fonte que falta ou amostra (spec 040)
 }
 
 /**
@@ -172,3 +175,14 @@ export function renderNodes() {
 let nodesWorkflow = null;
 const ENTER_MS = 200;
 const enteringUntil = new Map();
+
+/** Spec 040: a fonte desta caixa não está neste computador (vermelho) ou vem da amostra do fluxo (laranja). */
+function missingBadge(n) {
+  const s = sourceProblem(n.id);
+  if (!s) return null;
+  const sample = s.state === 'sample';
+  return h('span', {
+    class: ['node-missing', sample && 'sample'],
+    title: sample ? `Lendo a amostra que veio no fluxo: ${s.label} não está neste computador.` : `${s.label} não está neste computador. Veja Dados → Faltam neste computador.`,
+  }, icon(sample ? 'database' : 'alert', 11), sample ? 'amostra' : 'fonte ausente');
+}

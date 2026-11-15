@@ -15,6 +15,7 @@ import polars as pl
 from pydantic import BaseModel, Field
 
 from prodata.engine import formula
+from prodata.engine.dates import date_or_error
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
 
@@ -52,14 +53,14 @@ class QualityRule(BaseModel):
     date_min: str = Field(
         "",
         title="A partir de",
-        description="AAAA-MM-DD. Vazio: sem limite.",
-        json_schema_extra=ui(show_if={"kind": ["date"]}),
+        description="Vazio: sem limite.",
+        json_schema_extra=ui(widget="date", show_if={"kind": ["date"]}),
     )
     date_max: str = Field(
         "",
         title="Até",
-        description="AAAA-MM-DD. Vazio: sem limite.",
-        json_schema_extra=ui(show_if={"kind": ["date"]}),
+        description="Vazio: sem limite.",
+        json_schema_extra=ui(widget="date", show_if={"kind": ["date"]}),
     )
     not_future: bool = Field(
         False, title="Não pode ser no futuro", json_schema_extra=ui(show_if={"kind": ["date"]})
@@ -253,9 +254,9 @@ def _date(df: pl.DataFrame, rule: QualityRule) -> Failure:
     dates = _as_date(df[col])
     bad = _filled(_text(df, col)) & dates.is_null()
     if rule.date_min.strip():
-        bad = bad | (dates < date.fromisoformat(rule.date_min.strip())).fill_null(False)
+        bad = bad | (dates < date_or_error(rule.date_min, "A partir de")).fill_null(False)
     if rule.date_max.strip():
-        bad = bad | (dates > date.fromisoformat(rule.date_max.strip())).fill_null(False)
+        bad = bad | (dates > date_or_error(rule.date_max, "Até")).fill_null(False)
     if rule.not_future:
         bad = bad | (dates > date.today()).fill_null(False)
     return bad, f"Data inválida ou fora do período em [{col}]"

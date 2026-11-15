@@ -25,7 +25,7 @@ from prodata.domain.labels import (
     needs_protection,
 )
 from prodata.engine import constants as constants_engine
-from prodata.errors import InvalidInputError
+from prodata.errors import InvalidInputError, NotFoundError
 from prodata.forms import ui
 from prodata.ingestion.datasets import resolve_inside, sanitize_filename
 from prodata.ingestion.folders import odd_warning, read_folder, source_folder_id
@@ -54,6 +54,17 @@ class InputDataConfig(ReadOptions, ToolConfig):
 
 
 def _source_signature(ctx: NodeContext, cfg: InputDataConfig) -> str:
+    """A fonte de verdade sempre vence; sem ela neste computador, vale a amostra que veio no fluxo (spec 040)."""
+    try:
+        return _real_signature(ctx, cfg)
+    except NotFoundError as exc:
+        sample = ctx.samples.get(cfg.dataset)
+        if sample is None:  # RF-4012: a fonte ausente aparece aqui primeiro, antes de ler
+            raise NotFoundError(f"{exc} Veja Dados → Faltam neste computador.") from None
+        return f"amostra:{sample.digest()}"
+
+
+def _real_signature(ctx: NodeContext, cfg: InputDataConfig) -> str:
     if not cfg.dataset:
         return ""
     jira_id = source_jira_id(cfg.dataset)
@@ -101,7 +112,10 @@ def _source_on_request(ctx: NodeContext, cfg: InputDataConfig) -> str | None:
     api_id = source_api_id(cfg.dataset)
     if api_id is None or ctx.apis is None:
         return None
-    api = ctx.apis.get(api_id)
+    try:
+        api = ctx.apis.get(api_id)
+    except NotFoundError:  # a API não está neste computador: a amostra (ou o aviso) resolve ao executar
+        return None
     if api.method != "GET":
         return "Esta caixa faz um POST na API. Clique em Executar para chamar."
     return "Esta caixa só chama a API quando você clica em Executar." if api.hold_on_open else None
@@ -121,6 +135,28 @@ def _source_on_request(ctx: NodeContext, cfg: InputDataConfig) -> str | None:
     only_on_request=_source_on_request,
 )
 def input_data(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
+    try:
+        return _read_source(ctx, cfg)
+    except NotFoundError as exc:
+        sample = ctx.samples.get(cfg.dataset)
+        if sample is None:  # RF-4012: diz onde resolver, em vez de só "não encontrado"
+            raise NotFoundError(f"{exc} Veja Dados → Faltam neste computador.") from None
+        frame = sample.frame()
+        when = sample.created_at.astimezone().strftime("%d/%m/%Y")
+        return NodeOutput(
+            tables={"out": frame.head(cfg.limit) if cfg.limit else frame},
+            extra={
+                "source": sample.label,
+                "sample": True,
+                "warnings": [
+                    f"Lendo a amostra que veio no fluxo ({sample.rows} linhas, de {when}): "
+                    "a fonte não está neste computador."
+                ],
+            },
+        )
+
+
+def _read_source(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
     if not cfg.dataset:
         raise ValueError("Escolha uma fonte no campo 'Fonte'.")
     if source_jira_id(cfg.dataset) is not None:

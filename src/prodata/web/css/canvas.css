@@ -309,5 +309,10 @@ g.edge.held .edge-line { stroke: var(--marca-org, #a9852f); stroke-dasharray: 6 
 .trust-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font: inherit; font-size: var(--fs-sm); font-weight: 600; color: #fff; background: #b45309; border: 0; border-radius: 999px; cursor: pointer; }
 
 /* Data Quality (spec 028): o dado ruim nunca segue sem ninguém ver. */
+/* spec 040: fonte que falta neste computador (vermelho) ou lida da amostra (laranja) */
+.node.source-missing .node-card { box-shadow: 0 0 0 2px var(--err); }
+.node.source-sample .node-card { box-shadow: 0 0 0 2px var(--warn); }
+.node-missing { position: absolute; top: -10px; left: -8px; z-index: 4; display: inline-flex; align-items: center; gap: 3px; padding: 1px 8px; font-size: var(--fs-xs); font-weight: 700; color: #fff; background: var(--err); border-radius: 999px; box-shadow: var(--shadow-sm); pointer-events: none; }
+.node-missing.sample { background: var(--warn); }
 .node-alert { position: absolute; top: -10px; right: -8px; z-index: 4; padding: 1px 8px; font-size: var(--fs-xs); font-weight: 700; color: #fff; background: var(--err); border-radius: 999px; box-shadow: var(--shadow-sm); pointer-events: none; }
 
