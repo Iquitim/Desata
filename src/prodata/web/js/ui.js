@@ -114,8 +114,8 @@ export function showMenu(x, y, items) {
   (document.querySelector('dialog[open]') || document.body).append(menu); // numa janela, fora dela ficaria por baixo
   const { innerWidth, innerHeight } = window;
   const rect = menu.getBoundingClientRect();
-  menu.style.left = `${Math.min(x, innerWidth - rect.width - 8)}px`;
-  menu.style.top = `${Math.min(y, innerHeight - rect.height - 8)}px`;
+  menu.style.left = `${Math.max(8, Math.min(x, innerWidth - rect.width - 8))}px`;
+  menu.style.top = `${Math.max(8, Math.min(y, innerHeight - rect.height - 8))}px`; // lista longa: rola por dentro
   openMenu = menu;
   menu.querySelector('.menu-item:not([disabled])')?.focus();
 }

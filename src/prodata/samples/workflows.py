@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import base64
 from typing import Any
 
-from prodata.brand import marca
 from prodata.dashboard.layouts import LayoutItem, Rect, VisualHint, arrange
 from prodata.domain.dashboard import DashPage
 from prodata.samples.apis import ESTADOS_ID, MUNICIPIOS_ID
+from prodata.samples.demo_logo import LOGO, logo_uri
+from prodata.samples.pdfs import SOURCE_ID as PDF_SOURCE
 
 DEMO_WORKFLOW_ID = "demo_pipeline_360"
 # Caixas criadas na v0.3 (spec 014): sem elas, a demonstração salva é de uma versão anterior.
@@ -17,10 +17,9 @@ DEMO_V3_NODES = ("n_pareto", "n_venn")
 API_FIRST_NODE = "n_api_estados"
 # Corrida de barras e linha do tempo (spec 030): a demonstração mostra o Replay com dados que já tem.
 RACE_NODE = "n_race"
+# Leitor de PDF (spec 037): relatórios reais da Receita Federal, lidos pelo Input Data.
+PDF_FIRST_NODE = "n_pdf_campos"
 DEMO_TIMELINE = {"column": "competencia", "step": "month", "mode": "cumulative", "speed": 1.0}
-# Logo da marca ativa no exemplo do dashboard (spec 036).
-LOGO = marca().dir / "logo-claro.svg"
-
 # Colunas do canvas para cartões de 188 px com 60 px de folga (spec 004, RF-403).
 COL = [40 + 248 * i for i in range(9)]
 
@@ -106,6 +105,286 @@ def api_section() -> dict[str, list[dict[str, Any]]]:
     }
 
 
+# Os principais tributos (o primeiro nível da tabela da Receita), para o gráfico do dashboard.
+_TRIBUTOS = " OR ".join(
+    [
+        "[receita] = 'IMPOSTO SOBRE IMPORTAÇÃO'",
+        "[receita] = 'I.P.I-TOTAL'",
+        "[receita] = 'IMPOSTO SOBRE A RENDA-TOTAL'",
+        "StartsWith([receita], 'IOF')",
+        "StartsWith([receita], 'COFINS')",
+        "StartsWith([receita], 'CONTRIBUIÇÃO PARA O PIS')",
+        "StartsWith([receita], 'CSLL')",
+        "StartsWith([receita], 'RECEITA PREVIDENCIÁRIA')",
+    ]
+)
+# Caixas do PDF que aparecem no dashboard do exemplo.
+PDF_VISUALS = (
+    ("n_pdf_chart", "bar"),
+    ("n_pdf_tributos", "hbar"),
+    ("n_pdf_indice_chart", "bar"),
+)
+# Onde as caixas da primeira versão da etapa ficavam (0.8.5 de antes): se continuam lá, vão para o lugar novo.
+_PDF_V1 = {"n_pdf_chart": (1, 70), "n_pdf_itens": (3, 70)}
+
+
+def pdf_section(y: int = 810) -> dict[str, list[dict[str, Any]]]:
+    """Etapa com PDFs de verdade: a Análise da Arrecadação da Receita Federal, três meses, com a extração pronta.
+
+    Os dados do PDF entram no resto do fluxo: o faturamento das Transações é cruzado com a arrecadação federal do
+    mesmo mês, e a tabela por tributo vira o gráfico dos principais tributos.
+    """
+    row1, row2 = y + 70, y + 190
+    return {
+        "containers": [
+            {
+                **_container("c_pdf", "6 · PDFs da Receita Federal", "#ef4444", 20, y, 2212, 290),
+                "description": "Três relatórios mensais em PDF, lidos por uma extração ensinada na vista Dados, cruzados "
+                "com o faturamento das Transações. Abra a fonte em Dados para ver de onde veio cada número.",
+            }
+        ],
+        "nodes": [
+            _node(
+                "n_pdf_campos",
+                "io.input_data",
+                "Resumo de cada PDF",
+                0,
+                row1,
+                dataset=f"pdf:{PDF_SOURCE}/campos",
+            ),
+            _node(
+                "n_pdf_mes",
+                "prep.formula",
+                "Mês do relatório",
+                1,
+                row1,
+                formulas=[
+                    {"column": "mes", "expression": "DateFormat([competencia], '%Y-%m')", "type": "String"},
+                    {
+                        "column": "receita_bi",
+                        "expression": "Round([receita_administrada_rfb] / 1000, 1)",
+                        "type": "Float64",
+                    },
+                ],
+            ),
+            _node(
+                "n_pdf_vendas_mes",
+                "transform.summarize",
+                "Faturamento por mês",
+                2,
+                row1,
+                group_by=["competencia"],
+                aggregations=[{"column": "valor_bruto", "agg": "sum", "alias": "faturamento"}],
+            ),
+            _node(
+                "n_pdf_join",
+                "transform.join",
+                "Faturamento × arrecadação",
+                3,
+                row1,
+                keys=[{"left": "mes", "right": "competencia"}],
+            ),
+            _node(
+                "n_pdf_indice",
+                "prep.formula",
+                "Por R$ 1 bi arrecadado",
+                4,
+                row1,
+                formulas=[
+                    {
+                        "column": "faturamento_por_bi",
+                        "expression": "Round([faturamento] / ([receita_administrada_rfb] / 1000), 2)",
+                        "type": "Float64",
+                    }
+                ],
+            ),
+            _node(
+                "n_pdf_indice_chart",
+                "bi.chart",
+                "Faturamento × União",
+                5,
+                row1,
+                title="Faturamento para cada R$ 1 bi arrecadado pela União",
+                chart_type="bar",
+                x_column="mes",
+                y_column="faturamento_por_bi",
+                agg="sum",
+                sort="label",
+            ),
+            _node(
+                "n_pdf_itens",
+                "io.input_data",
+                "Arrecadação por tributo",
+                0,
+                row2,
+                dataset=f"pdf:{PDF_SOURCE}/itens_acumulado_no_ano",
+            ),
+            _node(
+                "n_pdf_bi",
+                "prep.formula",
+                "Em R$ bilhões",
+                1,
+                row2,
+                formulas=[
+                    {
+                        "column": "arrecadado_bi",
+                        "expression": "Round([arrecadado_ano_atual] / 1000, 1)",
+                        "type": "Float64",
+                    }
+                ],
+            ),
+            _node(
+                "n_pdf_principais",
+                "prep.filter",
+                "Principais tributos",
+                2,
+                row2,
+                mode="expression",
+                expression=_TRIBUTOS,
+            ),
+            _node(
+                "n_pdf_tributos",
+                "bi.chart",
+                "Tributos no ano",
+                3,
+                row2,
+                title="Principais tributos no ano (R$ bilhões)",
+                chart_type="hbar",
+                x_column="receita",
+                y_column="arrecadado_bi",
+                agg="max",  # o acumulado só cresce: o maior é o do último relatório
+            ),
+            _node(
+                "n_pdf_chart",
+                "bi.chart",
+                "Arrecadação por mês",
+                4,
+                row2,
+                title="Receita administrada pela RFB (R$ bilhões)",
+                chart_type="bar",
+                x_column="mes",
+                y_column="receita_bi",
+                agg="sum",
+                sort="label",
+            ),
+        ],
+        "edges": [
+            _edge("e_pdf2", "n_pdf_campos", "out", "n_pdf_mes"),
+            _edge("e_pdf3", "n_vendas", "out", "n_pdf_vendas_mes"),
+            _edge("e_pdf4", "n_pdf_mes", "out", "n_pdf_join", "L"),
+            _edge("e_pdf5", "n_pdf_vendas_mes", "out", "n_pdf_join", "R"),
+            _edge("e_pdf6", "n_pdf_join", "J", "n_pdf_indice"),
+            _edge("e_pdf7", "n_pdf_indice", "out", "n_pdf_indice_chart"),
+            _edge("e_pdf8", "n_pdf_itens", "out", "n_pdf_bi"),
+            _edge("e_pdf9", "n_pdf_principais", "T", "n_pdf_tributos"),
+            _edge("e_pdf10", "n_pdf_mes", "out", "n_pdf_chart"),
+            _edge("e_pdf11", "n_pdf_bi", "out", "n_pdf_principais"),
+        ],
+    }
+
+
+def add_pdf_section(workflow: dict[str, Any]) -> bool:
+    """Leva a etapa do PDF (ou a versão nova dela) a uma demonstração salva, sem cobrir o que foi movido.
+
+    Caixas que faltam entram; as da primeira versão que continuam no lugar de antes vão para o lugar novo; os
+    gráficos entram no dashboard. Devolve se mudou algo.
+    """
+    nodes = {n["id"]: n for n in workflow["nodes"]}
+    if "n_vendas" not in nodes:
+        return False
+    box = next((c for c in workflow.get("containers", []) if c["id"] == "c_pdf"), None)
+    if box is None:
+        bottom = max(
+            [n["y"] + 56 for n in workflow["nodes"]]
+            + [c["y"] + c["height"] for c in workflow.get("containers", [])]
+        )
+        y = bottom + 20
+    else:
+        y = box["y"]
+    section = pdf_section(y)
+    changed = False
+    if box is None:
+        workflow.setdefault("containers", []).extend(section["containers"])
+        changed = True
+    elif box["height"] < section["containers"][0]["height"]:
+        box.update(
+            height=section["containers"][0]["height"], description=section["containers"][0]["description"]
+        )
+        changed = True
+    for node in section["nodes"]:
+        current = nodes.get(node["id"])
+        if current is None:
+            workflow["nodes"].append(node)
+            changed = True
+        elif node["id"] in _PDF_V1:
+            col, dy = _PDF_V1[node["id"]]
+            if (current["x"], current["y"]) == (COL[col], y + dy) and (current["x"], current["y"]) != (
+                node["x"],
+                node["y"],
+            ):
+                current.update(x=node["x"], y=node["y"])
+                changed = True
+    edges = workflow.setdefault("edges", [])
+    old_chart = next((n for n in workflow["nodes"] if n["id"] == "n_pdf_chart"), None)
+    if old_chart and old_chart["config"].get("x_column") == "competencia":  # o gráfico da primeira versão
+        fresh = next(n for n in section["nodes"] if n["id"] == "n_pdf_chart")
+        old_chart["config"] = dict(fresh["config"])
+        changed = True
+    # ligações da primeira versão que mudaram: o gráfico agora vem do mês, e os tributos passam pela fórmula
+    stale = [
+        e
+        for e in edges
+        if e["id"] == "e_pdf1" or (e["id"] == "e_pdf8" and e.get("target") == "n_pdf_principais")
+    ]
+    if stale:
+        edges[:] = [e for e in edges if e not in stale]
+        changed = True
+    known = {e["id"] for e in edges}
+    for edge in section["edges"]:
+        if edge["id"] not in known:
+            edges.append(edge)
+            changed = True
+    return _show_pdf_visuals(workflow) or changed
+
+
+def _show_pdf_visuals(workflow: dict[str, Any]) -> bool:
+    """Os gráficos do PDF entram no dashboard (abaixo do que já existe) e saem da lista de ocultos."""
+    dashboard = workflow.get("dashboard")
+    if not dashboard:
+        return False
+    items = dashboard.setdefault("items", [])
+    hidden = dashboard.setdefault("hidden", [])
+    shown = {i.get("node_id") for i in items if i.get("kind") == "visual"}
+    missing = [n for n, _ in PDF_VISUALS if n not in shown]
+    changed = any(n in hidden for n, _ in PDF_VISUALS)
+    dashboard["hidden"] = [h for h in hidden if h not in {n for n, _ in PDF_VISUALS}]
+    if not missing:
+        return changed
+    top = max([i["y"] + i["h"] for i in items] or [0]) + 24
+    width = (1520 - 24 * (len(missing) - 1)) // len(missing)
+    for k, node_id in enumerate(missing):
+        items.append(
+            {
+                "id": f"d_{node_id}",
+                "kind": "visual",
+                "node_id": node_id,
+                "x": 40 + k * (width + 24),
+                "y": top,
+                "w": width,
+                "h": 300,
+                "format": {},
+            }
+        )
+    page = dashboard.setdefault("page", {})
+    if top + 300 + 24 > _page_height(page):
+        page.update(size="free", height=min(20000, top + 300 + 40))
+    return True
+
+
+def _page_height(page: dict[str, Any]) -> int:
+    return DashPage.model_validate(page or {}).pixel_height
+
+
 def _race_node(y: int = 480) -> dict[str, Any]:
     return _node(
         RACE_NODE,
@@ -168,6 +447,7 @@ def add_api_section(workflow: dict[str, Any]) -> bool:
 
 def demo_workflow() -> dict[str, Any]:
     section = api_section()
+    pdf = pdf_section()
     return {
         "id": DEMO_WORKFLOW_ID,
         "name": "Pipeline 360° de clientes",
@@ -178,6 +458,7 @@ def demo_workflow() -> dict[str, Any]:
             _container("c_ml", "3 · Modelo de inadimplência", "#06b6d4", 1010, 460, 1222, 140),
             _container("c_vendas", "4 · Vendas no dashboard", "#f59e0b", 20, 300, 972, 300),
             *section["containers"],
+            *pdf["containers"],
         ],
         "nodes": [
             _node("n_clientes", "io.input_data", "Clientes", 0, 70, dataset="clientes_enterprise.csv"),
@@ -398,6 +679,7 @@ def demo_workflow() -> dict[str, Any]:
                 format="parquet",
             ),
             *section["nodes"],
+            *pdf["nodes"],
         ],
         "edges": [
             _edge("e1", "n_clientes", "out", "n_cleanse"),
@@ -423,6 +705,7 @@ def demo_workflow() -> dict[str, Any]:
             _edge("e21", "n_vendas", "out", "n_venn"),
             _edge("e_race", "n_vendas", "out", RACE_NODE),
             *section["edges"],
+            *pdf["edges"],
         ],
         "dashboard": demo_dashboard(),
     }
@@ -439,13 +722,14 @@ def demo_dashboard() -> dict[str, Any]:
         ("n_chart_seg", VisualHint(chart_type="donut")),
         ("n_venn", VisualHint(chart_type="venn")),
         (RACE_NODE, VisualHint(chart_type="hbar")),
+        *((node, VisualHint(chart_type=kind)) for node, kind in PDF_VISUALS),
     ]
     title = Rect(x=40, y=32, w=1200, h=56)
     logo = Rect(x=1488, y=24, w=72, h=88)
-    page = DashPage(size="a4-landscape")
+    page = DashPage(size="free", height=1500)  # a4 não cabe os gráficos do PDF
     items = [LayoutItem(id=n, hint=hint, rect=Rect(y=i)) for i, (n, hint) in enumerate(visuals)]
     result = arrange(items, page, "kpis-top-3", [title, logo])
-    logo_uri = "data:image/svg+xml;base64," + base64.b64encode(LOGO.read_bytes()).decode()
+    content = logo_uri(LOGO)
     return {
         "page": result.page.model_dump(),
         "timeline": DEMO_TIMELINE,
@@ -457,7 +741,7 @@ def demo_dashboard() -> dict[str, Any]:
                 "content": "Pipeline 360° de clientes",
                 "format": {"size": 30, "bold": True, "vertical": "middle"},
             },
-            {"id": "d_logo", "kind": "image", **logo.model_dump(), "content": logo_uri, "format": {}},
+            {"id": "d_logo", "kind": "image", **logo.model_dump(), "content": content, "format": {}},
             *(
                 {
                     "id": f"d_{n}",

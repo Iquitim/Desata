@@ -3,4 +3,7 @@
 from prodata.cli import cli_only
 
 if __name__ == "__main__":
+    import multiprocessing
+
+    multiprocessing.freeze_support()  # o leitor de PDF roda num processo filho (spec 037)
     cli_only()

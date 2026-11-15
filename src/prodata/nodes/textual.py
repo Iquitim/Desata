@@ -12,6 +12,7 @@ import polars as pl
 from pydantic import Field
 
 from prodata.engine import formula
+from prodata.engine.sql.fragment import Fragment, NoTranslationError, SqlContext, lit, q, sql_for, text_cast
 from prodata.errors import InvalidInputError
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, ToolConfig, tool
@@ -113,6 +114,87 @@ def regex(ctx: NodeContext, cfg: RegexConfig) -> NodeOutput:
     if clash := [c for c in groups.columns if c in df.columns]:
         raise InvalidInputError(f"Já existe coluna com o nome {', '.join(clash)}: escolha outros nomes.")
     return NodeOutput(tables={"out": pl.concat([df, groups], how="horizontal")})
+
+
+# Regex em SQL (spec 033). O DuckDB usa RE2, compatível com o motor no que a caixa aceita; o que o Python não
+# entende como expressão regular fica sem tradução, em vez de virar um SQL que talvez dê outro resultado.
+_DOLLAR = re.compile(r"\$(\d+|\{(\w+)\})|\$\$")
+
+
+def _replacement_sql(text: str) -> str:
+    """``$1`` e ``${nome}`` do motor viram ``\\1`` do DuckDB; ``$$`` é um cifrão; barras ficam literais."""
+    out: list[str] = []
+    pos = 0
+    for m in _DOLLAR.finditer(text):
+        out.append(text[pos : m.start()].replace("\\", "\\\\"))
+        if m.group(0) == "$$":
+            out.append("$")
+        elif m.group(2) is not None:
+            raise NoTranslationError(
+                "Grupo com nome na troca (${nome}) não tem equivalente no DuckDB: use $1, $2…"
+            )
+        else:
+            out.append("\\" + m.group(1))
+        pos = m.end()
+    out.append(text[pos:].replace("\\", "\\\\"))
+    return "".join(out)
+
+
+@sql_for("prep.regex")
+def regex_sql(ctx: SqlContext, cfg: RegexConfig) -> dict[str, Fragment]:
+    source = ctx.input()
+    if not cfg.column:
+        raise ValueError("Escolha a coluna.")
+    if cfg.column not in source.columns:
+        raise ValueError(f"Coluna '{cfg.column}' não existe na entrada.")
+    if not cfg.pattern:
+        raise ValueError("Escreva o padrão.")
+    try:
+        compiled = re.compile(cfg.pattern)
+    except re.error as exc:
+        raise NoTranslationError(f"O padrão usa recursos que o SQL não confere: {exc}") from None
+    pattern = lit(("(?i)" if cfg.ignore_case else "") + cfg.pattern)
+    text = text_cast(q(cfg.column), source.kinds.get(cfg.column, ""))
+    block = q(source.block)
+    if cfg.mode == "match":
+        target = cfg.output.strip() or "casou"
+        value = f"COALESCE(regexp_matches({text}, {pattern}), FALSE)"
+        return {
+            "out": Fragment(
+                _put(source.columns, target, value, block), f"Marca as linhas em que {cfg.column} casa"
+            )
+        }
+    if cfg.mode == "replace":
+        target = cfg.output.strip() or cfg.column
+        value = f"regexp_replace({text}, {pattern}, {lit(_replacement_sql(cfg.replacement))}, 'g')"
+        return {
+            "out": Fragment(_put(source.columns, target, value, block), f"Troca o que casa em {cfg.column}")
+        }
+    groups = compiled.groups
+    by_index = {i: name for name, i in compiled.groupindex.items()}
+    raw = [by_index.get(i, str(i)) for i in range(1, groups + 1)] or ["1"]
+    names = [n.strip() for n in cfg.names if n.strip()]
+    final = [
+        names[i] if i < len(names) else (old if not old.isdigit() else f"grupo_{i + 1}")
+        for i, old in enumerate(raw)
+    ]
+    if clash := [c for c in final if c in source.columns]:
+        raise ValueError(f"Já existe coluna com o nome {', '.join(clash)}: escolha outros nomes.")
+    # sem casar, o motor dá vazio (nulo); o DuckDB daria texto vazio
+    parts = [
+        f"CASE WHEN regexp_matches({text}, {pattern}) THEN regexp_extract({text}, {pattern}, {i if groups else 0}) END"
+        f" AS {q(name)}"
+        for i, name in enumerate(final, start=1)
+    ]
+    sql = "SELECT\n  *,\n  " + ",\n  ".join(parts) + f"\nFROM {block}"
+    return {"out": Fragment(sql, f"Extrai de {cfg.column} com expressão regular")}
+
+
+def _put(columns: list[str], target: str, value: str, block: str) -> str:
+    """Coluna que já existe fica no mesmo lugar; coluna nova vai para o fim, como no motor."""
+    if target in columns:
+        return f"SELECT * REPLACE ({value} AS {q(target)})\nFROM {block}"
+    return f"SELECT\n  *,\n  {value} AS {q(target)}\nFROM {block}"
 
 
 # ------------------------------------------------------------------ Multi-Field Formula

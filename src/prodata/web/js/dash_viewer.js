@@ -9,7 +9,7 @@ import { activeFiltersText, clickedValues, filterBar, filtersFor, isFilterActive
 import { createReplay, makeTables, momentsOf } from './dash_replay.js';
 import { openStory } from './dash_story.js';
 import { stillBadge, timelineBar } from './dash_timeline.js';
-import { h } from './dom.js';
+import { h, setNumberStyle } from './dom.js';
 
 const PAGE_W = 1600;
 const root = document.getElementById('prodata-pagina');
@@ -17,6 +17,7 @@ const root = document.getElementById('prodata-pagina');
 const labelBar = (level, name) => (name ? h('div', { class: ['label-bar', `label-${level}`] }, `Classificação: ${name}`) : null);
 
 function start(data) {
+  setNumberStyle(data.number_style, false); // a escolha de quem exportou (spec 038)
   const filters = (data.filters || []).map((f) => ({ ...f }));
 
   const tables = makeTables(data);

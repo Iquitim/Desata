@@ -45,11 +45,21 @@ def _numeric_profile(series: pl.Series) -> tuple[dict[str, Any], list[dict[str, 
         "sum": round(float(values.sum()), 4),
     }
     if stats["min"] == stats["max"]:
-        return stats, [{"label": f"{stats['min']:g}", "count": int(values.size), "pct": 100.0}]
+        only = stats["min"]
+        return stats, [
+            {"label": f"{only:g}", "lo": only, "hi": only, "count": int(values.size), "pct": 100.0}
+        ]
     counts, edges = np.histogram(values, bins=HISTOGRAM_BINS)
     peak = max(int(counts.max()), 1)
     hist = [
-        {"label": f"{edges[i]:,.4g} – {edges[i + 1]:,.4g}", "count": int(c), "pct": _pct(int(c), peak)}
+        {
+            # os limites vão como número: a tela formata com o separador decimal escolhido (spec 038)
+            "label": f"{edges[i]:,.4g} – {edges[i + 1]:,.4g}",
+            "lo": float(edges[i]),
+            "hi": float(edges[i + 1]),
+            "count": int(c),
+            "pct": _pct(int(c), peak),
+        }
         for i, c in enumerate(counts)
     ]
     return stats, hist

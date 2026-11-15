@@ -19,6 +19,7 @@ from prodata.ingestion import DatasetStore
 from prodata.main import create_app
 from prodata.samples.apis import seed_example_apis
 from prodata.samples.datasets import ensure_sample_datasets
+from prodata.samples.pdfs import seed_example_pdfs
 from prodata.samples.workflows import demo_workflow
 
 REGIOES = {"SP": "Sudeste", "RJ": "Sudeste", "MG": "Sudeste", "PR": "Sul", "BA": "Nordeste"}
@@ -74,10 +75,13 @@ def client(settings: Settings) -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def store(tmp_path: Path) -> DatasetStore:
+def store(tmp_path: Path) -> Iterator[DatasetStore]:
     root = tmp_path / "datasets"
     ensure_sample_datasets(root)
-    return DatasetStore(root, max_bytes=1024 * 1024)
+    datasets = DatasetStore(root, max_bytes=1024 * 1024)
+    seed_example_pdfs(datasets.pdfs)  # o exemplo lê os PDFs da Receita Federal (spec 037)
+    yield datasets
+    datasets.pdfs.close()  # o processo do leitor de PDF não fica sobrando
 
 
 @pytest.fixture

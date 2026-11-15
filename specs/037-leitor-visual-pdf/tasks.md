@@ -15,16 +15,24 @@
 
 ## Etapa 1: implementação (depois do spike)
 
-- [ ] T01 Fontes e extrações (`PdfSources`, `PdfRecipes`), rotas e assinatura `pdf:` (RF-3701, RF-3704, RF-3772, RF-3783)
-- [ ] T02 Cartão, situação, organização e mapa de uso (RF-3703)
-- [ ] T03 Editor: áreas, páginas, miniaturas, zoom, busca (RF-3710, RF-3711)
-- [ ] T04 Seleção por mouse, área e teclado; ação contextual; arrastar até a prévia (RF-3712..3715)
-- [ ] T05 Campos: criar, tipo, Como encontrar, posição frágil, obrigatório, variações de rótulo (RF-3720..3723)
-- [ ] T06 Tabelas: guias, junção de linhas, exclusões, continuação, nada inventado (RF-3730..3734)
-- [ ] T07 Prévia de impacto, exemplos, matriz e mudança de regra com desfazer (RF-3740..3743)
-- [ ] T08 De onde veio, nos dois sentidos, e saída de origem (RF-3750..3752)
-- [ ] T09 Estados, política de falha e correção só neste documento (RF-3760..3762)
-- [ ] T10 Saídas no Input Data, cache, subfluxo e linha de comando (RF-3770..3772)
-- [ ] T11 Limites, mensagens e nada de conteúdo em log (RF-3780..3782)
-- [ ] T12 Guia, Manual, prints e PDF de demonstração (RF-3790)
-- [ ] T13 Testes de navegador e roteiro de teste com pessoas
+- [x] T01 Fontes e extrações (`PdfSources`, `PdfRecipes`), rotas e assinatura `pdf:` (RF-3701, RF-3704, RF-3772, RF-3783)
+- [x] T02 Cartão, situação, organização e mapa de uso (RF-3703)
+- [x] T03 Editor: áreas, páginas, miniaturas, zoom, busca (RF-3710, RF-3711)
+- [x] T04 Seleção por mouse, área e teclado; ação contextual; arrastar até a prévia (RF-3712..3715)
+- [x] T05 Campos: criar, tipo, Como encontrar, posição frágil, obrigatório, variações de rótulo (RF-3720..3723)
+- [x] T06 Tabelas: guias, junção de linhas, exclusões, continuação, nada inventado (RF-3730..3734)
+- [x] T07 Prévia de impacto, exemplos, matriz e mudança de regra com desfazer (RF-3740..3743)
+- [x] T08 De onde veio, nos dois sentidos, e saída de origem (RF-3750..3752)
+- [x] T09 Estados, política de falha e correção só neste documento (RF-3760..3762)
+- [x] T10 Saídas no Input Data, cache, subfluxo e linha de comando (RF-3770..3772)
+- [x] T11 Limites, mensagens e nada de conteúdo em log (RF-3780..3782)
+- [x] T12 Guia, Manual, prints e PDF de demonstração (RF-3790)
+- [x] T13 Testes de navegador (`teste_navegador_app.py`, 17 conferências) e roteiro de teste com pessoas (`roteiro-teste-pessoas.md`)
+- [ ] T14 Rodar as sessões com pessoas do roteiro e transformar os achados em ajustes
+- [x] T15 Extrações salvas: escolher ao criar, copiar, trocar, exportar, importar e excluir (RF-3705)
+- [x] T21 SQL do Regex e do Generate Rows (previsto na spec 033), conferidos com o motor; Generate Rows recusa nome de coluna de datas igual ao de uma coluna do calendário
+- [x] T20 Aba SQL: a fonte PDF vira tabela de origem (como API e Jira), em vez de "nome de arquivo inválido"
+- [x] T19 Documentos da fonte um a um: tirar, trazer de volta e adicionar PDFs; cartões de saída sem espremer (RF-3706)
+- [x] T18 Ajustes da revisão: busca dos resultados (estilo global sobrescrito), logo do exemplo segue a marca (reconhecido por impressão SHA-256, porque o instalado só traz a pasta da marca ativa), seletor do Input Data com um grupo por PDF, clicar no cartão leva ao lugar no PDF, etapa 6 ligada às Transações e gráficos do PDF no dashboard
+- [x] T17 Exemplo com PDFs reais: três relatórios da Receita Federal (gov.br, reprodução autorizada) e a etapa 6 do fluxo de exemplo
+- [x] T16 Guia e dist nas duas marcas: Desata e PRO.DATA (PDFs do guia em docs/guia; instaladores e portáteis em dist/)

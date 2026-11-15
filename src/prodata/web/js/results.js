@@ -153,6 +153,7 @@ export function initResults(root) {
 
   on('inspect', () => { state.offset = 0; state.sortCol = null; load(); });
   on('execution', () => load());
+  on('numbers', () => draw()); // separador decimal (spec 038)
   on('workflow:loaded', () => { state.data = null; draw(); });
   draw();
 }
@@ -278,12 +279,19 @@ function identifierNote(c) {
   return c.type === 'String' && distinct / filled >= 0.95 ? 'quase todos diferentes' : '';
 }
 
+/** Faixa do histograma com o separador decimal escolhido (spec 038); categorias seguem o texto. */
+function binLabel(b) {
+  if (typeof b.lo !== 'number') return b.label;
+  const show = (v) => fmt.number(Number(v.toPrecision(4)));
+  return b.lo === b.hi ? show(b.lo) : `${show(b.lo)} – ${show(b.hi)}`;
+}
+
 /** A distribuição só aparece quando informa: em coluna de identificador, as barras saem todas iguais (RF-2922). */
 function sparkline(c) {
   const note = identifierNote(c);
   if (note) return h('div', { class: 'th-note', title: `${fmt.int(c.unique_count)} valores diferentes` }, note);
   return h('div', { class: 'spark' }, c.histogram.map((b) => h('span', {
-    style: { height: `${Math.max(6, b.pct)}%` }, title: `${b.label}: ${fmt.int(b.count)}`,
+    style: { height: `${Math.max(6, b.pct)}%` }, title: `${binLabel(b)}: ${fmt.int(b.count)}`,
   })));
 }
 
@@ -384,8 +392,8 @@ function profileView() {
         c.padded_count ? h('span', { class: 'th-spaces', title: 'Valores com espaço no início ou no fim: "SP " não casa com "SP"' }, icon('alert', 11), `${fmt.int(c.padded_count)} com espaço sobrando`) : null),
       h('dl', { class: 'facts' }, facts.map(([k, v]) => h('div', {}, h('dt', {}, k),
         h('dd', { class: 'ellipsis', title: String(v) }, typeof v === 'number' ? fmt.number(v) : v)))),
-      c.histogram.length ? h('div', { class: 'hist' }, c.histogram.map((b) => h('div', { class: 'hist-row', title: `${b.label}: ${fmt.int(b.count)}` },
-        h('span', { class: 'hist-label ellipsis' }, b.label), h('span', { class: 'hist-bar' }, h('i', { style: { width: `${b.pct}%` } })),
+      c.histogram.length ? h('div', { class: 'hist' }, c.histogram.map((b) => h('div', { class: 'hist-row', title: `${binLabel(b)}: ${fmt.int(b.count)}` },
+        h('span', { class: 'hist-label ellipsis' }, binLabel(b)), h('span', { class: 'hist-bar' }, h('i', { style: { width: `${b.pct}%` } })),
         h('span', { class: 'hist-count' }, fmt.compact(b.count))))) : null);
   })));
 }

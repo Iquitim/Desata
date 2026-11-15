@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -26,6 +27,7 @@ from playwright.sync_api import Page, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from leitor_pdf import part_pdf_reader as pdf_reader  # noqa: E402
 from novas_075 import part_new_tools  # noqa: E402
 from organizar_dados import part_organize as organize  # noqa: E402
 from pasta_dados import part_folder_source as folder_source  # noqa: E402
@@ -116,6 +118,14 @@ def part_screen(pg: Pg) -> None:
     pg.mouse.click(700, 500)
     shot(pg, "layoutAlt")
     layout(pg, "L.resetLayout();")
+    # spec 038: vírgula ou ponto nos números, no menu Exibir
+    pg.locator(".top-menu", has_text="Exibir").click()
+    pg.wait_for_selector(".menu [role=menuitem]")
+    pg.locator(".menu [role=menuitem]", has_text="ponto decimal").hover()
+    pg.wait_for_timeout(200)
+    shot(pg.locator(".menu"), "numeros-menu")
+    pg.keyboard.press("Escape")
+    pg.wait_for_timeout(200)
 
     box = pg.locator(".node[data-id='n_clientes']").bounding_box()
     pg.locator(".node[data-id='n_clientes']").click(button="right")
@@ -384,7 +394,7 @@ def part_tools(pg: Pg) -> None:
     pg.wait_for_timeout(600)
     pg.locator(".dash-filters button:has-text('Adicionar filtro')").click()
     pg.wait_for_selector("[role=menuitem]")
-    pg.locator("[role=menuitem]:has-text('uf')").first.click()
+    pg.locator("[role=menuitem]", has=pg.locator("span", has_text=re.compile(r"^uf · "))).first.click()
     pg.wait_for_selector(".dash-pill")
     for uf in ("SP", "RJ", "MG"):
         pg.locator(f".dash-pill:text-is('{uf}')").click()
@@ -548,9 +558,13 @@ def part_organize(pg: Pg) -> None:
     organize(pg, shot)
 
 
+def part_pdf(pg: Pg) -> None:
+    pdf_reader(pg, shot)
+
+
 def PARTS(tmp):  # noqa: N802
     every = ((part_screen, ()), (part_cache_dashboard, ()), (part_sql, ()), (part_tools, ()), (part_quality_lists, ()), (part_data_trust, (tmp,)), (part_manual, ()))
-    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()))
+    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()))
     only = os.environ.get("IMAGENS_SO")
     return [e for e in every if not only or e[0].__name__ in only.split(",")]
 

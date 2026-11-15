@@ -7,16 +7,17 @@ import { addQueryNode } from './connections.js';
 import { allSources, KINDS, matches } from './data_sources.js';
 import { addInputNode } from './datasets.js';
 import { addFolderNode } from './folder_sources.js';
+import { addPdfNode } from './pdf_sources.js';
 import { button, h } from './dom.js';
 import { icon } from './icons.js';
 import { colorOf, folders } from './organization.js';
 import { on } from './store.js';
 
-const PANEL_KINDS = ['file', 'folder', 'query', 'api'];
+const PANEL_KINDS = ['file', 'folder', 'pdf', 'query', 'api'];
 
 function item(source, openInData) {
   const kind = KINDS[source.kind];
-  const add = () => (source.kind === 'file' ? addInputNode(source.id) : source.kind === 'folder' ? addFolderNode(source.raw)
+  const add = () => (source.kind === 'file' ? addInputNode(source.id) : source.kind === 'folder' ? addFolderNode(source.raw) : source.kind === 'pdf' ? addPdfNode(source.raw)
     : source.kind === 'query' ? addQueryNode(source.raw) : addApiNode(source.raw));
   return h('div', {
     class: 'dataset-item', draggable: source.draggable ? 'true' : 'false',
@@ -32,7 +33,7 @@ function item(source, openInData) {
     h('span', { class: 'dataset-name' }, source.title),
     h('span', { class: 'dataset-meta' }, source.info.label ? `${source.name} · ${source.meta}` : source.meta)),
   h('div', { class: 'dataset-actions' },
-    button({ icon: 'plus', title: source.loop ? 'Adicionar API Loop ao fluxo' : 'Adicionar ao fluxo', size: 'sm', variant: 'ghost', disabled: source.state.tone === 'err', onClick: add }),
+    button({ icon: 'plus', title: source.loop ? 'Adicionar API Loop ao fluxo' : 'Adicionar ao fluxo', size: 'sm', variant: 'ghost', disabled: source.kind === 'pdf' ? !source.draggable : source.state.tone === 'err', onClick: add }),
     button({ icon: 'chevron-right', title: 'Abrir em Dados', size: 'sm', variant: 'ghost', onClick: () => openInData(source.key) })));
 }
 
@@ -59,7 +60,7 @@ export function renderSourcesPanel(root, { openInData }) {
         : []))
       : [h('p', { class: 'muted pad' }, query ? 'Nenhuma fonte encontrada.' : 'Nenhuma fonte ainda. Cadastre na vista Dados.')]));
   };
-  for (const event of ['datasets', 'queries', 'apis', 'connections', 'organization', 'folders']) on(event, draw);
+  for (const event of ['datasets', 'queries', 'apis', 'connections', 'organization', 'folders', 'pdfs']) on(event, draw);
   root.replaceChildren(
     h('div', { class: 'pad stack-sm' },
       h('input', { type: 'search', class: 'input input-search', placeholder: 'Buscar fonte', 'aria-label': 'Buscar fonte', oninput: (e) => { query = e.target.value; draw(); } }),

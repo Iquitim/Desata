@@ -13,6 +13,7 @@ import polars as pl
 from pydantic import Field
 
 from prodata.brand import marca
+from prodata.engine.sql.fragment import Fragment, SqlContext, lit, q, sql_for
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.forms import ui
 from prodata.ingestion.folders import files_signature, folder_files, odd_warning, read_folder
@@ -110,6 +111,26 @@ _MONTHS = [
     "dezembro",
 ]
 _STEP = {"day": "1d", "week": "1w", "month": "1mo", "quarter": "1q", "year": "1y"}
+CALENDAR_COLUMNS = (
+    "ano",
+    "mes",
+    "dia",
+    "trimestre",
+    "ano_mes",
+    "nome_mes",
+    "dia_semana",
+    "nome_dia",
+    "fim_de_semana",
+    "ultimo_dia_do_mes",
+)
+
+
+def check_calendar_name(name: str, calendar: bool) -> None:
+    """Com as colunas de calendário, a coluna de datas não pode ter o nome de uma delas: seria sobrescrita."""
+    if calendar and name in CALENDAR_COLUMNS:
+        raise InvalidInputError(
+            f"'{name}' é o nome de uma coluna do calendário: escolha outro nome para a coluna de datas."
+        )
 
 
 class GenerateRowsConfig(ToolConfig):
@@ -165,6 +186,7 @@ def parse_day(text: str, what: str) -> date:
 def _dates(cfg: GenerateRowsConfig, name: str) -> pl.DataFrame:
     if not cfg.start_date.strip():
         raise InvalidInputError("Informe a data inicial em 'De'.")
+    check_calendar_name(name, cfg.calendar)
     start = parse_day(cfg.start_date, "'De'")
     end = parse_day(cfg.end_date, "'Até'") if cfg.end_date.strip() else date.today()
     if end < start:
@@ -228,3 +250,72 @@ def _numbers(cfg: GenerateRowsConfig, name: str) -> pl.DataFrame:
 def generate_rows(ctx: NodeContext, cfg: GenerateRowsConfig) -> NodeOutput:
     name = cfg.column.strip() or ("data" if cfg.mode == "dates" else "numero")
     return NodeOutput(tables={"out": _dates(cfg, name) if cfg.mode == "dates" else _numbers(cfg, name)})
+
+
+# ------------------------------------------------------------------ Generate Rows em SQL (spec 033)
+
+# Cada data sai da inicial mais N passos (31/01 + 1 mês = 28/02, + 2 meses = 31/03), como o motor.
+_SQL_STEP = {
+    "day": ("day", 1),
+    "week": ("day", 7),
+    "month": ("month", 1),
+    "quarter": ("month", 3),
+    "year": ("year", 1),
+}
+
+
+def _sql_day(text: str, what: str) -> str:
+    return f"DATE {lit(parse_day(text, what).isoformat())}"
+
+
+@sql_for("io.generate_rows")
+def generate_rows_sql(_ctx: SqlContext, cfg: GenerateRowsConfig) -> dict[str, Fragment]:
+    name = cfg.column.strip() or ("data" if cfg.mode == "dates" else "numero")
+    if cfg.mode == "numbers":
+        table = _numbers(cfg, name)  # mesmas validações e a mesma contagem do motor
+        count = table.height
+        whole = table.schema[name] == pl.Int64
+        value = (
+            f"CAST({lit(int(cfg.start))} + i * {lit(int(cfg.step))} AS BIGINT)"
+            if whole
+            else f"CAST({lit(float(cfg.start))} AS DOUBLE) + i * CAST({lit(float(cfg.step))} AS DOUBLE)"
+        )
+        sql = f"SELECT {value} AS {q(name)}\nFROM range({count}) AS t(i)"
+        return {"out": Fragment(sql, f"Gera {count} números em sequência")}
+    if not cfg.start_date.strip():
+        raise ValueError("Informe a data inicial em 'De'.")
+    check_calendar_name(name, cfg.calendar)
+    start = _sql_day(cfg.start_date, "'De'")
+    notes = []
+    if cfg.end_date.strip():
+        end = _sql_day(cfg.end_date, "'Até'")
+        if parse_day(cfg.end_date, "'Até'") < parse_day(cfg.start_date, "'De'"):
+            raise ValueError("A data final é anterior à inicial.")
+    else:
+        end = "CURRENT_DATE"
+        notes.append(
+            "Sem data final, o calendário vai até hoje: o resultado muda conforme o dia em que roda."
+        )
+    unit, size = _SQL_STEP[cfg.every]
+    steps = f"date_diff('{unit}', {start}, {end})" + (f" // {size}" if size > 1 else "")
+    day = f"CAST({start} + to_{unit}s(CAST(i * {size} AS INTEGER)) AS DATE)"
+    base = f"SELECT {day} AS {q(name)}\nFROM range({steps} + 1) AS t(i)\nWHERE {day} <= {end}"
+    if not cfg.calendar:
+        return {"out": Fragment(base, "Gera um calendário", notes)}
+    d = q(name)
+    months = "[" + ", ".join(lit(m) for m in _MONTHS) + "]"
+    weekdays = "[" + ", ".join(lit(w) for w in _WEEKDAYS) + "]"
+    cols = [
+        f"CAST(year({d}) AS BIGINT) AS ano",
+        f"CAST(month({d}) AS BIGINT) AS mes",
+        f"CAST(day({d}) AS BIGINT) AS dia",
+        f"CAST(quarter({d}) AS BIGINT) AS trimestre",
+        f"strftime({d}, '%Y-%m') AS ano_mes",
+        f"{months}[month({d})] AS nome_mes",
+        f"CAST(isodow({d}) AS BIGINT) AS dia_semana",
+        f"{weekdays}[isodow({d})] AS nome_dia",
+        f"isodow({d}) >= 6 AS fim_de_semana",
+        f"{d} = last_day({d}) AS ultimo_dia_do_mes",
+    ]
+    sql = "SELECT\n  " + ",\n  ".join([d, *cols]) + f"\nFROM ({base}) AS dias"
+    return {"out": Fragment(sql, "Gera um calendário com as colunas de data", notes)}

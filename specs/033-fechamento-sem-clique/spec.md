@@ -164,6 +164,6 @@ Vieram de uma revisão do dono do produto: as caixas novas tinham nascido sem o 
 
 - Agendador próprio: o Agendador do Windows já faz isso.
 - Entrada e saída do subfluxo com mais de 3 portas, e parâmetros de subfluxo.
-- Tradução para SQL das caixas novas, exceto Regex e Generate Rows quando for direta.
+- Tradução para SQL das caixas novas, exceto Regex e Generate Rows quando for direta (feitas na 0.8.5, spec 037 T21).
 - Conferência do ODBC em Oracle, MySQL e ERPs: só há driver de teste local. O guia diz isso.
 - Conferência do SQL convertido num Fabric de verdade.

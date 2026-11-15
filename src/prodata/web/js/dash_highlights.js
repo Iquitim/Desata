@@ -1,6 +1,8 @@
 // Destaques da linha do tempo (spec 030, RF-3047): cada um diz o critério que o marcou.
 // Sem inteligência escondida: são médias, desvios e inclinações que qualquer pessoa consegue refazer.
 
+import { fmt } from './dom.js';
+
 const WINDOW = 8;
 const MIN_HISTORY = 4;
 const TREND_SPAN = 4;
@@ -8,7 +10,7 @@ const LIMIT_Z = 2;
 const LIMIT_ROBUST = 3.5;
 const MAX_MARKS = 8;
 
-const num = (v, places = 1) => v.toLocaleString('pt-BR', { minimumFractionDigits: places, maximumFractionDigits: places });
+const num = (v, places = 1) => fmt.intl(v, { minimumFractionDigits: places, maximumFractionDigits: places });
 const mean = (list) => list.reduce((a, b) => a + b, 0) / list.length;
 const deviation = (list) => {
   const m = mean(list);

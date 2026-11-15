@@ -15,13 +15,23 @@ localmente.
 - **Manual dentro do programa** (`?` ou `F1`): o guia ao lado do trabalho, com busca, imagens no tema da tela,
   "Mostrar onde fica" e exemplos para experimentar. **Ctrl+K** acha ferramenta, ação, caixa, fonte ou capítulo.
 - **Modo foco** (`F11`), painéis recolhidos em faixa e editor de fórmula em janela larga (**Abrir grande**).
-- **Vista Dados**: a primeira tela reúne arquivos, pastas de arquivos, consultas, APIs, conexões e
+- **Vista Dados**: a primeira tela reúne arquivos, pastas de arquivos, leitores de PDF, consultas, APIs, conexões e
   constantes, com situação, prévia, qualidade das colunas e o **mapa de onde cada fonte é usada** nos
   fluxos da biblioteca. Antes de excluir uma fonte em uso, a tela lista o que deixa de funcionar.
 - **Organização das fontes**: pastas por assunto (arrastar, Ctrl+clique), nome de exibição sem quebrar
   os fluxos, descrição e responsável, fixadas no topo e filtros "Com problema" e "Sem uso".
 - **Pasta de arquivos**: todos os arquivos de um padrão (`vendas_*.xlsx`) numa tabela só, que inclui
   sozinha os arquivos novos, ou cada arquivo como uma fonte separada. A pasta é lida onde está.
+- **Leitor de PDF**: marque no próprio documento o valor ou a tabela e veja a coluna nascer na hora,
+  com o valor convertido e o original ao lado. O Desata aprende onde achar o dado ("à direita de
+  'Total líquido'"), testa nos outros PDFs da pasta e mostra o impacto de cada mudança com desfazer.
+  Tabelas em várias páginas, linhas quebradas, campos ambíguos (nenhum valor escolhido em silêncio),
+  correção só num documento e "de onde veio" em um clique. Extrações salvas: reaproveitar, copiar, exportar,
+  importar e excluir. Documentos um a um: tirar um PDF da fonte sem apagar o arquivo, trazer de volta e
+  adicionar outros. O PDF é lido num processo separado, com tempo e memória limitados, sem executar
+  conteúdo ativo. O exemplo traz três relatórios reais da Receita Federal com a extração pronta.
+- **Vírgula ou ponto**: em Exibir → Números, os números aparecem como 1.234,56 ou 1,234.56 em toda
+  a tela, no dashboard e no HTML exportado. O Output Data em CSV escolhe o próprio separador decimal.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -113,7 +123,10 @@ localmente.
   sem repetir etapas. Cada etapa é rodada e comparada com o resultado do fluxo:
   o estado da saída diz se o código deu o mesmo resultado, e caixas sem tradução
   ficam em vermelho. Copie ou baixe `.sql` ou `.zip` para o time de dados. O código também
-  sai em Spark SQL e T-SQL (Microsoft Fabric), marcado como não conferido.
+  sai em Spark SQL e T-SQL (Microsoft Fabric), marcado como não conferido. Fontes de banco, API,
+  Jira, pasta e PDF viram uma tabela de origem, com a ressalva de criá-la no destino. Regex e Generate
+  Rows também têm tradução; Machine Learning, API Loop, Subflow, Fuzzy Match, Mask, Multi-Field Formula,
+  Compare Runs, Reconcile e Estado por período ficam como "sem SQL".
 - **Join como no Alteryx**: escolha se o J mantém as chaves dos dois lados, só
   da esquerda ou só da direita, e selecione, renomeie, converta e reordene as
   colunas do J sem precisar de um Select depois.
@@ -180,7 +193,10 @@ O Desata também roda como programa instalável, em janela própria e offline:
 uv sync --extra desktop --group build
 uv run prodata-desktop                 # testar a janela a partir do código
 uv run python packaging/build.py       # gera dist/: instalador .exe, .zip portátil e a pasta do app
+uv run python packaging/build.py --marca protege   # a mesma versão com a marca PRO.DATA
 ```
+
+Cada versão sai nas duas marcas, Desata e PRO.DATA, com o guia de cada uma (`docs/guia/gerar_pdf.py --marca protege`).
 
 Os dados do usuário ficam em `%LOCALAPPDATA%\Desata`. Detalhes, requisitos e
 diagnóstico em [docs/distribuicao.md](docs/distribuicao.md).
@@ -245,6 +261,8 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [034](specs/034-organizar-dados/spec.md) | Vista Dados organizada: pastas, nome de exibição, descrição, filtros, ordem e fixadas |
 | [035](specs/035-pasta-na-aba-dados/spec.md) | Pasta de arquivos como fonte da vista Dados: uma tabela só ou um por arquivo |
 | [036](specs/036-marca-configuravel/spec.md) | Marca 100% configurável e marca Desata |
+| [037](specs/037-leitor-visual-pdf/spec.md) | Leitor visual de PDF: marcar no documento, ver o dado nascer e rastrear a origem |
+| [038](specs/038-separador-decimal/spec.md) | Separador decimal escolhido pela pessoa: vírgula ou ponto |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 
@@ -265,6 +283,7 @@ src/prodata/
 ├── engine/            grafo, executor incremental, cache Arrow, perfil, fórmulas
 ├── nodes/             ferramentas (uma família por módulo) + registro declarativo
 ├── ingestion/         detecção e leitura de arquivos, arquivos vinculados e pastas de arquivos
+├── documents/         leitor de PDF: leitura isolada, palavras com posição, extração, saídas e correções
 ├── connectors/        bancos (connectorx e ODBC), APIs, Jira e senhas no cofre do SO
 ├── services/          workflows, uso das fontes, constantes, organização e abertura protegida
 ├── samples/           datasets e fluxo de demonstração
@@ -323,6 +342,10 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 | GET · POST · DELETE | `/api/constants[/{nome}]` | Constantes compartilhadas (`previous` no POST renomeia) |
 | POST | `/api/trust/state` · `/confirm` | Abertura protegida: situação do fluxo e confirmação de confiança |
 | GET · POST · PUT · DELETE | `/api/folders[/{id}]` · `/preview` · `/link-each` | Pastas de arquivos: cadastro, prévia empilhada e "um por arquivo" |
+| GET · POST · PUT · DELETE | `/api/pdfs[/{id}]` · `/upload` · `/example` · `/duplicate` | Leitores de PDF: cadastro, cópia enviada, exemplo e duplicar |
+| GET · POST · PUT | `/api/pdfs/{id}/docs` · `/recipe` · `/suggest/*` · `/evaluate` · `/outputs/{saida}` · `/corrections` | Editor do PDF: palavras, páginas, extração, sugestões, impacto, saídas e correções |
+| POST | `/api/pdfs/{id}/docs/add` · `/docs/leave` · `/docs/back` | Documentos um a um: adicionar PDFs (cópia guardada), tirar da fonte e trazer de volta |
+| GET · POST · DELETE | `/api/pdfs/recipes[/{id}]` · `/export` · `/import` · `/{id}/recipe/use` · `/fork` | Extrações salvas: listar, exportar, importar, excluir, usar e copiar |
 | GET · POST · PUT · DELETE | `/api/organization[...]` | Pastas, nomes de exibição, descrições e fixadas da vista Dados |
 | GET · PUT · DELETE | `/api/jira/connections` · `/queries` | Conexões e consultas do Jira (o token entra no PUT, nunca sai) |
 | GET · POST · DELETE | `/api/models[...]` | Biblioteca de modelos: listar, importar e exportar `.modelo`, versões |
@@ -332,9 +355,12 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 Fluxos são salvos na biblioteca `storage/workflows/<id>.prodata.json` ou, com
 *Salvar como…*, em qualquer pasta (JSON legível, versionável em Git). O Input
 Data aponta para um arquivo da vista Dados pelo nome, para uma pasta de arquivos como `folder:<id>`,
+para uma saída de um leitor de PDF como `pdf:<id>/campos` (ou `itens_<tabela>`, `falhas`, `origem`),
 para uma consulta como `sql:<id>`, para uma API como `api:<id>` ou para o Jira como `jira:<id>`. As
 consultas ficam em `storage/queries.json`, as APIs, sem segredos, em `storage/apis.json`, os arquivos
 vinculados e as pastas de arquivos em `storage/datasets_vinculos.json` e `storage/datasets_pastas.json`,
+os leitores de PDF, as extrações e as correções em `storage/datasets_pdfs.json`, `storage/datasets_extracoes.json`
+e `storage/datasets_pdf_correcoes.json`,
 a organização da vista Dados em `storage/organizacao.json`, as constantes compartilhadas em
 `storage/constantes.json` e os fluxos confirmados na abertura protegida em `storage/confianca.json`.
 
@@ -370,6 +396,8 @@ Os nomes `PRODATA_*` são identificadores técnicos e valem para qualquer marca.
 - Aplicação local e de usuário único: não há autenticação.
 - Cada arquivo de entrada é lido inteiro pelo Polars, e a pasta de arquivos aceita até 500 arquivos.
   Os resultados intermediários grandes vão para o disco, mas o arquivo lido precisa caber na memória.
+- O leitor de PDF lê a camada de texto: PDF escaneado (só imagem) aparece como Não suportado, porque
+  ainda não há OCR. Uma extração vale para um layout; layouts diferentes pedem fontes diferentes.
 - ODBC, SQL para o Fabric e o Jira Cloud foram conferidos com drivers e serviços de teste: no
   primeiro uso num sistema real, confira a primeira leitura com um resultado que você conhece.
 

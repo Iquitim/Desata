@@ -8,6 +8,7 @@ import { connectionEditor, queryEditor, refreshConnections, refreshQueries } fro
 import { refreshConstants } from './constants.js';
 import { constantEditor } from './constants_ui.js';
 import { folderEditor, refreshFolderSources } from './folder_sources.js';
+import { pdfSourceForm, refreshPdfSources } from './pdf_sources.js';
 import { sourceDetail } from './data_detail.js';
 import { markOpened, organizedList } from './data_folders.js';
 import { allSources, KINDS, refreshUsage, usesOf } from './data_sources.js';
@@ -18,7 +19,7 @@ import { forgetSources } from './organization.js';
 import { on, store } from './store.js';
 import { confirmDialog, showMenu, toast, toastError } from './ui.js';
 
-const ui = { key: null, tab: 'overview', search: '', creating: null, rename: false };
+const ui = { key: null, tab: 'overview', search: '', creating: null, rename: false, pdfDoc: null };
 let root = null;
 let handlers = { openFlow: async () => {}, showDesigner: () => {} };
 const fileInput = h('input', { type: 'file', multiple: true, hidden: true,
@@ -27,7 +28,7 @@ const fileInput = h('input', { type: 'file', multiple: true, hidden: true,
 const sourceByKey = (key) => allSources().find((s) => s.key === key) || null;
 
 async function afterChange() {
-  await Promise.all([refreshDatasets(), refreshQueries(), refreshApis(), refreshJira(), refreshConnections(), refreshConstants(), refreshFolderSources(), refreshUsage()]).catch(() => {});
+  await Promise.all([refreshDatasets(), refreshQueries(), refreshApis(), refreshJira(), refreshConnections(), refreshConstants(), refreshFolderSources(), refreshPdfSources(), refreshUsage()]).catch(() => {});
   renderDataView();
 }
 
@@ -50,6 +51,7 @@ function addMenu(e) {
     { label: 'Enviar arquivo', icon: 'upload', onSelect: () => { fileInput.accept = accept(); fileInput.click(); } },
     { label: 'Vincular arquivo (lido onde está)', icon: 'link', onSelect: () => linkFile().then(afterChange) },
     { label: 'Pasta de arquivos (vários de uma vez)', icon: 'directory', onSelect: () => newSource('folder') },
+    { label: 'PDF (extrair campos e tabelas)', icon: 'file-plus', onSelect: () => newSource('pdf') },
     'separator',
     { label: 'Nova conexão com banco', icon: 'database', onSelect: () => newSource('conn') },
     { label: 'Nova consulta de banco', icon: 'server', disabled: !store.connections.length, onSelect: () => newSource('query') },
@@ -124,6 +126,7 @@ function creatingPane() {
     : kind === 'query' ? queryEditor({ ...opts, onSaved: done }, host)
       : kind === 'const' ? constantEditor(null, { onSaved: done }, host)
         : kind === 'folder' ? folderEditor(null, { onSaved: done, onLinked: afterLinked }, host)
+        : kind === 'pdf' ? pdfSourceForm(null, { onSaved: (saved) => afterSave('pdf', saved, 'extract') }, host)
         : kind === 'jiraconn' ? jiraConnectionEditor(null, { onSaved: done }, host)
           : kind === 'jira' ? jiraQueryEditor({ ...opts, onSaved: done }, host)
         : connectionEditor(null, { onSaved: done }, host);
@@ -141,9 +144,10 @@ async function afterLinked(names) {
   await afterChange();
 }
 
-async function afterSave(kind, saved) {
+async function afterSave(kind, saved, tab = null) {
   ui.creating = null;
   ui.key = `${kind}:${saved.id ?? saved.name}`;
+  if (tab) ui.tab = tab;
   await afterChange();
 }
 
@@ -188,6 +192,8 @@ export function renderDataView() {
     tab: ui.tab,
     rename: ui.rename,
     setTab: (tab) => { ui.tab = tab; renderDataView(); },
+    pdfDoc: ui.pdfDoc,
+    openPdf: (doc = null) => { ui.pdfDoc = doc; ui.tab = 'extract'; renderDataView(); },
     refresh: () => afterChange(),
     mountEditor: (kind, opts) => newSource(kind, opts),
     afterSave,
@@ -198,13 +204,29 @@ export function renderDataView() {
   };
   const main = ui.creating ? creatingPane() : selected ? sourceDetail(selected, ctx) : welcome();
   ui.rename = false;
+  ui.pdfDoc = null;
   root.replaceChildren(listPane(), h('main', { class: 'dv-main' }, main));
+}
+
+/**
+ * O editor de PDF salva sozinho e atualiza a lista de fontes. Redesenhar a vista inteira tiraria o editor do lugar
+ * (perde o foco do teclado e a rolagem da página): com ele aberto, só a lista da esquerda é redesenhada.
+ */
+function refreshKeepingEditor() {
+  const list = root?.querySelector('.dv-list');
+  if (!list || store.view !== 'data' || !root.querySelector('.dv-detail.pe-active')) { renderDataView(); return; }
+  const scroll = list.querySelector('.org-list')?.scrollTop || list.scrollTop;
+  const fresh = listPane();
+  root.replaceChild(fresh, list);
+  fresh.scrollTop = scroll;
 }
 
 export function initDataView(el, opts) {
   root = el;
   handlers = { ...handlers, ...opts };
   for (const event of ['datasets', 'queries', 'apis', 'connections', 'constants', 'organization', 'folders']) on(event, () => renderDataView());
+  on('pdfs', () => refreshKeepingEditor());
+  on('numbers', () => refreshKeepingEditor());
 }
 
 /** Ao entrar na vista: dados de uso frescos, porque outro fluxo pode ter sido salvo. */

@@ -2,10 +2,10 @@
 // O botão de tema fica fora dos menus, à vista no topo.
 
 import { openScheduleDialog } from './schedule_dialog.js';
-import { button } from './dom.js';
+import { NUMBER_STYLES, button, getNumberStyle, setNumberStyle } from './dom.js';
 import { icon } from './icons.js';
 import { densityMenuItem, panelMenuItems, resetLayout } from './layout.js';
-import { store } from './store.js';
+import { emit, store } from './store.js';
 import { showMenu } from './ui.js';
 
 function menuButton(label, items) {
@@ -39,6 +39,13 @@ const viewItems = (a) => [
   { label: a.inFocus() ? 'Sair do modo foco' : 'Modo foco', icon: 'maximize', shortcut: 'F11', disabled: store.view !== 'designer', onSelect: a.toggleFocus },
   'separator',
   densityMenuItem(),
+  { heading: 'Números' },
+  ...Object.entries(NUMBER_STYLES).map(([style, sample]) => ({
+    label: style === 'virgula' ? `${sample} · vírgula decimal` : `${sample} · ponto decimal`,
+    icon: getNumberStyle() === style ? 'check' : null,
+    onSelect: () => { setNumberStyle(style); emit('numbers'); },
+  })),
+  'separator',
   { label: 'Atalhos do teclado', icon: 'keyboard', shortcut: '?', onSelect: a.shortcuts },
   { label: 'Restaurar layout padrão', icon: 'refresh', onSelect: resetLayout },
 ];

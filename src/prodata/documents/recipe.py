@@ -83,6 +83,7 @@ class TableSpec(_Model):
 
     nome: str = Field(min_length=1, max_length=80)
     cabecalho: list[str] = Field(min_length=1)  # textos que identificam a linha de cabeçalho, na ordem
+    linhas_cabecalho: int = Field(default=1, ge=1, le=6)  # cabeçalho em várias linhas ("Há 4" / "semanas")
     colunas: list[Column] = Field(min_length=1)
     guias: list[float] = Field(
         default_factory=list

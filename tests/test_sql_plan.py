@@ -712,3 +712,19 @@ def test_api_generate_and_verify(client: TestClient) -> None:
     body = response.json()
     assert body["outputs"] and body["parts"] and body["blocks"]
     assert any(p["kind"] == "header" for p in body["parts"])
+
+
+def test_pdf_source_points_to_a_table(runner: WorkflowRunner, store: DatasetStore, demo: Workflow) -> None:
+    """Leitor de PDF (spec 037): o DuckDB não lê PDF, então a etapa aponta para uma tabela, como uma API."""
+    runner.run(demo)
+    plan = build_plan(demo, env_for(runner, store, demo))
+    for node_id in ("n_pdf_itens", "n_pdf_campos"):
+        block = plan.blocks[f"{node_id}|out"]
+        assert block.status == OK, block.reason
+        assert block.fragment is not None and "de um leitor de PDF" in " ".join(block.fragment.notes)
+    itens = plan.blocks["n_pdf_itens|out"].fragment
+    assert itens is not None and itens.sql.endswith(
+        "FROM arrecadacao_federal_receita_federal_itens_acumulado_no_ano"
+    )
+    output = plan.output("n_pdf_tributos|out")
+    assert output is not None and output.stop is None

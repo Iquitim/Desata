@@ -1,6 +1,6 @@
 // Barra de filtros da página (spec 021): a mesma no programa e no HTML exportado.
 
-import { button, h } from './dom.js';
+import { button, fmt, h } from './dom.js';
 import { icon } from './icons.js';
 
 const SHOWN_VALUES = 200;
@@ -42,7 +42,7 @@ export function isFilterActive(f) {
 }
 
 const dateText = (iso) => (iso ? String(iso).split('-').reverse().join('/') : '');
-const numberText = (v) => (v === null || v === undefined ? '' : Number(v).toLocaleString('pt-BR'));
+const numberText = (v) => (v === null || v === undefined ? '' : fmt.intl(Number(v), { maximumFractionDigits: 3 }));
 
 /** Resumo do que está escolhido: aparece no botão e no topo das imagens exportadas. */
 export function filterSummary(f) {

@@ -15,7 +15,8 @@ import { columnValues, renameLabels } from './fields_values.js';
 import { fileField, modelField, modelSaveField, modelVersionsField, subflowField } from './fields_extra.js';
 import { formulaEditor } from './formula_editor.js';
 import { openLargeFormula } from './formula_large.js';
-import { API_PREFIX, displayName, FOLDER_PREFIX, JIRA_PREFIX, QUERY_PREFIX, sourceKey, store } from './store.js';
+import { outputText } from './pdf_labels.js';
+import { API_PREFIX, displayName, FOLDER_PREFIX, JIRA_PREFIX, PDF_PREFIX, QUERY_PREFIX, sourceKey, store } from './store.js';
 import { typeLabel, typeName } from './types.js';
 
 
@@ -293,7 +294,9 @@ function dataset(field, value, set, ctx, id) {
   const apis = (ctx.apis || []).filter((a) => !ctx.needsLoop?.(a));
   const jira = ctx.jira || [];
   const folders = ctx.folders || [];
-  const known = folders.some((f) => `${FOLDER_PREFIX}${f.id}` === value) || files.some((d) => d.name === value) || queries.some((q) => `${QUERY_PREFIX}${q.id}` === value)
+  const pdfs = (ctx.pdfs || []).filter((p) => !p.status?.draft);
+  const pdfOuts = pdfs.flatMap((p) => (p.status?.outputs || ['campos']).map((o) => ({ value: `${PDF_PREFIX}${p.id}/${o}`, source: p, label: outputText(o)[0] })));
+  const known = pdfOuts.some((o) => o.value === value) || folders.some((f) => `${FOLDER_PREFIX}${f.id}` === value) || files.some((d) => d.name === value) || queries.some((q) => `${QUERY_PREFIX}${q.id}` === value)
     || apis.some((a) => `${API_PREFIX}${a.id}` === value) || jira.some((q) => `${JIRA_PREFIX}${q.id}` === value);
   return h('div', { class: 'row' },
     h('select', { id, class: ['input', value && !known && 'invalid'], onchange: (e) => set(e.target.value) },
@@ -302,6 +305,9 @@ function dataset(field, value, set, ctx, id) {
         files.map((d) => h('option', { value: d.name, selected: d.name === value }, shownAs(d.name, d.name)))) : null,
       folders.length ? h('optgroup', { label: 'Pastas de arquivos' },
         folders.map((f) => h('option', { value: `${FOLDER_PREFIX}${f.id}`, selected: `${FOLDER_PREFIX}${f.id}` === value }, shownAs(`${FOLDER_PREFIX}${f.id}`, f.name)))) : null,
+      // um grupo por fonte PDF: "PDF · Arrecadação federal" com as saídas embaixo, em vez de nomes longos repetidos
+      ...pdfs.map((p) => h('optgroup', { label: `PDF · ${displayName(sourceKey(`${PDF_PREFIX}${p.id}`)) || p.name}` },
+        pdfOuts.filter((o) => o.source === p).map((o) => h('option', { value: o.value, selected: o.value === value, title: outputText(o.value.split('/').pop())[1] }, o.label)))),
       queries.length ? h('optgroup', { label: 'Consultas de banco' },
         queries.map((q) => h('option', { value: `${QUERY_PREFIX}${q.id}`, selected: `${QUERY_PREFIX}${q.id}` === value }, shownAs(`${QUERY_PREFIX}${q.id}`, q.name)))) : null,
       apis.length ? h('optgroup', { label: 'APIs' },

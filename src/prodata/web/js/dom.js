@@ -66,22 +66,52 @@ export function clear(el) {
 const NUMBER = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 const COMPACT = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
 
+// Separador decimal escolhido pela pessoa (spec 038): 'virgula' (1.234,56, o padrão) ou 'ponto' (1,234.56).
+// Formata sempre em pt-BR e só troca os separadores: "mil", "mi" e "R$" continuam em português.
+const NUMBER_KEY = 'prodata.numeros';
+export const NUMBER_STYLES = { virgula: '1.234,56', ponto: '1,234.56' };
+let numberStyle = storage(NUMBER_KEY, 'virgula') === 'ponto' ? 'ponto' : 'virgula';
+
+export const getNumberStyle = () => numberStyle;
+
+/** Troca a escolha. ``remember``: falso no HTML exportado, que só usa a escolha de quem exportou. */
+export function setNumberStyle(style, remember = true) {
+  numberStyle = style === 'ponto' ? 'ponto' : 'virgula';
+  if (remember) persist(NUMBER_KEY, numberStyle);
+}
+
+/** Texto de número formatado em pt-BR, com os separadores da escolha. */
+export function localNumber(text) {
+  return numberStyle === 'ponto' ? String(text).replace(/[.,]/g, (c) => (c === '.' ? ',' : '.')) : String(text);
+}
+
+/** Número digitado no formato escolhido, com ou sem milhar ("1.234,5" ou "1,234.5"). NaN se não for número. */
+export function parseLocalNumber(text) {
+  const raw = String(text ?? '').trim().replace(/\s/g, '');
+  if (!raw) return NaN;
+  const [thousands, decimal] = numberStyle === 'ponto' ? [',', '.'] : ['.', ','];
+  const clean = raw.split(thousands).join('').replace(decimal, '.');
+  return /^[-+]?\d*\.?\d+$/.test(clean) ? Number(clean) : NaN;
+}
+
 export const fmt = {
   number: (v, digits) => (v === null || v === undefined || Number.isNaN(v) ? '—'
-    : digits === undefined ? NUMBER.format(v)
-      : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v)),
-  compact: (v) => COMPACT.format(v),
-  int: (v) => NUMBER.format(Math.round(v ?? 0)),
+    : localNumber(digits === undefined ? NUMBER.format(v)
+      : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v))),
+  /** Com opções do Intl (moeda, casas mínimas…), sempre com os separadores da escolha. */
+  intl: (v, options) => localNumber(new Intl.NumberFormat('pt-BR', options).format(v)),
+  compact: (v) => localNumber(COMPACT.format(v)),
+  int: (v) => localNumber(NUMBER.format(Math.round(v ?? 0))),
   bytes(n) {
     if (n < 1024) return `${n} B`;
     const units = ['KB', 'MB', 'GB'];
     let v = n / 1024;
     let i = 0;
     while (v >= 1024 && i < units.length - 1) { v /= 1024; i += 1; }
-    return `${NUMBER.format(Number(v.toFixed(1)))} ${units[i]}`;
+    return `${localNumber(NUMBER.format(Number(v.toFixed(1))))} ${units[i]}`;
   },
   date: (iso) => new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
-  ms: (v) => (v >= 1000 ? `${NUMBER.format(v / 1000)} s` : `${NUMBER.format(v)} ms`),
+  ms: (v) => localNumber(v >= 1000 ? `${NUMBER.format(v / 1000)} s` : `${NUMBER.format(v)} ms`),
 };
 
 export function debounce(fn, wait = 250) {

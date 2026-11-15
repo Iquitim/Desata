@@ -11,6 +11,9 @@ from prodata.config import Settings
 
 
 def main() -> None:
+    import multiprocessing
+
+    multiprocessing.freeze_support()  # o leitor de PDF roda num processo filho (spec 037)
     code = cli.main(sys.argv[1:])
     if code is not None:
         sys.exit(code)

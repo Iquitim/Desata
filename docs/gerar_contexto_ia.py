@@ -183,6 +183,8 @@ Se você escrever a fórmula da Multi-Row à mão, use `"recipe": "custom"`. Com
 
 Fontes do Jira usam `io.input_data` com `dataset` igual a `jira:<id da consulta>`, e a consulta é cadastrada no programa, nunca no arquivo.
 
+Leitores de PDF usam `io.input_data` com `dataset` igual a `pdf:<id da fonte>/<saída>`. As saídas são `campos` (uma linha por documento), `itens_<tabela>` (uma linha por item), `falhas` e `origem`. A extração é ensinada na vista Dados, apontando no documento; nunca escreva a extração no fluxo.
+
 As caixas `bi.chart`, `bi.kpi_card`, `bi.venn` e `bi.table` publicam visuais. Não é preciso escrever o `dashboard` para uma caixa de BI nova: deixe como está ou `null`, e a interface monta o layout. Só mexa nele se a pessoa pedir.
 
 ```text

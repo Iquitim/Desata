@@ -45,6 +45,7 @@ export function initDashboard(el, opts) {
   });
   const refresh = () => store.view === 'dashboard' && render();
   on('execution', refresh);
+  on('numbers', refresh); // separador decimal (spec 038)
   on('workflow:loaded', () => { ui.selected.clear(); ui.mode = 'view'; ui.paint = null; refresh(); });
   on('workflow:changed', refresh);
   // Só a largura decide a escala: redesenhar por causa da altura poderia entrar em ciclo.

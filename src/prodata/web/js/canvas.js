@@ -635,6 +635,7 @@ export function initCanvas(root, opts = {}) {
   on('selection', () => render({ containers: true }));
   on('inspect', () => render());
   on('execution', () => render());
+  on('numbers', () => render());
 
   root.classList.toggle('tool-select', tool === 'select');
   const saved = storage('prodata.view', null);

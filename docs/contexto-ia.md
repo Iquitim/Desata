@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.8.0. Este arquivo é gerado a partir do código.
+Versão do programa: 0.8.5. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -194,6 +194,8 @@ Se você escrever a fórmula da Multi-Row à mão, use `"recipe": "custom"`. Com
 
 Fontes do Jira usam `io.input_data` com `dataset` igual a `jira:<id da consulta>`, e a consulta é cadastrada no programa, nunca no arquivo.
 
+Leitores de PDF usam `io.input_data` com `dataset` igual a `pdf:<id da fonte>/<saída>`. As saídas são `campos` (uma linha por documento), `itens_<tabela>` (uma linha por item), `falhas` e `origem`. A extração é ensinada na vista Dados, apontando no documento; nunca escreva a extração no fluxo.
+
 As caixas `bi.chart`, `bi.kpi_card`, `bi.venn` e `bi.table` publicam visuais. Não é preciso escrever o `dashboard` para uma caixa de BI nova: deixe como está ou `null`, e a interface monta o layout. Só mexa nele se a pessoa pedir.
 
 ```text
@@ -330,7 +332,7 @@ Formato de cada campo: `nome` (padrão). Campos com "aparece se" só valem naque
 
 #### `io.input_data`: Input Data
 
-Lê qualquer fonte cadastrada na vista Dados: arquivos (CSV, Excel, Parquet, JSON, Arrow), pastas de arquivos, consultas de banco ou APIs.
+Lê qualquer fonte cadastrada na vista Dados: arquivos (CSV, Excel, Parquet, JSON, Arrow), pastas de arquivos, leitores de PDF, consultas de banco ou APIs.
 
 Entradas: nenhuma. Saídas: `out` (Dados).
 
@@ -389,6 +391,7 @@ Entradas: `in` (Entrada), `in2` (Planilha 2, opcional, conforme a configuração
 - `filename` ("resultado"): Nome do arquivo. A extensão segue o formato
 - `folder` (""): Pasta de destino. Vazio = pasta padrão de exportações do Desata
 - `format` ("excel"): Formato. Opções: `parquet`, `csv`, `excel`, `json`, `arrow`
+- `decimal` ("."): Separador decimal. Opções: `.`, `,`. Aparece se `format` em csv. Vírgula abre direto no Excel em português. Quem já lê este arquivo com ponto não muda nada
 - `confidentiality` ("interno"): Rótulo de confidencialidade. Opções: `publico`, `interno`, `confidencial`, `restrito`. No Excel, fica nas propriedades do arquivo, na impressão e na cor da aba. Nos outros formatos, Confidencial e Restrito entram no nome do arquivo
 - `sheet_name` ("Dados"): Nome da planilha. Aparece se `format` em excel
 - `sheet_names` ({}): Planilhas das outras entradas. Aparece se `format` em excel. No Excel, ligue mais tabelas nesta caixa: cada uma vira uma planilha do mesmo arquivo

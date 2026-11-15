@@ -133,6 +133,20 @@
   .stat b { display: block; font-size: 16pt; font-weight: 720; color: var(--blue); letter-spacing: -0.02em; }
   .stat span { font-size: 8.5pt; color: var(--ink-2); }
 
+  /* leitor de PDF: como a regra encontra o dado */
+  .pdf-rule { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; margin: 8pt 0 12pt; break-inside: avoid; }
+  .pdf-rule > div { padding: 9pt 10pt; border: 1px solid var(--line); border-radius: 7pt; background: var(--soft); }
+  .pdf-rule b { display: block; margin-bottom: 4pt; font-size: 9.5pt; color: var(--blue); }
+  .pdf-rule small { display: block; margin-top: 5pt; font-size: 8.5pt; color: var(--ink-2); }
+  .pdf-line { font: 8pt/1.7 'JetBrains Mono', monospace; }
+  .pdf-line span { white-space: nowrap; }
+  .pdf-line .lab { padding: 0 2pt; border: 1.2pt dashed #6b7c93; border-radius: 3pt; }
+  .pdf-line .val { padding: 0 2pt; font-weight: 700; background: #cfe6dd; border: 1.2pt solid #1f8a5b; border-radius: 3pt; }
+  .pdf-line .two { padding: 0 2pt; font-weight: 700; background: #f6e3bf; border: 1.2pt solid #b7740f; border-radius: 3pt; }
+  .pdf-states { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6pt; margin: 6pt 0 10pt; font-size: 8.5pt; break-inside: avoid; }
+  .pdf-states div { padding: 6pt 7pt; border-radius: 6pt; background: var(--soft); }
+  .pdf-states b { display: block; font-size: 9pt; }
+
   /* ---------- paginação: nada de título, legenda ou sobra sozinhos ---------- */
   p, li { orphans: 3; widows: 3; }
   h2, h3, h4, .eyebrow { break-after: avoid; }
@@ -190,7 +204,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.8.0 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.8.5 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -223,22 +237,23 @@
     <div><span>4</span>Trazendo dados</div>
     <div><span>5</span>Dados de APIs</div>
     <div><span>6</span>Dados do Jira</div>
-    <div><span>7</span>Montando o fluxo</div>
-    <div><span>8</span>Cruzando e tratando textos</div>
-    <div><span>9</span>Dados que dá para confiar</div>
-    <div><span>10</span>Explorando os resultados</div>
-    <div><span>11</span>Indicadores e visuais</div>
-    <div><span>12</span>Montando o dashboard</div>
-    <div><span>13</span>Linha do tempo e história</div>
-    <div><span>14</span>Do fluxo ao SQL</div>
-    <div><span>15</span>O fechamento que se refaz sozinho</div>
-    <div><span>16</span>Modelos de previsão</div>
-    <div><span>17</span>Organização</div>
-    <div><span>18</span>Segurança e privacidade</div>
-    <div><span>19</span>Instalação e requisitos</div>
-    <div><span>20</span>Escopo e limitações</div>
-    <div><span>21</span>Todas as ferramentas</div>
-    <div><span>22</span>Atalhos e perguntas</div>
+    <div><span>7</span>Dados de PDFs</div>
+    <div><span>8</span>Montando o fluxo</div>
+    <div><span>9</span>Cruzando e tratando textos</div>
+    <div><span>10</span>Dados que dá para confiar</div>
+    <div><span>11</span>Explorando os resultados</div>
+    <div><span>12</span>Indicadores e visuais</div>
+    <div><span>13</span>Montando o dashboard</div>
+    <div><span>14</span>Linha do tempo e história</div>
+    <div><span>15</span>Do fluxo ao SQL</div>
+    <div><span>16</span>O fechamento que se refaz sozinho</div>
+    <div><span>17</span>Modelos de previsão</div>
+    <div><span>18</span>Organização</div>
+    <div><span>19</span>Segurança e privacidade</div>
+    <div><span>20</span>Instalação e requisitos</div>
+    <div><span>21</span>Escopo e limitações</div>
+    <div><span>22</span>Todas as ferramentas</div>
+    <div><span>23</span>Atalhos e perguntas</div>
   </div>
 </section>
 
@@ -273,7 +288,7 @@
   <div class="eyebrow">2 · Primeiros passos</div>
   <h2>Conhecendo a tela</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="executar">Mostrar o Executar</button><button type="button" class="manual-only m-act" data-show="tema">Mostrar o botão de tema</button></div>
-  <p class="intro">Uma tela só, dividida em áreas com papéis claros. Todos os painéis podem ser movidos ou ocultados (veja o capítulo 17).</p>
+  <p class="intro">Uma tela só, dividida em áreas com papéis claros. Todos os painéis podem ser movidos ou ocultados (veja o capítulo 18).</p>
   <figure>
     <div class="frame">
       <img src="../../src/prodata/web/manual/img/overview.png" alt="Tela principal do {{produto}}">
@@ -535,12 +550,114 @@
   <p>O que os eventos não explicam fica <strong>sem histórico</strong>. O valor de hoje nunca é usado para preencher o passado, a menos que a demanda nunca tenha mudado e você escolha a coluna de estado atual.</p>
 </section>
 
+<!-- ================================================================ PDF -->
+<section class="chapter">
+  <div class="eyebrow">7 · PDF</div>
+  <h2>Dados de PDFs, apontando no documento</h2>
+  <p class="intro">Relatórios, extratos e documentos chegam em PDF e costumam ser copiados à mão para planilhas. No {{produto}}, você ensina a extração apontando no próprio documento: clica no valor, vê a coluna nascer e confere de onde ela veio. Depois, a mesma extração vale para os próximos PDFs com o mesmo layout.</p>
+  <div class="goal"><b>Ao final:</b> <span>você sabe tirar campos e tabelas de um PDF, testar nos outros arquivos e usar o resultado em qualquer fluxo.</span></div>
+  <h3>Marcar um dado e ver a coluna nascer</h3>
+  <div class="steps">
+    <div class="step"><div><h4>Crie a fonte</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; PDF</strong>, envie um PDF, vincule um arquivo (lido onde está) ou escolha uma <strong>pasta de PDFs</strong> com padrão de nome, como <code>relatorio_*.pdf</code>. O editor <strong>Preparar extração</strong> abre na hora.</p></div></div>
+    <div class="step"><div><h4>Clique no valor</h4><p>Um clique marca uma palavra; dois cliques, o valor inteiro; arrastar marca uma área. Em cima da seleção aparece a prévia: o valor já convertido, o tipo e como o {{produto}} vai achar o dado.</p></div></div>
+    <div class="step"><div><h4>Tecle Enter</h4><p>O campo nasce no painel <strong>Campos</strong> e a coluna aparece no <strong>Resultado</strong>, com o valor convertido e o original ao lado. Nome e tipo mudam ali mesmo. Também dá para arrastar a seleção até o Resultado.</p></div></div>
+  </div>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/pdf-editor.png" alt="Editor Preparar extração com campos, documento e resultado"></div>
+    <figcaption>Três áreas: o que você já ensinou (Campos), o documento e o Resultado. Cada campo tem a sua cor, na página e na tabela.</figcaption>
+  </figure>
+  <p>Tudo também funciona pelo teclado: clique no documento e use as setas para andar pelas palavras, <kbd>Shift</kbd> para estender a seleção, <kbd>Enter</kbd> para criar o campo, <kbd>T</kbd> para criar tabela e <kbd>Esc</kbd> para limpar. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz qualquer mudança.</p>
+  <h3>Como o {{produto}} acha o dado nos outros PDFs</h3>
+  <p>O {{produto}} não guarda a posição do número na página, e sim o significado dela: o valor fica <strong>à direita</strong> de um rótulo, <strong>abaixo</strong> dele ou dentro de uma seção. Assim, o mesmo relatório com o cabeçalho mais abaixo, ou com mais linhas, continua funcionando.</p>
+  <div class="pdf-rule" role="img" aria-label="Esquema: o rótulo, o valor ao lado e os estados do campo">
+    <div><b>1 · O rótulo</b><span class="pdf-line"><span class="lab">Total líquido:</span> R$ 834.086,00</span><small>Maiúsculas, acentos e espaços a mais não contam. Dá para aceitar variações, como “Valor líquido”.</small></div>
+    <div><b>2 · O valor ao lado</b><span class="pdf-line">Total líquido: <span class="val">R$ 834.086,00</span></span><small>Vira <code>834086.00</code>, tipo Moeda. O texto original fica guardado para conferir.</small></div>
+    <div><b>3 · Em outro PDF</b><span class="pdf-line">Total líquido: <span class="two">R$ 150.000,00</span><br>Total líquido: <span class="two">R$ 149.500,00</span></span><small>Dois valores diferentes: o campo fica <strong>Ambíguo</strong> e nada é escolhido sozinho.</small></div>
+  </div>
+  <p>Para trocar o rótulo, clique no alvo do campo, marque outro texto no documento e tecle <kbd>R</kbd> (<strong>Usar como rótulo</strong>). Achar pela posição fixa na página existe como última opção, marcado como <strong>frágil</strong>: se o layout mudar, o valor some ou vem errado.</p>
+  <h3>Tabelas, mesmo em várias páginas</h3>
+  <div class="side">
+    <div>
+      <p>Arraste sobre a tabela, do cabeçalho até a última linha, e tecle <kbd>T</kbd>. O {{produto}} propõe as colunas pelos espaços em branco e desenha <strong>guias</strong> tracejadas na página. Arraste uma guia (ou foque e use as setas) e a prévia muda na hora.</p>
+      <ul>
+        <li><strong>Nova linha quando</strong>: uma observação escrita em duas linhas vira uma célula só, porque a linha nova começa quando a coluna escolhida tem valor.</li>
+        <li>A tabela segue nas páginas seguintes, ignora o cabeçalho repetido e termina no texto que você indicar, como “Total geral”.</li>
+        <li><strong>Começa em</strong> diz quais textos identificam o cabeçalho. Se ele muda de um mês para outro, deixe só o que se repete, como “VAR., PARTICIPAÇÃO”.</li>
+        <li>Subtotais e rodapés são <strong>sugeridos</strong> para exclusão; nada sai sem a sua confirmação.</li>
+        <li>Nenhuma linha é inventada: se a tabela não pode ser montada, ela mostra o problema e pede ajuste.</li>
+      </ul>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-tabela.png" alt="Tabela com guias de coluna sobre a página"></div><figcaption>As guias sobre a página e a tabela já montada, com a linha de duas linhas unida.</figcaption></figure>
+  </div>
+  <h3>Quando há dúvida</h3>
+  <div class="pdf-states">
+    <div><b>Encontrado</b>um valor válido</div>
+    <div><b>Ausente</b>nenhum candidato</div>
+    <div><b>Ambíguo</b>mais de um valor diferente</div>
+    <div><b>Inválido</b>achou, mas não converte</div>
+    <div><b>Não suportado</b>PDF escaneado, com senha ou danificado</div>
+  </div>
+  <p>Cada documento fica <strong>Aprovado</strong>, <strong>Revisar</strong> ou <strong>Falhou</strong> (quando falta um campo obrigatório). Para um documento que fugiu do padrão, <strong>Corrigir só neste documento</strong> informa o valor certo sem mudar a regra. Fica registrado quem corrigiu, quando e o valor de antes, e a correção deixa de valer sozinha se o PDF mudar.</p>
+  <h3>Testar em outros arquivos</h3>
+  <div class="side">
+    <div>
+      <p>A cada mudança, o {{produto}} roda a extração de verdade numa amostra dos PDFs e mostra quantos foram avaliados, como “3 de 3 avaliados”. Nada é estimado.</p>
+      <p>A aba <strong>Testar em outros arquivos</strong> monta a matriz documento × campo. Clique numa célula para abrir aquele documento com o trecho destacado.</p>
+      <p>Ao mudar uma regra, um quadro mostra quantos documentos mantiveram o resultado, quantos foram corrigidos e quantos passaram a falhar, com <strong>Desfazer</strong>.</p>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-teste.png" alt="Matriz de documentos por campo"></div><figcaption>Os estados de cada campo em cada documento. O relatório com dois totais falha: o total é obrigatório e ficou Ambíguo.</figcaption></figure>
+  </div>
+  <h3>Reaproveitar a extração</h3>
+  <div class="side">
+    <div>
+      <p>A extração que você ensinou fica guardada e pode servir a outras fontes com o mesmo layout, como os relatórios de outra filial ou de outro ano. Ela vale só para PDF: planilhas, bancos e APIs já chegam como tabela.</p>
+      <ul>
+        <li>Ao criar a fonte, escolha em <strong>Extração</strong> uma das extrações salvas: os campos já vêm prontos.</li>
+        <li>No editor, o menu <strong>Extração</strong> copia como extração nova (para ajustar sem mexer na original), troca por outra, exporta e importa.</li>
+        <li>O arquivo exportado não leva caminho nem senha: dá para mandar a um colega.</li>
+        <li>Em <strong>Extrações salvas</strong>, cada uma mostra quais fontes a usam e pode ser excluída. Se alguma fonte usa, a tela avisa e ela volta a rascunho.</li>
+      </ul>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-extracoes.png" alt="Lista de extrações salvas com as fontes que usam cada uma"></div><figcaption>As extrações salvas, com as fontes que usam cada uma.</figcaption></figure>
+  </div>
+  <h3>De onde veio cada valor</h3>
+  <p>Clique em qualquer valor do Resultado, ou numa célula da tabela, e a página rola até o trecho exato e o destaca, inclusive em outra página. No sentido contrário, clicar no documento sobre um valor já extraído destaca o campo ou a célula que ele gerou.</p>
+  <h3>Tirar e adicionar documentos</h3>
+  <div class="side">
+    <div>
+      <p>Na <strong>Visão geral</strong>, cada documento tem um <strong>×</strong> para <strong>tirar da fonte</strong>: ele sai da extração e das saídas, mas o arquivo continua onde está, na sua pasta. Os tirados ficam em <strong>Fora da fonte</strong>, com <strong>Trazer de volta</strong>.</p>
+      <p><strong>Adicionar PDFs</strong> soma um ou vários arquivos aos da pasta. O {{produto}} guarda uma cópia de cada, marcada como <em>adicionado</em>, e não grava nada na sua pasta. Uma fonte de um PDF só vira uma fonte de vários. Só a cópia guardada pelo programa é apagada de fato, e sempre com confirmação.</p>
+      <p>A lista é avaliada de novo na hora, e o fluxo usa o conjunto novo na próxima execução. A fonte nunca fica sem documento: o último não sai.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-documentos.png" alt="Lista de documentos com um PDF fora da fonte e o botão Trazer de volta"></div><figcaption>Um relatório tirado da fonte: continua no disco e volta com um clique.</figcaption></figure>
+  </div>
+
+  <h3>No fluxo</h3>
+  <div class="side">
+    <div>
+      <p>A fonte entra no fluxo pelo <strong>Input Data</strong>, como qualquer outra. Ela tem quatro saídas:</p>
+      <table>
+        <tr><th>Saída</th><th>O que traz</th></tr>
+        <tr><td class="tool">campos</td><td>Uma linha por documento, uma coluna por campo</td></tr>
+        <tr><td class="tool">itens_&lt;tabela&gt;</td><td>Uma linha por item, com o documento de origem</td></tr>
+        <tr><td class="tool">falhas</td><td>O que faltou ou ficou em dúvida, sem copiar o conteúdo</td></tr>
+        <tr><td class="tool">origem</td><td>Página e região de cada valor</td></tr>
+      </table>
+      <p>Em <strong>Quando um documento falhar</strong>, escolha entre parar a execução (a opção segura, sugerida), entregar só os aprovados ou entregar todos com a situação. PDF novo na pasta entra na próxima execução; PDF alterado é relido; sem mudança, o resultado guardado é aproveitado.</p>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-visao.png" alt="Visão geral da fonte PDF com documentos, política e saídas"></div><figcaption>A visão geral: situação de cada documento, a política de falha e as saídas.</figcaption></figure>
+  </div>
+  <div class="avoid"><h4>Seguro por padrão</h4><p>O PDF é lido no seu computador, num processo separado, com tempo e memória limitados: um arquivo quebrado nunca derruba o programa. Conteúdo ativo do PDF (scripts, formulários) nunca é executado, e trechos do documento não vão para os registros. PDFs escaneados (só imagem) ainda não são lidos.</p></div>
+  <p>No fluxo de exemplo, a etapa <em>6 · PDFs da Receita Federal</em> lê três relatórios reais da <strong>Análise da Arrecadação das Receitas Federais</strong> (julho a setembro de 2026), publicados pela Receita Federal no gov.br, com reprodução autorizada mediante citação da fonte. A extração já vem pronta, e os dados do PDF entram no resto do fluxo: a arrecadação de cada mês é cruzada com o faturamento das <em>Transações</em> (quanto a empresa fatura para cada R$ 1 bilhão arrecadado pela União), e a tabela por tributo vira o gráfico dos principais tributos. Os três gráficos estão no dashboard do exemplo. Em setembro o cabeçalho da tabela mudou de formato, e a mesma extração continua funcionando.</p>
+  <div class="try"><strong>Experimente</strong><ol><li>Em <strong>Dados &gt; Adicionar &gt; PDF</strong>, clique em <strong>Usar os PDFs de exemplo</strong>.</li><li>Clique no valor ao lado de “Total líquido” e tecle <kbd>Enter</kbd>. Depois arraste sobre a tabela e tecle <kbd>T</kbd>.</li><li>Abra <strong>Testar em outros arquivos</strong>: o relatório de dezembro tem dois totais e fica Ambíguo.</li><li>Na lista da vista Dados, abra <strong>Arrecadação federal (Receita Federal)</strong> e clique num valor da tabela para ver de onde ele veio no relatório.</li></ol></div>
+</section>
+
 <!-- ================================================================ 5. FLUXO -->
 <section class="chapter">
-  <div class="eyebrow">7 · Ferramentas</div>
+  <div class="eyebrow">8 · Ferramentas</div>
   <h2>Montando o fluxo</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_ferramentas">Mostrar onde fica</button></div>
-  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 43 ferramentas está no capítulo 21.</p>
+  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 43 ferramentas está no capítulo 22.</p>
   <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e escreve fórmulas sem decorar funções.</span></div>
 
   <h3>Configurando uma caixa</h3>
@@ -627,7 +744,7 @@
 
 <!-- ================================================================ CRUZAR E TRATAR -->
 <section class="chapter">
-  <div class="eyebrow">8 · Cruzar e tratar</div>
+  <div class="eyebrow">9 · Cruzar e tratar</div>
   <h2>Cruzando tabelas e tratando textos</h2>
   <p class="intro">Juntar duas bases é onde os números mais mudam sem ninguém perceber. Estas quatro caixas mostram, no próprio esquema, o que casou, o que multiplicou e o que foi escondido.</p>
   <div class="goal"><b>Ao final:</b> <span>você cruza bases sem dobrar somas, casa nomes escritos de jeitos diferentes, separa trechos de um texto e protege dados pessoais.</span></div>
@@ -681,7 +798,7 @@
 
 <!-- ================================================================ 7. DATA QUALITY -->
 <section class="chapter">
-  <div class="eyebrow">9 · Qualidade</div>
+  <div class="eyebrow">10 · Qualidade</div>
   <h2>Dados que dá para confiar</h2>
   <p class="intro">Um CPF inválido, um setor em branco ou um estado fora da lista chegam ao relatório sem ninguém ver. A ferramenta <strong>Data Quality</strong> confere regras antes de o dado seguir e separa o que passou do que falhou, com o motivo.</p>
   <div class="goal"><b>Ao final:</b> <span>você sabe montar regras de qualidade sem escrever fórmulas e decidir o que fazer com as linhas que falharam.</span></div>
@@ -766,7 +883,7 @@
 
 <!-- ================================================================ 6. RESULTADOS -->
 <section class="chapter">
-  <div class="eyebrow">10 · Análise</div>
+  <div class="eyebrow">11 · Análise</div>
   <h2>Explorando os resultados</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="aba_resultado">Mostrar a tabela</button><button type="button" class="manual-only m-act" data-show="filtros_resultado">Mostrar os filtros</button></div>
   <p class="intro">Cada caixa guarda o resultado da última execução. Clique nela — ou em uma de suas saídas — e a tabela mostra os dados correspondentes.</p>
@@ -798,7 +915,7 @@
 
 <!-- ================================================================ 7. DASHBOARD -->
 <section class="chapter">
-  <div class="eyebrow">11 · Apresentação</div>
+  <div class="eyebrow">12 · Apresentação</div>
   <h2>Indicadores e visuais</h2>
   <p class="intro">Os números nascem dentro do fluxo: as caixas de BI calculam e o Dashboard mostra. Quando os dados mudam, basta executar de novo.</p>
   <table>
@@ -839,7 +956,7 @@
 
 <!-- ================================================================ 8. DASHBOARD -->
 <section class="chapter">
-  <div class="eyebrow">12 · Apresentação</div>
+  <div class="eyebrow">13 · Apresentação</div>
   <h2>Montando o dashboard</h2>
   <p class="intro">O fluxo define <strong>o que</strong> mostrar; o dashboard define <strong>onde e como</strong>. Mudar cores ou posições não executa nada de novo.</p>
   <div class="goal"><b>Ao final:</b> <span>você monta a página, filtra e entrega em imagem ou em um arquivo que abre em qualquer navegador.</span></div>
@@ -893,7 +1010,7 @@
 
 <!-- ================================================================ REPLAY -->
 <section class="chapter">
-  <div class="eyebrow">13 · Replay</div>
+  <div class="eyebrow">14 · Replay</div>
   <h2>Linha do tempo e história</h2>
   <p class="intro">O dashboard pode andar no tempo. Os visuais acompanham a reprodução sem executar o fluxo, com o mesmo cálculo do resto do programa.</p>
   <div class="goal"><b>Ao final:</b> <span>você reproduz o dashboard, encontra os momentos que importam, gera um GIF de um gráfico e conta o que viu em cenas.</span></div>
@@ -941,7 +1058,7 @@
 
 <!-- ================================================================ 10. SQL -->
 <section class="chapter">
-  <div class="eyebrow">14 · Do fluxo ao SQL</div>
+  <div class="eyebrow">15 · Do fluxo ao SQL</div>
   <h2>Levando a lógica para o banco</h2>
   <p class="intro">O {{produto}} é onde você constrói rápido e experimenta. A aba <strong>SQL</strong>, ao lado de Designer e Dashboard, mostra o que foi construído escrito em SQL e confere se o código dá o mesmo resultado, para que levar a lógica ao lake seja uma revisão, não uma reescrita.</p>
   <figure class="m80">
@@ -988,7 +1105,7 @@
 
 <!-- ================================================================ FECHAMENTO -->
 <section class="chapter">
-  <div class="eyebrow">15 · Automação</div>
+  <div class="eyebrow">16 · Automação</div>
   <h2>O fechamento que se refaz sozinho</h2>
   <p class="intro">Todo mês chegam arquivos novos, o relatório tem o mesmo formato e alguém precisa rodar tudo. Este capítulo junta as peças que tiram esse trabalho da sua mão.</p>
   <div class="goal"><b>Ao final:</b> <span>o fluxo lê a pasta do mês, grava no modelo de Excel da área, reaproveita etapas e roda sozinho pelo Agendador do Windows.</span></div>
@@ -1054,7 +1171,7 @@
 
 <!-- ================================================================ MODELOS -->
 <section class="chapter">
-  <div class="eyebrow">16 · Previsão</div>
+  <div class="eyebrow">17 · Previsão</div>
   <h2>Modelos de previsão</h2>
   <p class="intro">Um modelo aprende com o histórico e aplica o que aprendeu a dados novos: quem tende a atrasar, quanto um cliente deve comprar. No {{produto}}, treinar, guardar e reaproveitar um modelo são caixas do fluxo.</p>
   <div class="goal"><b>Ao final:</b> <span>você treina um modelo, sabe quando ele muda, usa em outros fluxos e leva para outro computador.</span></div>
@@ -1088,7 +1205,7 @@
 </section>
 
 <section class="chapter">
-  <div class="eyebrow">17 · Organização</div>
+  <div class="eyebrow">18 · Organização</div>
   <h2>Organização e personalização</h2>
   <h3>Etapas</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="etapa">Mostrar onde fica</button></div>
@@ -1110,11 +1227,20 @@
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="exibir">Mostrar o menu Exibir</button><button type="button" class="manual-only m-act" data-show="foco">Mostrar o botão Foco</button></div>
   <p>Os três painéis — ferramentas/configuração, resultados e gráficos — podem ser arrastados pela alça <span class="muted">⠿</span> para a esquerda, a direita ou embaixo, ou ocultados. O menu <strong>Exibir</strong>, na barra superior, reexibe e restaura o padrão. Pelo menu de cada painel, <strong>Recolher em faixa</strong> o deixa fino, a um clique de voltar; em janelas pequenas, o resultado e os gráficos já começam assim. O arranjo é lembrado.</p>
   <p><strong>Modo foco</strong> (<kbd>F11</kbd> ou o botão <strong>Foco</strong>, na barra do canvas) esconde os painéis e mostra o fluxo inteiro. <kbd>F11</kbd> ou <kbd>Esc</kbd> devolvem tudo como estava.</p>
-  <p><strong>Telas menores</strong>: a interface fica <strong>compacta</strong> sozinha em monitores menores, e no menu Painéis dá para fixar a densidade.</p>
+  <p><strong>Telas menores</strong>: a interface fica <strong>compacta</strong> sozinha em monitores menores, e no menu Exibir dá para fixar a densidade.</p>
   <figure class="m50">
     <div class="frame"><img src="../../src/prodata/web/manual/img/layoutAlt.png" alt="Arranjo alternativo dos painéis"></div>
     <figcaption>Um arranjo alternativo: resultados embaixo e gráficos empilhados à direita.</figcaption>
   </figure>
+  <h3>Vírgula ou ponto nos números</h3>
+  <div class="side">
+    <div>
+      <p>Em <strong>Exibir → Números</strong>, escolha como os números aparecem: <strong>1.234,56</strong> (vírgula decimal, o padrão) ou <strong>1,234.56</strong> (ponto decimal). Vale na hora para a tabela de resultados, o perfil das colunas, os gráficos, os cartões de KPI, o dashboard e o leitor de PDF, e fica guardado neste computador. O HTML exportado do dashboard leva a escolha de quem exportou.</p>
+      <p>É só a forma de mostrar: os dados e os fluxos não mudam, e um fluxo enviado a um colega abre com os números no formato dele. Nas fórmulas o número continua com ponto (<code>0.5</code>), porque a vírgula separa os argumentos.</p>
+      <p>Para o <strong>CSV gravado</strong>, o <em>Output Data</em> tem o próprio campo <strong>Separador decimal</strong>: ponto, como sempre foi, ou vírgula, para abrir direto no Excel em português.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/numeros-menu.png" alt="Menu Exibir com a escolha entre vírgula e ponto decimal"></div><figcaption>A escolha fica no menu Exibir, ao lado da densidade.</figcaption></figure>
+  </div>
   <h3>Vários fluxos em abas</h3>
   <p>Cada fluxo aberto ganha uma aba logo abaixo da barra superior, com seu próprio resultado e seu próprio desfazer. Um ponto laranja indica alterações não salvas. Ao fechar uma aba — ou o programa — com alterações, o {{produto}} pergunta: <strong>Salvar</strong>, <strong>Não salvar</strong> ou <strong>Cancelar</strong>. As abas salvas reabrem sozinhas na próxima vez.</p>
   <h3>Onde ficam seus arquivos</h3>
@@ -1130,7 +1256,7 @@
 
 <!-- ================================================================ 9. SEGURANÇA -->
 <section class="chapter">
-  <div class="eyebrow">18 · Confiança</div>
+  <div class="eyebrow">19 · Confiança</div>
   <h2>Segurança e privacidade</h2>
   <div class="grid-3">
     <div class="card"><h4>Tudo local</h4><p>O {{produto}} roda inteiramente no seu computador e funciona offline. A única saída para a rede é a que você cadastra: bancos e APIs. O programa não envia nada por conta própria.</p></div>
@@ -1157,12 +1283,12 @@
 
 <!-- ================================================================ 10. INSTALAÇÃO -->
 <section class="chapter">
-  <div class="eyebrow">19 · Comece agora</div>
+  <div class="eyebrow">20 · Comece agora</div>
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.8.0-setup.exe</code> (202 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.8.0-portable.zip</code> (286 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.8.5-setup.exe</code> (211 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.8.5-portable.zip</code> (296 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
@@ -1175,7 +1301,7 @@
   </table>
   <h3>Primeira execução</h3>
   <div class="steps">
-    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 20): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
+    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 21): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
     <div class="step"><div><h4>Explore o exemplo</h4><p>O fluxo de demonstração já vem pronto. Clique em <strong>Executar</strong>, clique nas caixas, abra o Dashboard e siga os quadros <strong>Experimente</strong> deste guia.</p></div></div>
     <div class="step"><div><h4>Comece o seu</h4><p>Siga o capítulo 3 com um arquivo seu: envie na vista Dados e arraste para o canvas.</p></div></div>
   </div>
@@ -1183,7 +1309,7 @@
 
 <!-- ================================================================ 11. ESCOPO E LIMITAÇÕES -->
 <section class="chapter">
-  <div class="eyebrow">20 · Transparência</div>
+  <div class="eyebrow">21 · Transparência</div>
   <h2>Escopo e limitações</h2>
   <p class="intro">O que esta versão faz, o que não faz e onde ela tem limites — para você decidir com clareza.</p>
   <div class="two-col">
@@ -1240,7 +1366,7 @@
 
 <!-- ================================================================ FERRAMENTAS -->
 <section class="chapter">
-  <div class="eyebrow">21 · Referência</div>
+  <div class="eyebrow">22 · Referência</div>
   <h2>Todas as ferramentas</h2>
   <p class="intro">As 43 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
   <table>
@@ -1251,13 +1377,13 @@
     <tr><td class="tool">Text Input</td><td>Tabela pequena digitada ou colada (de-para, metas).</td></tr>
     <tr><td class="tool">Browse</td><td>Ponto de inspeção para conferir os dados no meio do fluxo.</td></tr>
     <tr><td class="tool">Output Data</td><td>Exporta para Excel, CSV, Parquet, JSON ou Arrow, na pasta que você escolher, com um <strong>rótulo de confidencialidade</strong>. No Excel, ligue várias tabelas na mesma caixa: cada uma vira uma planilha. Se o arquivo já existe, pergunta: substituir ou criar um novo.</td></tr>
-    <tr><td class="tool">Generate Rows</td><td>Cria um calendário ou uma sequência de números, sem ler arquivo. Veja o capítulo 15.</td></tr>
+    <tr><td class="tool">Generate Rows</td><td>Cria um calendário ou uma sequência de números, sem ler arquivo. Veja o capítulo 16.</td></tr>
     <tr><td colspan="2"><span class="tag">Preparação</span></td></tr>
     <tr><td class="tool">Select</td><td>Escolhe, renomeia, reordena (arrastando) e muda o tipo das colunas. Entende números no padrão brasileiro, datas como 29/10/2026 e sim/não, e avisa quantos valores não converteram.</td></tr>
     <tr><td class="tool">Filter</td><td>Separa linhas por condição, com modo simples ou expressão.</td></tr>
     <tr><td class="tool">Formula</td><td>Cria colunas calculadas ou altera colunas existentes (SE/ENTÃO, texto, matemática, datas).</td></tr>
     <tr><td class="tool">Multi-Row Formula</td><td>Olha outras linhas, com receitas prontas: preencher para baixo, diferença, variação %, valor anterior, próximo valor e "mudou?". Tem o próprio <strong>Ordenar por</strong>.</td></tr>
-    <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 9.</td></tr>
+    <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 10.</td></tr>
     <tr><td class="tool">Data Cleansing</td><td>Remove espaços, padroniza maiúsculas e trata vazios em um passo.</td></tr>
     <tr><td class="tool">Unique</td><td>Separa a primeira ocorrência de cada chave das duplicadas.</td></tr>
     <tr><td class="tool">Sort · Sample</td><td>Ordena por uma ou mais colunas (o <em>order by</em>); tira amostras (primeiras, últimas, aleatórias, percentual).</td></tr>
@@ -1276,8 +1402,8 @@
     <tr><td class="tool">Append Fields</td><td>Anexa uma tabela pequena (parâmetros, taxa do mês) a todas as linhas.</td></tr>
     <tr><td class="tool">SQL</td><td>Para quem conhece SQL: consulta livre sobre os dados do fluxo.</td></tr>
     <tr><td colspan="2"><span class="tag">Conferência e reúso</span></td></tr>
-    <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 9.</td></tr>
-    <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 9.</td></tr>
+    <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 10.</td></tr>
+    <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 10.</td></tr>
     <tr><td class="tool">Subflow · Subflow Input · Subflow Output</td><td>Executa outro fluxo da biblioteca como uma etapa, para manter num lugar só o que vários fluxos usam.</td></tr>
     <tr><td colspan="2"><span class="tag">BI e indicadores</span></td></tr>
     <tr><td class="tool">Chart</td><td>Colunas, barras, linha, rosca, empilhado, agrupado, 100%, área, Pareto, funil e dispersão.</td></tr>
@@ -1292,7 +1418,7 @@
 
 <!-- ================================================================ 12. ATALHOS E FAQ -->
 <section class="chapter">
-  <div class="eyebrow">22 · Referência rápida</div>
+  <div class="eyebrow">23 · Referência rápida</div>
   <h2>Atalhos e perguntas frequentes</h2>
   <h3>Atalhos de teclado</h3>
   <table>
@@ -1318,8 +1444,8 @@
   <div class="avoid"><h4>A exportação vai apagar o arquivo de ontem?</h4><p>Não sem perguntar. Se o arquivo de saída já existe, ao clicar em Executar o {{produto}} pergunta: substituir, criar um novo com data e hora no nome, ou (no Excel) adicionar a planilha. Dá para lembrar a escolha na caixa. Ao abrir o programa, essas exportações esperam o seu Executar.</p></div>
   <div class="avoid"><h4>Algo deu errado. Onde vejo?</h4><p>A caixa com problema fica vermelha e explica o motivo na aba Configurar; as caixas seguintes aparecem como "não executado". A aba <strong>Log</strong> lista tudo. Se o programa não abrir, o registro fica em <code>%LOCALAPPDATA%\{{produto}}\logs</code>.</p></div>
   <div class="avoid"><h4>Posso guardar o fluxo numa pasta da equipe?</h4><p>Sim. Use <strong>Salvar como…</strong> e escolha a pasta (rede, OneDrive, projeto). O arquivo é um JSON legível; quem abrir em outro computador precisa ter os mesmos arquivos e consultas na vista Dados. As constantes vão junto: as do fluxo, e o valor das compartilhadas que ele usa.</p></div>
-  <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 18). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
-  <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 18). APIs públicas não precisam de nada.</p></div>
+  <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 19). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
+  <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 19). APIs públicas não precisam de nada.</p></div>
   <div class="avoid"><h4>Posso pedir ajuda a uma IA sobre um fluxo?</h4><p>Sim. Envie o arquivo <code>.prodata.json</code> junto com o <code>contexto-ia.md</code>, publicado com cada versão. Ele ensina a IA a mexer no fluxo; depois, é só salvar a resposta e abrir no programa. Confira o resultado, e lembre que o fluxo mostra nomes de colunas e fórmulas, além dos dados digitados em Text Input.</p></div>
   <div class="avoid"><h4>Como mando o dashboard por e-mail?</h4><p>No Dashboard, <strong>Baixar imagem</strong> gera um PNG em alta resolução, pronto para o e-mail ou a apresentação. <strong>Baixar HTML</strong> gera um arquivo que abre em qualquer navegador, com os filtros funcionando; a tela avisa quais dados vão dentro dele.</p></div>
   <div class="avoid"><h4>Desinstalar apaga meus fluxos?</h4><p>Não. Fluxos, arquivos e conexões ficam na sua pasta de dados e continuam lá para uma futura reinstalação.</p></div>

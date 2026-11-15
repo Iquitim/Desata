@@ -5,6 +5,8 @@ body[data-view="data"] .data-view { display: flex; }
 
 /* ------------------------------------------------------------------ lista */
 .dv-list { flex: 1 1 320px; max-width: 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px; height: 100%; box-sizing: border-box; padding: 18px 14px; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); }
+/* janela estreita (navegador): o detalhe quebraria para baixo da lista e sumiria; a lista estreita no lugar */
+@media (max-width: 960px) { .data-view { flex-wrap: nowrap; } .dv-list { flex: 0 0 260px; } .dv-main { flex: 1 1 0; padding: 16px; } }
 .dv-list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .dv-list-head h1 { margin: 0; font-size: var(--fs-xl); }
 .dv-list-head p { margin: 2px 0 0; font-size: var(--fs-xs); color: var(--text-2); }

@@ -164,6 +164,16 @@ class DesktopApi:
             file_types=(_DATA_FILTER, "Todos os arquivos (*.*)"),
         )
 
+    def open_pdf_file(self, start: str = "") -> str | None:
+        """PDF para o leitor de PDF da vista Dados (spec 037): lido onde está."""
+        import webview
+
+        return self._dialog(
+            webview.FileDialog.OPEN,
+            directory=start if Path(start).is_dir() else "",
+            file_types=("Documentos PDF (*.pdf)", "Todos os arquivos (*.*)"),
+        )
+
     def save_png(self, suggested: str, data: str) -> str | None:
         """Imagem do dashboard (spec 014, RF-1452): "Salvar como" do Windows e grava o PNG escolhido."""
         import webview

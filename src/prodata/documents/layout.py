@@ -154,16 +154,18 @@ def find_label(lines: Sequence[Line], label: str) -> list[LabelHit]:
     hits = []
     n = len(wanted)
     for line in lines:
-        tokens = line.tokens()
-        for i in range(len(tokens) - n + 1):
-            if tokens[i : i + n] == wanted:
-                hits.append(LabelHit(line, i, i + n))
+        # só as palavras de verdade: um "-" solto vira token vazio e não pode quebrar o rótulo
+        real = [(i, t) for i, t in enumerate(line.tokens()) if t]
+        tokens = [t for _, t in real]
+        for k in range(len(tokens) - n + 1):
+            if tokens[k : k + n] == wanted:
+                hits.append(LabelHit(line, real[k][0], real[k + n - 1][0] + 1))
     return hits
 
 
 def line_matches(line: Line, phrases: Sequence[str]) -> bool:
     """A linha contém todas as frases, na ordem (cabeçalho de tabela)."""
-    tokens = line.tokens()
+    tokens = [t for t in line.tokens() if t]
     pos = 0
     for phrase in phrases:
         wanted = norm_tokens(phrase)
@@ -178,7 +180,7 @@ def line_matches(line: Line, phrases: Sequence[str]) -> bool:
 
 
 def line_starts_with(line: Line, phrases: Sequence[str]) -> bool:
-    tokens = line.tokens()
+    tokens = [t for t in line.tokens() if t]
     for phrase in phrases:
         wanted = norm_tokens(phrase)
         if wanted and tokens[: len(wanted)] == wanted:

@@ -23,6 +23,11 @@ def _names(services: Services) -> dict[str, str]:
     names |= {f"api:{a.id}": f"API {a.name}" for a in services.apis.list()}
     names |= {f"flow:{w.id}": f"fluxo {w.name}" for w in services.workflows.list()}
     names |= {f"folder:{s.id}": f"{s.pattern} em {s.folder}" for s in services.datasets.folders.list()}
+    for p in services.datasets.pdfs.all_sources():
+        where = p.path if p.mode == "arquivo" else f"{p.pattern} em {p.path}"
+        names |= {
+            f"pdf:{p.id}/{out}": f"PDF {p.name} ({where})" for out in services.datasets.pdfs.status(p).outputs
+        }
     return names
 
 

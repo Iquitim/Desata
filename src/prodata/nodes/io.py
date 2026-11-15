@@ -17,6 +17,7 @@ from prodata.connectors.api_loop import run_loop
 from prodata.connectors.api_model import source_api_id
 from prodata.connectors.jira_model import source_jira_id
 from prodata.connectors.queries import read_definition, source_query_id
+from prodata.documents.sources import source_pdf_ref
 from prodata.domain.labels import (
     DEFAULT_LABEL,
     LABEL_NAMES,
@@ -83,6 +84,11 @@ def _source_annotation(cfg: InputDataConfig) -> str:
         return "Jira"
     if source_folder_id(cfg.dataset):
         return "Pasta de arquivos"
+    pdf = source_pdf_ref(cfg.dataset)
+    if pdf is not None:
+        out = pdf[1]
+        friendly = {"campos": "resumo de cada documento", "falhas": "falhas", "origem": "origem"}
+        return "PDF · " + friendly.get(out, f"linhas de {out.removeprefix('itens_')}")
     if source_api_id(cfg.dataset):
         return "API"
     return "Consulta de banco" if source_query_id(cfg.dataset) else cfg.dataset
@@ -106,7 +112,7 @@ def _source_on_request(ctx: NodeContext, cfg: InputDataConfig) -> str | None:
     name="Input Data",
     category="inout",
     icon="database",
-    description="Lê qualquer fonte cadastrada na vista Dados: arquivos (CSV, Excel, Parquet, JSON, Arrow), pastas de arquivos, consultas de banco ou APIs.",
+    description="Lê qualquer fonte cadastrada na vista Dados: arquivos (CSV, Excel, Parquet, JSON, Arrow), pastas de arquivos, leitores de PDF, consultas de banco ou APIs.",
     config=InputDataConfig,
     inputs=[],
     outputs=[Port("out", "O", "Dados")],
@@ -122,6 +128,9 @@ def input_data(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
     folder_id = source_folder_id(cfg.dataset)
     if folder_id is not None:
         return _read_folder(ctx, folder_id, cfg.limit)
+    pdf = source_pdf_ref(cfg.dataset)
+    if pdf is not None:
+        return _read_pdf(ctx, pdf, cfg.limit)
     api_id = source_api_id(cfg.dataset)
     if api_id is not None:
         if ctx.apis is None:
@@ -170,6 +179,14 @@ def _read_folder(ctx: NodeContext, folder_id: str, limit: int) -> NodeOutput:
     if odd:
         extra["warnings"] = [odd_warning(odd, files[0].name)]
     return NodeOutput(tables={"out": table}, extra=extra)
+
+
+def _read_pdf(ctx: NodeContext, ref: tuple[str, str], limit: int) -> NodeOutput:
+    """Leitor de PDF da vista Dados (spec 037): a extração e a política de falha são as do cadastro."""
+    frame, extra = ctx.datasets.pdfs.read(ref[0], ref[1], report=ctx.report)
+    return NodeOutput(
+        tables={"out": frame.head(limit) if limit else frame}, extra={**extra, "source_read_at": _now()}
+    )
 
 
 def _read_jira(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
@@ -426,6 +443,15 @@ class OutputDataConfig(ToolConfig):
             }
         ),
     )
+    # spec 038: o padrão continua o ponto, como sempre foi; vírgula abre direto no Excel em português
+    decimal: Literal[".", ","] = Field(
+        ".",
+        title="Separador decimal",
+        description="Vírgula abre direto no Excel em português. Quem já lê este arquivo com ponto não muda nada.",
+        json_schema_extra=ui(
+            show_if={"format": ["csv"]}, labels={".": "Ponto (1234.56)", ",": "Vírgula (1234,56)"}
+        ),
+    )
     confidentiality: Confidentiality = Field(
         DEFAULT_LABEL,
         title="Rótulo de confidencialidade",
@@ -575,7 +601,7 @@ def output_data(ctx: NodeContext, cfg: OutputDataConfig) -> NodeOutput:
     )
     match cfg.format:
         case "csv":
-            df.write_csv(path, separator=";")
+            df.write_csv(path, separator=";", decimal_comma=cfg.decimal == ",")
         case "excel" if template:
             # "Dados" é o padrão do campo: com modelo, vale como "a primeira planilha".
             write_template(

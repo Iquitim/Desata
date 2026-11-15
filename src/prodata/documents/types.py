@@ -143,11 +143,14 @@ def convert(text: str, kind: str) -> Any:
     raise InvalidValueError("tipo desconhecido")
 
 
-def guess_type(text: str) -> FieldType:
-    """Tipo mais provável para o texto marcado (a pessoa troca na hora se não for)."""
+def guess_type(text: str, currency: bool = False) -> FieldType:
+    """Tipo mais provável para o texto marcado (a pessoa troca na hora se não for).
+
+    Moeda só quando há "R$" no texto ou logo antes dele (``currency``): "5,22" sozinho é um número decimal.
+    """
     clean = " ".join(text.split())
     attempts: list[FieldType] = ["data", "mes_ano"]
-    if "R$" in clean.upper() or re.search(r"\d,\d{2}$", clean):
+    if "R$" in clean.upper() or currency:
         attempts.insert(0, "moeda")
     attempts += ["inteiro", "decimal"]
     for kind in attempts:

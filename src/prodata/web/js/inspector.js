@@ -17,7 +17,7 @@ import { formatOf, openPreview } from './datasets.js';
 import { convertLegacyFolder } from './folder_sources.js';
 import { icon } from './icons.js';
 import {
-  API_PREFIX, apiOf, FOLDER_PREFIX, JIRA_PREFIX, mutate, node, nodeResult, on, QUERY_PREFIX, queryOf, select, selectedIds, selectMany, sourceLabel, store, toolOf, upstreamColumns,
+  API_PREFIX, apiOf, FOLDER_PREFIX, JIRA_PREFIX, PDF_PREFIX, mutate, node, nodeResult, on, QUERY_PREFIX, queryOf, select, selectedIds, selectMany, sourceLabel, store, toolOf, upstreamColumns,
 } from './store.js';
 import { showMenu, toast, toastError } from './ui.js';
 
@@ -274,11 +274,12 @@ function sourceContext(n, spec) {
   const cfg = n.config;
   const isApi = Boolean(cfg.dataset?.startsWith(API_PREFIX));
   const isJira = Boolean(cfg.dataset?.startsWith(JIRA_PREFIX));
-  const isFolder = Boolean(cfg.dataset?.startsWith(FOLDER_PREFIX));
+  const isFolder = Boolean(cfg.dataset?.startsWith(FOLDER_PREFIX)) || Boolean(cfg.dataset?.startsWith(PDF_PREFIX));
   const isQuery = isApi || isJira || isFolder || Boolean(cfg.dataset?.startsWith(QUERY_PREFIX));
   const ctx = {
     queries: store.queries,
     folders: store.folderSources,
+    pdfs: store.pdfSources,
     apis: store.apis,
     jira: store.jiraQueries,
     needsLoop: (a) => placeholdersOf(a).length > 0,

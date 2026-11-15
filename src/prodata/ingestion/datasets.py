@@ -12,6 +12,8 @@ from typing import BinaryIO
 
 from pydantic import BaseModel
 
+from prodata.documents.sources import source_pdf_ref
+from prodata.documents.store import PdfStore
 from prodata.errors import ConflictError, InvalidInputError, NotFoundError, TooLargeError
 from prodata.ingestion.detect import EXTENSIONS
 from prodata.ingestion.folders import FolderSources, source_folder_id
@@ -58,6 +60,8 @@ class DatasetStore:
         self._links_file = root.with_name(root.name + "_vinculos.json")
         # Pastas de arquivos (spec 035): vários arquivos de um padrão, lidos onde estão.
         self.folders = FolderSources(root.with_name(root.name + "_pastas.json"))
+        # Leitores de PDF (spec 037): fontes, extrações e correções, também ao lado.
+        self.pdfs = PdfStore(root)
 
     # ------------------------------------------------------------------ vínculos (spec 017)
 
@@ -168,6 +172,9 @@ class DatasetStore:
         folder_id = source_folder_id(name)
         if folder_id is not None:
             return self.folders.signature(folder_id)
+        pdf = source_pdf_ref(name)
+        if pdf is not None:
+            return self.pdfs.signature(pdf[0])
         stat = self.resolve(name).stat()
         return f"{stat.st_size}:{stat.st_mtime_ns}"
 

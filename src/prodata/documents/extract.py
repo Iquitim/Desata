@@ -34,7 +34,8 @@ ENCONTRADO, AUSENTE, AMBIGUO, INVALIDO, NAO_SUPORTADO = (
     "nao_suportado",
 )
 APROVADO, REVISAR, FALHOU = "aprovado", "revisar", "falhou"
-_WORD_GAP = 1.5  # acima disso (em alturas de linha), o espaço separa valores, não palavras
+_WORD_GAP = 1.5
+_EMPTY = {"-", "–", "—", "--"}  # acima disso (em alturas de linha), o espaço separa valores, não palavras
 
 
 def _origin(words: Sequence[Word]) -> list[dict[str, Any]]:
@@ -193,6 +194,11 @@ def extract_field(spec: FieldSpec, lines: Sequence[Line]) -> FieldResult:
             c.valor = convert(c.texto, spec.tipo)
         except InvalidValueError as exc:
             c.erro = str(exc)
+    # um candidato que nem é do tipo do campo ("Equipe Técnica" para um mês/ano) não é plausível: sai, desde que
+    # outro seja. Dois valores válidos e diferentes continuam Ambíguo (RF-3760).
+    valid = [c for c in candidates if c.erro is None]
+    if valid and len(valid) < len(candidates):
+        candidates = valid
     result.candidatos = candidates
     distinct = {to_json(c.valor) if c.erro is None else ("!", normalize(c.texto)) for c in candidates}
     if len(distinct) > 1:
@@ -278,7 +284,8 @@ def _table_lines(spec: TableSpec, lines: Sequence[Line], result: TableResult) ->
         return []
     header_page = lines[start].page
     body: list[Line] = []
-    skip_until = -1
+    extra = spec.linhas_cabecalho - 1  # as outras linhas do cabeçalho, logo abaixo da primeira
+    skip_until = start + extra
     result.fim = "fim do documento"
     for i in range(start + 1, len(lines)):
         line = lines[i]
@@ -295,7 +302,7 @@ def _table_lines(spec: TableSpec, lines: Sequence[Line], result: TableResult) ->
                 None,
             )
             if repeated is not None:
-                skip_until = repeated
+                skip_until = repeated + extra
                 result.ignoradas.append(_ignored(lines[repeated], "cabeçalho repetido"))
         if i <= skip_until:
             continue
@@ -353,7 +360,7 @@ def extract_table(spec: TableSpec, lines: Sequence[Line]) -> TableResult:
             row.cells[k].words += extra.words
     for row in result.linhas:
         for cell, kind in zip(row.cells, kinds, strict=True):
-            if not cell.words:
+            if not cell.words or cell.texto.strip() in _EMPTY:  # "-" em relatório é célula vazia, não erro
                 continue
             try:
                 cell.valor = convert(cell.texto, kind)

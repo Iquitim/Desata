@@ -18,6 +18,7 @@ from prodata.documents.recipe import Column, FieldSpec, LabelRule, PositionRule,
 from prodata.documents.types import guess_type, normalize
 
 _LABEL_GAP = 1.5
+MIN_GAP = 0.006  # espaço vazio mínimo entre colunas, em fração da largura da página
 _CURRENCY = {"r$", "rs", "us$", "$", "€"}
 
 
@@ -31,12 +32,12 @@ def _same(a: Sequence[Word], b: Sequence[Word]) -> bool:
     return {id(w) for w in a} == {id(w) for w in b}
 
 
-def _left_label(line: Line, first: int) -> list[Word]:
+def _left_label(line: Line, first: int, far: bool = False) -> list[Word]:
     """Palavras grudadas à esquerda da seleção; se há uma terminada em ':', o rótulo vai até ela."""
     group: list[Word] = []
     i = first - 1
     while i >= 0 and (not group or line.gap(line.words[i], group[0]) <= _LABEL_GAP):
-        if not group and line.gap(line.words[i], line.words[first]) > 6:
+        if not group and not far and line.gap(line.words[i], line.words[first]) > 6:
             break
         group.insert(0, line.words[i])
         i -= 1
@@ -76,16 +77,25 @@ def suggest_field(info: dict[str, Any], selected: Sequence[dict[str, Any]]) -> d
     if not chosen:
         raise ValueError("nada marcado")
     text = " ".join(w["t"] for w in chosen)
-    kind = guess_type(text)
     box = union(w["b"] for w in chosen)
     page = chosen[0]["p"]
     proposals: list[dict[str, Any]] = []
     first_line = next(i for i, ln in enumerate(lines) if any(w is chosen[0] for w in ln.words))
     line = lines[first_line]
-    left = _left_label(line, next(k for k, w in enumerate(line.words) if w is chosen[0]))
+    first = next(k for k, w in enumerate(line.words) if w is chosen[0])
+    # "834.086,00" marcado sem o "R$" que vem logo antes ainda é moeda
+    before = normalize(line.words[first - 1]["t"]) if first > 0 else ""
+    kind = guess_type(text, currency=before in _CURRENCY)
+    left = _left_label(line, first)
+    reach = 0.3
+    if not left:
+        # rótulo longe, na mesma linha, sem nada no meio (ex.: um título à esquerda e a data no canto)
+        left = _left_label(line, first, far=True)
+        if left:
+            reach = min(1.0, round(box[0] - union(w["b"] for w in left)[2] + 0.05, 3))
     if left:
         label = _label_text(left)
-        rule = LabelRule(rotulos=[label.rstrip(":").strip() or label], direcao="direita")
+        rule = LabelRule(rotulos=[label.rstrip(":").strip() or label], direcao="direita", distancia=reach)
         proposals.append(_proposal(field_name(label), kind, rule, f"à direita de “{label.rstrip(':')}”"))
     above = _above_label(lines, first_line, box)
     if above:
@@ -121,13 +131,37 @@ def suggest_field(info: dict[str, Any], selected: Sequence[dict[str, Any]]) -> d
 # ------------------------------------------------------------------ tabela
 
 
+def _spans(line: Line) -> list[tuple[float, float]]:
+    """Trechos ocupados da linha; o "R$" fica grudado no valor que vem depois (nunca vira coluna própria)."""
+    spans: list[tuple[float, float]] = []
+    glue = False
+    for w in line.words:
+        if glue and spans:
+            spans[-1] = (spans[-1][0], w["b"][2])
+        else:
+            spans.append((w["b"][0], w["b"][2]))
+        glue = normalize(w["t"]) in _CURRENCY
+    return spans
+
+
+def column_gap(lines: Sequence[Line]) -> float:
+    """Espaço mínimo entre colunas, medido no próprio documento: um pouco mais que o espaço comum entre palavras."""
+    gaps = sorted(
+        b[0] - a[1] for ln in lines for a, b in zip(_spans(ln), _spans(ln)[1:], strict=False) if b[0] > a[1]
+    )
+    if not gaps:
+        return MIN_GAP
+    space = gaps[len(gaps) // 5]  # o espaço entre palavras é dos menores vãos de uma linha
+    return max(0.0025, min(MIN_GAP, space * 1.05))
+
+
 def _gaps(lines: Sequence[Line], lo: float, hi: float, min_width: float) -> list[tuple[float, float]]:
-    bins = 1000
+    bins = 2000
     covered = [False] * bins
     for ln in lines:
-        for w in ln.words:
-            a = max(0, int((w["b"][0] - lo) / (hi - lo) * bins))
-            b = min(bins, int((w["b"][2] - lo) / (hi - lo) * bins) + 1)
+        for x0, x1 in _spans(ln):
+            a = max(0, int((x0 - lo) / (hi - lo) * bins))
+            b = min(bins, int((x1 - lo) / (hi - lo) * bins) + 1)
             for k in range(a, b):
                 covered[k] = True
     gaps, start = [], None
@@ -136,9 +170,9 @@ def _gaps(lines: Sequence[Line], lo: float, hi: float, min_width: float) -> list
             start = k
         elif c and start is not None:
             if start > 0 and k < bins:  # só espaço entre colunas, não as margens
-                x0, x1 = lo + start / bins * (hi - lo), lo + k / bins * (hi - lo)
-                if x1 - x0 >= min_width:
-                    gaps.append((x0, x1))
+                g0, g1 = lo + start / bins * (hi - lo), lo + k / bins * (hi - lo)
+                if g1 - g0 >= min_width:
+                    gaps.append((g0, g1))
             start = None
     return gaps
 
@@ -175,45 +209,53 @@ def suggest_table(
             inside.append(Line(ln.page, ln.aspect, words))
     if len(inside) < 2:
         raise ValueError("marque o cabeçalho e ao menos uma linha")
-    header, body = inside[0], inside[1:]
-    guides = [_place_guide(g, header) for g in _gaps(body, x0, x1, min_width=0.012)]
-    guides = sorted(g for g in guides if x0 < g < x1)
+    # cabeçalho = as linhas de cima até a primeira com número decimal (os dados); no mínimo uma
+    heads = 1
+    while heads < min(len(inside) - 1, 6) and not _has_numbers(inside[heads]):
+        heads += 1
+    header_lines, body = inside[:heads], inside[heads:]
+    # a âncora é a linha com os títulos das colunas (a de mais palavras), não uma linha genérica acima dela
+    # ("UNIDADE: R$ MILHÕES" se repete em várias tabelas do mesmo relatório)
+    anchor = max(range(heads), key=lambda k: (len(header_lines[k].words), k))
+    header_lines = header_lines[anchor:]
+    heads -= anchor
+    header = header_lines[0]
+    gaps = _gaps(body, x0, x1, min_width=column_gap(body))
+    guides = sorted(g for g in (_place_guide(gap, header) for gap in gaps) if x0 < g < x1)
     titles: list[list[str]] = [[] for _ in range(len(guides) + 1)]
-    for w in header.words:
-        middle = (w["b"][0] + w["b"][2]) / 2
-        titles[sum(1 for g in guides if g < middle)].append(w["t"])
+    first_titles: list[list[str]] = [[] for _ in range(len(guides) + 1)]
+    for n, ln in enumerate(header_lines):
+        for w in ln.words:
+            at = sum(1 for g in guides if g < (w["b"][0] + w["b"][2]) / 2)
+            titles[at].append(w["t"])
+            if n == 0:
+                first_titles[at].append(w["t"])
     names, seen = [], set()
     for k, parts in enumerate(titles):
-        base = field_name(" ".join(parts)) if parts else f"coluna_{k + 1}"
+        base = field_name(" ".join(parts)) if parts else "campo"
+        if base == "campo":  # sem título legível (só "*", por exemplo)
+            base = f"coluna_{k + 1}"
         cand, n = base, 2
         while cand in seen:
             cand, n = f"{base}_{n}", n + 1
         seen.add(cand)
         names.append(cand)
-    filled = [0] * len(names)
-    for ln in body:
-        cols = {sum(1 for g in guides if g < (w["b"][0] + w["b"][2]) / 2) for w in ln.words}
-        for c in cols:
-            filled[c] += 1
-    counts = [c for c in filled if c]
-    start = None
-    if counts and min(counts) < max(counts):
-        start = names[next(k for k, c in enumerate(filled) if c == min(counts))]
+    start = _start_column(body, guides, names)
     columns = []
     for k, col in enumerate(names):
-        sample = []
-        for ln in body:
-            sample += [
-                w["t"] for w in ln.words if sum(1 for g in guides if g < (w["b"][0] + w["b"][2]) / 2) == k
-            ]
-        kind = guess_type(" ".join(sample[:3])) if sample else "texto"
-        columns.append(
-            Column(nome=col, tipo=kind if kind in ("moeda", "inteiro", "decimal", "data") else "texto")
-        )
-    header_phrases = [" ".join(titles[k]) for k in range(len(titles)) if titles[k]]
+        sample = [
+            w["t"]
+            for ln in body
+            for w in ln.words
+            if sum(1 for g in guides if g < (w["b"][0] + w["b"][2]) / 2) == k
+        ]
+        kind = _column_kind(sample)
+        columns.append(Column(nome=col, tipo=kind))
+    header_phrases = [" ".join(parts) for parts in first_titles if parts]
     spec = TableSpec(
         nome=field_name(name),
         cabecalho=header_phrases or [header.text],
+        linhas_cabecalho=heads,
         colunas=columns,
         guias=guides,
         limites=(round(x0, 4), round(x1, 4)),
@@ -230,9 +272,57 @@ def suggest_table(
     }
 
 
+_DECIMAL = re.compile(r"^[-(]?[\d.]+,\d+\)?$")
+_INTEGER = re.compile(r"^[-(]?(\d{1,3}(\.\d{3})+|\d+)\)?$")  # "70.182", "(3.214)", "146"
+
+
+def _has_numbers(line: Line) -> bool:
+    """A linha tem número decimal ("5,22", "-60,00"): é dado, não cabeçalho."""
+    return any(_DECIMAL.match(w["t"]) for w in line.words)
+
+
+def _column_kind(sample: list[str]) -> Any:
+    """Tipo da coluna pelos valores: moeda só se algum tiver "R$"; texto quando há palavras misturadas."""
+    values = [t for t in sample if t not in {"-", "–"}]
+    if not values:
+        return "texto"
+    money = any("R$" in t.upper() for t in values)
+    numbers = [t for t in values if _DECIMAL.match(t) or _INTEGER.match(t)]
+    if money and len(numbers) >= len(values) / 3:
+        return "moeda"
+    if len(numbers) == len(values):
+        return "decimal" if any("," in t for t in numbers) else "inteiro"
+    joined = " ".join(values[:3])
+    kind = guess_type(joined)
+    return kind if kind == "data" else "texto"
+
+
+def _start_column(body: Sequence[Line], guides: Sequence[float], names: Sequence[str]) -> str | None:
+    """A coluna que inicia linha (RF-3731). Toda linha com número = cada linha do PDF é uma linha da tabela.
+
+    Senão, há linhas de continuação (texto quebrado, sem números): vale a coluna mais à esquerda que aparece em toda
+    linha com números e em nenhuma de continuação. Uma coluna às vezes vazia (um sinal que só aparece quando muda)
+    nunca é escolhida por isso.
+    """
+
+    def cols(ln: Line) -> set[int]:
+        return {sum(1 for g in guides if g < (w["b"][0] + w["b"][2]) / 2) for w in ln.words}
+
+    rows = [cols(ln) for ln in body if _has_numbers(ln)]
+    rest = [cols(ln) for ln in body if not _has_numbers(ln)]
+    if not rows or not rest:
+        return None
+    always = set.intersection(*rows)
+    never = always - set().union(*rest)
+    chosen = min(never or always, default=None)
+    return names[chosen] if chosen is not None else None
+
+
 def _end_hint(lines: Sequence[Line], last: Line) -> list[str]:
-    """Sugere como fim a primeira linha que começa com 'Total' depois da área (a pessoa confirma ou troca)."""
+    """Sugere onde a tabela termina: a linha "Total…" depois da área ou, na mesma página, a primeira linha logo
+    abaixo que não é dado (uma nota ou um rodapé). A pessoa confirma ou troca."""
     after = False
+    below: Line | None = None
     for ln in lines:
         if ln is last or (ln.page == last.page and abs(ln.middle - last.middle) < 1e-6):
             after = True
@@ -241,4 +331,8 @@ def _end_hint(lines: Sequence[Line], last: Line) -> list[str]:
             tokens = norm_tokens(ln.text)
             if tokens and tokens[0] in {"total", "totais", "subtotal"}:
                 return [" ".join(ln.text.split()[:2])]
+            if below is None and ln.page == last.page and not _has_numbers(ln):
+                below = ln
+    if below is not None and norm_tokens(below.text):
+        return [" ".join(below.text.split()[:2])]
     return []

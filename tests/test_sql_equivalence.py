@@ -16,6 +16,7 @@ from prodata.engine import formula
 from prodata.engine.sql.fragment import SQL_REGISTRY, SqlContext, SqlInput, kind_of, q
 from prodata.engine.sql.macros import install_all
 from prodata.engine.sql.verify import DIFFERENT, SAME, compare
+from prodata.errors import InvalidInputError
 from prodata.ingestion import DatasetStore
 from prodata.nodes import REGISTRY, NodeContext
 
@@ -294,6 +295,70 @@ CASES: list[tuple[str, str, dict[str, Any]]] = [
         {"columns": ["valor"], "group_by": ["uf"], "prefix": "ac_"},
     ),
     ("browse", "io.browse", {}),
+    # Regex (spec 033): os três modos, grupos com nome, trocas com $1, $$ e barra, coluna numérica
+    (
+        "regex_extract",
+        "prep.regex",
+        {"column": "data", "pattern": r"(\d{2})/(\d{2})/(\d{4})", "names": ["dia", "mes"]},
+    ),
+    ("regex_extract_whole", "prep.regex", {"column": "numero", "pattern": r"\d+"}),
+    ("regex_extract_named", "prep.regex", {"column": "data", "pattern": r"(?P<ano>\d{4})-(\d{2})"}),
+    ("regex_replace", "prep.regex", {"column": "numero", "pattern": r"[.,]", "mode": "replace"}),
+    (
+        "regex_replace_groups",
+        "prep.regex",
+        {
+            "column": "numero",
+            "pattern": r"(\d+),(\d+)",
+            "mode": "replace",
+            "replacement": "$2-$1 $$ a\\b",
+            "output": "troca",
+        },
+    ),
+    (
+        "regex_match_case",
+        "prep.regex",
+        {"column": "uf", "pattern": "^s", "mode": "match", "ignore_case": True},
+    ),
+    (
+        "regex_match_number",
+        "prep.regex",
+        {"column": "valor", "pattern": r"\.5$", "mode": "match", "output": "meio"},
+    ),
+    # Generate Rows (spec 033): números e calendário, cada data a partir da inicial
+    ("rows_numbers", "io.generate_rows", {"mode": "numbers", "start": 1, "end": 10, "step": 3}),
+    (
+        "rows_decimals",
+        "io.generate_rows",
+        {"mode": "numbers", "start": 0, "end": 1, "step": 0.25, "column": "x"},
+    ),
+    ("rows_down", "io.generate_rows", {"mode": "numbers", "start": 10, "end": 1, "step": -2}),
+    ("rows_days", "io.generate_rows", {"start_date": "2026-02-20", "end_date": "2026-03-05"}),
+    (
+        "rows_months_from_31",
+        "io.generate_rows",
+        {"start_date": "31/01/2026", "end_date": "2026-12-31", "every": "month"},
+    ),
+    (
+        "rows_weeks",
+        "io.generate_rows",
+        {"start_date": "2026-01-01", "end_date": "2026-03-31", "every": "week", "calendar": False},
+    ),
+    (
+        "rows_quarters",
+        "io.generate_rows",
+        {"start_date": "2025-11-30", "end_date": "2026-11-30", "every": "quarter"},
+    ),
+    (
+        "rows_years",
+        "io.generate_rows",
+        {"start_date": "2024-02-29", "end_date": "2028-03-01", "every": "year"},
+    ),
+    (
+        "rows_until_today",
+        "io.generate_rows",
+        {"start_date": "2026-01-01", "every": "month", "column": "competencia"},
+    ),
 ]
 
 
@@ -544,3 +609,15 @@ def test_quoting_is_safe() -> None:
     assert q("select") == '"select"'
     assert q('a"b') == '"a""b"'
     assert q("coluna estranha") == '"coluna estranha"'
+
+
+def test_generate_rows_refuses_a_calendar_column_name(store: DatasetStore, tmp_path: Path) -> None:
+    """A coluna de datas com o nome de uma coluna do calendário seria sobrescrita: o motor e o SQL recusam."""
+    spec = REGISTRY["io.generate_rows"]
+    cfg = spec.config.model_validate({"start_date": "2026-01-01", "end_date": "2026-03-01", "column": "mes"})
+    with pytest.raises(InvalidInputError, match="coluna do calendário"):
+        spec.run(NodeContext({}, {}, store, tmp_path), cfg)
+    with pytest.raises(InvalidInputError, match="coluna do calendário"):
+        SQL_REGISTRY["io.generate_rows"](SqlContext({}), cfg)
+    plain = spec.config.model_validate({**cfg.model_dump(), "calendar": False})
+    assert spec.run(NodeContext({}, {}, store, tmp_path), plain).tables["out"].columns == ["mes"]

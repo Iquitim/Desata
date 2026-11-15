@@ -1,7 +1,7 @@
 // Filtros exploratórios da tabela de resultados (spec 007): só mudam a visualização,
 // nunca o fluxo — a não ser que o usuário peça "Criar nó Filter".
 
-import { button, h } from './dom.js';
+import { button, h, parseLocalNumber } from './dom.js';
 import { icon } from './icons.js';
 import { typeLabel } from './types.js';
 
@@ -125,7 +125,11 @@ export function toExpression(filters, columns) {
   return filters.map((f) => {
     const col = `[${f.column}]`;
     const numeric = NUMERIC.has(typeOf(f.column));
-    const lit = (v) => (numeric ? String(v).replace(',', '.') : quote(v));
+    const lit = (v) => {
+      if (!numeric) return quote(v);
+      const n = parseLocalNumber(v);
+      return Number.isNaN(n) ? String(v).replace(',', '.') : String(n);
+    };
     const lower = `LowerCase(${col})`;
     const needle = quote(String(f.value ?? '').toLowerCase());
     switch (f.op) {

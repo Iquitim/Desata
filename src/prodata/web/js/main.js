@@ -14,6 +14,7 @@ import { refreshConnections, refreshQueries } from './connections.js';
 import { refreshConstants } from './constants.js';
 import { refreshOrganization } from './organization.js';
 import { refreshFolderSources } from './folder_sources.js';
+import { refreshPdfSources } from './pdf_sources.js';
 import { openFlowConstants } from './constants_ui.js';
 import { renderSourcesPanel } from './data_panel.js';
 import { initDataView, openInData, showDataView } from './data_view.js';
@@ -748,6 +749,7 @@ async function boot() {
     refreshConstants().catch((err) => toastError(err, 'Não foi possível listar as constantes')),
     refreshOrganization(),
     refreshFolderSources().catch((err) => toastError(err, 'Não foi possível listar as pastas de arquivos')),
+    refreshPdfSources(),
   ]);
 
   const returning = Boolean(savedTabs());

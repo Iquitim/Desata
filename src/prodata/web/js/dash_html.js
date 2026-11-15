@@ -7,7 +7,7 @@ import { encryptText } from './dash_crypt.js';
 import { widgetsByNode, pageHeight } from './dash_model.js';
 import { collectCss, saveDownload, stamp, toDataUri } from './dash_export.js';
 import { activeFiltersText, isFilterActive } from './dash_filters.js';
-import { button, fmt, h } from './dom.js';
+import { button, fmt, getNumberStyle, h } from './dom.js';
 import { LABELS, labelPicker, passwordRequired } from './label_picker.js';
 import { mutate, store } from './store.js';
 import { openDialog, toast, toastError } from './ui.js';
@@ -54,6 +54,7 @@ ${block}
 function snapshot(displayed) {
   const d = store.workflow.dashboard;
   return {
+    number_style: getNumberStyle(),
     exported_at: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
     page: d.page, height: pageHeight(d.page), items: d.items, widgets: displayed,
     filters: [], options: [], nodes: {}, columns: {},

@@ -9,8 +9,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request(method, url, body) {
-  const init = { method, headers: {} };
+async function request(method, url, body, signal) {
+  const init = { method, headers: {}, signal };
   if (body instanceof FormData) {
     init.body = body;
   } else if (body !== undefined) {
@@ -20,7 +20,8 @@ async function request(method, url, body) {
   let res;
   try {
     res = await fetch(url, init);
-  } catch {
+  } catch (err) {
+    if (err?.name === 'AbortError') throw err; // pedido cancelado de propósito (prévia de impacto)
     throw new ApiError(`Servidor indisponível. Verifique se o ${brand.nome} está em execução.`, 0, 'network');
   }
   if (res.status === 204) return null;
@@ -127,6 +128,34 @@ export const api = {
   updateFolderSource: (id, source) => request('PUT', `/api/folders/${enc(id)}`, source),
   deleteFolderSource: (id) => request('DELETE', `/api/folders/${enc(id)}`),
   linkEachFile: (folder, pattern) => request('POST', '/api/folders/link-each', { folder, pattern }),
+  // Leitor de PDF (spec 037)
+  pdfSources: () => request('GET', '/api/pdfs'),
+  createPdf: (source) => request('POST', '/api/pdfs', source),
+  createPdfExample: () => request('POST', '/api/pdfs/example'),
+  pdfRecipes: () => request('GET', '/api/pdfs/recipes'),
+  importPdfRecipe: (formData) => request('POST', '/api/pdfs/recipes/import', formData),
+  deletePdfRecipe: (rid, force = false) => request('DELETE', `/api/pdfs/recipes/${enc(rid)}${force ? '?force=true' : ''}`),
+  usePdfRecipe: (id, recipe) => request('POST', `/api/pdfs/${enc(id)}/recipe/use`, { recipe }),
+  forkPdfRecipe: (id, name = '') => request('POST', `/api/pdfs/${enc(id)}/recipe/fork`, { name }),
+  uploadPdf: (file, name = '', recipe = '') => { const fd = new FormData(); fd.append('file', file); fd.append('name', name); fd.append('recipe', recipe); return request('POST', '/api/pdfs/upload', fd); },
+  updatePdf: (id, source) => request('PUT', `/api/pdfs/${enc(id)}`, source),
+  deletePdf: (id) => request('DELETE', `/api/pdfs/${enc(id)}`),
+  duplicatePdf: (id, name = '') => request('POST', `/api/pdfs/${enc(id)}/duplicate`, { name }),
+  pdfDocs: (id) => request('GET', `/api/pdfs/${enc(id)}/docs`),
+  addPdfDocs: (id, files) => { const fd = new FormData(); [...files].forEach((f) => fd.append('files', f)); return request('POST', `/api/pdfs/${enc(id)}/docs/add`, fd); },
+  leavePdfDoc: (id, name) => request('POST', `/api/pdfs/${enc(id)}/docs/leave`, { name }),
+  bringBackPdfDoc: (id, name) => request('POST', `/api/pdfs/${enc(id)}/docs/back`, { name }),
+  pdfWords: (id, doc) => request('GET', `/api/pdfs/${enc(id)}/docs/words?doc=${enc(doc)}`),
+  pdfPageUrl: (id, doc, page, scale) => `/api/pdfs/${enc(id)}/docs/page.png?doc=${enc(doc)}&page=${page}&escala=${scale}`,
+  pdfRecipe: (id) => request('GET', `/api/pdfs/${enc(id)}/recipe`),
+  savePdfRecipe: (id, recipe) => request('PUT', `/api/pdfs/${enc(id)}/recipe`, recipe),
+  suggestPdfField: (id, doc, words) => request('POST', `/api/pdfs/${enc(id)}/suggest/field`, { doc, words }),
+  suggestPdfTable: (id, doc, page, area, name) => request('POST', `/api/pdfs/${enc(id)}/suggest/table`, { doc, page, area, name }),
+  evaluatePdf: (id, recipe, { docs = [], limit = 12, signal } = {}) => request('POST', `/api/pdfs/${enc(id)}/evaluate`, { recipe, docs, limit }, signal),
+  pdfOutput: (id, output, rows = 100) => request('GET', `/api/pdfs/${enc(id)}/outputs/${enc(output)}?rows=${rows}`),
+  pdfCorrections: (id) => request('GET', `/api/pdfs/${enc(id)}/corrections`),
+  addPdfCorrection: (id, doc, field, value) => request('POST', `/api/pdfs/${enc(id)}/corrections`, { doc, field, value }),
+  removePdfCorrection: (id, cid) => request('DELETE', `/api/pdfs/${enc(id)}/corrections/${enc(cid)}`),
   previewFolder: (source, rows = 100) => {
     const { status, ...body } = source;
     return request('POST', `/api/folders/preview?rows=${rows}`, { source: body });

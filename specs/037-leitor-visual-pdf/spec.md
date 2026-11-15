@@ -1,6 +1,6 @@
 # Spec 037: leitor visual de PDFs na vista Dados (0.8.5)
 
-Status: Em andamento (spike) · Criada: 2026-11-14
+Status: Implementada na 0.8.5 · Criada: 2026-11-14
 
 ## Contexto
 
@@ -47,6 +47,8 @@ confiável. Nenhum valor é escolhido em silêncio quando há dúvida.
 | RF-3702 | Ao escolher o arquivo ou a pasta, o editor **Preparar extração** abre na própria vista Dados, em área ampliável. A fonte pode ser salva como **rascunho**, sem extração ainda. |
 | RF-3703 | O cartão da fonte mostra nome de exibição, pasta da organização, responsável, arquivo ou pasta, situação, última leitura, as saídas que produz, a revisão da extração e a contagem de documentos aprovados, a revisar e com falha. Entra nos filtros "Com problema" e "Sem uso" e no mapa de uso. |
 | RF-3704 | **Duplicar a fonte** cria outra com a mesma extração, para apontar para outro arquivo ou pasta. |
+| RF-3705 | **Extrações salvas**, só no leitor de PDF: ao criar a fonte, escolher uma extração que já existe; no editor, **copiar como extração nova** (independente da original), **trocar por outra**, **exportar** e **importar** como arquivo (sem caminho nem segredo). Uma extração pode ser **excluída**; se alguma fonte a usa, a tela lista quais e, confirmando, elas voltam a rascunho. |
+| RF-3706 | **Documentos da fonte, um a um.** Na lista de documentos, **Tirar da fonte** deixa um PDF de fora da extração e das saídas sem apagar o arquivo da pessoa (pasta dela ou do exemplo); ele vai para **Fora da fonte**, com **Trazer de volta**. **Adicionar PDFs** escolhe um ou vários arquivos, guarda uma cópia no programa e os soma aos da pasta, sem gravar nada na pasta da pessoa; uma fonte de um PDF vira de vários. Só a cópia guardada pelo programa é apagada de fato, com confirmação. A fonte nunca fica sem documento. A mudança é avaliada na hora e vale na próxima execução; correções de um documento tirado voltam a valer quando ele volta. |
 
 ### Editor Preparar extração
 
@@ -152,4 +154,5 @@ confiável. Nenhum valor é escolhido em silêncio quando há dúvida.
 | CA-13 | PDF quebrado, protegido, escaneado ou que estoura o limite: mensagem clara, programa de pé, nada no log além do tipo de falha. | RF-3780..3782 |
 | CA-14 | Fonte arrastada para o canvas cria Input Data; as saídas campos, itens, falhas e origem aparecem na lista. | RF-3770, RF-3771 |
 | CA-15 | Duplicar a fonte para outra pasta aplica a mesma extração; os resultados identificam a revisão. | RF-3704, RF-3783 |
+| CA-17 | Tirar um PDF da pasta: ele sai das saídas e da contagem, o arquivo continua no disco e Trazer de volta o recoloca. Adicionar dois PDFs a uma fonte de um PDF: três documentos, a pasta original intacta. | RF-3706 |
 | CA-16 | Correção só neste documento aparece marcada e deixa de valer quando o documento muda. | RF-3762 |

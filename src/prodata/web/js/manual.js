@@ -156,8 +156,21 @@ export async function tryExample(name) {
 
 // ------------------------------------------------------------------ desenho
 
+// Leitor de PDF (spec 037, RF-3790): o Manual abre no tópico do gesto atual do editor.
+const PDF_CHAPTER = 'Dados de PDFs, apontando no documento';
+const PDF_GESTURES = {
+  campo: 'Marcar um dado e ver a coluna nascer', rotulo: 'Como o Desata acha o dado nos outros PDFs',
+  tabela: 'Tabelas, mesmo em várias páginas', ambiguo: 'Quando há dúvida', origem: 'De onde veio cada valor',
+};
+
 /** O capítulo que combina com o que a pessoa está fazendo agora (RF-2988). */
 function suggested() {
+  if (store.view === 'data' && document.querySelector('.pe')) {
+    const chapter = data.chapters.find((c) => c.title === PDF_CHAPTER);
+    const wanted = PDF_GESTURES[document.body.dataset.pdfGesture || 'campo'];
+    const section = chapter?.sections.find((s) => s.title === wanted)?.id || '';
+    return { chapter, section, where: 'Você está preparando a extração de um PDF' };
+  }
   const selected = node(store.selection?.nodeId);
   const title = CONTEXT.views[store.view]
     || (selected ? CONTEXT.tools[selected.type] || CONTEXT.selected : CONTEXT.idle);
@@ -173,9 +186,9 @@ function chapterRow(c) {
 }
 
 function homeView() {
-  const { chapter, where } = suggested();
+  const { chapter, where, section } = suggested();
   return [
-    chapter ? h('button', { type: 'button', class: 'manual-here', onclick: () => openChapter(chapter) }, h('small', {}, where), h('b', {}, chapter.title)) : null,
+    chapter ? h('button', { type: 'button', class: 'manual-here', onclick: () => openChapter(chapter, section) }, h('small', {}, where), h('b', {}, chapter.title)) : null,
     lessonsBlock(),
     ...data.chapters.map(chapterRow),
   ].filter(Boolean);
@@ -294,6 +307,14 @@ export function toggleManual() {
   if (manualIsOpen()) closeManual();
   else { current = null; query = ''; if (root) root.querySelector('.manual-find').value = ''; openManual(); }
 }
+
+/** Abre direto no tópico do que a pessoa está fazendo (o "?" do editor de PDF). */
+async function openHere() {
+  await openManual();
+  const { chapter, section } = suggested();
+  if (chapter) openChapter(chapter, section);
+}
+window.addEventListener('prodata:manual-here', () => openHere());
 
 /** Abre num capítulo, vindo da busca de comandos. */
 async function openAt(chapterId, sectionId) {

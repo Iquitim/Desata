@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules, copy_metadata
 
 from prodata.brand import marca
 
@@ -35,9 +35,10 @@ datas = (
     + [(str(ACTIVE), "prodata/marcas")]
     + collect_data_files("webview")
     + collect_data_files("sklearn")
+    + collect_data_files("pypdfium2_raw") + collect_data_files("pypdfium2")  # versão do PDFium (spec 037)
     # Bibliotecas que leem a própria versão ou usam entry points (keyring acha o cofre do Windows assim).
     + [m for pkg in ("connectorx", "keyring", "polars", "duckdb", "fastexcel", "pywebview", "fastapi",
-                     "uvicorn", "pydantic", "scikit-learn", "pyarrow", "xlsxwriter")
+                     "uvicorn", "pydantic", "scikit-learn", "pyarrow", "xlsxwriter", "pypdfium2")
        for m in copy_metadata(pkg)]
 )
 
@@ -45,7 +46,7 @@ a = Analysis(  # noqa: F821
     # Dois pontos de entrada no mesmo pacote: a janela e a linha de comando (spec 033).
     [f"{HERE}/launcher.py", f"{HERE}/launcher_cli.py"],
     pathex=[],
-    binaries=[],
+    binaries=collect_dynamic_libs("pypdfium2_raw"),  # pdfium.dll: leitor de PDF (spec 037)
     datas=datas,
     hiddenimports=hiddenimports,
     excludes=["matplotlib", "IPython", "pytest", "mypy", "ruff", "PyInstaller"],

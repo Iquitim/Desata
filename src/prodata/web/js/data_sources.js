@@ -6,11 +6,13 @@ import { placeholdersOf } from './apis.js';
 import { showValue, TYPES } from './constants.js';
 import { fmt } from './dom.js';
 import { folderOf, infoOf } from './organization.js';
-import { API_PREFIX, FOLDER_PREFIX, JIRA_PREFIX, QUERY_PREFIX, store } from './store.js';
+import { pdfMeta, pdfState, pdfUsable } from './pdf_sources.js';
+import { API_PREFIX, FOLDER_PREFIX, JIRA_PREFIX, PDF_PREFIX, QUERY_PREFIX, store } from './store.js';
 
 export const KINDS = {
   file: { title: 'Arquivos', one: 'arquivo', color: 'var(--cat-inout)', icon: 'file' },
   folder: { title: 'Pastas de arquivos', one: 'pasta de arquivos', color: 'var(--cat-inout)', icon: 'directory' },
+  pdf: { title: 'Leitores de PDF', one: 'leitor de PDF', color: 'var(--cat-inout)', icon: 'file-plus' },
   query: { title: 'Consultas de banco', one: 'consulta', color: 'var(--cat-transform)', icon: 'server' },
   api: { title: 'APIs', one: 'API', color: 'var(--cat-ml)', icon: 'globe' },
   jira: { title: 'Consultas do Jira', one: 'consulta do Jira', color: 'var(--cat-transform)', icon: 'list' },
@@ -53,11 +55,30 @@ function hostOf(url) {
 
 /** Usos de uma fonte: por fluxo, com as caixas que a leem e o que vem depois. */
 export function usesOf(source) {
+  if (source.kind === 'pdf') return pdfUses(source.id);
   if (source.kind !== 'conn') return usage.map[source.usageKey] || [];
   // Conexão: é usada pelas consultas dela, e cada consulta pelos seus fluxos.
   const byFlow = new Map();
   for (const q of store.queries.filter((x) => x.connection === source.id)) {
     for (const entry of usage.map[`${QUERY_PREFIX}${q.id}`] || []) {
+      const seen = byFlow.get(entry.workflow_id);
+      if (seen) {
+        seen.readers.push(...entry.readers);
+        seen.downstream.push(...entry.downstream.filter((d) => !seen.downstream.some((x) => x.id === d.id)));
+      } else {
+        byFlow.set(entry.workflow_id, { ...entry, readers: [...entry.readers], downstream: [...entry.downstream] });
+      }
+    }
+  }
+  return [...byFlow.values()];
+}
+
+/** Leitor de PDF: os fluxos que leem qualquer saída dele (`pdf:<id>/campos`, `pdf:<id>/itens_…`). */
+function pdfUses(id) {
+  const byFlow = new Map();
+  for (const [key, entries] of Object.entries(usage.map)) {
+    if (key !== `${PDF_PREFIX}${id}` && !key.startsWith(`${PDF_PREFIX}${id}/`)) continue;
+    for (const entry of entries) {
       const seen = byFlow.get(entry.workflow_id);
       if (seen) {
         seen.readers.push(...entry.readers);
@@ -90,6 +111,13 @@ export function allSources() {
       meta: f.status?.missing ? `não encontrada: ${f.folder}` : `${f.pattern} · ${f.folder.split(/[\\/]/).filter(Boolean).pop() || f.folder}`,
       state: state.tone === 'ok' ? { label: state.label, tone: 'ok' } : state,
       draggable: state.tone !== 'err', dragValue: `${FOLDER_PREFIX}${f.id}`,
+    });
+  }
+  for (const p of store.pdfSources) {
+    const state = pdfState(p);
+    out.push({
+      kind: 'pdf', key: `${PDF_PREFIX}${p.id}`, id: p.id, usageKey: `${PDF_PREFIX}${p.id}`, name: p.name, raw: p,
+      meta: pdfMeta(p), state, draggable: pdfUsable(p), dragValue: `${PDF_PREFIX}${p.id}/campos`,
     });
   }
   for (const q of store.queries) {

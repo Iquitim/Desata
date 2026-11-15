@@ -11,6 +11,7 @@ import polars as pl
 from prodata.brand import marca
 from prodata.connectors.api_model import source_api_id
 from prodata.connectors.queries import source_query_id
+from prodata.documents.sources import MAIN_OUTPUT, source_pdf_ref
 from prodata.engine.sql.fragment import (
     OWN_RESULT,
     Fragment,
@@ -146,6 +147,13 @@ def input_data_sql(ctx: SqlContext, cfg: InputDataConfig) -> dict[str, Fragment]
     if api_id is not None:
         assert ctx.apis is not None
         return {"out": _database_source(ctx, ctx.apis.get(api_id).name, cfg.limit, "da API", "de uma API")}
+    pdf = source_pdf_ref(cfg.dataset)
+    if pdf is not None:  # leitor de PDF (spec 037): o DuckDB não lê PDF; a etapa aponta para uma tabela
+        assert ctx.datasets is not None
+        source, output = pdf
+        name = ctx.datasets.pdfs.get(source).name
+        label = name if output == MAIN_OUTPUT else f"{name} {output}"
+        return {"out": _database_source(ctx, label, cfg.limit, "do PDF", "de um leitor de PDF")}
     query_id = source_query_id(cfg.dataset)
     if query_id is not None:
         assert ctx.queries is not None
@@ -245,6 +253,17 @@ def output_data_sql(ctx: SqlContext, cfg: OutputDataConfig) -> dict[str, Fragmen
         names = ", ".join(ctx.inputs[p].block for p in extras)
         notes.append(
             f"O arquivo tem {len(extras) + 1} planilhas: este código é o da primeira. As demais vêm de {names}."
+        )
+    if cfg.format == "csv" and cfg.decimal == ",":
+        decimals = [c for c, k in ctx.input().kinds.items() if k == "Float"]
+        example = (
+            f"replace(CAST({q(decimals[0])} AS VARCHAR), '.', ',')"
+            if decimals
+            else "replace(CAST(coluna AS VARCHAR), '.', ',')"
+        )
+        notes.append(
+            "O CSV sai com vírgula decimal e ';' entre as colunas. O DuckDB não grava vírgula decimal: "
+            f"converta as colunas decimais ao gravar, como {example}, e use DELIMITER ';'."
         )
     sql = f"SELECT * FROM {q(ctx.input().block)}"
     explain = f"Grava {file}" + (f", com {len(extras) + 1} planilhas" if extras else "")

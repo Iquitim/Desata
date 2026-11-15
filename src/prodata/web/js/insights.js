@@ -32,6 +32,7 @@ export function initInsights(el, opts) {
         panelControls('insights'))),
     body);
   on('execution', render);
+  on('numbers', render);
   on('running', render); // os esqueletos aparecem assim que a execução começa
   // Caixa de BI excluída ou desativada: o visual some na hora (spec 010, RF-1005).
   on('workflow:changed', ({ structural }) => structural && render());

@@ -54,6 +54,12 @@ export async function chooseDataFile(start = '') {
   return askPath({ title: 'Vincular arquivo', label: 'Arquivo', placeholder: 'D:\\Rede\\Comercial\\vendas_diarias.xlsx' });
 }
 
+/** PDF para o leitor de PDF (spec 037). No navegador, o caminho é digitado. */
+export async function choosePdfFile(start = '') {
+  if (native()) return call('open_pdf_file', start);
+  return askPath({ title: 'Escolher PDF', label: 'Arquivo PDF', placeholder: 'D:\\Relatorios\\outubro.pdf' });
+}
+
 export async function chooseOpenFile(start = '') {
   if (native()) return call('open_file', start);
   return askPath({ title: 'Abrir fluxo de arquivo', label: 'Arquivo', placeholder: 'D:\\Fluxos\\vendas.prodata.json' });
