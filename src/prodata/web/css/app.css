@@ -9,6 +9,7 @@ body {
   -webkit-font-smoothing: antialiased;
   display: grid;
   grid-template-rows: var(--topbar-h) var(--tabs-h, 32px) 1fr var(--statusbar-h);
+  grid-template-columns: minmax(0, 1fr); /* a largura da janela: nada empurra o topo para fora */
   overflow: hidden;
 }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -213,6 +214,35 @@ select.input { padding-right: 24px; }
 .btn-caret { width: 22px; margin-left: -4px; }
 .topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
 .topbar-actions .btn-primary { margin-left: 6px; }
+.top-menu > svg:first-child { display: none; } /* ícone do menu: só em janela estreita */
+.topbar .segment { flex-shrink: 0; white-space: nowrap; }
+
+/* Topo em janela estreita (navegador; o programa instalado tem no mínimo 1024 px). Os blocos encolhem em etapas,
+   sem nunca se sobrepor: primeiro a sobra do centro, depois o texto da marca, os rótulos e, por fim, as abas rolam. */
+@media (max-width: 1180px) {
+  .topbar { grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; }
+}
+@media (max-width: 960px) {
+  .topbar .brand-text { display: none; }
+}
+@media (max-width: 820px) {
+  .topbar-actions .btn-primary > span { display: none; }
+  .topbar-actions .btn-primary { padding: 0 10px; }
+  .top-menu > svg:last-child { display: none; }
+  .topbar { gap: 8px; padding-left: 10px; }
+}
+@media (max-width: 680px) {
+  .topbar .wf-title { display: none; } /* o nome do fluxo continua na aba logo abaixo */
+  .topbar { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .topbar .segmented { justify-self: start; min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .topbar .segmented::-webkit-scrollbar { display: none; }
+  .topbar .segment { padding: 0 9px; }
+}
+@media (max-width: 520px) {
+  .top-menu > span { display: none; }
+  .top-menu > svg:first-child { display: block; }
+  .top-menu { padding: 0 8px; }
+}
 
 .statusbar {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;

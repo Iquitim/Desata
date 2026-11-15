@@ -8,9 +8,10 @@ import { densityMenuItem, panelMenuItems, resetLayout } from './layout.js';
 import { emit, store } from './store.js';
 import { showMenu } from './ui.js';
 
-function menuButton(label, items) {
+function menuButton(label, iconName, items) {
+  // o ícone só aparece em janela estreita, quando o texto sai (o nome continua no título e no leitor de tela)
   const el = button({
-    label, title: label, variant: 'ghost', 'aria-haspopup': 'menu',
+    icon: iconName, label, title: label, 'aria-label': label, variant: 'ghost', 'aria-haspopup': 'menu',
     onClick: (e) => {
       const r = e.currentTarget.getBoundingClientRect();
       showMenu(r.left, r.bottom + 4, items());
@@ -51,7 +52,7 @@ const viewItems = (a) => [
 ];
 
 /** Os menus do topo. `a`: as ações do programa, montadas em main.js. */
-export const topMenus = (a) => [menuButton('Arquivo', () => fileItems(a)), menuButton('Exibir', () => viewItems(a))];
+export const topMenus = (a) => [menuButton('Arquivo', 'file', () => fileItems(a)), menuButton('Exibir', 'eye', () => viewItems(a))];
 
 /** O que a busca oferece como "Ações". */
 export const commandList = (a) => [

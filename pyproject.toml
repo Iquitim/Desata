@@ -13,6 +13,7 @@ dependencies = [
     "keyring>=25.7.0",
     "numpy>=2.5.4",
     "openpyxl>=3.1.5",
+    "pillow>=13.0.0",  # páginas do PDF como imagem (spec 037)
     "polars>=2.1.0",
     "pyarrow>=26.0.0",
     "pydantic>=2.14.1",
@@ -39,7 +40,6 @@ desktop = [
 
 [dependency-groups]
 build = [
-    "pillow>=13.0.0",
     "pyinstaller>=6.22.3",
 ]
 dev = [
