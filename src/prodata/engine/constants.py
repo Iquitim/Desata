@@ -137,6 +137,12 @@ def _fill_config(node_type: str, config: Any, values: dict[str, ConstantValue]) 
     return walk(config)
 
 
+fill_config = _fill_config
+
+# Variáveis do laço (spec 041): valem como constantes só dentro de um laço, trocadas a cada volta pelo executor.
+LOOP_NAMES = ("valor", "volta", "total")
+
+
 @dataclass
 class Resolution:
     """O fluxo com as constantes já trocadas, e o que precisa ser avisado em cada caixa."""
@@ -152,6 +158,7 @@ def resolve(
     shared: dict[str, Constant],
     api_texts: Callable[[Any], list[str]] | None = None,
     today: date | None = None,
+    loop_members: set[str] | None = None,
 ) -> Resolution:
     """Troca as constantes em cada caixa. Constante que falta ou que tem dois donos vira erro da caixa que a usa."""
     own = {c.name: c for c in workflow.constants}
@@ -166,6 +173,13 @@ def resolve(
             continue
         values: dict[str, ConstantValue] = {}
         for name in sorted(refs):
+            if name in LOOP_NAMES and node.id in (loop_members or set()):
+                continue  # o executor troca a cada volta
+            if name in LOOP_NAMES and name not in own and name not in shared and name not in saved:
+                out.problems[node.id] = (
+                    f"[#{name}] só vale dentro de um laço: entre o Início e o Fim do loop."
+                )
+                continue
             if name in system and (name in own or name in shared):
                 # Fluxo de antes da 0.6.1 com uma constante própria de nome reservado: continua valendo.
                 values[name] = own.get(name) or shared[name]

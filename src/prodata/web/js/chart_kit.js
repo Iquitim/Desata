@@ -49,8 +49,50 @@ export function axisLabels(labels, band) {
   };
 }
 
-export const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-export const tipHtml = (label, value, o) => `<span>${esc(label)}</span><b>${esc(o.full(value))}</b>${o.filterable && label !== 'Outros' ? '<em>Clique para filtrar</em>' : ''}`;
+export const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const norm = (s) => String(s).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/** Campos que o texto da dica aceita, com o valor já formatado (spec 041, RF-4142). */
+export function tipFields(label, value, o, s = null) {
+  const pct = o.total ? `${fmt.number((value / o.total) * 100, 1)}%` : '';
+  const fields = { categoria: label, valor: o.full(value), percentual: pct };
+  if (o.xName) fields[o.xName] = label;
+  if (o.yName) fields[o.yName] = o.full(value);
+  for (const [c, v] of Object.entries(s?.tip || {})) fields[c] = v === null || v === undefined ? '—' : fmt.number(v);
+  return fields;
+}
+
+/** Troca {campo} pelo valor. Campo que não existe: null (a dica volta ao padrão). */
+export function fillTip(text, fields) {
+  const byName = new Map(Object.entries(fields).map(([k, v]) => [norm(k), v]));
+  let unknown = false;
+  const out = esc(text).replace(/\{([^{}]{1,60})\}/g, (_, name) => {
+    if (!byName.has(norm(name))) { unknown = true; return ''; }
+    return `<b>${esc(byName.get(norm(name)))}</b>`;
+  });
+  return unknown ? null : out;
+}
+
+/** Nomes entre chaves que não são campos (para sublinhar no painel). */
+export function unknownTipFields(text, fields) {
+  const known = new Set(Object.keys(fields).map(norm));
+  return [...String(text || '').matchAll(/\{([^{}]{1,60})\}/g)].map((m) => m[1]).filter((n) => !known.has(norm(n)));
+}
+
+/** A dica de uma marca: o texto da pessoa, ou categoria, valor, % e colunas extras conforme o painel Formato. */
+export function tipHtml(label, value, o, s = null, { percent = false } = {}) {
+  const t = o.tip || {};
+  const click = o.filterable && label !== 'Outros' ? '<em>Clique para filtrar</em>' : '';
+  const fields = tipFields(label, value, o, s);
+  if (t.text) {
+    const filled = fillTip(t.text, fields);
+    if (filled !== null) return `<span class="tip-text">${filled}</span>${click}`;
+  }
+  const extras = Object.entries(s?.tip || {}).map(([c, v]) => `<span>${esc(c)}: <b>${esc(v === null || v === undefined ? '—' : fmt.number(v))}</b></span>`).join('');
+  return `${t.label === false ? '' : `<span>${esc(label)}</span>`}${t.value === false ? '' : `<b>${esc(o.full(value))}</b>`}`
+    + `${(percent || t.percent) && fields.percentual ? `<span>${fields.percentual} do total</span>` : ''}${extras}${click}`;
+}
 
 /** Opções completas a partir do formato salvo no item (ou dos padrões de antes). */
 export function options(opts = {}) {
@@ -74,6 +116,10 @@ export function options(opts = {}) {
     yTitle: opts.y_title || '',
     yMin: opts.y_min ?? null,
     yMax: opts.y_max ?? null,
+    tip: { label: opts.tip_label ?? true, value: opts.tip_value ?? true, percent: Boolean(opts.tip_percent), text: opts.tip_text || '' },
+    xName: opts._x || '',
+    yName: opts._y || '',
+    total: opts._total ?? null,
     short: (v) => affix(opts.label_format === 'full' ? fmt.number(v, decimals) : fmt.compact(v)),
     full: (v) => affix(fmt.number(v, opts.label_format === 'full' ? decimals : undefined)),
   };

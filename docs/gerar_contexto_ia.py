@@ -258,15 +258,17 @@ def _tools() -> str:
     tools = catalog()
     sections = []
     for category in CATEGORIES:
-        rows = [t for t in tools if t["category"] == category["id"] and not t["hidden"]]
+        # O Fim do loop fica fora da paleta (nasce com o Loop), mas a IA precisa conhecê-lo.
+        rows = [t for t in tools if t["category"] == category["id"] and (not t["hidden"] or t["type"] == "flow.loop_end")]
         sections.append(f"### {category['label']}")
         for tool in rows:
             sections.append(f"#### `{tool['type']}`: {tool['name']}")
             sections.append(tool["description"])
             sections.append(f"Entradas: {_ports(tool['inputs'])}. Saídas: {_ports(tool['outputs'])}.")
-            lines = [line for f in tool["config_fields"] for line in _field(f)]
+            # campos sql_*: preenchidos pelo programa ao traduzir para SQL, nunca escritos à mão
+            lines = [line for f in tool["config_fields"] if not f["name"].startswith("sql_") for line in _field(f)]
             sections.append("\n".join(lines) if lines else "Sem configuração.")
-    old = [t["type"] for t in tools if t["hidden"]]
+    old = [t["type"] for t in tools if t["hidden"] and t["type"] != "flow.loop_end"]
     if old:
         sections.append(
             "### Ferramentas antigas\n\nAinda abrem em fluxos antigos, mas não use em caixas novas: "

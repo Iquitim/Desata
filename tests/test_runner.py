@@ -19,7 +19,7 @@ def test_second_run_uses_cache(runner: WorkflowRunner, demo: Workflow) -> None:
     runner.run(demo)
     statuses = {k: v.status for k, v in runner.run(demo).node_results.items()}
     assert statuses.pop("n_output") == "executed"  # efeito colateral: nunca vem do cache
-    assert set(statuses.values()) == {"cached"}
+    assert set(statuses.values()) == {"cached"}, {k: v for k, v in statuses.items() if v != "cached"}
 
 
 def test_config_change_invalidates_only_downstream(runner: WorkflowRunner, demo: Workflow) -> None:

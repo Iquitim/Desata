@@ -8,6 +8,15 @@ import { icon } from './icons.js';
 import { densityMenuItem, panelMenuItems, resetLayout } from './layout.js';
 import { emit, store } from './store.js';
 import { showMenu } from './ui.js';
+export { isStopping, stopRun } from './run_stop.js'; // o Executar vira Parar enquanto roda (spec 041)
+import { setTiming, timingOn } from './node_timing.js';
+import { setSummary, summaryShown } from './table_tools.js';
+import { allContainers, collapseDisabled, setContainersCollapsed } from './canvas_collapse.js';
+import { setWireMode, wireMode } from './canvas_wires.js';
+import { organizeFlow } from './canvas_layout.js';
+import { fitView } from './canvas.js';
+
+export { slowestNote } from './node_timing.js';
 
 function menuButton(label, iconName, items) {
   // o ícone só aparece em janela estreita, quando o texto sai (o nome continua no título e no leitor de tela)
@@ -42,6 +51,15 @@ const viewItems = (a) => [
   { label: a.inFocus() ? 'Sair do modo foco' : 'Modo foco', icon: 'maximize', shortcut: 'F11', disabled: store.view !== 'designer', onSelect: a.toggleFocus },
   'separator',
   densityMenuItem(),
+  { heading: 'Canvas' },
+  { label: 'Organizar o fluxo', icon: 'columns', disabled: store.view !== 'designer' || !store.workflow?.nodes.length, onSelect: () => { organizeFlow(); requestAnimationFrame(() => fitView()); } },
+  { label: 'Fios organizados', icon: wireMode() === 'routed' ? 'check' : null, onSelect: () => setWireMode('routed') },
+  { label: 'Fios curvos', icon: wireMode() === 'curved' ? 'check' : null, onSelect: () => setWireMode('curved') },
+  { label: 'Recolher todas as etapas', icon: 'minimize', disabled: !allContainers().length, onSelect: () => setContainersCollapsed(allContainers(), true) },
+  { label: 'Expandir todas as etapas', icon: 'maximize', disabled: !allContainers().length, onSelect: () => setContainersCollapsed(allContainers(), false) },
+  { label: 'Recolher as caixas desativadas', icon: 'power', disabled: !store.workflow?.nodes.some((n) => n.disabled), onSelect: collapseDisabled },
+  { label: 'Tempo nas caixas', icon: timingOn() ? 'check' : 'clock', onSelect: () => setTiming(!timingOn()) },
+  { label: 'Resumo das colunas na tabela', icon: summaryShown() ? 'check' : 'chart', onSelect: () => setSummary(!summaryShown()) },
   { heading: 'Números' },
   ...Object.entries(NUMBER_STYLES).map(([style, sample]) => ({
     label: style === 'virgula' ? `${sample} · vírgula decimal` : `${sample} · ponto decimal`,

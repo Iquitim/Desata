@@ -456,3 +456,13 @@ html.compact .dash-actions .dash-export-menu .btn > span { display: inline-flex;
 html.compact .dash-actions .btn.dash-download { width: auto; padding: 0 7px; gap: 3px; }
 .dash-item:has(.chart-actions .btn) > .dash-nofilter { top: 46px; right: 14px; }
 .dash-item:has(.chart-actions .btn) > .dash-nofilter + .dash-nofilter { right: 96px; }
+
+/* dica editável (spec 041) */
+.chart-tip .tip-text { display: block; max-width: 260px; white-space: normal; }
+.chart-tip .tip-text b { font-weight: 700; }
+.tip-cols { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tip-cols .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; font-family: var(--font); cursor: pointer; }
+.tip-cols .chip.on { color: var(--accent); border-color: var(--accent); background: var(--accent-weak); }
+.tip-preview.chart-tip { position: static; transform: none; display: flex; max-width: 100%; pointer-events: none; }
+.tip-preview[hidden] { display: none; }
+.field-help.warn { color: var(--warn); display: flex; align-items: center; gap: 4px; }

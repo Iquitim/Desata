@@ -36,7 +36,7 @@ function applyWidth() {
   else style.removeProperty('--manual-w');
   const button = root?.querySelector('.manual-expand');
   if (button) {
-    button.title = expanded ? 'Voltar à largura normal' : 'Expandir o Manual';
+    button.title = expanded ? 'Recolher o Manual' : 'Expandir o Manual';
     button.setAttribute('aria-pressed', String(expanded));
     button.replaceChildren(icon(expanded ? 'minimize' : 'maximize', 15));
   }

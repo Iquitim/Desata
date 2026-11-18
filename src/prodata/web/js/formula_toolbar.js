@@ -30,11 +30,11 @@ function menuButton({ cls = '', title, iconName, label, items }) {
   }, icon(iconName, 13), label, icon('chevron-down', 12));
 }
 
-export const SCOPE_LABEL = { system: 'do sistema', shared: 'compartilhada', flow: 'do fluxo', conflict: 'do fluxo' };
+export const SCOPE_LABEL = { system: 'do sistema', shared: 'compartilhada', flow: 'do fluxo', conflict: 'do fluxo', loop: 'do laço' };
 
 /** As do sistema primeiro, depois as do fluxo e as compartilhadas em ordem de nome. */
 export const sortedConstants = () => [...knownConstants().values()]
-  .sort((a, b) => (b.scope === 'system') - (a.scope === 'system') || a.name.localeCompare(b.name));
+  .sort((a, b) => (b.scope === 'loop') - (a.scope === 'loop') || (b.scope === 'system') - (a.scope === 'system') || a.name.localeCompare(b.name));
 
 function constantItems(insert) {
   const list = sortedConstants();
@@ -73,7 +73,7 @@ export function formulaToolbar({ columns, insert, rowRefs = false, onExpand = nu
     rowRefs ? rowButton('Linha anterior', 'Inserir o valor da linha de cima: [Row-1:coluna]', 'Row-1', 'arrow-up') : null,
     rowRefs ? rowButton('Linha seguinte', 'Inserir o valor da linha de baixo: [Row+1:coluna]', 'Row+1', 'arrow-down') : null,
     onExpand ? h('button', { type: 'button', class: 'fx-tool fx-expand', title: 'Editar numa janela larga, com colunas e funções ao lado', onclick: onExpand },
-      icon('maximize', 13), 'Abrir grande') : null,
+      icon('maximize', 13), 'Expandir') : null,
     h('span', { class: 'fx-hint-key' }, h('kbd', {}, 'Ctrl'), '+', h('kbd', {}, 'Espaço'), ' sugere'),
     h('div', { class: 'fx-ops' },
       OPERATORS.map((o) => chip(o, 'fx-cmp')),

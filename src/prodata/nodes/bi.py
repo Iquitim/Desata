@@ -18,6 +18,7 @@ from prodata.engine.sql.fragment import Fragment, SqlContext, lit, q, sql_for
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, ToolConfig, tool
 from prodata.nodes.bi_motion import bubble, sankey
+from prodata.nodes.bi_tip import Row, others_extras, series_item, tip_aggregates, tip_columns, tip_extras
 
 ChartAgg = Literal["sum", "mean", "count", "min", "max"]
 _AGG_LABELS = {"sum": "Soma", "mean": "Média", "count": "Contagem", "min": "Mínimo", "max": "Máximo"}
@@ -96,6 +97,13 @@ class ChartConfig(ToolConfig):
         title="Linha de corte do Pareto (%)",
         json_schema_extra=ui(show_if={"chart_type": ["pareto"]}),
     )
+    # Dica editável (spec 041, RF-4141): outras colunas na dica, com a mesma agregação do visual (contagem soma).
+    tip_columns: list[str] = Field(
+        default_factory=list,
+        title="Colunas extras na dica",
+        description="Aparecem na dica de cada categoria, agregadas como o valor (na contagem, somadas). Edite também no Dashboard.",
+        json_schema_extra=ui(widget="columns", group="Dica"),
+    )
 
 
 def _aggregate(value: str, agg: ChartAgg) -> pl.Expr:
@@ -109,19 +117,22 @@ def _label(col: str) -> pl.Expr:
     return pl.col(col).cast(pl.String).fill_null("(vazio)")
 
 
-def _rows(grouped: pl.DataFrame, cfg: ChartConfig) -> list[tuple[str, float]]:
+def _rows(grouped: pl.DataFrame, cfg: ChartConfig, tips: list[str] | None = None) -> list[Row]:
     if cfg.sort == "label" and cfg.chart_type not in RANKED_CHARTS:
         grouped = grouped.sort("label")
     else:
         descending = cfg.sort != "value_asc" or cfg.chart_type in RANKED_CHARTS
         grouped = grouped.sort("value", descending=descending, nulls_last=True)
-    return [(str(label), float(v or 0)) for label, v in grouped.select("label", "value").rows()]
+    names = tips or []
+    rows = grouped.select("label", "value", *[f"__tip_{c}" for c in names]).rows()
+    return [(str(r[0]), float(r[1] or 0), tip_extras(names, r[2:])) for r in rows]
 
 
-def _limit(rows: list[tuple[str, float]], cfg: ChartConfig) -> list[dict[str, Any]]:
-    series = [{"label": label, "value": round(v, 4)} for label, v in rows[: cfg.max_items]]
+def _limit(rows: list[Row], cfg: ChartConfig) -> list[dict[str, Any]]:
+    series = [series_item(*r) for r in rows[: cfg.max_items]]
     if len(rows) > cfg.max_items and cfg.agg in ("sum", "count") and cfg.chart_type != "race":
-        series.append({"label": "Outros", "value": round(sum(v for _, v in rows[cfg.max_items :]), 4)})
+        rest = rows[cfg.max_items :]
+        series.append(series_item("Outros", sum(r[1] for r in rest), others_extras(rest)))
     return series
 
 
@@ -159,7 +170,8 @@ def _multi_series(df: pl.DataFrame, cfg: ChartConfig) -> tuple[list[dict[str, An
     for label, serie, v in cells.rows():
         values.setdefault(label, {})[serie] = round(float(v or 0), 4)
     series = [
-        {"label": label, "value": round(total, 4), "values": values.get(label, {})} for label, total in order
+        {"label": label, "value": round(total, 4), "values": values.get(label, {})}
+        for label, total, _ in order
     ]
     return series, [*keep, *(["Outras"] if folds else [])]
 
@@ -236,8 +248,11 @@ def chart(ctx: NodeContext, cfg: ChartConfig) -> NodeOutput:
     elif cfg.series_column and cfg.chart_type in SERIES_CHARTS:
         widget["series"], widget["series_names"] = _multi_series(df, cfg)
     else:
-        grouped = df.group_by(_label(cfg.x_column).alias("label")).agg(_aggregate(cfg.y_column, cfg.agg))
-        series = _limit(_rows(grouped, cfg), cfg)
+        tips = tip_columns(df, cfg.tip_columns, cfg.x_column)
+        grouped = df.group_by(_label(cfg.x_column).alias("label")).agg(
+            _aggregate(cfg.y_column, cfg.agg), *tip_aggregates(tips, cfg.agg)
+        )
+        series = _limit(_rows(grouped, cfg, tips), cfg)
         if cfg.chart_type == "pareto":
             series = pareto(series, cfg.pareto_threshold)
             widget["threshold"] = cfg.pareto_threshold

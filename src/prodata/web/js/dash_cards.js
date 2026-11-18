@@ -2,6 +2,7 @@
 // Sem dependência do fluxo aberto: os mesmos cartões desenham a página do programa e a do HTML exportado (spec 021).
 
 import { withTooltip } from './chart_kit.js';
+import { enableCellFocus } from './cell_focus.js';
 import { gaugeChart, renderChart, sparkline } from './charts.js';
 import { isClickChart, isCrossChart } from './dash_filters.js';
 import { button, fmt, h } from './dom.js';
@@ -188,9 +189,11 @@ export function chartCard(original, { width, height = 260, className = '', actio
     card.append(h('div', { class: 'empty' }, 'Sem dados para exibir.'));
   } else if (asTable) {
     const t = tableData(w);
-    card.append(h('div', { class: 'chart-body table-wrap' }, h('table', { class: 'data-table compact' },
+    const table = h('table', { class: 'data-table compact' },
       h('thead', {}, h('tr', {}, t.head.map((c, i) => h('th', { class: i ? 'num' : null }, c)))),
-      h('tbody', {}, t.rows.map((r) => h('tr', {}, r.map((v, i) => h('td', { class: i ? 'num' : null }, v))))))));
+      h('tbody', {}, t.rows.map((r) => h('tr', {}, r.map((v, i) => h('td', { class: i ? 'num' : null }, v))))));
+    const wrap = h('div', { class: 'chart-body table-wrap' }, table);
+    card.append(wrap, enableCellFocus(wrap, table));
   } else {
     const canCross = cross && isCrossChart(w);
     const filterable = cross && isClickChart(w) && env.canFilter(original);
@@ -224,11 +227,13 @@ export function tableCard(w, { className = '', fmt: f = {}, actions = [] } = {})
     return h('td', { class: [col.numeric && 'num', status && `cell-${status}`] },
       status ? icon(STATUS_ICON[status], 12) : null, col.numeric && typeof v === 'number' ? fmt.number(v) : (v ?? '—'));
   };
-  card.append(h('div', { class: 'chart-body table-wrap' }, h('table', { class: 'data-table compact dash-table' },
+  const table = h('table', { class: 'data-table compact dash-table' },
     h('thead', {}, h('tr', {}, w.columns.map((c) => h('th', { class: c.numeric ? 'num' : null }, c.name)))),
     h('tbody', {}, w.rows.map((r) => h('tr', {}, r.map((v, i) => cellOf(w.columns[i], v))))),
     w.totals ? h('tfoot', {}, h('tr', {}, w.columns.map((c, i) => h('td', { class: c.numeric ? 'num' : null },
-      c.numeric ? fmt.number(w.totals[c.name]) : i === 0 ? 'Total' : '')))) : null)));
+      c.numeric ? fmt.number(w.totals[c.name]) : i === 0 ? 'Total' : '')))) : null);
+  const wrap = h('div', { class: 'chart-body table-wrap' }, table);
+  card.append(wrap, enableCellFocus(wrap, table, { nameAt: (i) => w.columns[i]?.name })); // célula em destaque (spec 041)
   return card;
 }
 

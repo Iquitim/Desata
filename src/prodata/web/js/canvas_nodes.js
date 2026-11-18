@@ -4,9 +4,12 @@ import { removeNodes } from './actions.js';
 import { h } from './dom.js';
 import { icon } from './icons.js';
 import { sourceProblem } from './portable_state.js';
+import { timingBadge, timingOf } from './node_timing.js';
 import { isSelected, nodeResult, store, toolOf, visibleInputs } from './store.js';
 import { els, nodeEls, state } from './canvas_state.js';
-import { NODE_W, nodeHeight } from './canvas_geometry.js';
+import { nodeHeight, nodeWidth } from './canvas_geometry.js';
+import { hiddenNodes } from './canvas_collapse.js';
+import { loopProblems } from './loops.js';
 import { MAX_ANIMATED_NEW, setFlowTarget } from './canvas_edges.js';
 
 const ANNOT_CHARS = 19; // o que cabe na caixa, em letras: não depende de a fonte já ter carregado
@@ -69,7 +72,7 @@ function portEl(n, port, output, count) {
   }, labelled ? port.label : '');
 }
 
-function buildNode(n) {
+function buildNode(n, hidden) {
   const spec = toolOf(n);
   const res = nodeResult(n.id);
   const status = statusOf(n);
@@ -80,13 +83,13 @@ function buildNode(n) {
     : cp && status === 'held' ? 'Pulada pelo cache'
       : res?.annotation || spec?.name || '';
   return h('div', {
-    class: ['node', `status-${status}`, cp && store.selection.nodeId === cp.id && 'held-focus',
+    class: ['node', `status-${status}`, cp && store.selection.nodeId === cp.id && 'held-focus', n.collapsed && 'compact', hidden && 'node-hidden',
       isSelected(n.id) && 'selected',
       n.cache_point && 'cache-point',
       sourceProblem(n.id) && (sourceProblem(n.id).state === 'sample' ? 'source-sample' : 'source-missing'),
       !store.inspect.via && store.inspect.nodeId === n.id && 'inspected'],
     dataset: { id: n.id, category: spec?.category || 'prep' },
-    style: { transform: `translate(${n.x}px, ${n.y}px)`, width: `${NODE_W}px`, height: `${nodeHeight(n)}px` },
+    style: { transform: `translate(${n.x}px, ${n.y}px)`, width: `${nodeWidth(n)}px`, height: `${nodeHeight(n)}px` },
   },
   h('div', {
     class: 'node-card',
@@ -102,6 +105,8 @@ function buildNode(n) {
   res?.extra?.dq_failed ? h('span', { class: 'node-alert', title: 'Linhas que falharam nas regras: saem por [F]' },
     `${res.extra.dq_failed} falharam`) : null,
   missingBadge(n),
+  loopBadge(n),
+  timingBadge(n.id),
   n.cache_point ? h('span', {
     class: 'node-cache', title: res?.extra?.frozen_at
       ? `Ponto de cache · resultado guardado em ${new Date(res.extra.frozen_at).toLocaleString('pt-BR')}`
@@ -115,12 +120,14 @@ function buildNode(n) {
   outputs.map((p) => portEl(n, p, true, outputs.length)));
 }
 
-function nodeKey(n) {
+function nodeKey(n, hidden) {
   const res = nodeResult(n.id);
-  return JSON.stringify([n.type, n.label, n.disabled, n.cache_point, statusOf(n), res?.annotation, res?.error, visibleInputs(n).map((p) => p.id),
+  return JSON.stringify([n.collapsed, hidden, n.type, n.label, n.disabled, n.cache_point, statusOf(n), res?.annotation, res?.error, visibleInputs(n).map((p) => p.id),
     res?.extra?.frozen_at, res?.extra?.dq_failed, isSelected(n.id), !store.inspect.via && store.inspect.nodeId === n.id && store.inspect.anchor,
     state.held.get(n.id)?.id, state.held.get(n.id) && store.selection.nodeId === state.held.get(n.id).id,
-    store.inspect.via?.nodeId === n.id && store.inspect.via.port, sourceProblem(n.id)?.state || null]); // fonte que falta ou amostra (spec 040)
+    store.inspect.via?.nodeId === n.id && store.inspect.via.port, sourceProblem(n.id)?.state || null, // fonte que falta ou amostra (spec 040)
+    timingOf(n.id)?.text || null, timingOf(n.id)?.level || null, // tempo nas caixas (spec 041)
+    loopProblems().get(n.id) || null]); // erro de desenho do laço (spec 041)
 }
 
 /**
@@ -148,15 +155,17 @@ export function renderNodes() {
   const unseen = nodesWorkflow === wf.id ? wf.nodes.filter((n) => !nodeEls.has(n.id)) : [];
   if (unseen.length <= MAX_ANIMATED_NEW) for (const n of unseen) enteringUntil.set(n.id, performance.now() + ENTER_MS);
   nodesWorkflow = wf.id;
+  const hiddenBy = hiddenNodes(); // etapas recolhidas (spec 041)
   for (const n of wf.nodes) {
     alive.add(n.id);
-    const key = nodeKey(n);
+    const hidden = hiddenBy.has(n.id);
+    const key = nodeKey(n, hidden);
     const current = nodeEls.get(n.id);
     if (current && current.key === key) {
       current.el.style.transform = `translate(${n.x}px, ${n.y}px)`;
       continue;
     }
-    const el = buildNode(n);
+    const el = buildNode(n, hidden);
     // A caixa nova costuma ser refeita logo em seguida, ao ser selecionada: a animação continua nela.
     if (enteringUntil.get(n.id) > performance.now()) el.classList.add('node-enter');
     else enteringUntil.delete(n.id);
@@ -175,6 +184,13 @@ export function renderNodes() {
 let nodesWorkflow = null;
 const ENTER_MS = 200;
 const enteringUntil = new Map();
+
+/** Spec 041: o laço está ligado de um jeito que não roda; o aviso aparece antes de executar. */
+function loopBadge(n) {
+  const problem = loopProblems().get(n.id);
+  if (!problem) return null;
+  return h('span', { class: 'node-missing node-loop-problem', title: problem }, icon('alert', 11), 'laço');
+}
 
 /** Spec 040: a fonte desta caixa não está neste computador (vermelho) ou vem da amostra do fluxo (laranja). */
 function missingBadge(n) {

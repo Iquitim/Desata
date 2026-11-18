@@ -446,8 +446,11 @@ def add_api_section(workflow: dict[str, Any]) -> bool:
 
 
 def demo_workflow() -> dict[str, Any]:
+    from prodata.samples.workflow_loop import loop_section  # o laço importa as peças daqui
+
     section = api_section()
     pdf = pdf_section()
+    loop = loop_section()
     return {
         "id": DEMO_WORKFLOW_ID,
         "name": "Pipeline 360° de clientes",
@@ -459,6 +462,7 @@ def demo_workflow() -> dict[str, Any]:
             _container("c_vendas", "4 · Vendas no dashboard", "#f59e0b", 20, 300, 972, 300),
             *section["containers"],
             *pdf["containers"],
+            *loop["containers"],
         ],
         "nodes": [
             _node("n_clientes", "io.input_data", "Clientes", 0, 70, dataset="clientes_enterprise.csv"),
@@ -680,6 +684,7 @@ def demo_workflow() -> dict[str, Any]:
             ),
             *section["nodes"],
             *pdf["nodes"],
+            *loop["nodes"],
         ],
         "edges": [
             _edge("e1", "n_clientes", "out", "n_cleanse"),
@@ -706,6 +711,7 @@ def demo_workflow() -> dict[str, Any]:
             _edge("e_race", "n_vendas", "out", RACE_NODE),
             *section["edges"],
             *pdf["edges"],
+            *loop["edges"],
         ],
         "dashboard": demo_dashboard(),
     }

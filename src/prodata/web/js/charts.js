@@ -22,7 +22,7 @@ export function columnChart(series, width, height = 260, opts) {
     const x = m.left + band * i + (band - barW) / 2;
     const top0 = y(Math.max(lo, s.value));
     return [
-      svg('rect', { class: 'hit', x: m.left + band * i, y: m.top, width: band, height: ht, 'data-tip': tipHtml(s.label, s.value, o), ...catAttr(o, s.label) }),
+      svg('rect', { class: 'hit', x: m.left + band * i, y: m.top, width: band, height: ht, 'data-tip': tipHtml(s.label, s.value, o, s), ...catAttr(o, s.label) }),
       svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(x, top0, barW, base - top0, true), ...paint(o, i, s.label, false) }),
       axis.show(i) ? svg('text', { class: 'tick x-tick', y: height - 9 - (o.xTitle ? 18 : 0), ...axis.anchor(x + barW / 2, s.label, width) }, axis.text(s.label)) : null,
       shown.has(i) ? svg('text', { class: 'value', x: x + barW / 2, y: top0 - 6, 'text-anchor': 'middle' }, o.short(s.value)) : null,
@@ -46,7 +46,7 @@ export function barChart(series, width, _height, opts) {
     const y = 4 + i * row;
     const bw = (Math.min(max, Math.max(0, s.value)) / max) * w;
     return [
-      svg('rect', { class: 'hit', x: 0, y, width, height: row, 'data-tip': tipHtml(s.label, s.value, o), ...catAttr(o, s.label) }),
+      svg('rect', { class: 'hit', x: 0, y, width, height: row, 'data-tip': tipHtml(s.label, s.value, o, s), ...catAttr(o, s.label) }),
       svg('text', { class: 'tick', x: labelW, y: y + row / 2 + 4, 'text-anchor': 'end' }, truncate(s.label, Math.floor(labelW / 6.6))),
       svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(labelW + 8, y + (row - 16) / 2, bw, 16, false), ...paint(o, i, s.label, false) }),
       shown.has(i) ? svg('text', { class: 'value', x: labelW + 14 + bw, y: y + row / 2 + 4 }, o.short(s.value)) : null,
@@ -71,7 +71,7 @@ export function lineChart(series, width, height = 260, opts) {
   const d = series.map((s, i) => `${i ? 'L' : 'M'}${x(i)},${y(s.value)}`).join(' ');
   const hits = series.map((s, i) => svg('rect', {
     class: 'hit', x: x(i) - w / series.length / 2, y: m.top, width: w / Math.max(1, series.length), height: ht,
-    'data-tip': tipHtml(s.label, s.value, o),
+    'data-tip': tipHtml(s.label, s.value, o, s),
   }));
   // A linha usa a cor como traço; paint() devolve preenchimento, então converte.
   const tone = paint(o, 0, series[0]?.label, false);
@@ -118,7 +118,7 @@ export function donutChart(series, width, height = 200, opts) {
       : `M${p(r, a0)} A${r},${r} 0 ${large} 1 ${p(r, a1)} L${p(inner, a1)} A${inner},${inner} 0 ${large} 0 ${p(inner, a0)} Z`;
     return svg('path', {
       class: ['slice', tones[i].class, isDim(o, s.label) && 'dim'].filter(Boolean).join(' '), style: tones[i].style, d, 'fill-rule': 'evenodd',
-      'data-tip': `${tipHtml(s.label, s.value, o)}<span>${fmt.number((s.value / total) * 100, 1)}%</span>`,
+      'data-tip': tipHtml(s.label, s.value, { ...o, total }, s, { percent: true }),
       ...catAttr(o, s.label),
     });
   });
@@ -247,7 +247,7 @@ function paretoChart(series, width, height, opts, w) {
     const top0 = y(share);
     return [
       svg('rect', { class: 'hit', x: m.left + band * i, y: m.top, width: band, height: ph,
-        'data-tip': `<span>${esc(s.label)}</span><b>${esc(o.full(s.value))}</b><span>${fmt.number(share, 1)}% do total · acumulado ${fmt.number(s.cum_pct, 1)}%</span>` , ...catAttr(o, s.label) }),
+        'data-tip': `${tipHtml(s.label, s.value, o, s)}<span>${fmt.number(share, 1)}% do total · acumulado ${fmt.number(s.cum_pct, 1)}%</span>`, ...catAttr(o, s.label) }),
       svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(cx(i) - barW / 2, top0, barW, y(0) - top0, true), style: `fill:${tone(o, 0, s.label)};fill-opacity:${s.highlight ? 1 : 0.35}` }),
       axis.show(i) ? svg('text', { class: 'tick x-tick', y: svgH - 9 - (o.xTitle ? 18 : 0), ...axis.anchor(cx(i), s.label, width) }, axis.text(s.label)) : null,
     ];
@@ -287,7 +287,7 @@ function funnelChart(series, width, height, opts) {
     const yy = 4 + i * rowH;
     const x0 = labelW + 8 + (area - bw) / 2;
     return [
-      svg('rect', { class: 'hit', x: 0, y: yy, width, height: rowH, 'data-tip': tipHtml(s.label, s.value, o) }),
+      svg('rect', { class: 'hit', x: 0, y: yy, width, height: rowH, 'data-tip': tipHtml(s.label, s.value, o, s) }),
       svg('text', { class: 'tick', x: labelW, y: yy + rowH / 2 + 4, 'text-anchor': 'end' }, truncate(s.label, Math.floor(labelW / 6.6))),
       svg('rect', { class: 'seg', x: x0, y: yy + 3, width: bw, height: rowH - 6, rx: 4, style: `fill:${tone(o, 0, s.label)};fill-opacity:${Math.max(0.4, 1 - i * 0.08)}` }),
       svg('text', { class: 'value', x: labelW + 16 + area, y: yy + rowH / 2 + 4 }, `${o.short(s.value)} · ${fmt.number((s.value / first) * 100, 0)}%`),
@@ -450,6 +450,8 @@ const MULTI = ['stacked', 'grouped', 'stacked100', 'line', 'area', 'area_stacked
 
 /** Escolhe o gráfico e devolve o elemento pronto. `w` é o widget inteiro (séries, pontos, Venn...). */
 export function renderChart(type, series, width, height, opts, w = {}) {
+  // A dica (spec 041) precisa do total para o % e dos nomes das colunas para o texto com campos.
+  opts = { ...opts, _total: (series || []).reduce((acc, s) => acc + Math.max(0, Number(s.value) || 0), 0) || null, _x: w.x_column || '', _y: w.y_column || (w.agg === 'count' ? 'contagem' : '') };
   if (type === 'race') return raceChart(series, width, height, opts);
   if (type === 'bubble') return bubbleChart(w, width, height, opts);
   if (type === 'sankey') return sankeyChart(w, width, height, opts);

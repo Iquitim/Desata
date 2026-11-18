@@ -1,6 +1,9 @@
 // Desenho das ligações: curvas, cores, setas, animação do fluxo e rótulos com a contagem de linhas.
 
-import { curve, curveMid, edgeArrow, portPoint } from './canvas_geometry.js';
+import { curve, curveMid, edgeArrow } from './canvas_geometry.js';
+import { edgeEnds, hiddenNodes } from './canvas_collapse.js';
+import { arrowInto, polylineMid, roundedPath } from './canvas_route.js';
+import { wireRoutes } from './canvas_wires.js';
 import { els, state } from './canvas_state.js';
 import { fmt, h } from './dom.js';
 import { on, store, toolOf } from './store.js';
@@ -60,6 +63,8 @@ function watchEdgeHover() {
 export function renderEdges() {
   const wf = store.workflow;
   const byId = new Map(wf.nodes.map((n) => [n.id, n]));
+  const hidden = hiddenNodes(); // etapas recolhidas (spec 041)
+  const routes = wireRoutes(); // fios organizados (spec 041); vazio no modo curvo
   const paths = [];
   const defs = [];
   const pills = [];
@@ -71,12 +76,13 @@ export function renderEdges() {
   let index = -1;
   for (const e of wf.edges) {
     index += 1;
+    const ends = edgeEnds(e, byId, hidden);
+    if (!ends) continue;
     const s = byId.get(e.source);
     const t = byId.get(e.target);
-    if (!s || !t) continue;
-    const a = portPoint(s, e.sourceHandle, true);
-    const b = portPoint(t, e.targetHandle, false);
-    const d = curve(a, b);
+    const { a, b } = ends;
+    const route = routes.get(e.id);
+    const d = route ? roundedPath(route) : curve(a, b);
     const tele = store.execution?.edge_telemetry?.[e.id];
     const fresh = tele && !store.pending.has(e.source);
     const model = toolOf(s)?.outputs.find((p) => p.id === e.sourceHandle)?.kind === 'model';
@@ -87,10 +93,10 @@ export function renderEdges() {
     defs.push(`<linearGradient id="edge-grad-${index}" gradientUnits="userSpaceOnUse" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"><stop offset="0" style="stop-color:${fromColor}"/><stop offset="1" style="stop-color:${toColor}"/></linearGradient>`);
     const isNew = drawIn.has(e.id) && !model;
     paths.push(`<g class="edge${store.selection.edgeId === e.id ? ' selected' : ''}${model ? ' model' : ''}${fresh ? ' live' : ''}${skipped ? ' state.held' : ''}${isNew ? ' edge-new' : ''}" data-edge="${attr(e.id)}">
-      <path class="edge-hit" d="${d}"/><path class="edge-line" d="${d}" stroke="url(#edge-grad-${index})"${isNew ? ' pathLength="1"' : ''}/><path class="edge-arrow" style="stroke:${toColor}" d="${edgeArrow(a, b)}"/></g>`);
+      <path class="edge-hit" d="${d}"/><path class="edge-line" d="${d}" stroke="url(#edge-grad-${index})"${isNew ? ' pathLength="1"' : ''}/><path class="edge-arrow" style="stroke:${toColor}" d="${route ? arrowInto(b) : edgeArrow(a, b)}"/></g>`);
     const touchesSelection = [e.source, e.target].includes(store.selection.nodeId);
-    if (fresh && tele.kind === 'data' && touchesSelection) {
-      const m = curveMid(a, b);
+    if (fresh && tele.kind === 'data' && touchesSelection && !ends.card) {
+      const m = route ? polylineMid(route) : curveMid(a, b);
       pills.push(h('button', {
         type: 'button',
         class: 'edge-pill',

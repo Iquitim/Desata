@@ -30,8 +30,9 @@ from prodata.domain.execution import (
 )
 from prodata.domain.workflow import Node, Workflow
 from prodata.engine import constants as constants_engine
-from prodata.engine import graph, subflow
+from prodata.engine import graph, loops, subflow
 from prodata.engine.cache import FrozenEntry, NodeEntry, ResultCache
+from prodata.engine.loop_run import LoopRun
 from prodata.engine.profiling import simple_type
 from prodata.errors import NotFoundError, ProdataError
 from prodata.ingestion.datasets import DatasetStore
@@ -42,6 +43,13 @@ from prodata.services.constants import ConstantStore
 log = logging.getLogger(__name__)
 # Today() numa fórmula: o resultado muda a cada dia, então a data entra na impressão digital da caixa.
 _TODAY = re.compile(r"\btoday\s*\(", re.IGNORECASE)
+# Parar (spec 041): o que ainda não executou fica assim.
+STOPPED = NodeResult(
+    status="skipped",
+    annotation="Interrompido",
+    error="Execução interrompida: clique em Executar para continuar.",
+    extra={"stopped": True},
+)
 
 
 class SkippedError(Exception):
@@ -138,19 +146,24 @@ class WorkflowRunner:
         """Executa o fluxo. ``hold_exports``: execução automática (ao abrir o fluxo, trocar de aba): exportações
         em "Perguntar" cujo arquivo já existe esperam o usuário clicar em Executar (spec 017)."""
         started = time.perf_counter()
-        resolution = self.resolve(workflow)
-        workflow = resolution.workflow
         order = graph.topological_order(workflow)
+        found = loops.find(workflow, order)  # laços (spec 041)
+        resolution = self.resolve(workflow, found.members)
+        workflow = resolution.workflow
         if target_node_id:
             if target_node_id not in order:
                 raise graph.GraphError(f"Caixa não encontrada no fluxo: {target_node_id}")
+            # Executar até uma caixa de dentro do laço roda o laço inteiro (até o Fim de fora).
+            for end, loop in found.loops.items():
+                if loop.depth == 1 and target_node_id in {loop.start, *loop.body}:
+                    target_node_id = end
             keep = graph.ancestors(workflow, target_node_id) | {target_node_id}
             order = [n for n in order if n in keep]
 
         progress: dict[str, Any] = {"order": order, "running": None, "done": {}}
         self._progress[workflow.id] = progress
         try:
-            return self._run_locked(workflow, order, progress, started, hold_exports, resolution)
+            return self._run_locked(workflow, order, progress, started, hold_exports, resolution, found)
         finally:
             self._progress.pop(workflow.id, None)
 
@@ -170,10 +183,23 @@ class WorkflowRunner:
             *(h.value for h in api.headers if not h.secret),
         ]
 
-    def resolve(self, workflow: Workflow) -> constants_engine.Resolution:
-        """O fluxo com as constantes trocadas pelo valor (spec 028)."""
+    def resolve(
+        self, workflow: Workflow, loop_members: set[str] | None = None
+    ) -> constants_engine.Resolution:
+        """O fluxo com as constantes trocadas pelo valor (spec 028); no laço, as variáveis ficam para cada volta."""
         shared = self.constants.all() if self.constants else {}
-        return constants_engine.resolve(workflow, shared, self.api_texts)
+        return constants_engine.resolve(workflow, shared, self.api_texts, loop_members=loop_members)
+
+    def cancel(self, workflow_id: str) -> bool:
+        """Pede para parar a execução em curso (spec 041): confere antes de cada caixa e a cada volta de um laço.
+
+        A caixa que já está rodando termina; as seguintes ficam como "não executado".
+        """
+        current = self._progress.get(workflow_id)
+        if current is None:
+            return False
+        current["cancel"] = True
+        return True
 
     def snapshot(self, workflow: Workflow) -> Workflow:
         """Grava no fluxo o valor das constantes compartilhadas que ele usa (RF-2850)."""
@@ -210,7 +236,12 @@ class WorkflowRunner:
         started: float,
         hold_exports: bool,
         resolution: constants_engine.Resolution,
+        found: loops.Found | None = None,
     ) -> ExecutionReport:
+        found = found or loops.Found()
+        looper = LoopRun(self, workflow, found, hold_exports, progress, resolution)
+        # O corpo dos laços roda dentro do Fim de fora; aqui fica de fora.
+        inside = found.members - {e for e, loop in found.loops.items() if loop.depth == 1}
         results: dict[str, NodeResult] = {}
         fingerprints: dict[str, str] = {}
         widgets: list[dict[str, Any]] = []
@@ -221,12 +252,16 @@ class WorkflowRunner:
             frozen, signatures = self._valid_cache_points(workflow, order)
             needed = graph.needed_nodes(workflow, order, set(frozen)) if frozen else set(order)
             for node_id in order:
+                if node_id in inside:
+                    continue
                 node = workflow.node(node_id)
                 spec = REGISTRY.get(node.type)
                 waiting = self._waiting_export(node) if hold_exports else None
                 progress["running"] = node_id
                 progress["detail"] = None
-                if node_id not in needed:
+                if progress.get("cancel"):  # Parar (spec 041): o que falta não executa
+                    result = STOPPED.model_copy()
+                elif node_id not in needed:
                     result = self._held_result(workflow, node, spec)
                 elif waiting:
                     result = NodeResult(
@@ -237,6 +272,11 @@ class WorkflowRunner:
                     )
                 elif node_id in frozen:
                     result = self._frozen_result(workflow, node, spec, frozen[node_id], fingerprints)
+                elif node_id in found.loops:
+                    result, body = looper.run(workflow, found.loops[node_id], results, fingerprints)
+                    self._record_body(workflow, found, body, results, progress, logs)
+                elif node_id in found.problems:
+                    result = NodeResult(status="error", error=found.problems[node_id])
                 else:
                     result = self._run_node(
                         workflow, node, spec, results, fingerprints, hold_exports, progress, resolution
@@ -257,15 +297,12 @@ class WorkflowRunner:
                 else:
                     self._ran.get(workflow.id, {}).pop(node_id, None)
                 name = node.label or (spec.name if spec else node.type)
-                logs.append(
-                    LogEntry(
-                        node_id=node_id,
-                        node_name=name,
-                        status=result.status,
-                        elapsed_ms=result.elapsed_ms,
-                        message=self._log_message(result),
-                    )
-                )
+                if node_id in found.warnings:
+                    result.extra = {
+                        **result.extra,
+                        "warnings": [*result.extra.get("warnings", []), *found.warnings[node_id]],
+                    }
+                logs.append(self._log_entry(workflow, node_id, result))
                 if widget := result.extra.get("bi_widget"):
                     widgets.append({**widget, "node_id": node_id, "node_label": name})
 
@@ -559,6 +596,39 @@ class WorkflowRunner:
             "day": date.today().isoformat() if _TODAY.search(json.dumps(config)) else "",
         }
         return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()[:20]
+
+    def _record_body(
+        self,
+        workflow: Workflow,
+        found: loops.Found,
+        body: dict[str, NodeResult],
+        results: dict[str, NodeResult],
+        progress: dict[str, Any],
+        logs: list[LogEntry],
+    ) -> None:
+        """Resultado das caixas de dentro do laço (a última volta), com os avisos do desenho."""
+        for body_id, body_result in body.items():
+            if notes := found.warnings.get(body_id):
+                body_result.extra = {
+                    **body_result.extra,
+                    "warnings": [*body_result.extra.get("warnings", []), *notes],
+                }
+            results[body_id] = body_result
+            progress["done"][body_id] = body_result.status
+            if body_result.status in ("executed", "cached"):  # a aba SQL confere o corpo também
+                self._ran.setdefault(workflow.id, {})[body_id] = self._freshness(workflow, body_id)
+            logs.append(self._log_entry(workflow, body_id, body_result))
+
+    def _log_entry(self, workflow: Workflow, node_id: str, result: NodeResult) -> LogEntry:
+        node = workflow.node(node_id)
+        spec = REGISTRY.get(node.type)
+        return LogEntry(
+            node_id=node_id,
+            node_name=node.label or (spec.name if spec else node.type),
+            status=result.status,
+            elapsed_ms=result.elapsed_ms,
+            message=self._log_message(result),
+        )
 
     @staticmethod
     def _ms(started: float) -> float:

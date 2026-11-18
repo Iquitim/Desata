@@ -155,6 +155,26 @@ select.input { padding-right: 24px; }
 }
 .list-item-index { font: 600 var(--fs-xs) var(--mono); color: var(--text-3); }
 .list-item-fields { padding: 10px; gap: 10px; }
+/* blocos de lista que recolhem (spec 041) */
+.list-item-head { gap: 4px; padding-left: 2px; }
+.list-item .li-toggle { flex: none; }
+.list-item .li-title { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
+.list-item .li-name { flex: 0 1 auto; min-width: 2.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-sm); font-weight: 600; color: var(--text); cursor: text; }
+.list-item .li-name.li-unnamed { font-weight: 400; font-style: italic; color: var(--text-3); }
+.list-item .li-name.li-empty { display: none; }
+.list-item:not(.collapsed) .li-title { flex-basis: 0; }
+.list-item .li-kind { flex: none; color: var(--text-3); }
+.list-item .li-summary { flex: 1 1 40%; min-width: 3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-xs); color: var(--text-2); }
+.list-item .li-state { flex: none; display: inline-flex; color: var(--err); }
+.list-item .li-actions { flex: none; }
+.list-item .li-actions .btn:first-child { display: none; }
+.list-item:hover .li-actions .btn:first-child, .list-item .li-actions .btn:first-child:focus-visible { display: inline-flex; }
+.list-item .li-rename { flex: 1; min-width: 80px; height: 26px; }
+.list-item.collapsed { background: var(--surface); }
+.list-item.collapsed .list-item-head { border-bottom: 0; cursor: pointer; }
+.list-item.collapsed:hover { border-color: var(--border-strong); }
+.list-item.has-error { border-color: color-mix(in srgb, var(--err) 55%, var(--border)); }
+.li-toolbar { align-self: stretch; display: flex; align-items: center; justify-content: space-between; }
 
 .select-table { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .select-row {
@@ -678,6 +698,10 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .x-join-part strong { grid-area: count; }
 .x-join-part small { grid-area: help; }
 .status-held { color: var(--marca-botao); font-weight: 600; }
+.status-slowest { padding: 0; font: inherit; color: var(--err); font-weight: 600; background: none; border: 0; cursor: pointer; }
+.status-slowest:hover { text-decoration: underline; }
+.results-turn { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); }
+.results-turn .input { width: 70px; }
 
 /* ------------------------------------------------------------------ densidade compacta (spec 016)
    Liga sozinha em telas menores (largura < 1440 ou altura < 800) ou pelo menu Painéis. */
@@ -749,3 +773,9 @@ details.explainer[open] > summary .x-toggle { transform: rotate(90deg); }
 
 /* Planilhas das entradas extras do Output Data (spec 021) */
 .sheet-port { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px; font-size: var(--fs-xs); color: var(--text-2); }
+/* recolhido com nome: o nome em cima e o resumo embaixo, para caber no painel estreito */
+.list-item.two-lines .li-title { flex-direction: column; align-items: stretch; gap: 1px; padding: 3px 0; }
+.list-item.two-lines .li-name, .list-item.two-lines .li-summary { max-width: 100%; }
+/* Parar (spec 041): o Executar do topo vira Parar enquanto o fluxo roda */
+#topActions .btn.stop { background: var(--err); border-color: var(--err); color: #fff; }
+#topActions .btn.stop:hover:not(:disabled) { background: color-mix(in srgb, var(--err) 85%, #000); }

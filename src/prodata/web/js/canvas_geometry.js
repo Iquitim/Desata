@@ -6,6 +6,11 @@ export const NODE_W = 188;
 
 export const NODE_MIN_H = 56;
 
+/** Caixa compacta (spec 041): só o ícone e as portas. */
+export const COMPACT_W = 64;
+
+export const nodeWidth = (n) => (n?.collapsed ? COMPACT_W : NODE_W);
+
 const PORT_GAP = 18;
 
 /** Altura do cartão: cresce com o número de portas para que nenhuma se sobreponha. */
@@ -18,7 +23,7 @@ export function nodeHeight(n) {
 export function portPoint(n, portId, output) {
   const ports = (output ? toolOf(n)?.outputs : visibleInputs(n)) || [];
   const idx = Math.max(0, ports.findIndex((p) => p.id === portId));
-  return { x: n.x + (output ? NODE_W : 0), y: n.y + (nodeHeight(n) * (idx + 1)) / (ports.length + 1) };
+  return { x: n.x + (output ? nodeWidth(n) : 0), y: n.y + (nodeHeight(n) * (idx + 1)) / (ports.length + 1) };
 }
 
 /** Quanto o fio sai reto das portas. Fios muito verticais ganham mais, para chegarem de frente na porta. */

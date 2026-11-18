@@ -4,6 +4,7 @@
 
 import { api } from './api.js';
 import { API_PREFIX, commit, emit, store } from './store.js';
+import { loopVariables } from './loops.js';
 
 export const TYPES = { date: 'Data', number: 'Número', text: 'Texto' };
 export const NAME_RE = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
@@ -34,6 +35,7 @@ export function knownConstants() {
   for (const c of store.workflow?.constants || []) {
     out.set(c.name, { ...c, scope: out.get(c.name)?.scope === 'shared' ? 'conflict' : 'flow' });
   }
+  for (const v of loopVariables()) out.set(v.name, v); // dentro de um laço (spec 041)
   return out;
 }
 

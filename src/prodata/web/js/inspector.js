@@ -122,6 +122,12 @@ function statusBanner(n) {
     const day = new Date(model.trained_at).toLocaleDateString('pt-BR');
     extra.push(`modelo v${model.version}${model.reused ? ' guardado' : ''}, treinado em ${day} com ${fmt.int(model.rows)} linhas`);
   }
+  // Laço (spec 041): tempo por volta, no Fim do loop.
+  const times = res.extra?.loop?.times;
+  if (times?.length > 1) {
+    const slow = times.indexOf(Math.max(...times));
+    extra.push(`${fmt.int(times.length)} voltas · média ${fmt.ms(times.reduce((a, b) => a + b, 0) / times.length)} · mais lenta: volta ${slow + 1} (${fmt.ms(times[slow])})`);
+  }
   const file = res.extra?.exported_file;
   const path = res.extra?.exported_path;
   let action = null;
@@ -470,7 +476,7 @@ function nodePanel(n) {
     spec.hidden && n.type === 'io.input_folder' ? banner('muted', 'info', 'Ferramenta antiga, fora da paleta.',
       'A pasta agora é cadastrada na vista Dados: aparece no mapa de uso, avisa quando some e é lida pelo Input Data.',
       button({ icon: 'directory', label: 'Levar para a vista Dados', size: 'sm', onClick: () => convertLegacyFolder(n, spec.name) }))
-      : spec.hidden ? banner('muted', 'info', 'Ferramenta antiga, fora da paleta.',
+      : spec.hidden && n.type !== 'flow.loop_end' ? banner('muted', 'info', 'Ferramenta antiga, fora da paleta.',
         'O Input Data agora lê consultas de banco cadastradas na vista Dados.',
         button({ icon: 'refresh', label: 'Converter para Input Data', size: 'sm', onClick: () => convertLegacy(n) })) : null,
     cacheBanner(n),

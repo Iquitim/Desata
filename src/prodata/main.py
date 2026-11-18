@@ -38,6 +38,7 @@ from prodata.samples.apis import refresh_example_docs, seed_example_apis
 from prodata.samples.datasets import ensure_sample_datasets
 from prodata.samples.demo_logo import refresh_demo_logo
 from prodata.samples.pdfs import refresh_example_pdfs, seed_example_pdfs
+from prodata.samples.workflow_loop import add_loop_section
 from prodata.samples.workflows import (
     DEMO_V3_NODES,
     DEMO_WORKFLOW_ID,
@@ -91,8 +92,9 @@ def build_services(settings: Settings) -> Services:
             with_pdf = add_pdf_section(saved)
             if with_pdf:
                 seed_example_pdfs(datasets.pdfs)
+            with_loop = add_loop_section(saved)  # etapa do laço (spec 041)
             # o logo do dashboard do exemplo segue a marca ativa (exemplo criado com outra marca)
-            if with_pdf | refresh_demo_logo(saved):
+            if with_pdf | with_loop | refresh_demo_logo(saved):
                 workflows.save(Workflow.model_validate(saved))
         refresh_example_docs(apis)
         refresh_example_pdfs(datasets.pdfs)

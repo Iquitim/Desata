@@ -7,6 +7,7 @@ from prodata.nodes import (  # noqa: F401  (registro por efeito de import)
     fuzzy,
     io,
     io_sql,
+    loop,
     ml,
     prep,
     prep_sql,

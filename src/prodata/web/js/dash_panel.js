@@ -6,6 +6,9 @@ import { PAGE_SIZES, PAGE_W, pageHeight, widgetsByNode } from './dash_model.js';
 import { commitLayout, dash, els, nodeLabel, nodeOf, page as dashPage, ui } from './dash_state.js';
 import { button, h } from './dom.js';
 import { renderFields } from './fields.js';
+import { options, tipFields, tipHtml, unknownTipFields } from './chart_kit.js';
+import { updateConfig } from './actions.js';
+import { store, upstreamColumns } from './store.js';
 import { toastError } from './ui.js';
 import { logoOwner } from './brand.js';
 
@@ -74,7 +77,25 @@ function itemPanel(item) {
       : widget?.chart_type === 'sankey' ? [...new Set((widget.links || []).flatMap((l) => [l.source, l.target]))]
       : widget?.chart_type === 'scatter' ? [...new Set((widget.points || []).map((p) => p.s).filter((s) => s !== undefined))]
         : widget?.series?.map((s) => s.label) || [];
+  // Dica (spec 041): as colunas extras ficam na caixa do gráfico; só gráficos de uma série.
+  const node = nodeOf(item.node_id);
+  const single = kind === 'chart' && node?.type === 'bi.chart' && !widget?.series_names?.length && !['scatter', 'bubble', 'sankey'].includes(widget?.chart_type) && widget?.widget_type !== 'venn';
+  const NUMERIC = ['Int8', 'Int16', 'Int32', 'Int64', 'UInt8', 'UInt16', 'UInt32', 'UInt64', 'Float32', 'Float64', 'Decimal'];
   const ctx = {
+    tipColumns: single ? {
+      options: (upstreamColumns(node.id) || []).filter((c) => NUMERIC.includes(c.type) && c.name !== node.config.x_column && c.name !== node.config.y_column).map((c) => c.name),
+      value: node.config.tip_columns || [],
+      pending: store.pending.has(node.id),
+      set: (list) => { updateConfig(node.id, ['tip_columns'], list); els.panelKey = null; },
+    } : null,
+    tipPreview: (text) => {
+      const s = widget?.series?.[0];
+      if (!s || !single) return null;
+      const total = widget.series.reduce((acc, x) => acc + Math.max(0, Number(x.value) || 0), 0) || null;
+      const o = options({ ...f, tip_text: text, _x: widget.x_column, _y: widget.y_column || (widget.agg === 'count' ? 'contagem' : ''), _total: total });
+      const fields = tipFields(s.label, s.value, o, s);
+      return { html: tipHtml(s.label, s.value, o, s), unknown: unknownTipFields(text, fields), fields: Object.keys(fields) };
+    },
     categories: colored,
     noCategories: oneColor ? 'Este gráfico tem uma série só. Mude a cor dele em Uma cor só.' : '',
     columns: () => (widget?.columns || []).filter((c) => c.numeric).map((c) => ({ name: c.name, type: 'Float64' })),

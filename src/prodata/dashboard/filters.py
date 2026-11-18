@@ -143,6 +143,7 @@ def used_columns(tool: str, config: Any, df: pl.DataFrame, filters: list[DashFil
                 config.series_column,
                 config.x_value_column,
                 config.size_column,
+                *config.tip_columns,
             ]
         case KpiConfig():
             names = [config.column, config.date_column]

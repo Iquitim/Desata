@@ -42,6 +42,8 @@ import { renderEdges } from './canvas_edges.js';
 import { containerMenu, dropContainer, placeContainerEl, renameContainer, renderContainers } from './canvas_containers.js';
 import { cacheActions, selectionActions } from './canvas_actions.js';
 import { renderNodes } from './canvas_nodes.js';
+import { CARD_H, CARD_W, hiddenNodes, setContainersCollapsed, setNodesCollapsed } from './canvas_collapse.js';
+import { organizeFlow } from './canvas_layout.js';
 export { heldBy, showProgress } from './canvas_nodes.js';
 export { cacheActions, selectionActions } from './canvas_actions.js';
 export { addContainerAtCenter } from './canvas_containers.js';
@@ -100,9 +102,10 @@ export function fitView({ minZoom = MIN_ZOOM } = {}) {
     applyView();
     return;
   }
+  const hidden = hiddenNodes(); // etapa recolhida conta pelo cartão (spec 041)
   const boxes = [
-    ...wf.nodes.map((n) => ({ x1: n.x - 20, y1: n.y - 10, x2: n.x + NODE_W + 20, y2: n.y + nodeHeight(n) + 10 })),
-    ...(wf.containers || []).map((c) => ({ x1: c.x, y1: c.y, x2: c.x + c.width, y2: c.y + c.height })),
+    ...wf.nodes.filter((n) => !hidden.has(n.id)).map((n) => ({ x1: n.x - 20, y1: n.y - 10, x2: n.x + NODE_W + 20, y2: n.y + nodeHeight(n) + 10 })),
+    ...(wf.containers || []).map((c) => ({ x1: c.x, y1: c.y, x2: c.x + (c.collapsed ? CARD_W : c.width), y2: c.y + (c.collapsed ? CARD_H : c.height) })),
   ];
   const x1 = Math.min(...boxes.map((b) => b.x1));
   const y1 = Math.min(...boxes.map((b) => b.y1));
@@ -184,11 +187,11 @@ function onPointerDown(e) {
     const c = store.workflow.containers.find((k) => k.id === target.closest('.container-box').dataset.container);
     gesture = { type: 'container-resize', id: c.id, w: c.width, h: c.height, start: world,
       startX: e.clientX, startY: e.clientY, moved: false };
-  } else if (e.button !== 1 && target.closest('.container-title')) {
+  } else if (e.button !== 1 && target.closest('.container-title, .container-card')) {
     const c = store.workflow.containers.find((k) => k.id === target.closest('.container-box').dataset.container);
     // Os nós de dentro são definidos no início do gesto e acompanham o contêiner.
     const members = nodesInside(c, NODE_W).map((n) => ({ id: n.id, x: n.x, y: n.y }));
-    gesture = { type: 'container-move', id: c.id, x: c.x, y: c.y, members, start: world,
+    gesture = { type: 'container-move', id: c.id, x: c.x, y: c.y, members, start: world, card: Boolean(target.closest('.container-card')),
       startX: e.clientX, startY: e.clientY, moved: false };
   } else if (e.button !== 1 && (tool === 'select' || e.shiftKey || e.ctrlKey || e.metaKey) && !target.closest('.node, .edge-pill, g.edge')) {
     // Modo Selecionar, ou Shift/Ctrl + arrastar no vazio: retângulo de seleção (spec 012). Ctrl soma à seleção atual.
@@ -243,8 +246,13 @@ function flushMove() {
   moveFrame = 0;
   const e = pendingMove;
   pendingMove = null;
-  if (e && gesture) handleMove(e);
+  if (e && gesture) {
+    if (MOVING.has(gesture.type)) state.moving = true; // fios provisórios até soltar (spec 041)
+    handleMove(e);
+  }
 }
+
+const MOVING = new Set(['drag', 'group-drag', 'container-move', 'container-resize']);
 
 // ------------------------------------------------------------------ andar a tela ao arrastar até a borda
 
@@ -369,6 +377,7 @@ function handleMove(e) {
 
 function onPointerUp(e) {
   if (pendingMove) flushMove(); // o último movimento antes de soltar não pode se perder
+  state.moving = false; // os fios se acomodam ao soltar (spec 041)
   const g = gesture;
   gesture = null;
   els.viewport.classList.remove('panning');
@@ -381,7 +390,8 @@ function onPointerUp(e) {
     if (g.moved) {
       const box = { x1: Math.min(g.start.x, g.end.x), y1: Math.min(g.start.y, g.end.y),
         x2: Math.max(g.start.x, g.end.x), y2: Math.max(g.start.y, g.end.y) };
-      const hits = store.workflow.nodes.filter((n) => n.x < box.x2 && n.x + NODE_W > box.x1
+      const hidden = hiddenNodes(); // caixas de etapa recolhida não entram (spec 041)
+      const hits = store.workflow.nodes.filter((n) => !hidden.has(n.id) && n.x < box.x2 && n.x + NODE_W > box.x1
         && n.y < box.y2 && n.y + nodeHeight(n) > box.y1).map((n) => n.id);
       selectMany(g.additive ? [...selectedIds(), ...hits] : hits);
     } else if (!g.additive) {
@@ -408,7 +418,7 @@ function onPointerUp(e) {
       const now = Date.now();
       const isDouble = lastTitleClick.id === g.id && now - lastTitleClick.at < 400;
       lastTitleClick = { id: g.id, at: now };
-      if (isDouble) renameContainer(g.id);
+      if (isDouble) (g.card ? setContainersCollapsed([g.id], false) : renameContainer(g.id));
       else if (store.selection.containerId !== g.id) select(null, null, g.id);
     }
   } else if (g.type === 'drag') {
@@ -421,7 +431,10 @@ function onPointerUp(e) {
       if (moved && !moved.disabled && disabledContainerAt(moved, NODE_W, nodeHeight(moved))) toggleDisabled(g.id);
     } else if (g.inPort) {
       inspectInput(g.id, g.inPort);
+    } else if (node(g.id)?.collapsed && lastTitleClick.id === g.id && Date.now() - lastTitleClick.at < 400) {
+      setNodesCollapsed([g.id], false); // dois cliques na caixa compacta (spec 041)
     } else {
+      lastTitleClick = { id: g.id, at: Date.now() };
       select(g.id);
       inspect(g.id, store.inspect.nodeId === g.id && !store.inspect.via ? store.inspect.anchor : null);
       openResultsOnClick();
@@ -480,7 +493,7 @@ function onContextMenu(e) {
   const pasteItem = (label = 'Colar aqui') => ({
     label, icon: 'clipboard', shortcut: 'Ctrl+V', disabled: !hasClipboard(), onSelect: () => paste(world),
   });
-  const containerEl = e.target.closest('.container-title, .container-resize');
+  const containerEl = e.target.closest('.container-title, .container-resize, .container-card');
   if (containerEl) {
     containerMenu(containerEl.closest('.container-box').dataset.container, e.clientX, e.clientY, pasteItem());
     return;
@@ -500,6 +513,7 @@ function onContextMenu(e) {
     select(id);
     showMenu(e.clientX, e.clientY, [
       { label: 'Configurar', icon: 'settings', onSelect: () => { revealPanel('explorer'); select(id); } },
+      { label: n.collapsed ? 'Expandir a caixa' : 'Recolher a caixa', icon: n.collapsed ? 'maximize' : 'minimize', onSelect: () => setNodesCollapsed([id], !n.collapsed) },
       { label: 'Executar até aqui', icon: 'target', shortcut: 'Ctrl+Shift+Enter', onSelect: () => state.handlers.runTo?.(id) },
       { label: 'Ver resultados', icon: 'table', onSelect: () => { revealPanel('results'); inspect(id); } },
       { label: 'Ver SQL', icon: 'terminal', onSelect: () => state.handlers.viewSql?.(id) },
@@ -527,6 +541,7 @@ function onContextMenu(e) {
     showMenu(e.clientX, e.clientY, [
       pasteItem(),
       { label: 'Selecionar todas as caixas', icon: 'check', shortcut: 'Ctrl+A', onSelect: () => selectMany(store.workflow.nodes.map((n) => n.id)) },
+      { label: 'Organizar o fluxo', icon: 'columns', onSelect: () => { organizeFlow(); requestAnimationFrame(() => fitView()); } },
       'separator',
       { label: 'Adicionar ferramenta aqui…', icon: 'plus', onSelect: () => openQuickAdd(e.clientX, e.clientY, { to: world }) },
       {
@@ -634,9 +649,11 @@ export function initCanvas(root, opts = {}) {
   on('workflow:changed', () => render({ containers: true }));
   on('selection', () => render({ containers: true }));
   on('inspect', () => render());
-  on('execution', () => render());
+  on('execution', () => render({ containers: true })); // a moldura do laço mostra as voltas (spec 041)
   on('numbers', () => render());
   on('sources', () => render()); // fonte que falta neste computador (spec 040)
+  on('timing', () => render()); // tempo nas caixas (spec 041)
+  on('wires', () => render()); // fios organizados ou curvos (spec 041)
 
   root.classList.toggle('tool-select', tool === 'select');
   const saved = storage('prodata.view', null);

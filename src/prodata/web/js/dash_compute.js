@@ -110,26 +110,41 @@ function ordered(pairs, cfg) {
       return desc ? b[1] - a[1] : a[1] - b[1];
     });
   }
-  return rows.map(([label, v]) => [label, v || 0]);
+  return rows.map(([label, v, tip]) => [label, v || 0, tip]);
 }
+
+/** Colunas extras da dica (spec 041): as que existem, sem repetir a categoria. */
+const tipColumns = (table, cfg) => [...new Set(cfg.tip_columns || [])].filter((c) => c in table.columns && ![cfg.x_column, 'label', 'value'].includes(c));
 
 function groupValues(table, cfg) {
   const type = table.types[cfg.x_column];
   const xs = table.columns[cfg.x_column];
   const ys = cfg.agg === 'count' ? null : table.columns[cfg.y_column];
+  const tips = tipColumns(table, cfg);
+  const how = cfg.agg === 'count' ? 'sum' : cfg.agg;
   const groups = new Map();
   xs.forEach((x, i) => {
     const label = labelOf(x, type);
-    if (!groups.has(label)) groups.set(label, []);
-    groups.get(label).push(ys ? ys[i] : 1);
+    if (!groups.has(label)) groups.set(label, { values: [], tips: tips.map(() => []) });
+    const g = groups.get(label);
+    g.values.push(ys ? ys[i] : 1);
+    tips.forEach((c, k) => g.tips[k].push(table.columns[c][i]));
   });
-  return [...groups].map(([label, values]) => [label, aggregate(values, cfg.agg)]);
+  return [...groups].map(([label, g]) => [label, aggregate(g.values, cfg.agg),
+    tips.length ? Object.fromEntries(tips.map((c, k) => [c, aggregate(g.tips[k], how)])) : null]);
 }
 
 function limited(rows, cfg) {
-  const series = rows.slice(0, cfg.max_items).map(([label, v]) => ({ label, value: round(v) }));
+  const item = (label, v, tip) => {
+    const s = { label, value: round(v) };
+    if (tip) s.tip = Object.fromEntries(Object.entries(tip).map(([c, x]) => [c, x === null ? null : round(x)]));
+    return s;
+  };
+  const series = rows.slice(0, cfg.max_items).map(([label, v, tip]) => item(label, v, tip));
   if (rows.length > cfg.max_items && ['sum', 'count'].includes(cfg.agg) && cfg.chart_type !== 'race') {
-    series.push({ label: 'Outros', value: round(rows.slice(cfg.max_items).reduce((acc, [, v]) => acc + v, 0)) });
+    const rest = rows.slice(cfg.max_items);
+    const tip = rest[0][2] ? Object.fromEntries(Object.keys(rest[0][2]).map((c) => [c, rest.reduce((acc, r) => acc + (r[2][c] || 0), 0)])) : null;
+    series.push(item('Outros', rest.reduce((acc, [, v]) => acc + v, 0), tip));
   }
   return series;
 }

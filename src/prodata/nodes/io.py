@@ -31,6 +31,7 @@ from prodata.ingestion.datasets import resolve_inside, sanitize_filename
 from prodata.ingestion.folders import odd_warning, read_folder, source_folder_id
 from prodata.ingestion.options import ReadOptions
 from prodata.ingestion.readers import read_table
+from prodata.nodes import output_names
 from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
 from prodata.nodes.excel_output import (
     MAX_SHEETS,
@@ -38,6 +39,7 @@ from prodata.nodes.excel_output import (
     write_excel_book,
 )
 from prodata.nodes.excel_template import drawing_warning, template_path, write_template
+from prodata.nodes.output_names import new_file_path
 from prodata.services.audit import log_export
 
 # ------------------------------------------------------------------ Input Data
@@ -459,7 +461,11 @@ _EXTENSIONS: dict[str, str] = {
 
 
 class OutputDataConfig(ToolConfig):
-    filename: str = Field("resultado", title="Nome do arquivo", description="A extensão segue o formato.")
+    filename: str = Field(
+        "resultado",
+        title="Nome do arquivo",
+        description="A extensão segue o formato. Com uma coluna entre chaves, como vendas_{regiao}, grava um arquivo por valor dela.",
+    )
     folder: str = Field(
         "",
         title="Pasta de destino",
@@ -578,17 +584,6 @@ def _has_sheet(template: Path, name: str) -> bool:
         return False
 
 
-def new_file_path(path: Path) -> Path:
-    """Mesmo nome com data e hora (e um número, se ainda assim existir): o arquivo antigo fica intacto."""
-    stamp = datetime.now().strftime("%Y-%m-%d %Hh%M")
-    candidate = path.with_name(f"{path.stem} {stamp}{path.suffix}")
-    n = 2
-    while candidate.exists():
-        candidate = path.with_name(f"{path.stem} {stamp} ({n}){path.suffix}")
-        n += 1
-    return candidate
-
-
 @tool(
     type="io.output_data",
     name="Output Data",
@@ -625,9 +620,51 @@ def output_data(ctx: NodeContext, cfg: OutputDataConfig) -> NodeOutput:
         raise InvalidInputError(
             '"Adicionar planilha" só vale para Excel. Escolha outra opção em "Se o arquivo já existir".'
         )
+    # Nome dinâmico (spec 041): "vendas_{regiao}" grava um arquivo por valor da coluna.
+    columns = output_names.name_columns(cfg.filename, df.columns)
+    if columns:
+        if extras:
+            raise InvalidInputError(
+                "Com nome dinâmico, o Output Data grava uma tabela por arquivo: use uma entrada só."
+            )
+        files = [
+            _write_one(
+                part,
+                _sheet_list(part, {}, cfg) if cfg.format == "excel" else [],
+                cfg.model_copy(update={"filename": name}),
+                ctx,
+                template,
+                dynamic=True,
+            )
+            for name, part in output_names.split(df, cfg.filename, columns)
+        ]
+        extra = (
+            files[0]
+            if files
+            else {
+                "exported_file": "",
+                "export_action": "nenhuma linha",
+                "confidentiality": cfg.confidentiality,
+            }
+        )
+        extra = {**extra, "exported_files": [f["exported_file"] for f in files]}
+        return NodeOutput(tables={"out": df}, extra=extra)
+    return NodeOutput(tables={"out": df}, extra=_write_one(df, sheets, cfg, ctx, template))
+
+
+def _write_one(
+    df: pl.DataFrame,
+    sheets: list[tuple[str, pl.DataFrame]],
+    cfg: OutputDataConfig,
+    ctx: NodeContext,
+    template: Path | None,
+    dynamic: bool = False,
+) -> dict[str, Any]:
+    """Grava um arquivo e devolve o que a caixa mostra sobre ele."""
     path = export_path(ctx.exports_dir, cfg)
     existed = path.exists()
-    # "Perguntar" sem ninguém para responder (ex.: execução pela API): nunca sobrescreve em silêncio (spec 017).
+    # "Perguntar" sem ninguém para responder (ex.: execução pela API, ou nome dinâmico, que só se sabe ao gravar):
+    # nunca sobrescreve em silêncio (spec 017).
     if existed and cfg.if_exists in ("ask", "new_file"):
         path = new_file_path(path)
     action = (
@@ -679,9 +716,9 @@ def output_data(ctx: NodeContext, cfg: OutputDataConfig) -> NodeOutput:
         extra["exported_template"] = template.name
         if note := drawing_warning(template):
             extra["warnings"] = [note]
-    if cfg.folder.strip():
+    if cfg.folder.strip() or dynamic:
         extra["exported_path"] = str(path)
-    return NodeOutput(tables={"out": df}, extra=extra)
+    return extra
 
 
 # ------------------------------------------------------------------ Database Input

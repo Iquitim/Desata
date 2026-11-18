@@ -17,6 +17,9 @@ from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.engine.graph import GraphError
 from prodata.engine.sql.dialects import Dialect, convert_parts
 from prodata.engine.sql.fragment import slug
+from prodata.engine.sql.loop_expand import LoopCache, original_id
+from prodata.engine.sql.loop_expand import expand as expand_loops
+from prodata.engine.sql.loop_expand import places as loop_places
 from prodata.engine.sql.plan import OK, Env, Output, SqlPlan, build_plan, temporary_output
 from prodata.engine.sql.render import render, to_text
 from prodata.engine.sql.verify import CancelledError, Verification, output_state, verify
@@ -37,20 +40,30 @@ class DownloadRequest(GenerateRequest):
     mode: str = "selection"  # "selection" | "zip"
 
 
-def _env(services: Services, workflow: Workflow) -> Env:
+def _env(services: Services, workflow: Workflow, expanded: Workflow | None = None) -> Env:
+    # Laço desenrolado (spec 041): a cópia da volta k lê o resultado daquela volta e vale o frescor da caixa original.
+    cache: Any = services.cache
+    if expanded is not None and expanded is not workflow:
+        cache = LoopCache(services.cache, loop_places(workflow.id, expanded, workflow))
     return Env(
-        services.cache,
+        cache,
         services.datasets,
         services.queries,
-        lambda n: services.runner.is_fresh(workflow, n),
+        lambda n: services.runner.is_fresh(workflow, original_id(n)),
         services.apis,
     )
 
 
+def _resolved(services: Services, workflow: Workflow) -> Workflow:
+    """Constantes viram valores (spec 028) e os laços são desenrolados, volta a volta (spec 041)."""
+    resolved = services.runner.resolve(workflow).workflow
+    return expand_loops(resolved, services.cache, lambda n: services.runner.is_fresh(workflow, n))
+
+
 def _plan(services: Services, workflow: Workflow) -> SqlPlan:
-    workflow = services.runner.resolve(workflow).workflow  # constantes viram valores (spec 028)
+    expanded = _resolved(services, workflow)
     try:
-        return build_plan(workflow, _env(services, workflow))
+        return build_plan(expanded, _env(services, workflow, expanded))
     except GraphError as exc:
         raise InvalidInputError(str(exc)) from exc
 
@@ -210,8 +223,8 @@ def start_verification(req: GenerateRequest, services: ServicesDep) -> dict[str,
 
     def work() -> None:
         try:
-            env = _env(services, workflow)
-            resolved = services.runner.resolve(workflow).workflow
+            resolved = _resolved(services, workflow)
+            env = _env(services, workflow, resolved)
             job.result = verify(build_plan(resolved, env), env, job.cancel)
         except CancelledError:
             pass

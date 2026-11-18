@@ -14,7 +14,7 @@ localmente.
   **pular linhas e colunas** quando a tabela não começa em A1.
 - **Manual dentro do programa** (`?` ou `F1`): o guia ao lado do trabalho, com busca, imagens no tema da tela,
   "Mostrar onde fica" e exemplos para experimentar. **Ctrl+K** acha ferramenta, ação, caixa, fonte ou capítulo.
-- **Modo foco** (`F11`), painéis recolhidos em faixa e editor de fórmula em janela larga (**Abrir grande**).
+- **Modo foco** (`F11`), painéis recolhidos em faixa e editor de fórmula em janela larga (**Expandir**).
 - **Vista Dados**: a primeira tela reúne arquivos, pastas de arquivos, leitores de PDF, consultas, APIs, conexões e
   constantes, com situação, prévia, qualidade das colunas e o **mapa de onde cada fonte é usada** nos
   fluxos da biblioteca. Antes de excluir uma fonte em uso, a tela lista o que deixa de funcionar.
@@ -46,6 +46,22 @@ localmente.
   prévia mascarada. Onde a fonte não existe, o fluxo roda com a amostra, marcada em laranja na caixa e na vista Dados.
   Fonte que é arquivo vinculado ganha aviso para quem compartilha e para quem recebe (o caminho nunca vai no arquivo).
   Caminhos, senhas e conexões nunca vão no arquivo.
+- **Laços**: o Loop cria o Início e o Fim do loop, e as caixas entre eles repetem para cada valor de uma coluna,
+  para cada número ou data de uma faixa, ou enquanto uma condição valer. `[#valor]`, `[#volta]` e `[#total]` nas
+  fórmulas e no nome do arquivo; saída empilhada, acumulada ou só a última volta; limite de voltas, Parar, resultado
+  e cache por volta, laço dentro de laço (até 3 níveis), aviso de desenho antes de executar. Na aba SQL, o laço
+  vira um `UNION ALL` por valor, conferido com o resultado (Enquanto e Acumular ficam sem tradução, com o motivo).
+- **Parar**: enquanto qualquer fluxo executa, o botão Executar do topo vira Parar; o que falta fica como não executado.
+- **Nome dinâmico no Output Data**: `vendas_{regiao}` grava um arquivo por valor da coluna, também dentro de um laço.
+- **Canvas organizado**: caixas e etapas que recolhem (a etapa vira um cartão com os ícones e o estado), fios em linhas
+  retas que desviam das caixas, com pistas separadas, e Organizar o fluxo em colunas, com desfazer.
+- **Listas que recolhem**: fórmulas, regras, agregações, chaves e ordenações do Configurar recolhem num cartão de uma
+  linha com o resumo e ganham nome, sem desatualizar o resultado.
+- **Seletor de fontes**: o Input Data mostra a fonte num cartão; Trocar abre uma janela com as pastas da vista Dados,
+  busca, prévia e cadastro sem sair dela.
+- **Dica editável** nos gráficos (categoria, valor, % do total, colunas extras agregadas e texto com campos, também no
+  HTML), **tempo nas caixas** com a mais lenta em destaque e **célula em destaque** na tabela, com largura das colunas
+  por arrasto e o resumo das colunas que liga e desliga.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -76,7 +92,7 @@ localmente.
 - **Replay analítico**: linha do tempo no dashboard, corrida de barras, bolhas, Sankey,
   destaques com critério, história em cenas, GIF por gráfico e HTML com tudo isso.
 - **Lições guiadas** no Manual, cada uma num fluxo próprio.
-- **43 ferramentas** na paleta, em 6 famílias: entrada/saída, preparação (com
+- **44 ferramentas** na paleta, em 6 famílias: entrada/saída, preparação (com
   Text To Columns, Record ID, Running Total, Multi-Row Formula e Data Quality), combinação e transformação (Join
   com saídas L/J/R, Cross Tab, Transpose, Append Fields, Summarize, Union, SQL via
   DuckDB, Fuzzy Match), conferência e reúso (Reconcile, Compare Runs, Subflow), BI (Chart, KPI Card, Venn e Table)
@@ -279,6 +295,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [038](specs/038-separador-decimal/spec.md) | Separador decimal escolhido pela pessoa: vírgula ou ponto |
 | [039](specs/039-regex-didatico/spec.md) | Regex sem escrever expressão regular: marcar o trecho no exemplo e ajustar as peças |
 | [040](specs/040-datas-e-fluxo-portatil/spec.md) | Datas sem formato certo ("Você quis dizer…", calendário) e fluxo que viaja entre computadores (o que falta e amostra) |
+| [041](specs/041-canvas-organizado-e-loop/spec.md) | Laço (Início e Fim do loop), canvas organizado (recolher, fios que desviam, organizar), listas que recolhem, seletor de fontes, dica editável, tempo nas caixas e célula em destaque |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 
@@ -339,8 +356,8 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 | DELETE | `/api/datasets/{nome}` | Excluir arquivo |
 | GET | `/api/workflows` · `/api/workflows/{id}` | Listar · obter fluxo |
 | PUT · DELETE | `/api/workflows/{id}` | Salvar · excluir fluxo |
-| POST | `/api/execute` | Executar (opcional `target_node_id`) |
-| GET | `/api/results/{wf}/{nó}/{porta}` | Página de resultados com perfil (`offset`, `limit`, `search`, `sort_col`, `filters` em JSON) |
+| POST | `/api/execute` · `/execute/{fluxo}/cancel` | Executar (opcional `target_node_id`) · parar na próxima volta do laço |
+| GET | `/api/results/{wf}/{nó}/{porta}` | Página de resultados com perfil (`offset`, `limit`, `search`, `sort_col`, `filters` em JSON; `loop_end` e `turn` mostram uma volta do laço) |
 | GET | `/api/exports/{arquivo}` | Baixar arquivo gerado pelo Output Data |
 | POST | `/api/formula/validate` | Validar expressão contra um esquema |
 | GET · PUT · DELETE | `/api/connections[/{id}]` | Conexões com bancos (a senha só entra no PUT, nunca sai) |

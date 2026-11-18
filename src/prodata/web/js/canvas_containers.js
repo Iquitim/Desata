@@ -10,7 +10,9 @@ import {
   setContainerEnabled,
   updateContainer,
 } from './actions.js';
-import { NODE_W, nodeHeight } from './canvas_geometry.js';
+import { NODE_W, nodeHeight, nodeWidth } from './canvas_geometry.js';
+import { CARD_H, CARD_W, containerCard, setContainersCollapsed } from './canvas_collapse.js';
+import { frameEl, loopFrames } from './loops.js';
 import { els, state, viewportCenter } from './canvas_state.js';
 import { copySelection, cutSelection } from './clipboard.js';
 import { clear, h } from './dom.js';
@@ -20,12 +22,13 @@ import { showMenu } from './ui.js';
 
 export function renderContainers() {
   clear(els.containers);
+  renderLoopFrames(); // laços (spec 041), por baixo das etapas
   for (const c of store.workflow.containers || []) {
     els.containers.append(h('div', {
-      class: ['container-box', store.selection.containerId === c.id && 'selected', c.disabled && 'off'],
+      class: ['container-box', store.selection.containerId === c.id && 'selected', c.disabled && 'off', c.collapsed && 'collapsed'],
       dataset: { container: c.id },
       style: {
-        left: `${c.x}px`, top: `${c.y}px`, width: `${c.width}px`, height: `${c.height}px`,
+        left: `${c.x}px`, top: `${c.y}px`, width: `${c.collapsed ? CARD_W : c.width}px`, height: `${c.collapsed ? CARD_H : c.height}px`,
         '--container-color': c.color,
         '--container-fill': `${Math.round((c.opacity ?? 0.05) * 100)}%`,
       },
@@ -38,14 +41,20 @@ export function renderContainers() {
         title: c.disabled ? 'Ligar etapa (reativa as caixas de dentro)' : 'Desligar etapa (desativa as caixas de dentro)',
         onclick: (ev) => { ev.stopPropagation(); setContainerEnabled(c.id, Boolean(c.disabled), NODE_W); },
       })),
-    c.description ? h('div', { class: 'container-desc' }, c.description) : null,
-    h('div', { class: 'container-resize', title: 'Arraste para redimensionar' })));
+    c.collapsed ? containerCard(c) : c.description ? h('div', { class: 'container-desc' }, c.description) : null,
+    c.collapsed ? null : h('div', { class: 'container-resize', title: 'Arraste para redimensionar' })));
   }
+}
+
+/** Moldura de cada laço (spec 041): acompanha o Início, o corpo e o Fim. */
+function renderLoopFrames() {
+  const frames = loopFrames((n) => ({ x1: n.x, y1: n.y, x2: n.x + nodeWidth(n), y2: n.y + nodeHeight(n) }));
+  els.containers.prepend(...frames.map(frameEl));
 }
 
 export function placeContainerEl(c) {
   const el = els.containers.querySelector(`[data-container="${c.id}"]`);
-  if (el) Object.assign(el.style, { left: `${c.x}px`, top: `${c.y}px`, width: `${c.width}px`, height: `${c.height}px` });
+  if (el) Object.assign(el.style, { left: `${c.x}px`, top: `${c.y}px`, width: `${c.collapsed ? CARD_W : c.width}px`, height: `${c.collapsed ? CARD_H : c.height}px` });
 }
 
 /** Troca o título por um campo de texto; Enter/sair confirma, Esc cancela. */
@@ -94,6 +103,7 @@ export function containerMenu(id, x, y, pasteItem) {
   const c = store.workflow.containers.find((k) => k.id === id);
   select(null, null, id);
   showMenu(x, y, [
+    { label: c.collapsed ? 'Expandir etapa' : 'Recolher etapa', icon: c.collapsed ? 'maximize' : 'minimize', onSelect: () => setContainersCollapsed([id], !c.collapsed) },
     { label: 'Renomear', icon: 'edit', onSelect: () => renameContainer(id) },
     { label: 'Ajustar às caixas de dentro', icon: 'fit', onSelect: () => fitContainer(id, NODE_W, nodeHeight) },
     { label: c.disabled ? 'Ligar etapa' : 'Desligar etapa', icon: 'power', onSelect: () => setContainerEnabled(id, Boolean(c.disabled), NODE_W) },

@@ -13,12 +13,23 @@ export function addNode(type, x, y, config = {}) {
   const created = {
     id,
     type,
-    label: config.__label || spec.name,
+    label: config.__label || (type === 'flow.loop_start' ? 'Início do loop' : spec.name),
     x: Math.round(x / 10) * 10,
     y: Math.round(y / 10) * 10,
     config: { ...clone(spec.default_config), ...withoutMeta(config) },
   };
-  mutate((wf) => wf.nodes.push(created), { affects: [id], structural: true });
+  // Laço (spec 041): o Início nasce com o Fim, já ligados; as caixas que repetem entram no fio entre eles.
+  const end = type === 'flow.loop_start' && store.tools['flow.loop_end'] && !config.__single ? {
+    id: uid('n'), type: 'flow.loop_end', label: 'Fim do loop', x: created.x + 520, y: created.y,
+    config: { ...clone(store.tools['flow.loop_end'].default_config), start: id },
+  } : null;
+  mutate((wf) => {
+    wf.nodes.push(created);
+    if (end) {
+      wf.nodes.push(end);
+      wf.edges.push({ id: uid('e'), source: id, sourceHandle: 'out', target: end.id, targetHandle: 'in' });
+    }
+  }, { affects: end ? [id, end.id] : [id], structural: true });
   select(id);
   inspect(id);
   return created;
@@ -135,12 +146,18 @@ export function toggleDisabled(id) {
   }, { affects: [id], structural: true });
 }
 
+/** Configuração sem o `_ui` dos itens de lista (nome e recolhido, spec 041): o que o motor de fato lê. */
+const engineView = (v) => JSON.stringify(v, (k, x) => (k === '_ui' ? undefined : x));
+
 export function updateConfig(id, path, value) {
+  const before = getPath(store.workflow.nodes.find((x) => x.id === id)?.config, path);
+  // Só o nome ou o recolhido de um item mudou: não desatualiza o resultado (RF-4108).
+  const uiOnly = before !== undefined && engineView(before) === engineView(value);
   mutate((wf) => {
     const n = wf.nodes.find((x) => x.id === id);
     if (!n) return; // o campo pode avisar da mudança ao perder o foco, depois que a caixa foi excluída
     setPath(n.config, path, value);
-  }, { key: `${id}:${path.join('.')}`, affects: [id] });
+  }, { key: uiOnly ? null : `${id}:${path.join('.')}`, affects: uiOnly ? [] : [id] });
 }
 
 export function renameNode(id, label) {

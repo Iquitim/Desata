@@ -1,6 +1,9 @@
 // O que está sob o cursor ou sob uma caixa: qual ligação passa por ali e se o espaço está livre.
 
-import { NODE_MIN_H, NODE_W, edgeBend, nodeHeight, portPoint } from './canvas_geometry.js';
+import { NODE_MIN_H, NODE_W, edgeBend, nodeHeight } from './canvas_geometry.js';
+import { edgeEnds, hiddenNodes } from './canvas_collapse.js';
+import { polylineSamples } from './canvas_route.js';
+import { wireRoutes } from './canvas_wires.js';
 import { els, view } from './canvas_state.js';
 import { h } from './dom.js';
 import { store, toolOf } from './store.js';
@@ -12,13 +15,14 @@ import { store, toolOf } from './store.js';
  */
 function edgeSamples(steps) {
   const byId = new Map(store.workflow.nodes.map((n) => [n.id, n]));
+  const hidden = hiddenNodes();
+  const routes = wireRoutes();
   const out = [];
   for (const e of store.workflow.edges) {
-    const s = byId.get(e.source);
-    const t = byId.get(e.target);
-    if (!s || !t) continue;
-    const a = portPoint(s, e.sourceHandle, true);
-    const b = portPoint(t, e.targetHandle, false);
+    const ends = edgeEnds(e, byId, hidden);
+    if (!ends) continue;
+    if (routes.has(e.id)) { out.push({ edge: e, points: polylineSamples(routes.get(e.id), 600 / steps) }); continue; }
+    const { a, b } = ends;
     const dx = edgeBend(a, b);
     const c1 = { x: a.x + dx, y: a.y };
     const c2 = { x: b.x - dx, y: b.y };

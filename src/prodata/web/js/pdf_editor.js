@@ -40,7 +40,7 @@ export function pdfEditor(source, opts = {}) {
     icon('copy', 14), h('span', {}, 'Extração'), icon('chevron-down', 12));
   const helpBtn = button({ icon: 'book', title: 'Manual neste tópico (F1)', variant: 'ghost', onClick: () => window.dispatchEvent(new Event('prodata:manual-here')) });
   const gesture = (name) => { document.body.dataset.pdfGesture = name; };
-  const wideBtn = button({ icon: 'maximize', title: 'Ampliar o editor (Esc volta)', variant: 'ghost', onClick: () => setWide(!document.body.classList.contains('pdf-wide')) });
+  const wideBtn = button({ icon: 'maximize', title: 'Expandir o editor (Esc recolhe)', variant: 'ghost', onClick: () => setWide(!document.body.classList.contains('pdf-wide')) });
   const undoBtn = button({ icon: 'undo', title: 'Desfazer (Ctrl+Z)', variant: 'ghost', disabled: true, onClick: () => undo() });
   const redoBtn = button({ icon: 'redo', title: 'Refazer (Ctrl+Y)', variant: 'ghost', disabled: true, onClick: () => redo() });
   const bar = h('div', { class: 'pe-bar' },
@@ -83,7 +83,7 @@ export function pdfEditor(source, opts = {}) {
   function setWide(on) {
     document.body.classList.toggle('pdf-wide', on);
     wideBtn.replaceChildren(icon(on ? 'minimize' : 'maximize', 16));
-    wideBtn.title = on ? 'Voltar ao tamanho normal (Esc)' : 'Ampliar o editor (Esc volta)';
+    wideBtn.title = on ? 'Recolher o editor (Esc)' : 'Expandir o editor (Esc recolhe)';
     window.dispatchEvent(new Event('resize'));
   }
   const onKey = (e) => {

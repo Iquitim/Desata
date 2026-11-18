@@ -3,6 +3,7 @@
 import { button, fmt, h } from './dom.js';
 import { icon } from './icons.js';
 import { fits, RULES, ruleOf, sampleFailures } from './quality_rules.js';
+import { listItem, listToolbar, withUi } from './list_items.js';
 
 /** Cartões de regra e a lista do que foi escolhido. `renderFields` vem de fields.js, que monta cada regra. */
 export function qualityRulesField(field, value, set, ctx, { renderFields }) {
@@ -27,19 +28,19 @@ export function qualityRulesField(field, value, set, ctx, { renderFields }) {
     // A coluna conferida vem da entrada I; a da lista permitida, da L (RF-2840).
     const itemCtx = { ...ctx, columns: (port) => (ctx.columns?.(port || 'in') || []).filter((c) => fits(rule.kind, c.type)) };
     const body = renderFields(fields, rule, (path, v) => set(v, [i, ...path]), itemCtx);
-    body.classList.add('list-item-fields');
-    return h('div', { class: 'list-item dq-rule' },
-      h('div', { class: 'list-item-head' },
-        h('span', { class: 'list-item-index' }, `${i + 1}`),
-        h('strong', { class: 'dq-rule-name' }, icon(ruleOf(rule.kind).icon, 13), ruleOf(rule.kind).name),
-        button({ icon: 'trash', title: 'Tirar esta regra', size: 'sm', variant: 'ghost', onClick: () => set(rules.filter((_, j) => j !== i)) })),
-      body);
+    const kind = ruleOf(rule.kind).name;
+    return listItem({
+      index: i, item: { ...rule, kind: undefined }, fields, body, title: kind, className: 'dq-rule',
+      setUi: (patch) => set(rules.map((r, j) => (j === i ? withUi(r, patch) : r))),
+      actions: [button({ icon: 'trash', title: 'Tirar esta regra', size: 'sm', variant: 'ghost', onClick: () => set(rules.filter((_, j) => j !== i)) })],
+    });
   });
   return h('div', { class: 'stack-sm' },
     h('span', { class: 'field-label' }, 'Que regra você quer conferir?'),
     cards,
     rules.length
-      ? h('div', { class: 'stack-xs' }, h('span', { class: 'field-label' }, `Regras escolhidas (${rules.length})`), ...list,
+      ? h('div', { class: 'stack-xs' }, h('span', { class: 'field-label' }, `Regras escolhidas (${rules.length})`),
+        listToolbar(rules, (patch) => set(rules.map((r) => withUi(r, patch)))), ...list,
         h('p', { class: 'field-help' }, 'Vazio passa nas regras de formato: use "Não vazio" para cobrar o preenchimento. Regras de número só aparecem para números.'))
       : h('p', { class: 'field-help' }, 'Clique num cartão para adicionar a regra. Cada uma vale para uma coluna.'));
 }

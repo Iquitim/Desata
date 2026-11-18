@@ -22,6 +22,8 @@ class Container(BaseModel):
     opacity: float = Field(0.05, ge=0, le=0.4, description="Opacidade do fundo da caixa.")
     # Caixa desligada: a interface desativa os nós de dentro (ver spec 007, RF-712).
     disabled: bool = False
+    # Recolhida (spec 041): a etapa vira um cartão. Só desenho; não muda a execução.
+    collapsed: bool = False
     x: float = 0
     y: float = 0
     width: float = 300
@@ -40,6 +42,8 @@ class Node(BaseModel):
     cache_point: bool = False
     # Renovação do ponto de cache (spec 017): além de mudanças antes dele, também todo dia ou a cada hora.
     cache_refresh: Literal["changes", "daily", "hourly"] = "changes"
+    # Compacta (spec 041): só o ícone e as portas no canvas. Só desenho; não muda a execução.
+    collapsed: bool = False
 
 
 class Edge(BaseModel):

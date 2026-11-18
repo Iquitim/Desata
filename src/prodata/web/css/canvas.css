@@ -314,5 +314,39 @@ g.edge.held .edge-line { stroke: var(--marca-org, #a9852f); stroke-dasharray: 6 
 .node.source-sample .node-card { box-shadow: 0 0 0 2px var(--warn); }
 .node-missing { position: absolute; top: -10px; left: -8px; z-index: 4; display: inline-flex; align-items: center; gap: 3px; padding: 1px 8px; font-size: var(--fs-xs); font-weight: 700; color: #fff; background: var(--err); border-radius: 999px; box-shadow: var(--shadow-sm); pointer-events: none; }
 .node-missing.sample { background: var(--warn); }
+.node-missing.node-loop-problem { pointer-events: auto; cursor: help; }
+.node:has(.node-loop-problem) .node-card { border-color: var(--err); box-shadow: 0 0 0 2px color-mix(in srgb, var(--err) 30%, transparent); }
+/* tempo nas caixas (spec 041): selo no canto inferior direito; as mais lentas em destaque */
+/* recolher (spec 041): caixa compacta e etapa recolhida */
+.node.node-hidden { display: none; }
+.node.compact .node-card { justify-content: center; padding: 0; gap: 0; }
+.node.compact .node-text { display: none; }
+.node.compact .node-delete { display: none; }
+.container-box.collapsed { pointer-events: auto; border-style: solid; border-width: 1.5px; background: color-mix(in srgb, var(--container-color) 10%, var(--surface)); box-shadow: var(--shadow-sm); }
+.container-box.collapsed .container-title { border-radius: 9px 9px 0 0; }
+.container-card { display: flex; flex-direction: column; gap: 7px; padding: 6px 10px 8px; cursor: grab; }
+.container-card .card-row { display: flex; align-items: center; gap: 8px; font-size: var(--fs-xs); color: var(--text-2); }
+.container-card .card-count { font-weight: 600; color: var(--text); }
+.container-card .card-state { padding: 0 7px; border-radius: 999px; font-weight: 600; background: var(--surface-2); }
+.container-card .card-state.ok { color: var(--ok, #15803d); background: color-mix(in srgb, var(--ok, #15803d) 12%, transparent); }
+.container-card .card-state.err { color: #fff; background: var(--err); }
+.container-card .card-state.warn { color: #fff; background: var(--warn); }
+.container-card .card-time { font-variant-numeric: tabular-nums; }
+.container-card .card-expand { margin-left: auto; display: inline-flex; padding: 3px; color: var(--text-2); background: none; border: 0; border-radius: 6px; cursor: pointer; }
+.container-card .card-expand:hover { color: var(--text); background: var(--surface-2); }
+.container-card .card-icons { display: flex; flex-wrap: nowrap; gap: 4px; overflow: hidden; }
+.container-card .card-icon { --cat: var(--cat-prep); display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none; color: var(--cat); background: color-mix(in srgb, var(--cat) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--cat) 40%, transparent); border-radius: 5px; }
+.card-icon[data-category="inout"] { --cat: var(--cat-inout); } .card-icon[data-category="transform"] { --cat: var(--cat-transform); }
+.card-icon[data-category="control"] { --cat: var(--cat-control); } .card-icon[data-category="bi"] { --cat: var(--cat-bi); } .card-icon[data-category="ml"] { --cat: var(--cat-ml); }
+.container-card .card-icon.err { box-shadow: 0 0 0 2px var(--err); }
+.container-card .card-more { align-self: center; font-size: var(--fs-xs); font-weight: 600; color: var(--text-2); }
+/* laço (spec 041): a moldura acompanha o Início, o corpo e o Fim */
+.loop-frame { position: absolute; pointer-events: none; border: 1.5px dashed color-mix(in srgb, var(--cat-control) 70%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--cat-control) 5%, transparent); }
+.loop-frame.err { border-color: var(--err); }
+.loop-frame-label { position: absolute; top: 4px; left: 12px; display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-xs); font-weight: 700; color: var(--cat-control); }
+.node-time { position: absolute; right: 8px; bottom: -9px; z-index: 3; height: 17px; display: inline-flex; align-items: center; padding: 0 7px; font: 600 var(--fs-xs) var(--font); font-variant-numeric: tabular-nums; color: var(--text-2); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: var(--shadow-sm); }
+.node-time.mid { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--border)); }
+.node-time.top { color: #fff; background: var(--err); border-color: var(--err); }
+.node-time.cache { color: var(--marca-org, #a9852f); text-transform: uppercase; letter-spacing: .04em; }
 .node-alert { position: absolute; top: -10px; right: -8px; z-index: 4; padding: 1px 8px; font-size: var(--fs-xs); font-weight: 700; color: #fff; background: var(--err); border-radius: 999px; box-shadow: var(--shadow-sm); pointer-events: none; }
 

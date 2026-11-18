@@ -16,9 +16,12 @@ import { allowedValuesField } from './quality_values.js';
 import { columnValues, renameLabels } from './fields_values.js';
 import { fileField, modelField, modelSaveField, modelVersionsField, subflowField } from './fields_extra.js';
 import { formulaEditor } from './formula_editor.js';
+import { listItem, listToolbar, withUi } from './list_items.js';
+import { sourceCard } from './source_picker.js';
+import { tipColumnsField, tipTextField } from './tip_fields.js';
+import { loopVariables } from './loops.js';
 import { openLargeFormula } from './formula_large.js';
-import { outputText } from './pdf_labels.js';
-import { API_PREFIX, displayName, FOLDER_PREFIX, JIRA_PREFIX, PDF_PREFIX, QUERY_PREFIX, sourceKey, store } from './store.js';
+import { store } from './store.js';
 import { typeLabel, typeName } from './types.js';
 
 
@@ -245,8 +248,10 @@ function formulaValidator(field, cols, status) {
       return;
     }
     try {
+      // Dentro de um laço, [#valor], [#volta] e [#total] valem como constantes (spec 041).
+      const loopVars = loopVariables().map((v) => ({ name: v.name, type: v.type, value: v.sample }));
       const res = await api.validateFormula(expr, cols.map(({ name, type }) => ({ name, type })), Boolean(field.multirow),
-        store.workflow?.constants || []);
+        [...(store.workflow?.constants || []), ...loopVars]);
       status.className = `expr-status ${res.valid ? 'ok' : 'err'}`;
       status.replaceChildren(icon(res.valid ? 'check' : 'alert', 13), res.valid ? 'Expressão válida' : res.error);
     } catch {
@@ -313,41 +318,11 @@ function template(field, value, set, ctx, id) {
 
 // ------------------------------------------------------------------ arquivos
 
-/** "Extrato do banco (extrato_0412.xlsx)": o nome de exibição da vista Dados, com o original entre parênteses (spec 034). */
-function shownAs(value, original) {
-  const shown = displayName(sourceKey(value));
-  return shown ? `${shown} (${original})` : original;
-}
-
-function dataset(field, value, set, ctx, id) {
-  const files = ctx.datasets || [];
-  const queries = ctx.queries || [];
-  const apis = (ctx.apis || []).filter((a) => !ctx.needsLoop?.(a));
-  const jira = ctx.jira || [];
-  const folders = ctx.folders || [];
-  const pdfs = (ctx.pdfs || []).filter((p) => !p.status?.draft);
-  const pdfOuts = pdfs.flatMap((p) => (p.status?.outputs || ['campos']).map((o) => ({ value: `${PDF_PREFIX}${p.id}/${o}`, source: p, label: outputText(o)[0] })));
-  const known = pdfOuts.some((o) => o.value === value) || folders.some((f) => `${FOLDER_PREFIX}${f.id}` === value) || files.some((d) => d.name === value) || queries.some((q) => `${QUERY_PREFIX}${q.id}` === value)
-    || apis.some((a) => `${API_PREFIX}${a.id}` === value) || jira.some((q) => `${JIRA_PREFIX}${q.id}` === value);
-  return h('div', { class: 'row' },
-    h('select', { id, class: ['input', value && !known && 'invalid'], onchange: (e) => set(e.target.value) },
-      h('option', { value: '' }, files.length || queries.length || apis.length ? 'Escolha uma fonte…' : 'Nenhuma fonte cadastrada na vista Dados'),
-      files.length ? h('optgroup', { label: 'Arquivos' },
-        files.map((d) => h('option', { value: d.name, selected: d.name === value }, shownAs(d.name, d.name)))) : null,
-      folders.length ? h('optgroup', { label: 'Pastas de arquivos' },
-        folders.map((f) => h('option', { value: `${FOLDER_PREFIX}${f.id}`, selected: `${FOLDER_PREFIX}${f.id}` === value }, shownAs(`${FOLDER_PREFIX}${f.id}`, f.name)))) : null,
-      // um grupo por fonte PDF: "PDF · Arrecadação federal" com as saídas embaixo, em vez de nomes longos repetidos
-      ...pdfs.map((p) => h('optgroup', { label: `PDF · ${displayName(sourceKey(`${PDF_PREFIX}${p.id}`)) || p.name}` },
-        pdfOuts.filter((o) => o.source === p).map((o) => h('option', { value: o.value, selected: o.value === value, title: outputText(o.value.split('/').pop())[1] }, o.label)))),
-      queries.length ? h('optgroup', { label: 'Consultas de banco' },
-        queries.map((q) => h('option', { value: `${QUERY_PREFIX}${q.id}`, selected: `${QUERY_PREFIX}${q.id}` === value }, shownAs(`${QUERY_PREFIX}${q.id}`, q.name)))) : null,
-      apis.length ? h('optgroup', { label: 'APIs' },
-        apis.map((a) => h('option', { value: `${API_PREFIX}${a.id}`, selected: `${API_PREFIX}${a.id}` === value }, shownAs(`${API_PREFIX}${a.id}`, a.name)))) : null,
-      jira.length ? h('optgroup', { label: 'Jira' },
-        jira.map((q) => h('option', { value: `${JIRA_PREFIX}${q.id}`, selected: `${JIRA_PREFIX}${q.id}` === value }, shownAs(`${JIRA_PREFIX}${q.id}`, q.name)))) : null,
-      value && !known ? h('option', { value, selected: true }, `${value} (não encontrado)`) : null),
-    ctx.onPreview ? button({ icon: ctx.isQuery ? 'edit' : 'eye', title: ctx.isQuery ? 'Editar a fonte e ver prévia' : 'Pré-visualizar e ajustar leitura', disabled: !known, onClick: ctx.onPreview }) : null,
-    ctx.onNewQuery ? button({ icon: 'plus', title: 'Nova consulta de banco', onClick: ctx.onNewQuery }) : null);
+/** Input Data: o cartão da fonte e o seletor grande (spec 041, RF-4120). */
+function dataset(field, value, set, ctx) {
+  return sourceCard(value, set, [
+    ctx.onPreview ? button({ icon: ctx.isQuery ? 'edit' : 'eye', title: ctx.isQuery ? 'Editar a fonte e ver prévia' : 'Pré-visualizar e ajustar leitura', disabled: !value, onClick: ctx.onPreview }) : null,
+  ].filter(Boolean));
 }
 
 /** API usada pelo API Loop: só as que pedem {coluna} fazem sentido aqui. */
@@ -467,21 +442,21 @@ function dbQuery(field, value, set, ctx, id) {
 function list(field, value, set, ctx) {
   const items = Array.isArray(value) ? value : [];
   const update = (next) => set(next);
-  const wrap = h('div', { class: 'list-field' });
+  const wrap = h('div', { class: 'list-field' }, listToolbar(items, (patch) => update(items.map((it) => withUi(it, patch)))));
   items.forEach((item, i) => {
     const body = renderFields(field.item_fields, item, (path, v) => set(v, [i, ...path]), ctx);
-    body.classList.add('list-item-fields');
-    wrap.append(h('div', { class: 'list-item' },
-      h('div', { class: 'list-item-head' },
-        h('span', { class: 'list-item-index' }, `${i + 1}`),
-        h('div', { class: 'row gap-0' },
-          button({ icon: 'arrow-up', title: 'Mover para cima', size: 'sm', variant: 'ghost', disabled: i === 0,
-            onClick: () => { const n = [...items]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; update(n); } }),
-          button({ icon: 'arrow-down', title: 'Mover para baixo', size: 'sm', variant: 'ghost', disabled: i === items.length - 1,
-            onClick: () => { const n = [...items]; [n[i + 1], n[i]] = [n[i], n[i + 1]]; update(n); } }),
-          button({ icon: 'trash', title: 'Remover', size: 'sm', variant: 'ghost',
-            onClick: () => update(items.filter((_, j) => j !== i)) }))),
-      body));
+    wrap.append(listItem({
+      index: i, item, fields: field.item_fields, body,
+      setUi: (patch) => update(items.map((it, j) => (j === i ? withUi(it, patch) : it))),
+      actions: [
+        button({ icon: 'arrow-up', title: 'Mover para cima', size: 'sm', variant: 'ghost', disabled: i === 0,
+          onClick: () => { const n = [...items]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; update(n); } }),
+        button({ icon: 'arrow-down', title: 'Mover para baixo', size: 'sm', variant: 'ghost', disabled: i === items.length - 1,
+          onClick: () => { const n = [...items]; [n[i + 1], n[i]] = [n[i], n[i + 1]]; update(n); } }),
+        button({ icon: 'trash', title: 'Remover', size: 'sm', variant: 'ghost',
+          onClick: () => update(items.filter((_, j) => j !== i)) }),
+      ],
+    }));
   });
   wrap.append(button({ icon: 'plus', label: 'Adicionar', size: 'sm', onClick: () => update([...items, structuredClone(field.item_default)]) }));
   return wrap;
@@ -738,7 +713,7 @@ function categoryColors(field, value, set, ctx) {
 
 const WIDGETS = {
   color, optional_number: optionalNumber, category_colors: categoryColors, column_values: columnValues,
-  rename_labels: renameLabels, subflow: subflowField, file: fileField, model: modelField, model_save: modelSaveField, model_versions: modelVersionsField,
+  rename_labels: renameLabels, tip_columns: tipColumnsField, tip_text: tipTextField, subflow: subflowField, file: fileField, model: modelField, model_save: modelSaveField, model_versions: modelVersionsField,
   text, textarea, number, toggle, select, column, columns, tags, expression, sql, template, dataset, sheet, folder,
   recipe_cards: recipeCards, confidentiality, filter_value: filterValue, date: dateField,
   quality_rules: (f, v, s, c) => qualityRulesField(f, v, s, c, { renderFields }),

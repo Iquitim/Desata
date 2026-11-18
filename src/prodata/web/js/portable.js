@@ -7,6 +7,7 @@ import { chooseSaveFile } from './desktop.js';
 import { button, debounce, fmt, h } from './dom.js';
 import { icon } from './icons.js';
 import { setSourceProblems } from './portable_state.js';
+import { openSourcePicker } from './source_picker.js';
 import { emit, markSaved, mutate, on, store } from './store.js';
 import { openDialog, toast, toastError } from './ui.js';
 
@@ -107,10 +108,9 @@ function card(item) {
       ' Quem enviou lia este arquivo de uma pasta do próprio computador (arquivo vinculado). Peça o arquivo e escolha aqui; até lá, vale a amostra.') : null,
     h('div', { class: 'pt-actions' },
       item.kind === 'file' ? button({ icon: 'upload', label: 'Escolher o arquivo', size: 'sm', variant: sample ? '' : 'primary', onClick: () => pickFile(item) }) : null,
-      options.length ? h('select', { class: 'input input-sm', 'aria-label': `Usar uma fonte deste computador no lugar de ${item.label}`,
-        onchange: (e) => { if (e.target.value) repoint(item, e.target.value); } },
-      h('option', { value: '' }, item.kind === 'file' ? 'ou usar um arquivo daqui…' : 'Usar uma fonte daqui…'),
-      options.map((s) => h('option', { value: s.dragValue }, s.name))) : null,
+      options.length ? button({ icon: 'folder', label: item.kind === 'file' ? 'Usar um arquivo daqui…' : 'Usar uma fonte daqui…', size: 'sm',
+        title: `Escolher uma fonte deste computador no lugar de ${item.label}`,
+        onClick: () => openSourcePicker({ kinds: [SAME_KIND[item.kind]], title: `No lugar de ${item.label}`, onPick: (v) => repoint(item, v) }) }) : null,
       !options.length && item.kind !== 'file' ? h('span', { class: 'field-help' }, `${item.action} na vista Dados (Adicionar) e escolha aqui.`) : null,
       sample ? button({ icon: 'trash', label: 'Apagar a amostra', size: 'sm', variant: 'ghost', onClick: () => dropSample(item) }) : null));
 }

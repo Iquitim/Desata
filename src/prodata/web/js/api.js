@@ -205,6 +205,7 @@ export const api = {
     return { blob: await res.blob(), name };
   },
   progress: (workflowId) => request('GET', `/api/execute/${encodeURIComponent(workflowId)}/progress`),
+  cancelRun: (workflowId) => request('POST', `/api/execute/${encodeURIComponent(workflowId)}/cancel`),
   execute: (workflow, targetNodeId = null, holdExports = false) =>
     request('POST', '/api/execute', { workflow, target_node_id: targetNodeId, hold_exports: holdExports }),
   pendingExports: (workflow, targetNodeId = null) =>

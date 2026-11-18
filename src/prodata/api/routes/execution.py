@@ -10,6 +10,7 @@ from prodata.api.deps import ServicesDep
 from prodata.domain.execution import ExecutionReport
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.engine import graph, results
+from prodata.engine.loop_run import namespace
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.ingestion.datasets import resolve_inside
 from prodata.nodes.io import OutputDataConfig, export_path
@@ -39,6 +40,14 @@ def execution_progress(
     return services.runner.progress(workflow_id)
 
 
+@router.post("/execute/{workflow_id}/cancel")
+def execution_cancel(
+    workflow_id: Annotated[str, Path(pattern=ID_PATTERN)], services: ServicesDep
+) -> dict[str, bool]:
+    """Pede para parar a execução em curso: o laço para na próxima volta (spec 041)."""
+    return {"cancelled": services.runner.cancel(workflow_id)}
+
+
 @router.get("/results/{workflow_id}/{node_id}/{anchor}")
 def get_results(
     workflow_id: Annotated[str, Path(pattern=ID_PATTERN)],
@@ -51,10 +60,12 @@ def get_results(
     sort_col: str | None = None,
     sort_desc: bool = False,
     filters: str = Query("", description="JSON: [{column, op, value, value2}] (filtros exploratórios)"),
+    loop_end: str | None = Query(None, pattern=ID_PATTERN, description="Laço (spec 041): o Fim do loop"),
+    turn: int | None = Query(None, ge=1, description="Laço (spec 041): a volta a mostrar"),
 ) -> dict[str, Any]:
     return results.page(
         services.cache,
-        workflow_id,
+        namespace(workflow_id, loop_end, turn) if loop_end and turn else workflow_id,
         node_id,
         anchor,
         offset=offset,
@@ -82,6 +93,8 @@ def pending_exports(req: ExecuteRequest, services: ServicesDep) -> list[dict[str
             continue
         try:
             cfg = OutputDataConfig.model_validate(node.config)
+            if "{" in cfg.filename:
+                continue  # nome dinâmico: os nomes só se sabem ao gravar, e nunca sobrescreve sem perguntar (spec 041)
             path = export_path(services.settings.exports_dir, cfg)
         except ValidationError, InvalidInputError:
             continue  # configuração inválida: o erro aparece na execução

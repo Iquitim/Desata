@@ -192,3 +192,35 @@
 .th-total { margin: 1px 0 2px; font: 500 var(--fs-2xs) var(--mono); color: var(--text-2); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dataset-list .panel-subtitle[style] { display: flex; align-items: center; gap: 6px; }
 .dataset-list .panel-subtitle[style]::before { width: 8px; height: 8px; content: ""; background: var(--folder); border-radius: 2px; }
+
+/* ---------------------------------------------------------------- spec 041 */
+/* resumo das colunas que liga e desliga */
+.results-body.no-summary .th-total, .results-body.no-summary .quality, .results-body.no-summary .spark { display: none; }
+.results-toolbar .btn.active { color: var(--accent); background: var(--accent-weak); }
+/* largura das colunas por arrasto */
+.col-resize { position: absolute; top: 0; right: -4px; z-index: 2; width: 8px; height: 100%; cursor: col-resize; }
+.col-resize::after { content: ''; position: absolute; top: 20%; bottom: 20%; left: 3px; width: 2px; border-radius: 2px; background: transparent; transition: background .15s; }
+.data-table th:hover .col-resize::after { background: var(--border-strong, var(--border)); }
+.col-resize:hover::after, .data-table.resizing .col-resize:hover::after { background: var(--accent); }
+.data-table.resizing { cursor: col-resize; user-select: none; }
+/* célula em destaque */
+.table-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.table-shell > .table-wrap { flex: 1; min-height: 0; height: auto; }
+.cell-focusable:focus { outline: none; }
+.data-table tr.row-focus > td, .data-table td.col-focus { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.data-table th.col-focus { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); }
+.data-table tr.row-focus > td.rownum { color: var(--accent); font-weight: 700; }
+.data-table td.cell-focus {
+  position: relative; z-index: 1; background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  box-shadow: inset 0 0 0 2px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+  animation: cell-glow 1.6s ease-out 1;
+}
+@keyframes cell-glow { 0% { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent); } 100% { box-shadow: inset 0 0 0 2px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .data-table td.cell-focus { animation: none; } }
+.cell-foot { display: flex; align-items: baseline; gap: 12px; padding: 6px 10px; font-size: var(--fs-xs); background: var(--surface-2); border-top: 1px solid var(--border); }
+.cell-foot[hidden] { display: none; }
+.cell-foot-where { flex: none; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+.cell-foot-value { flex: 1; min-width: 0; max-height: 5.4em; overflow: auto; font-family: var(--mono); color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.cell-foot-value.null { color: var(--text-3); font-style: italic; }
+.cell-foot-keys { flex: none; color: var(--text-3); white-space: nowrap; }
+.dash-table td { cursor: default; }

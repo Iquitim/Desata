@@ -4,7 +4,7 @@ import { refreshJira } from './jira_ui.js';
 import { duplicateNode, removeContainer, removeEdge, removeNodes } from './actions.js';
 import { api } from './api.js';
 import {
-  addContainerAtCenter, canvasTool, currentZoom, fitView, heldBy, initCanvas, NODE_W, pointerWorld, render as renderCanvas, setCanvasTool, showProgress, zoomBy,
+  addContainerAtCenter, canvasTool, currentZoom, fitView, heldBy, initCanvas, NODE_W, pointerWorld, render as renderCanvas, revealNode, setCanvasTool, showProgress, zoomBy,
 } from './canvas.js';
 import { copySelection, cutSelection, paste } from './clipboard.js';
 import { handleDashboardKey, initDashboard, render as renderDashboard } from './dashboard.js';
@@ -30,7 +30,7 @@ import { initInspector } from './inspector.js';
 import { initCommandPalette, togglePalette } from './command_palette.js';
 import { initManual, manualEntries, toggleManual } from './manual.js';
 import { initSelectPicker } from './select_picker.js';
-import { commandList, topMenus } from './top_menus.js';
+import { commandList, isStopping, slowestNote, stopRun, topMenus } from './top_menus.js';
 import { enterFocus, inFocus, initLayout, leaveFocus, panelControls } from './layout.js';
 import { renderPalette } from './palette.js';
 import { initResults, inTableFocus, showLog, toggleTableFocus } from './results.js';
@@ -437,7 +437,7 @@ function buildTopbar() {
     if (b) setView(b.dataset.view);
   });
 
-  const runBtn = button({ icon: 'play', label: 'Executar', variant: 'primary', title: 'Executar fluxo (Ctrl+Enter)', onClick: () => run() });
+  const runBtn = button({ icon: 'play', label: 'Executar', variant: 'primary', title: 'Executar fluxo (Ctrl+Enter)', onClick: () => (store.running ? stopRun() : run()) });
   const themeBtn = button({ icon: resolvedTheme() === 'dark' ? 'sun' : 'moon', title: 'Alternar tema claro e escuro', variant: 'ghost', onClick: () => toggleTheme() });
   function toggleTheme() {
     const next = resolvedTheme() === 'dark' ? 'light' : 'dark';
@@ -460,9 +460,9 @@ function buildTopbar() {
   helpBtn.classList.add('top-help');
   $('#topActions').replaceChildren(...topMenus(actions), themeBtn, helpBtn, runBtn);
   on('running', () => {
-    runBtn.disabled = store.running;
-    runBtn.classList.toggle('busy', store.running);
-    runBtn.querySelector('span').textContent = store.running ? 'Executando…' : 'Executar';
+    runBtn.disabled = store.running && isStopping(); // enquanto executa, o botão vira Parar (spec 041)
+    runBtn.classList.toggle('stop', store.running);
+    runBtn.replaceChildren(icon(store.running ? 'x' : 'play', 16), h('span', {}, store.running ? (isStopping() ? 'Parando…' : 'Parar') : 'Executar'));
   });
 }
 
@@ -485,11 +485,11 @@ function buildStatusbar() {
         : ex ? `${results.length} caixas · ${fmt.ms(ex.total_elapsed_ms)}${errors ? ` · ${errors} com erro` : ''}` : 'Pronto',
       stale ? h('span', { class: 'muted' }, `· ${store.pending.size} alterado(s) desde a execução`) : null,
       skipped && !store.running ? h('span', { class: 'status-held', title: 'Caixas antes de um ponto de cache: não precisaram executar' },
-        `· ${skipped} pulada(s) pelo cache`) : null,
+        `· ${skipped} pulada(s) pelo cache`) : null, slowestNote((id) => { select(id); revealNode(id); }),
     ].filter(Boolean));
   };
   on('running', draw);
-  on('execution', draw);
+  on('execution', draw); on('timing', draw);
   on('workflow:changed', draw);
   on('workflow:loaded', draw);
   on('zoom', (z) => { zoom.textContent = `${Math.round(z * 100)}%`; });

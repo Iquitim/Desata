@@ -27,6 +27,8 @@ def test_document_lists_every_tool_in_use() -> None:
         assert f"`{name}`" in text, name
         if not tool.hidden:
             for field in tool.config.model_fields:
+                if field.startswith("sql_"):  # preenchidos pelo programa ao traduzir para SQL (spec 041)
+                    continue
                 assert f"`{field}`" in text, (name, field)
 
 

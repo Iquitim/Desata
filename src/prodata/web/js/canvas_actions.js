@@ -11,6 +11,7 @@ import {
   wrapInContainer,
 } from './actions.js';
 import { renameContainer } from './canvas_containers.js';
+import { setNodesCollapsed } from './canvas_collapse.js';
 import { NODE_W, nodeHeight } from './canvas_geometry.js';
 import { state } from './canvas_state.js';
 import { icon } from './icons.js';
@@ -23,7 +24,10 @@ export function selectionActions(ids) {
   const nodes = ids.map(node).filter(Boolean);
   const inAnyContainer = (store.workflow.containers || []).some((c) => nodesInside(c, NODE_W).some((n) => ids.includes(n.id)));
   const allDisabled = nodes.every((n) => n.disabled);
+  const allCompact = nodes.every((n) => n.collapsed);
   return [
+    { label: allCompact ? 'Expandir as caixas' : 'Recolher as caixas', icon: allCompact ? 'maximize' : 'minimize', onSelect: () => setNodesCollapsed(ids, !allCompact) },
+    'separator',
     { label: 'Alinhar em linha', icon: 'columns', onSelect: () => alignNodes(ids, 'row') },
     { label: 'Alinhar em coluna', icon: 'list', onSelect: () => alignNodes(ids, 'column') },
     { label: 'Distribuir na horizontal', icon: 'split', onSelect: () => distributeNodes(ids, 'row', geometry()) },

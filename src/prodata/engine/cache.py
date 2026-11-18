@@ -127,6 +127,10 @@ class ResultCache:
         self._entries: dict[tuple[str, str], NodeEntry] = {}
         self._profiles: dict[tuple[str, str, str], dict[str, Any]] = {}
         self._frozen: dict[tuple[str, str], FrozenEntry] = {}
+        # Memória em uso, mantida a cada entrada (spec 041): somar tudo a cada gravação ficava quadrático com as
+        # centenas de entradas de um laço.
+        self._sizes: dict[tuple[str, str], int] = {}
+        self._used = 0
         self._lock = threading.RLock()
 
     def get(self, workflow_id: str, node_id: str) -> NodeEntry | None:
@@ -147,26 +151,41 @@ class ResultCache:
             entry.tables = StoredTables(
                 entry.tables,
                 reload=lambda port: self._read(workflow_id, node_id, port),
-                touched=lambda: self._shrink(keep=key),
+                touched=lambda: self._touched(key),
             )
         with self._lock:
             self._entries[key] = entry
             self._order[key] = None
             self._order.move_to_end(key)
+            self._resize(key)
             for stale in [k for k in self._profiles if k[:2] == key]:
                 del self._profiles[stale]
         self._shrink(keep=key)
 
     # ------------------------------------------------------------------ memória (spec 033, RF-3391)
 
+    @staticmethod
+    def _size_of(entry: NodeEntry) -> int:
+        if isinstance(entry.tables, StoredTables):
+            return entry.tables.in_memory()
+        return sum(int(df.estimated_size()) for df in entry.tables.values())
+
+    def _resize(self, key: tuple[str, str]) -> None:
+        """Atualiza o total com o tamanho atual de uma entrada (ou zero, se ela saiu)."""
+        entry = self._entries.get(key)
+        size = self._size_of(entry) if entry is not None else 0
+        self._used += size - self._sizes.pop(key, 0)
+        if entry is not None:
+            self._sizes[key] = size
+
+    def _touched(self, key: tuple[str, str]) -> None:
+        with self._lock:
+            self._resize(key)  # a tabela voltou do disco
+        self._shrink(keep=key)
+
     def memory_used(self) -> int:
         with self._lock:
-            return sum(
-                e.tables.in_memory()
-                if isinstance(e.tables, StoredTables)
-                else sum(int(df.estimated_size()) for df in e.tables.values())
-                for e in self._entries.values()
-            )
+            return self._used
 
     def _shrink(self, keep: tuple[str, str]) -> None:
         """Acima do limite, as tabelas usadas há mais tempo ficam só no disco."""
@@ -182,6 +201,7 @@ class ResultCache:
                 if not size:
                     continue
                 tables.release()
+                self._resize(key)
                 used -= size
                 if used <= self.memory_limit:
                     return
@@ -282,6 +302,7 @@ class ResultCache:
         with self._lock:
             self._entries.pop((workflow_id, node_id), None)
             self._order.pop((workflow_id, node_id), None)
+            self._resize((workflow_id, node_id))
 
     def prune(self, workflow_id: str, keep: set[str]) -> None:
         """Remove entradas de nós que não existem mais no workflow."""
@@ -289,12 +310,14 @@ class ResultCache:
             for key in [k for k in self._entries if k[0] == workflow_id and k[1] not in keep]:
                 del self._entries[key]
                 self._order.pop(key, None)
+                self._resize(key)
 
     def clear_workflow(self, workflow_id: str) -> None:
         with self._lock:
             for key in [k for k in self._entries if k[0] == workflow_id]:
                 del self._entries[key]
                 self._order.pop(key, None)
+                self._resize(key)
         shutil.rmtree(self.cache_dir / _safe(workflow_id), ignore_errors=True)
 
     def table(self, workflow_id: str, node_id: str, anchor: str) -> pl.DataFrame | None:

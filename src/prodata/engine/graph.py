@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import deque
+from typing import Any
 
 from prodata.domain.workflow import Workflow
 
@@ -92,6 +93,15 @@ def ancestors(workflow: Workflow, node_id: str) -> set[str]:
     return seen
 
 
+def _engine_config(value: Any) -> Any:
+    """A configuração sem o `_ui` dos itens de lista (nome e recolhido, spec 041): o motor não lê."""
+    if isinstance(value, dict):
+        return {k: _engine_config(v) for k, v in value.items() if k != "_ui"}
+    if isinstance(value, list):
+        return [_engine_config(v) for v in value]
+    return value
+
+
 def upstream_signature(workflow: Workflow, node_id: str) -> str:
     """Assinatura da caixa e de tudo o que vem antes dela (tipo, configuração, habilitação, ligações).
 
@@ -100,7 +110,7 @@ def upstream_signature(workflow: Workflow, node_id: str) -> str:
     """
     scope = ancestors(workflow, node_id) | {node_id}
     nodes = sorted(
-        (n.id, n.type, json.dumps(n.config, sort_keys=True, default=str), n.disabled)
+        (n.id, n.type, json.dumps(_engine_config(n.config), sort_keys=True, default=str), n.disabled)
         for n in workflow.nodes
         if n.id in scope
     )

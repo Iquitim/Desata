@@ -10,6 +10,8 @@ import { icon } from './icons.js';
 import { panelControls } from './layout.js';
 import { inspect, node, nodeResult, on, select, store, toolOf } from './store.js';
 import { tableSkeleton } from './skeleton.js';
+import { clearWidths, enableColumnResize, summaryButton, watchSummary } from './table_tools.js';
+import { enableCellFocus } from './cell_focus.js';
 import { typeLabel, typeName } from './types.js';
 import { showMenu, toast } from './ui.js';
 
@@ -17,7 +19,7 @@ const PAGE = 100;
 const STATUS_ICONS = { executed: 'check-circle', cached: 'check-circle', error: 'alert', skipped: 'skip', disabled: 'power' };
 const STATUS_LABELS = { executed: 'Executado', cached: 'Cache', error: 'Erro', skipped: 'Não executado', disabled: 'Desabilitado' };
 
-const state = { tab: storage('prodata.results.tab', 'data'), offset: 0, search: '', sortCol: null, sortDesc: false, data: null, seq: 0 };
+const state = { tab: storage('prodata.results.tab', 'data'), offset: 0, search: '', sortCol: null, sortDesc: false, data: null, seq: 0, turn: null };
 const els = {};
 
 // Filtros exploratórios por saída inspecionada; cada saída lembra os seus durante a sessão.
@@ -93,7 +95,7 @@ export const inTableFocus = () => Boolean(els.root?.classList.contains('table-fo
 
 function drawFocusButton() {
   const active = inTableFocus();
-  els.focusBtn.title = active ? 'Voltar ao tamanho normal (Shift+F11 ou Esc)' : 'Tabela em tela cheia, para mostrar ou explorar (Shift+F11)';
+  els.focusBtn.title = active ? 'Recolher a tabela (Shift+F11 ou Esc)' : 'Expandir a tabela em tela cheia, para mostrar ou explorar (Shift+F11)';
   els.focusBtn.setAttribute('aria-label', els.focusBtn.title);
   els.focusBtn.setAttribute('aria-pressed', String(active));
   // Só o ícone: com o painel estreito, um rótulo encostava nos controles do painel.
@@ -123,6 +125,7 @@ export function initResults(root) {
   els.root = root;
   els.title = h('div', { class: 'results-title' });
   els.anchors = h('div', { class: 'segmented small', role: 'tablist', 'aria-label': 'Saída' });
+  els.turn = h('div', { class: 'results-turn' }); // laço (spec 041): qual volta mostrar
   els.search = h('input', {
     class: 'input input-search input-sm', type: 'search', placeholder: 'Buscar nas linhas', 'aria-label': 'Buscar nas linhas',
     oninput: debounce((e) => { state.search = e.target.value; state.offset = 0; load(); }, 300),
@@ -134,6 +137,7 @@ export function initResults(root) {
       onclick: () => { state.tab = t; persist('prodata.results.tab', t); draw(); },
     }, { data: 'Resultado', profile: 'Perfil', log: 'Log' }[t])));
   els.body = h('div', { class: 'results-body' });
+  watchSummary(els.body); // resumo das colunas (spec 041)
   els.filterBtn = button({
     icon: 'filter', label: 'Filtros', size: 'sm', variant: 'ghost',
     title: 'Filtros exploratórios: só mudam esta visualização, não o fluxo',
@@ -147,11 +151,11 @@ export function initResults(root) {
   root.replaceChildren(
     h('div', { class: 'results-toolbar' },
       h('div', { class: 'results-row' }, els.tabs, h('div', { class: 'grow' }), els.pager, els.focusBtn, panelControls('results')),
-      h('div', { class: 'results-row' }, els.title, els.anchors, h('div', { class: 'grow' }), els.filterBtn, els.search),
+      h('div', { class: 'results-row' }, els.title, els.anchors, els.turn, h('div', { class: 'grow' }), summaryButton(), els.filterBtn, els.search),
       els.filterBar),
     els.body);
 
-  on('inspect', () => { state.offset = 0; state.sortCol = null; load(); });
+  on('inspect', () => { state.offset = 0; state.sortCol = null; state.turn = null; load(); });
   on('execution', () => load());
   on('numbers', () => draw()); // separador decimal (spec 038)
   on('workflow:loaded', () => { state.data = null; draw(); });
@@ -175,6 +179,7 @@ async function load() {
       offset: state.offset, limit: PAGE, search: state.search,
       ...(state.sortCol ? { sort_col: state.sortCol, sort_desc: state.sortDesc } : {}),
       ...(filters.length ? { filters: JSON.stringify(filters) } : {}),
+      ...(state.turn && res.extra?.loop ? { loop_end: res.extra.loop.end, turn: state.turn } : {}),
     });
     if (seq === state.seq) state.data = data;
   } catch (err) {
@@ -185,7 +190,20 @@ async function load() {
   if (seq === state.seq) draw();
 }
 
+/** Caixa dentro de um laço: escolher a volta (spec 041, RF-4168). Sem escolha, mostra a última. */
+function drawTurn() {
+  const loop = nodeResult(store.inspect.nodeId)?.extra?.loop;
+  const own = loop && loop.end !== store.inspect.nodeId; // o Fim mostra o que sai do laço, não uma volta
+  if (!own || !loop.turns) { els.turn.replaceChildren(); return; }
+  const input = h('input', {
+    class: 'input input-sm', type: 'number', min: 1, max: loop.turns, value: state.turn || loop.turns, 'aria-label': 'Volta',
+    onchange: (e) => { const v = Math.max(1, Math.min(loop.turns, Number(e.target.value) || loop.turns)); state.turn = v === loop.turns ? null : v; state.offset = 0; load(); },
+  });
+  els.turn.replaceChildren(h('span', { class: 'muted' }, 'Volta'), input, h('span', { class: 'muted' }, `de ${loop.turns}`));
+}
+
 function draw() {
+  drawTurn();
   for (const t of els.tabs.children) t.setAttribute('aria-selected', String(t.dataset.tab === state.tab));
   drawHeader();
   drawFilterBar();
@@ -319,6 +337,8 @@ function dataView() {
         'separator',
         { label: 'Ordenar crescente', icon: 'arrow-up', onSelect: () => sortBy(c.name, false) },
         { label: 'Ordenar decrescente', icon: 'arrow-down', onSelect: () => sortBy(c.name, true) },
+        'separator',
+        { label: 'Larguras automáticas', icon: 'columns', onSelect: () => { clearWidths(outputKey()); draw(); } },
       ]);
     },
   },
@@ -356,7 +376,13 @@ function dataView() {
       { label: 'Filtrar esta coluna…', icon: 'plus', onSelect: () => editFilter(e.clientX, e.clientY, null, { column: c.name, value: shown }) },
     ]);
   });
-  return h('div', { class: 'table-wrap' }, h('table', { class: 'data-table' }, h('thead', {}, head), tbody));
+  const table = h('table', { class: 'data-table' }, h('thead', {}, head), tbody);
+  const wrap = h('div', { class: 'table-wrap' }, table);
+  enableColumnResize(table, outputKey(), ['#', ...cols.map((c) => c.name)]); // spec 041
+  const foot = enableCellFocus(wrap, table, {
+    firstCol: 1, nameAt: (ci) => cols[ci - 1]?.name, valueAt: (td, r, ci) => rows[r]?.[cols[ci - 1]?.name], rowLabel: (r) => state.data.offset + r + 1,
+  });
+  return h('div', { class: 'table-shell' }, wrap, foot);
 }
 
 /** Soma das colunas numéricas e contagem de não nulos nas demais, da tabela inteira ou dos filtros ativos (spec 021). */

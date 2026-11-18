@@ -205,7 +205,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.8.6 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.9.0 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -225,7 +225,7 @@
     <tr><td>Enviar um print do gráfico</td><td>Dashboard em imagem ou em HTML, com filtros que funcionam no arquivo</td></tr>
   </table>
   <div class="stat-row">
-    <div class="stat"><b>43</b><span>ferramentas prontas, da leitura de dados ao Machine Learning</span></div>
+    <div class="stat"><b>44</b><span>ferramentas prontas, da leitura de dados ao Machine Learning</span></div>
     <div class="stat"><b>0</b><span>linhas de código necessárias no uso do dia a dia</span></div>
     <div class="stat"><b>1</b><span>clique para refazer o processo inteiro com dados novos</span></div>
     <div class="stat"><b>100%</b><span>do processamento no seu computador, sem nuvem</span></div>
@@ -432,6 +432,20 @@
   <div class="callout ok"><strong>Seguro por padrão</strong>As conexões são somente leitura: apenas consultas de leitura (<code>SELECT</code>/<code>WITH</code>) são aceitas, e comandos que alteram dados são recusados antes de chegar ao banco. Por padrão, cada execução consulta o banco de novo; a opção "Reaproveitar resultado" evita consultas repetidas quando os dados não mudam.</div>
   <p><strong>Outros bancos, por ODBC.</strong> Oracle, MySQL e a maioria dos ERPs têm driver ODBC. Crie a fonte de dados em <em>Fontes de Dados ODBC (64 bits)</em>, no Windows, e informe no {{produto}} só o nome dela (o DSN), com usuário e senha se o banco pedir. A senha fica no cofre, e a conexão continua somente leitura. Esta versão foi conferida com um driver local de teste: em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado que você conhece.</p>
 
+  <h3>Escolher a fonte no Input Data</h3>
+  <div class="side">
+    <div>
+      <p>No <em>Input Data</em>, a fonte aparece num <strong>cartão</strong>: o nome que você deu na vista Dados, o tipo e o tamanho. <strong>Trocar</strong> abre uma janela como a de abrir arquivo do Windows:</p>
+      <ul>
+        <li>à esquerda, as <strong>pastas da vista Dados</strong>, as fixadas, as recentes e os tipos (arquivo, pasta, PDF, banco, API, Jira);</li>
+        <li>no centro, a lista com <strong>busca</strong> por nome, descrição, pasta ou fluxo, e em quantos fluxos cada fonte é usada;</li>
+        <li>à direita, a <strong>prévia</strong> das primeiras linhas.</li>
+      </ul>
+      <p>Dois cliques ou <kbd>Enter</kbd> escolhem. O que não serve ali aparece apagado, com o motivo (uma API que pede um valor por linha vai na caixa <em>API Loop</em>). Não achou? <strong>Enviar arquivo</strong>, <strong>Nova consulta</strong> e <strong>Nova API</strong> cadastram sem sair da janela.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fonte-cartao.png" alt="Cartão da fonte no Input Data"></div><figcaption>O cartão da fonte, com o botão Trocar.</figcaption></figure>
+  </div>
+  <figure class="m60"><div class="frame"><img src="../../src/prodata/web/manual/img/seletor-fontes.png" alt="Janela para escolher a fonte"></div><figcaption>Pastas e tipos à esquerda, a lista com busca e a prévia da fonte selecionada.</figcaption></figure>
   <h3>Constantes: um valor com nome</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="constantes">Mostrar onde fica</button><button type="button" class="manual-only m-act" data-try="constantes">Experimentar num exemplo</button></div>
   <p>O mês de referência, a meta do trimestre, a taxa de câmbio do fechamento: valores que aparecem em várias fórmulas e mudam de tempos em tempos. Em vez de procurar cada fórmula, cadastre uma <strong>constante</strong> e escreva <code>[#mes_referencia]</code> onde precisar. Para trocar, mude num lugar só.</p>
@@ -460,7 +474,7 @@
   <div class="eyebrow">5 · Ferramentas</div>
   <h2>Montando o fluxo</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_ferramentas">Mostrar onde fica</button></div>
-  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 43 ferramentas está no capítulo 23.</p>
+  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 44 ferramentas está no capítulo 23.</p>
   <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e escreve fórmulas sem decorar funções.</span></div>
 
   <h3>Configurando uma caixa</h3>
@@ -496,7 +510,7 @@
   <h3>Escrevendo fórmulas</h3>
   <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
     <div>
-      <p>As caixas <em>Formula</em> e <em>Filter</em> têm um editor feito para quem não programa. Para fórmulas longas, <strong>Abrir grande</strong> abre o mesmo editor numa janela larga, com colunas, funções e constantes ao lado:</p>
+      <p>As caixas <em>Formula</em> e <em>Filter</em> têm um editor feito para quem não programa. Para fórmulas longas, <strong>Expandir</strong> abre o mesmo editor numa janela larga, com colunas, funções e constantes ao lado:</p>
       <ul>
         <li><strong>Cores</strong> separam colunas, funções, IF/THEN/ELSE, operadores lógicos (AND, OR, NOT), comparações, textos e números. Coluna inexistente e parêntese sem par ficam sublinhados em vermelho.</li>
         <li><strong>Autocompletar</strong>: comece a digitar e o {{produto}} sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
@@ -565,6 +579,26 @@
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/menu-crop.png" alt="Menu do botão direito numa caixa"></div><figcaption>Menu do botão direito numa caixa.</figcaption></figure>
   </div>
 
+  <h3>Listas que recolhem</h3>
+  <div class="side">
+    <div>
+      <p>Fórmulas da <em>Formula</em>, regras do <em>Data Quality</em>, agregações do <em>Summarize</em>, chaves do <em>Join</em>, ordenação do <em>Sort</em>: toda lista do Configurar tem a <strong>seta</strong> em cada item. Recolhido, o item vira um cartão de uma linha com o resumo (<code>receita_anual = Round(…)</code>), e um clique o abre de novo.</p>
+      <p><strong>Dois cliques no título</strong> dão um nome ao item, como "Receita anual". <strong>Recolher todos</strong> e <strong>Expandir todos</strong> ficam no topo da lista. Um item com erro fica com a borda vermelha mesmo recolhido. Nomear e recolher não mudam o resultado: a caixa não precisa executar de novo.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/lista-formulas.png" alt="Fórmulas recolhidas com nome"></div><figcaption>Duas fórmulas recolhidas, com nome e resumo.</figcaption></figure>
+  </div>
+  <h3>Recolher caixas e etapas</h3>
+  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos.</p>
+  <p>Uma <strong>caixa</strong> também recolhe (botão direito → <em>Recolher a caixa</em>): fica só com o ícone e as portas, e o nome aparece ao passar o mouse. Recolher é só desenho: o resultado, o SQL e o cache não mudam, e buscar uma caixa escondida abre a etapa dela.</p>
+  <figure class="m80"><div class="frame"><img src="../../src/prodata/web/manual/img/recolher-etapas.png" alt="Fluxo com etapas recolhidas"></div><figcaption>Quatro etapas recolhidas em cartões: os fios ligam direto neles.</figcaption></figure>
+  <h3>Fios organizados</h3>
+  <div class="side">
+    <div>
+      <p>Os fios seguem em linhas retas, com cantos arredondados, e <strong>desviam das caixas</strong> e dos títulos das etapas. Fios que correm juntos ganham pistas separadas; os que saem da mesma porta dividem o tronco. Ao arrastar uma caixa, o fio dela fica curvo até você soltar.</p>
+      <p><strong>Exibir → Fios curvos</strong> volta ao desenho anterior. <strong>Organizar o fluxo</strong> (em Exibir, ou botão direito no canvas vazio) arruma as caixas em colunas, da esquerda para a direita, mantendo cada etapa junta; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fios-organizados.png" alt="Fios que desviam das caixas"></div><figcaption>Os fios contornam as caixas, cada um na sua pista.</figcaption></figure>
+  </div>
 </section>
 <!-- ================================================================ CRUZAR E TRATAR -->
 <section class="chapter">
@@ -734,6 +768,14 @@
     <div class="frame"><img src="../../src/prodata/web/manual/img/tabela-cheia.png" alt="Tabela de resultados em tela cheia"></div>
     <figcaption>A tabela na janela inteira: é o modo foco do resultado, como o F11 é o do fluxo.</figcaption>
   </figure>
+  <h3>Destacar uma célula e ajustar a tabela</h3>
+  <div class="side">
+    <div>
+      <p>Clique numa célula: ela ganha um <strong>brilho</strong>, a linha e a coluna dela ficam marcadas, e o rodapé mostra o <strong>valor inteiro</strong>, útil para textos cortados ou para mostrar um número numa reunião. As setas movem o destaque, <kbd>Ctrl</kbd>+<kbd>C</kbd> copia o valor e <kbd>Esc</kbd> tira. Vale também na tabela do Dashboard.</p>
+      <p>O botão <strong>Resumo</strong> esconde o minigráfico, a barra de preenchimento e o total do cabeçalho; num painel baixo, ele some sozinho. Arraste a borda de uma coluna para mudar a largura, ou dê dois cliques nela para ajustar ao conteúdo.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/celula-destaque.png" alt="Célula em destaque na tabela"></div><figcaption>A célula em destaque e o valor inteiro no rodapé, sem o resumo das colunas.</figcaption></figure>
+  </div>
   <div class="try"><strong>Experimente</strong><ol><li>Clique na caixa <em>Clientes</em> e, na tabela, em <strong>Filtros</strong>: filtre <code>uf</code> por SP.</li><li>Repare que o cabeçalho das colunas passa a mostrar a soma e a contagem só das linhas filtradas.</li></ol></div>
 </section>
 <!-- ================================================================ 7. DASHBOARD -->
@@ -812,6 +854,14 @@
     <figcaption>O Pareto selecionado e o painel Formato à direita.</figcaption>
   </figure>
 
+  <h3>A dica dos gráficos</h3>
+  <div class="side">
+    <div>
+      <p>No painel Formato, a seção <strong>Dica</strong> decide o que aparece ao passar o mouse: a categoria, o valor, o <strong>% do total</strong> e <strong>colunas extras</strong>, agregadas como o valor do gráfico (na contagem, somadas). Para o seu próprio texto, escreva com os campos entre chaves, como <code>{uf}: {valor}% da meta · {clientes} clientes</code>; os botões inserem cada campo, e a prévia mostra o resultado na hora. Um campo que não existe é avisado, e a dica volta ao padrão até corrigir. A dica vale também no HTML exportado.</p>
+      <figure style="margin-top:8pt"><div class="frame"><img src="../../src/prodata/web/manual/img/dica-grafico.png" alt="Dica editada no gráfico"></div><figcaption>A dica no gráfico, com o texto escrito no painel.</figcaption></figure>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/dica-painel.png" alt="Seção Dica do painel Formato"></div><figcaption>Colunas extras e o texto com campos, com a prévia.</figcaption></figure>
+  </div>
   <h3>Filtros na página</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="filtros_dash">Mostrar onde fica</button></div>
   <p>Em <strong>Adicionar filtro</strong>, escolha uma coluna: a faixa no topo mostra seus valores como botões ou, em número e data, um controle deslizante. Ou clique direto numa <strong>barra ou fatia</strong> de um gráfico: a página filtra por aquele valor, <kbd>Ctrl</kbd>+clique soma outros, e clicar de novo tira. O gráfico clicado mantém as demais categorias apagadas, para dar para trocar. O filtro vale para todos os visuais cuja tabela tem aquela coluna, sem executar o fluxo de novo. Quem não tem a coluna não muda e mostra um aviso discreto, <strong>Sem filtro</strong>. A escolha fica salva no fluxo e aparece no alto da imagem PNG.</p>
@@ -1171,6 +1221,29 @@
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-subflow.png" alt="Esquema do Subflow"></div><figcaption>As caixas do fluxo de origem e por onde os dados entram e saem.</figcaption></figure>
   </div>
+  <h3>Laços: repetir um trecho do fluxo</h3>
+  <p>Quando um trecho precisa rodar <strong>uma vez para cada</strong> filial, mês ou produto, use o <strong>Loop</strong> (família Conferência e reúso). Ele cria duas caixas ligadas, o <strong>Início do loop</strong> e o <strong>Fim do loop</strong>: as caixas entre elas são o corpo, que repete. Uma moldura tracejada mostra o laço e quantas voltas ele deu. O exemplo traz um laço pronto: <em>os 3 maiores clientes de cada segmento</em>.</p>
+  <figure class="m60"><div class="frame"><img src="../../src/prodata/web/manual/img/laco.png" alt="Laço no canvas"></div><figcaption>O laço do exemplo: para cada segmento, ordena pelo MRR e fica com os 3 primeiros.</figcaption></figure>
+  <div class="side">
+    <div>
+      <p>No <strong>Início</strong>, escolha como repetir:</p>
+      <ul>
+        <li><strong>Para cada valor de uma coluna</strong> (ou de uma lista digitada): em cada volta, só as linhas daquele valor, ou a tabela inteira;</li>
+        <li><strong>Para cada número ou data</strong> de uma faixa, com passo em números, dias, semanas, meses ou anos;</li>
+        <li><strong>Enquanto uma condição valer</strong>: a condição fica no Fim do loop e é conferida no resultado de cada volta.</li>
+      </ul>
+      <p>Nas fórmulas de dentro, <code>[#valor]</code> é o valor da volta, <code>[#volta]</code> o número dela e <code>[#total]</code> quantas voltas há. No nome do arquivo do <em>Output Data</em>, <code>relatorio_[#valor]</code> (ou uma coluna entre chaves, como <code>relatorio_{segmento}</code>) grava um arquivo por valor.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/laco-inicio.png" alt="Configuração do Início do loop"></div><figcaption>O Início do loop: para cada valor de segmento.</figcaption></figure>
+  </div>
+  <div class="side">
+    <div>
+    <p>No <strong>Fim</strong>, escolha o que sai: <strong>Empilhar</strong> (todas as voltas, com a coluna <code>volta</code>), <strong>Acumular</strong> (o resultado de uma volta entra na próxima) ou <strong>Só a última volta</strong>. O limite de voltas (1.000, se você não mudar) evita um laço sem fim; enquanto roda, a barra de status mostra a volta da vez, e o <strong>Executar</strong> do topo vira <strong>Parar</strong>. Um erro diz em que volta e com que valor aconteceu. Se o laço estiver ligado de um jeito que não roda, como uma caixa de dentro mandando dados para fora sem passar pelo Fim, ela ganha na hora um selo vermelho <em>laço</em>, com a explicação ao passar o mouse.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/laco-aviso.png" alt="Selo de aviso do laço numa caixa"></div><figcaption>Uma caixa de dentro ligada para fora do laço: o selo aparece na hora, e o mouse mostra o motivo.</figcaption></figure>
+  </div>
+  <figure class="m80"><div class="frame"><img src="../../src/prodata/web/manual/img/laco-volta.png" alt="Resultado de uma volta escolhida"></div><figcaption>Numa caixa de dentro, a aba Resultado mostra qualquer volta: aqui, a 2ª de 5.</figcaption></figure>
+  <div class="callout tip"><strong>Antes de usar um laço</strong>Se o laço só agrupa e soma por um valor, um <em>Summarize</em> agrupado por aquela coluna faz o mesmo, mais rápido, e o {{produto}} avisa. O laço brilha no que um agrupamento não resolve: os N maiores de cada grupo, um arquivo por filial, um cálculo que se repete até convergir. Na aba SQL, o laço vira uma consulta por valor, empilhadas com <code>UNION ALL</code> e conferidas com o resultado; Enquanto e Acumular ficam sem tradução, com o motivo.</div>
   <h3>Executar sem abrir o programa</h3>
   <p>Para o fechamento estar pronto quando você chega, o fluxo pode rodar sozinho. Em <strong>Arquivo → Executar sem abrir o programa…</strong>, o {{produto}} mostra a linha de comando do fluxo aberto e o comando que cria a tarefa no <strong>Agendador do Windows</strong>. É só copiar.</p>
   <figure class="m50" style="max-width:42%">
@@ -1222,7 +1295,7 @@
   <h2>Organização e personalização</h2>
   <h3>Etapas</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="etapa">Mostrar onde fica</button></div>
-  <p>Agrupe partes do fluxo em etapas com nome, descrição e cor (paleta <em>Organização</em>, botão <strong>Etapa</strong> ou tecla <kbd>G</kbd>). Arrastar o título move a etapa junto com tudo o que está dentro. Cada etapa tem um <strong>interruptor</strong>: desligada, as caixas de dentro deixam de executar — útil para pausar uma parte do processo sem apagar nada.</p>
+  <p>Agrupe partes do fluxo em etapas com nome, descrição e cor (paleta <em>Organização</em>, botão <strong>Etapa</strong> ou tecla <kbd>G</kbd>). Arrastar o título move a etapa junto com tudo o que está dentro. Cada etapa tem um <strong>interruptor</strong>: desligada, as caixas de dentro deixam de executar — útil para pausar uma parte do processo sem apagar nada. Com o botão direito no título, a etapa também <strong>recolhe</strong> num cartão pequeno (capítulo 5).</p>
   <div style="display:grid; grid-template-columns: 30% 1fr; gap: 12pt; align-items: start">
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/container-crop.png" alt="Configuração da etapa"></div><figcaption>Configurações da etapa.</figcaption></figure>
     <div>
@@ -1254,6 +1327,14 @@
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/numeros-menu.png" alt="Menu Exibir com a escolha entre vírgula e ponto decimal"></div><figcaption>A escolha fica no menu Exibir, ao lado da densidade.</figcaption></figure>
   </div>
+  <h3>Tempo nas caixas</h3>
+  <div class="side">
+    <div>
+      <p>Em <strong>Exibir → Tempo nas caixas</strong>, cada caixa mostra quanto levou na última execução. As até três mais lentas ficam em vermelho, e a barra de status diz qual é a mais lenta; um clique leva até ela. Caixa que veio do cache mostra "cache". É o jeito mais rápido de achar o gargalo de um fluxo demorado.</p>
+      <p>Mudou de ideia no meio de uma execução longa? o botão <strong>Executar</strong>, no topo, vira <strong>Parar</strong> enquanto o fluxo roda: a caixa que está rodando termina, e as seguintes ficam como não executadas até o próximo Executar.</p>
+    </div>
+    <div><figure><div class="frame"><img src="../../src/prodata/web/manual/img/tempo-caixas.png" alt="Tempo de execução em cada caixa"></div><figcaption>A leitura dos PDFs em vermelho: é ela que segura o fluxo.</figcaption></figure><figure style="margin-top:6pt"><div class="frame"><img src="../../src/prodata/web/manual/img/parar-topo.png" alt="Botão Parar no topo, enquanto o fluxo executa"></div></figure></div>
+  </div>
   <h3>Vários fluxos em abas</h3>
   <p>Cada fluxo aberto ganha uma aba logo abaixo da barra superior, com seu próprio resultado e seu próprio desfazer. Um ponto laranja indica alterações não salvas. Ao fechar uma aba — ou o programa — com alterações, o {{produto}} pergunta: <strong>Salvar</strong>, <strong>Não salvar</strong> ou <strong>Cancelar</strong>. As abas salvas reabrem sozinhas na próxima vez.</p>
   <h3>Onde ficam seus arquivos</h3>
@@ -1264,7 +1345,6 @@
     <div class="frame"><img src="../../src/prodata/web/manual/img/cache-crop.png" alt="Ponto de cache no Join"></div>
     <figcaption>Ponto de cache no Join: as caixas anteriores aparecem "em cache" e a tabela mostra o que chega pela entrada [R].</figcaption>
   </figure>
-  <p class="muted">Também disponíveis: tema claro e escuro, desfazer/refazer, zoom e "ajustar à tela".</p>
 </section>
 <!-- ================================================================ COMPARTILHAR -->
 <section class="chapter">
@@ -1336,8 +1416,8 @@
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.8.6-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.8.6-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.0-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.0-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
@@ -1364,14 +1444,13 @@
     <div>
       <h3>Incluído nesta versão</h3>
       <ul class="scope-in">
-        <li>Fluxos visuais com 43 ferramentas, inclusive subfluxos</li>
-        <li>Arquivos CSV, Excel, Parquet, JSON e Arrow</li>
+        <li>Fluxos visuais com 44 ferramentas, inclusive subfluxos</li>
         <li>Pastas de arquivos na vista Dados: todos os arquivos de um padrão de nome numa tabela só</li>
         <li>Consultas a PostgreSQL, SQL Server e, por ODBC, a outros bancos</li>
         <li>APIs em JSON, CSV ou XML, com paginação e uma chamada por linha</li>
         <li>Leitor visual de PDF: tabelas e campos de documentos, marcando na página, com correções guardadas</li>
         <li>Números com vírgula ou ponto decimal, conforme o arquivo</li>
-        <li>Exportação nesses formatos, em qualquer pasta, e Excel num modelo já formatado</li>
+        <li>Arquivos CSV, Excel, Parquet, JSON e Arrow, na leitura e na exportação, em qualquer pasta, e Excel num modelo já formatado</li>
         <li>Vista Dados com pastas, nome de exibição, descrição, mapa de uso, constantes, Data Quality e abertura protegida</li>
         <li>Abas, copiar/colar, fórmulas com autocompletar, perfil e filtros</li>
         <li>Datas escritas do seu jeito, com "Você quis dizer…", calendário no Filter básico e colunas de data e hora</li>
@@ -1383,6 +1462,7 @@
         <li>Execução por linha de comando, para o Agendador do Windows</li>
         <li>Conferência de totais, interrupção por qualidade e comparação com a execução anterior</li>
         <li>Aba SQL: o fluxo em SQL do DuckDB, por saída, conferido com o resultado, e convertido para Spark SQL e T-SQL sem conferência</li>
+        <li>Laços, canvas organizado, seletor de fontes, dica editável e tempo nas caixas</li>
         <li>Aplicativo de desktop para Windows, que funciona offline (exceto as fontes em rede que você cadastrar)</li>
       </ul>
     </div>
@@ -1420,7 +1500,7 @@
 <section class="chapter">
   <div class="eyebrow">23 · Referência</div>
   <h2>Todas as ferramentas</h2>
-  <p class="intro">As 43 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
+  <p class="intro">As 44 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
   <table>
     <tr><th style="width:23%">Ferramenta</th><th>Para que serve</th></tr>
     <tr><td colspan="2"><span class="tag">Entrada e saída</span></td></tr>
@@ -1428,7 +1508,7 @@
     <tr><td class="tool">API Loop</td><td>Chama uma API para cada linha da tabela e junta as respostas, com as falhas numa saída própria.</td></tr>
     <tr><td class="tool">Text Input</td><td>Tabela pequena digitada ou colada (de-para, metas).</td></tr>
     <tr><td class="tool">Browse</td><td>Ponto de inspeção para conferir os dados no meio do fluxo.</td></tr>
-    <tr><td class="tool">Output Data</td><td>Exporta para Excel, CSV, Parquet, JSON ou Arrow, na pasta que você escolher, com um <strong>rótulo de confidencialidade</strong>. No Excel, ligue várias tabelas na mesma caixa: cada uma vira uma planilha. Se o arquivo já existe, pergunta: substituir ou criar um novo.</td></tr>
+    <tr><td class="tool">Output Data</td><td>Exporta para Excel, CSV, Parquet, JSON ou Arrow, na pasta que você escolher, com um <strong>rótulo de confidencialidade</strong>. No Excel, ligue várias tabelas na mesma caixa: cada uma vira uma planilha. Se o arquivo já existe, pergunta: substituir ou criar um novo. Com uma coluna entre chaves no nome, como <code>vendas_{regiao}</code>, grava um arquivo por valor dela.</td></tr>
     <tr><td class="tool">Generate Rows</td><td>Cria um calendário ou uma sequência de números, sem ler arquivo. Veja o capítulo 16.</td></tr>
     <tr><td colspan="2"><span class="tag">Preparação</span></td></tr>
     <tr><td class="tool">Select</td><td>Escolhe, renomeia, reordena (arrastando) e muda o tipo das colunas. Entende números no padrão brasileiro, datas como 29/10/2026 e sim/não, e avisa quantos valores não converteram.</td></tr>
@@ -1456,6 +1536,7 @@
     <tr><td colspan="2"><span class="tag">Conferência e reúso</span></td></tr>
     <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 7.</td></tr>
     <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 7.</td></tr>
+    <tr><td class="tool">Loop (Início e Fim do loop)</td><td>Repete as caixas entre o Início e o Fim: para cada valor, para cada número ou data, ou enquanto uma condição valer. Veja o capítulo 16.</td></tr>
     <tr><td class="tool">Subflow · Subflow Input · Subflow Output</td><td>Executa outro fluxo da biblioteca como uma etapa, para manter num lugar só o que vários fluxos usam.</td></tr>
     <tr><td colspan="2"><span class="tag">BI e indicadores</span></td></tr>
     <tr><td class="tool">Chart</td><td>Colunas, barras, linha, rosca, empilhado, agrupado, 100%, área, Pareto, funil e dispersão.</td></tr>
@@ -1498,6 +1579,7 @@
   <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 19). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
   <div class="avoid"><h4>Abri um fluxo de outra pessoa e as caixas estão vermelhas.</h4><p>As fontes que ele usa não estão neste computador. A aba <strong>Dados</strong> ganha um selo e a seção <em>Faltam neste computador</em>, com o botão para resolver cada uma (escolher o arquivo, usar uma fonte daqui ou cadastrar). Se veio com amostra, a caixa fica laranja e o fluxo roda com ela até você apontar a fonte (capítulo 19).</p></div>
   <div class="avoid"><h4>Como escrevo uma data numa fórmula?</h4><p>Como preferir: <code>ToDate('2026-07-08')</code>, <code>08/07/2026</code>, <code>8/7/26</code> ou <code>jul/26</code>. Se o formato não for o que a fórmula espera, aparece <em>Você quis dizer…?</em> com a correção num clique. Com hora, use <code>ToDateTime('2026-07-08 14:30')</code>. No Filter básico, escolha no calendário (capítulo 5).</p></div>
+  <div class="avoid"><h4>Como repito o mesmo cálculo para cada filial?</h4><p>Com o <strong>Loop</strong>: as caixas entre o Início e o Fim rodam uma vez para cada valor, e <code>[#valor]</code> traz a filial da volta. Para só agrupar e somar, um <em>Summarize</em> agrupado é mais rápido (capítulo 16).</p></div>
   <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 20). APIs públicas não precisam de nada.</p></div>
   <div class="avoid"><h4>Posso pedir ajuda a uma IA sobre um fluxo?</h4><p>Sim. Envie o arquivo <code>.prodata.json</code> junto com o <code>contexto-ia.md</code>, publicado com cada versão. Ele ensina a IA a mexer no fluxo; depois, é só salvar a resposta e abrir no programa. Confira o resultado, e lembre que o fluxo mostra nomes de colunas e fórmulas, além dos dados digitados em Text Input.</p></div>
   <div class="avoid"><h4>Como mando o dashboard por e-mail?</h4><p>No Dashboard, <strong>Baixar imagem</strong> gera um PNG em alta resolução, pronto para o e-mail ou a apresentação. <strong>Baixar HTML</strong> gera um arquivo que abre em qualquer navegador, com os filtros funcionando; a tela avisa quais dados vão dentro dele.</p></div>

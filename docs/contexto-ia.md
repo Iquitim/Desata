@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.8.6. Este arquivo é gerado a partir do código.
+Versão do programa: 0.9.0. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -389,7 +389,7 @@ Grava o resultado em Parquet, CSV, Excel, JSON ou Arrow, na pasta padrão ou num
 
 Entradas: `in` (Entrada), `in2` (Planilha 2, opcional, conforme a configuração), `in3` (Planilha 3, opcional, conforme a configuração), `in4` (Planilha 4, opcional, conforme a configuração), `in5` (Planilha 5, opcional, conforme a configuração), `in6` (Planilha 6, opcional, conforme a configuração), `in7` (Planilha 7, opcional, conforme a configuração), `in8` (Planilha 8, opcional, conforme a configuração). Saídas: `out` (Saída).
 
-- `filename` ("resultado"): Nome do arquivo. A extensão segue o formato
+- `filename` ("resultado"): Nome do arquivo. A extensão segue o formato. Com uma coluna entre chaves, como vendas_{regiao}, grava um arquivo por valor dela
 - `folder` (""): Pasta de destino. Vazio = pasta padrão de exportações do Desata
 - `format` ("excel"): Formato. Opções: `parquet`, `csv`, `excel`, `json`, `arrow`
 - `decimal` ("."): Separador decimal. Opções: `.`, `,`. Aparece se `format` em csv. Vírgula abre direto no Excel em português. Quem já lê este arquivo com ponto não muda nada
@@ -788,6 +788,33 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
 - `number` (1): Saída. Opções: `1`, `2`, `3`. O que chega aqui sai nesta saída da caixa Subflow
 
+#### `flow.loop_start`: Loop
+
+Repete as caixas entre o Início e o Fim do loop: para cada valor de uma coluna, para cada número ou data, ou enquanto uma condição valer. Use [#valor], [#volta] e [#total] nas fórmulas de dentro.
+
+Entradas: `in` (Entrada). Saídas: `out` (Saída).
+
+- `mode` ("each"): Repetir. Opções: `each`, `range`, `while`
+- `column` (""): Coluna [nome de coluna]. Aparece se `mode` em each
+- `values` (""): Ou só estes valores. Aparece se `mode` em each. Um por linha. Vazio: todos os valores da coluna
+- `order` ("asc"): Ordem das voltas. Opções: `asc`, `appearance`. Aparece se `mode` em each
+- `rows` ("group"): Em cada volta, a saída traz. Opções: `group`, `all`. Aparece se `mode` em each
+- `start` ("1"): De. Aparece se `mode` em range. Um número (1) ou uma data (01/01/2026)
+- `end` ("10"): Até. Aparece se `mode` em range
+- `step` (1.0): Passo. De 0 a …. Aparece se `mode` em range
+- `unit` ("number"): Passo em. Opções: `number`, `day`, `week`, `month`, `year`. Aparece se `mode` em range
+- `max_iterations` (1000): Limite de voltas. De 1 a 100000
+
+#### `flow.loop_end`: Fim do loop
+
+Onde o laço termina: junta o resultado das voltas.
+
+Entradas: `in` (Resultado da volta). Saídas: `out` (Saída).
+
+- `start` (""): Início do loop
+- `output` ("stack"): O que sai. Opções: `stack`, `accumulate`, `last`
+- `expression` (""): Continuar enquanto (modo Enquanto) [fórmula]. Avaliada no resultado de cada volta: o laço continua enquanto alguma linha atender. Só vale com o Início em 'Enquanto'
+
 ### BI e indicadores
 
 #### `bi.chart`: Chart
@@ -807,6 +834,7 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 - `sort` ("value_desc"): Ordenação. Opções: `value_desc`, `value_asc`, `label`. O Pareto sempre ordena do maior para o menor
 - `max_items` (12): Máximo de categorias. De 2 a 50
 - `pareto_threshold` (80.0): Linha de corte do Pareto (%). De 1 a 99. Aparece se `chart_type` em pareto
+- `tip_columns` ([]): Colunas extras na dica [lista de colunas]. Aparecem na dica de cada categoria, agregadas como o valor (na contagem, somadas). Edite também no Dashboard
 
 #### `bi.kpi_card`: KPI Card
 

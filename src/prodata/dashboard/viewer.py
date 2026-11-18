@@ -9,6 +9,7 @@ from pathlib import Path
 MODULES = (
     "icons.js",
     "dom.js",
+    "cell_focus.js",
     "chart_kit.js",
     "charts_motion.js",
     "charts.js",

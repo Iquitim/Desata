@@ -17,6 +17,7 @@ CARD = "Cartão"
 COLORS = "Cores"
 LABELS = "Rótulos e legenda"
 AXES = "Eixos"
+TIP = "Dica"
 
 
 def _color(value: str) -> str:
@@ -166,6 +167,26 @@ class ChartFormat(CardFormat):
     )
     y_max: float | None = Field(
         None, title="Máximo do eixo Y", json_schema_extra=ui(group=AXES, widget="optional_number")
+    )
+    # Dica (spec 041, RF-4140..4143): o que aparece ao passar o mouse. As colunas extras ficam na caixa do gráfico,
+    # que as agrega junto com o valor; aqui só se escolhem.
+    tip_label: bool = Field(True, title="Categoria na dica", json_schema_extra=ui(group=TIP))
+    tip_value: bool = Field(True, title="Valor na dica", json_schema_extra=ui(group=TIP))
+    tip_percent: bool = Field(
+        False,
+        title="% do total na dica",
+        description="Na rosca, o % aparece sempre.",
+        json_schema_extra=ui(group=TIP),
+    )
+    tip_columns: list[str] = Field(
+        default_factory=list, title="Colunas extras", json_schema_extra=ui(widget="tip_columns", group=TIP)
+    )
+    tip_text: str = Field(
+        "",
+        max_length=300,
+        title="Texto da dica",
+        description="Opcional: escreva a dica com os campos entre chaves. Vazio usa as opções acima.",
+        json_schema_extra=ui(widget="tip_text", group=TIP, placeholder="Receita de {categoria}: {valor}"),
     )
 
 
