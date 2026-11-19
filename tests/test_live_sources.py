@@ -191,6 +191,7 @@ def test_link_route(client: TestClient, tmp_path: Path) -> None:
     assert client.post("/api/datasets/link", json={"path": "planilha.csv"}).status_code == 400
 
 
+@pytest.mark.lento
 def test_value_search_on_the_server(client: TestClient) -> None:
     from prodata.samples.workflows import DEMO_WORKFLOW_ID
 

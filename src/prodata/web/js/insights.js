@@ -8,6 +8,7 @@ import { button, debounce, fmt, h, persist, storage } from './dom.js';
 import { icon } from './icons.js';
 import { panelControls } from './layout.js';
 import { liveWidgets, nodeResult, on, store } from './store.js';
+import { setPagePalette } from './dash_look.js';
 
 const CARD_WIDTH = 380;
 const SUMMARY_ROWS = 30;
@@ -100,6 +101,9 @@ export async function render() {
   const vertical = Boolean(root.closest('.slot-side'));
   const width = vertical ? Math.max(240, root.clientWidth - 24) : CARD_WIDTH;
   const chartHeight = vertical ? 220 : Math.max(130, root.clientHeight - 128);
+  // Mesmas cores do Dashboard deste fluxo (paleta geral, inclusive a personalizada), sem precisar abrir o Dashboard antes.
+  const page = store.workflow.dashboard?.page;
+  setPagePalette(page?.palette, page?.personal_colors);
   const cards = [];
   for (const n of store.workflow.nodes) {
     const w = widgets.get(n.id) || bySummary.get(n.id);

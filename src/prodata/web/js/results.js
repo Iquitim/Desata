@@ -8,7 +8,7 @@ import { cell, spacesBadge } from './datasets.js';
 import { describe, openFilterEditor, toExpression } from './explore.js';
 import { icon } from './icons.js';
 import { panelControls } from './layout.js';
-import { inspect, node, nodeResult, on, select, store, toolOf } from './store.js';
+import { inspect, node, nodeResult, on, select, store, toolOf, visibleOutputs } from './store.js';
 import { tableSkeleton } from './skeleton.js';
 import { clearWidths, enableColumnResize, summaryButton, watchSummary } from './table_tools.js';
 import { enableCellFocus } from './cell_focus.js';
@@ -227,7 +227,8 @@ function drawHeader() {
   } else {
     els.title.replaceChildren(n ? h('span', {}, icon(spec.icon, 14), n.label || spec.name) : h('span', { class: 'muted' }, 'Nenhuma caixa selecionada'));
   }
-  els.anchors.replaceChildren(...(!target && (spec?.outputs.length > 1 || spec?.outputs[0]?.kind === 'model') ? spec.outputs : []).map((o) => {
+  const outs = n ? visibleOutputs(n) : [];
+  els.anchors.replaceChildren(...(!target && (outs.length > 1 || outs[0]?.kind === 'model') ? outs : []).map((o) => {
     const count = res?.anchors?.[o.id];
     return h('button', {
       type: 'button', role: 'tab', class: 'segment', 'aria-selected': String(store.inspect.anchor === o.id),

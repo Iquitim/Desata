@@ -212,6 +212,12 @@ export function visibleInputs(n) {
     return true;
   });
 }
+/** Saídas à mostra: as fixas e as extras que a configuração liga (ex.: U do Join, spec 042) ou que têm fio. */
+export function visibleOutputs(n) {
+  const outputs = toolOf(n)?.outputs || [];
+  const used = new Set(store.workflow.edges.filter((e) => e.source === n.id).map((e) => e.sourceHandle));
+  return outputs.filter((p) => !p.when || used.has(p.id) || Object.entries(p.when).every(([k, values]) => whenMatches(n.config, k, values)));
+}
 export const nodeResult = (id) => store.execution?.node_results?.[id] || null;
 
 export function descendants(id) {

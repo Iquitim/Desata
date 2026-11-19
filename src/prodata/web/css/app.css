@@ -245,6 +245,10 @@ select.input { padding-right: 24px; }
    sem nunca se sobrepor: primeiro a sobra do centro, depois o texto da marca, os rótulos e, por fim, as abas rolam. */
 @media (max-width: 1180px) {
   .topbar { grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; }
+  /* Arquivo e Exibir viram só ícones cedo, antes de faltar lugar (spec 042, RF-4252) */
+  .top-menu > span, .top-menu > svg:last-child { display: none; }
+  .top-menu > svg:first-child { display: block; }
+  .top-menu { padding: 0 8px; }
 }
 @media (max-width: 960px) {
   .topbar .brand-text { display: none; }
@@ -261,11 +265,6 @@ select.input { padding-right: 24px; }
   .topbar .segmented { justify-self: start; min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
   .topbar .segmented::-webkit-scrollbar { display: none; }
   .topbar .segment { padding: 0 9px; }
-}
-@media (max-width: 520px) {
-  .top-menu > span { display: none; }
-  .top-menu > svg:first-child { display: block; }
-  .top-menu { padding: 0 8px; }
 }
 
 .statusbar {
@@ -679,7 +678,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   font-size: var(--fs-xs); color: #fff; background: var(--text-3);
 }
 .x-join-part.x-J b { background: var(--status-good, #0ca30c); }
-.x-join-part.x-L b, .x-join-part.x-R b { background: var(--accent); }
+.x-join-part.x-L b, .x-join-part.x-R b, .x-join-part.x-U b { background: var(--accent); }
 .x-join-part strong { font-size: var(--fs-md); font-variant-numeric: tabular-nums; }
 .x-join-part small { color: var(--text-3); font-size: var(--fs-xs); }
 .x-row > .x-table { flex: none; }
@@ -779,3 +778,13 @@ details.explainer[open] > summary .x-toggle { transform: rotate(90deg); }
 /* Parar (spec 041): o Executar do topo vira Parar enquanto o fluxo roda */
 #topActions .btn.stop { background: var(--err); border-color: var(--err); color: #fff; }
 #topActions .btn.stop:hover:not(:disabled) { background: color-mix(in srgb, var(--err) 85%, #000); }
+/* Salvar no topo com o automático (spec 042, RF-4211/4212) */
+.save-split { display: inline-flex; align-items: center; }
+.save-split .save-main { position: relative; }
+.save-split .save-arrow { padding-left: 2px; padding-right: 2px; margin-left: -4px; }
+.save-auto-badge {
+  display: none; position: absolute; bottom: 3px; left: 21px; width: 11px; height: 11px; border-radius: 50%;
+  align-items: center; justify-content: center; background: var(--ok, #2f9e6b); color: #fff; box-shadow: 0 0 0 1.5px var(--topbar-bg, #0d4f4f);
+}
+.save-split.auto .save-auto-badge { display: inline-flex; }
+.save-split.auto-off-here .save-auto-badge { background: #8a8f98; }

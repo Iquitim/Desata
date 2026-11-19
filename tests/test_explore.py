@@ -61,6 +61,7 @@ def test_container_backwards_compatible() -> None:
     assert old.disabled is False
 
 
+@pytest.mark.lento
 def test_api_filters_count_and_profile(client: TestClient) -> None:
     wf = client.get(f"/api/workflows/{DEMO_WORKFLOW_ID}").json()
     client.post("/api/execute", json={"workflow": wf})

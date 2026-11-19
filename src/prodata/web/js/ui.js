@@ -99,8 +99,8 @@ function tinted(svg, color) {
 export function showMenu(x, y, items) {
   closeMenu();
   const menu = h('div', { class: 'menu', role: 'menu' },
-    items.map((item) => (item === 'separator' || item.heading
-      ? h('div', item.heading ? { class: 'menu-heading' } : { class: 'menu-sep', role: 'separator' }, item.heading || null)
+    items.map((item) => (item === 'separator' || item.heading || item.note
+      ? h('div', item.heading ? { class: 'menu-heading' } : item.note ? { class: 'menu-note' } : { class: 'menu-sep', role: 'separator' }, item.heading || item.note || null)
       : h('button', {
         type: 'button',
         role: 'menuitem',

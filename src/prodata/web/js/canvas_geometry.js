@@ -1,6 +1,6 @@
 // Medidas das caixas e curvas das ligações: só contas, sem tocar na tela.
 
-import { toolOf, visibleInputs } from './store.js';
+import { toolOf, visibleInputs, visibleOutputs } from './store.js';
 
 export const NODE_W = 188;
 
@@ -16,12 +16,12 @@ const PORT_GAP = 18;
 /** Altura do cartão: cresce com o número de portas para que nenhuma se sobreponha. */
 export function nodeHeight(n) {
   const spec = toolOf(n);
-  const ports = Math.max(n ? visibleInputs(n).length : 0, spec?.outputs.length || 0);
+  const ports = Math.max(n ? visibleInputs(n).length : 0, n ? visibleOutputs(n).length : spec?.outputs.length || 0);
   return Math.max(NODE_MIN_H, (ports + 1) * PORT_GAP);
 }
 
 export function portPoint(n, portId, output) {
-  const ports = (output ? toolOf(n)?.outputs : visibleInputs(n)) || [];
+  const ports = (output ? visibleOutputs(n) : visibleInputs(n)) || [];
   const idx = Math.max(0, ports.findIndex((p) => p.id === portId));
   return { x: n.x + (output ? nodeWidth(n) : 0), y: n.y + (nodeHeight(n) * (idx + 1)) / (ports.length + 1) };
 }

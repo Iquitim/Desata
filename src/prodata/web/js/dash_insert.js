@@ -71,8 +71,8 @@ const naturalSize = (src) => new Promise((resolve) => {
   img.src = src;
 });
 
-/** Escolhe uma imagem do computador. Mesmas regras do servidor: PNG/JPG/SVG sem código, até 1 MB. */
-export function pickImage() {
+/** Escolhe uma imagem do computador. Mesmas regras do servidor: PNG/JPG/SVG sem código, até 1 MB (fundo da página: 5 MB). */
+export function pickImage({ maxMb = 1 } = {}) {
   return new Promise((resolve) => {
     const input = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/svg+xml', hidden: true });
     input.addEventListener('change', async () => {
@@ -81,7 +81,7 @@ export function pickImage() {
       if (!file) { resolve(null); return; }
       try {
         if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) throw new Error('Use uma imagem PNG, JPG ou SVG.');
-        if (file.size > 1024 * 1024) throw new Error('A imagem passa de 1 MB. Reduza o tamanho antes de inserir.');
+        if (file.size > maxMb * 1024 * 1024) throw new Error(`A imagem passa de ${maxMb} MB. Reduza o tamanho antes de inserir.`);
         if (file.type === 'image/svg+xml' && SVG_FORBIDDEN.test(await file.text())) throw new Error('O SVG contém scripts ou links externos e não pode ser usado.');
         const data = await readAsDataUrl(file);
         resolve({ data, ...(await naturalSize(data)) });

@@ -25,7 +25,7 @@ REF = re.compile(r"\[#([A-Za-z_][A-Za-z0-9_]{0,63})\]")
 _STRING_LITERAL = re.compile(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"")
 USED_KEY = "__constants"
 # Campos de texto que aceitam constante além das fórmulas: o valor entra como está.
-RAW_FIELDS = {("prep.filter", "value"), ("io.output_data", "filename")}
+RAW_FIELDS = {("prep.filter", "value"), ("io.output_data", "filename"), ("bi.chart", "ref_value")}
 # Constantes do sistema: nomes reservados, com o que a fórmula escreve no lugar (RF-2995, RF-2997).
 SYSTEM_FORMULA = {"hoje": "Today()"}
 SYSTEM_DESCRIPTION = {"hoje": "A data de hoje, no formato AAAA-MM-DD. Muda sozinha a cada dia."}

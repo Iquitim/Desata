@@ -1,6 +1,6 @@
 [project]
 name = "prodata"
-version = "0.9.0"
+version = "0.9.1"
 description = "Plataforma visual de pipelines de dados (ETL colunar, BI e AutoML) sobre Polars, DuckDB e Apache Arrow."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -45,6 +45,8 @@ build = [
 dev = [
     "mypy>=2.4.1",
     "pytest>=9.2.0",
+    "pytest-testmon>=2.3.0",
+    "pytest-xdist>=3.8.0",
     "ruff>=0.17.3",
 ]
 
@@ -58,6 +60,7 @@ packages = ["src/prodata"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = ["lento: executa o fluxo de exemplo inteiro ou leva vários segundos (fora da rodada rápida, spec 043)"]
 filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]
 
 [tool.ruff]

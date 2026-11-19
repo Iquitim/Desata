@@ -366,8 +366,50 @@ async function modelCard(n, cfg) {
   };
 }
 
+// ------------------------------------------------------------------ Union (spec 042)
+
+/** Entradas lado a lado e o resultado empilhado; a coluna que só existe numa entrada aparece vazia na outra. */
+async function union(n, cfg) {
+  const [a, b] = await Promise.all([inputRows(n, 'in1', 3), inputRows(n, 'in2', 3)]);
+  const live = Boolean(a?.length && b?.length);
+  const rows1 = live ? a.slice(0, 2) : [{ uf: 'SP', valor: 10, meta: 12 }, { uf: 'RJ', valor: 7, meta: 9 }];
+  const rows2 = live ? b.slice(0, 2) : [{ uf: 'MG', valor: 5, canal: 'Loja' }, { uf: 'BA', valor: 3, canal: 'Site' }];
+  const cols1 = Object.keys(rows1[0]);
+  const cols2 = Object.keys(rows2[0]);
+  const byName = cfg.mode !== 'by_position';
+  const shared = cols1.filter((c) => cols2.includes(c));
+  // Poucas colunas por tabela (uma comum e uma só de cada lado), para o esquema caber no painel.
+  const pick1 = byName ? [...shared.slice(0, 1), ...cols1.filter((c) => !cols2.includes(c)).slice(0, 1)] : cols1.slice(0, 3);
+  const pick2 = byName ? [...shared.slice(0, 1), ...cols2.filter((c) => !cols1.includes(c)).slice(0, 1)] : cols2.slice(0, 3);
+  const kindOf = (c, other) => (!byName ? null : other.includes(c) ? 'match' : 'alone');
+  const table = (title, cols, rows, other, tag) => mini(title, cols.map((c) => ({ text: short(c, 12), kind: kindOf(c, other) })),
+    rows.map((r, i) => cols.map((c) => ({ text: short(show(r[c]), 9), link: `${tag}${i}` }))));
+  const source = (cfg.source_column || '').trim();
+  const outCols = byName ? [...new Set([...pick1, ...pick2])] : pick1;
+  const cell = (r, c, i, tag, cols) => {
+    const at = byName ? c : cols[outCols.indexOf(c)];
+    return at !== undefined && at in r ? { text: short(show(r[at]), 9), link: `${tag}${i}` } : { text: 'vazio', kind: 'alone', link: `${tag}${i}` };
+  };
+  // A coluna de origem vem primeiro no esquema (no resultado, ela fica no fim): é a que mostra de onde veio cada linha.
+  const result = mini('Depois: uma tabela só', [...(source ? [{ text: source, kind: 'to' }] : []), ...outCols.map((c) => ({ text: short(c, 12) }))], [
+    ...rows1.map((r, i) => [...(source ? [{ text: '1', kind: 'from', link: `a${i}` }] : []), ...outCols.map((c) => cell(r, c, i, 'a', pick1))]),
+    ...rows2.map((r, i) => [...(source ? [{ text: '2', kind: 'from', link: `b${i}` }] : []), ...outCols.map((c) => cell(r, c, i, 'b', pick2))]),
+  ]);
+  const only1 = pick1.find((c) => !cols2.includes(c));
+  const only2 = pick2.find((c) => !cols1.includes(c));
+  const caption = byName
+    ? `Colunas com o mesmo nome ficam juntas, em qualquer ordem. A que só existe numa entrada continua no resultado e fica vazia nas linhas da outra${only1 ? `: [${only1}] nas linhas da entrada 2` : ''}${only2 ? `${only1 ? ' e' : ':'} [${only2}] nas da entrada 1` : ''}.`
+    : 'A 1ª coluna da entrada 2 vai para baixo da 1ª da entrada 1, e assim por diante, com os nomes da entrada 1. As duas precisam ter o mesmo número de colunas.';
+  return {
+    body: [h('div', { class: 'x-pair' }, table('Entrada 1', pick1, rows1, cols2, 'a'), table('Entrada 2', pick2, rows2, cols1, 'b')),
+      arrow(byName ? 'empilha pelo nome' : 'empilha pela posição'), result],
+    caption: `${caption}${source ? ` [${source}] diz de qual entrada veio cada linha.` : ''} Passe o mouse numa linha para ver onde ela foi parar.`,
+    sample: live,
+  };
+}
+
 const EXTRA = {
-  input_folder: inputFolder, generate_rows: generateRows, reconcile, compare_runs: compareRuns, subflow, fuzzy,
+  union, input_folder: inputFolder, generate_rows: generateRows, reconcile, compare_runs: compareRuns, subflow, fuzzy,
   regex, multi_field: multiField, mask, model_card: modelCard,
 };
 

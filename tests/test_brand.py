@@ -142,6 +142,7 @@ print(json.dumps(out, ensure_ascii=False))
 """
 
 
+@pytest.mark.lento
 def test_neutral_brand_never_mentions_protege(tmp_path: Path) -> None:
     env = {
         **os.environ,

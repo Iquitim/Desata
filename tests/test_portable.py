@@ -88,6 +88,7 @@ def test_sample_respects_the_limits() -> None:
         Workflow.model_validate({**_flow(), "samples": {"a.csv": huge.model_dump(mode="json")}})
 
 
+@pytest.mark.lento
 def test_share_with_sample_and_open_on_another_computer(client: TestClient, tmp_path: Path) -> None:
     """CA-06/CA-07: grava com a amostra das fontes escolhidas, sem caminho nem segredo; noutro computador, roda."""
     demo = client.get("/api/workflows/demo_pipeline_360").json()

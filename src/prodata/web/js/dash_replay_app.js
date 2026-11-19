@@ -12,6 +12,7 @@ import { button, fmt, h } from './dom.js';
 import { LABELS } from './label_picker.js';
 import { store } from './store.js';
 import { confirmDialog, openDialog, showMenu, toast } from './ui.js';
+import { pageLook } from './dash_look.js';
 
 const RECORDS = 200;
 const app = { key: '', filtersKey: '', data: null, tables: null, replay: null, bar: null, timeline: null, problem: '' };
@@ -274,10 +275,9 @@ export function presentStory() {
   const base = page.shownWidgets();
   const render = (scene) => {
     const widgets = { ...base, ...app.replay.snapshot(scene.filters || [], scene.moment || app.replay.moment) };
-    return h('div', {
-      class: ['dash-page', 'dash-export', scene.item_id && 'has-spot'],
-      style: { width: `${PAGE_W}px`, height: `${pageHeight(d.page)}px`, backgroundColor: d.page.background || null },
-    }, d.items.map((item) => {
+    const look = pageLook(d.page, { width: PAGE_W, height: pageHeight(d.page) });
+    return h('div', { class: ['dash-page', 'dash-export', scene.item_id && 'has-spot'], style: look.style },
+      look.backdrop, d.items.map((item) => {
       const el = page.itemEl(item, widgets, { exporting: true });
       if (el && item.id === scene.item_id) el.classList.add('spot');
       return el;

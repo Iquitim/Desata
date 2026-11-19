@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import pytest
 from fastapi.testclient import TestClient
 
 from prodata.config import Settings
@@ -52,6 +53,7 @@ def test_index_follows_changes_in_the_library(client: TestClient) -> None:
     assert "clientes.csv" not in usage and "outro.csv" in usage
 
 
+@pytest.mark.lento
 def test_fast_with_500_flows(client: TestClient, settings: Settings) -> None:
     folder = settings.workflows_dir
     for i in range(500):

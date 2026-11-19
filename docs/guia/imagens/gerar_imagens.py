@@ -31,6 +31,7 @@ from leitor_pdf import part_pdf_reader as pdf_reader  # noqa: E402
 from novas_075 import part_new_tools  # noqa: E402
 from novas_086 import part_086 as new_086  # noqa: E402
 from novas_090 import part_090 as new_090  # noqa: E402
+from novas_091 import part_091 as new_091  # noqa: E402
 from organizar_dados import part_organize as organize  # noqa: E402
 from pasta_dados import part_folder_source as folder_source  # noqa: E402
 
@@ -572,9 +573,13 @@ def part_090(pg: Pg) -> None:
     new_090(pg, shot)
 
 
+def part_091(pg: Pg) -> None:
+    new_091(pg, shot)
+
+
 def PARTS(tmp):  # noqa: N802
     every = ((part_screen, ()), (part_cache_dashboard, ()), (part_sql, ()), (part_tools, ()), (part_quality_lists, ()), (part_data_trust, (tmp,)), (part_manual, ()))
-    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()))
+    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()))
     only = os.environ.get("IMAGENS_SO")
     return [e for e in every if not only or e[0].__name__ in only.split(",")]
 
@@ -606,7 +611,7 @@ def part_jira(pg: Pg) -> None:
     pg.wait_for_selector(".jira-ok")
     pg.wait_for_timeout(300)
     shot(pg, "jira-conexao")
-    pg.get_by_role("button", name="Salvar", exact=True).click()
+    pg.locator("button.btn-primary", has_text="Salvar").click()  # o Salvar do topo (spec 042) é outro botão
     pg.wait_for_function("() => window.__S.store.jiraConnections.length === 1")
     pg.wait_for_timeout(500)
     pg.locator(".dv-list-head button").click()

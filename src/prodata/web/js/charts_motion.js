@@ -48,13 +48,13 @@ export function bubbleChart(w, width, height, opts) {
   const xs = yScale(pts.map((p) => p.x), { yMin: null, yMax: null }, false);
   const ys = yScale(pts.map((p) => p.y), o, false);
   const x = (v) => m.left + ((v - xs.lo) / (xs.hi - xs.lo)) * pw;
-  const y = (v) => m.top + ph - ((Math.min(ys.hi, Math.max(ys.lo, v)) - ys.lo) / (ys.hi - ys.lo)) * ph;
+  const y = (v) => m.top + ph - ys.frac(v) * ph;
   const biggest = Math.max(1e-9, ...pts.map((p) => p.size));
   const maxR = Math.min(34, Math.max(14, Math.min(pw, ph) / 8));
   const radius = (p) => Math.max(0, Math.sqrt(Math.max(0, p.size) / biggest) * maxR * (p.scale ?? 1));
   const xTicks = [];
   for (let v = xs.lo; v <= xs.hi + 1e-9; v += xs.step) {
-    xTicks.push(svg('text', { class: 'tick', x: x(v), y: height - 9 - (o.xTitle ? 18 : 0), 'text-anchor': 'middle' }, fmt.compact(v)));
+    xTicks.push(svg('text', { class: 'tick x-tick', x: x(v), y: height - 9 - (o.xTitle ? 18 : 0), 'text-anchor': 'middle' }, fmt.compact(v)));
   }
   const ordered = [...pts].sort((a, b) => b.size - a.size); // as menores por cima, para dar para apontar
   const dots = ordered.map((p) => {
@@ -68,7 +68,7 @@ export function bubbleChart(w, width, height, opts) {
     ];
   });
   return svg('svg', { class: 'chart', width, height, viewBox: `0 0 ${width} ${height}` },
-    yGrid(ys.lo, ys.hi, ys.step, y, m, width, o), xTicks,
+    yGrid(ys, y, m, width, o), xTicks,
     svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: m.top + ph, y2: m.top + ph }), dots,
     axisTitles({ ...o, xTitle: o.xTitle || w.x_value, yTitle: o.yTitle || w.y_column }, m, width, height));
 }

@@ -21,6 +21,7 @@ import { applyPaint, startPaint, stopPaint } from './dash_paint.js';
 import { loadFormats, PANEL_W, panelEl } from './dash_panel.js';
 import { exportPage, exportVisual } from './dash_png.js';
 import { brand, LOGO_LIGHT, logoOwner } from './brand.js';
+import { pageLook } from './dash_look.js';
 
 export { AGG_LABELS, chartCard, kpiTile, tableCard, visualCard } from './dash_cards.js';
 
@@ -200,10 +201,11 @@ function pageEl({ editing = false, exporting = false } = {}) {
   const widgets = shownWidgets();
   const pulse = filtered.pulse && !exporting && !editing;
   if (!exporting) filtered.pulse = false;
+  const look = pageLook(d.page, { width: PAGE_W, height: pageHeight(d.page) });
   return h('div', {
     class: ['dash-page', editing && 'editing', editing && ui.paint && 'painting', exporting && 'dash-export', pulse && 'dash-refresh'],
-    style: { width: `${PAGE_W}px`, height: `${pageHeight(d.page)}px`, backgroundColor: d.page.background || null },
-  }, d.items.map((item) => itemEl(item, widgets, { editing, exporting })));
+    style: look.style,
+  }, look.backdrop, d.items.map((item) => itemEl(item, widgets, { editing, exporting })));
 }
 
 /** Botão de exportar com selo e dica do que o rótulo faz naquela saída. */

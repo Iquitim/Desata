@@ -71,6 +71,7 @@ def _outputs(client: TestClient, flow: dict[str, Any]) -> dict[str, Any]:
 
 
 @pytest.mark.parametrize("version", VERSIONS)
+@pytest.mark.lento
 def test_saved_flow_gives_the_same_results(version: str, client: TestClient) -> None:
     flow = json.loads((DATA / f"fluxo_{version}.prodata.json").read_text(encoding="utf-8"))
     expected_file = DATA / f"fluxo_{version}_resultados.json"

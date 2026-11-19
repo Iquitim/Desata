@@ -2,7 +2,7 @@
 // Série única usa --series-1; a rosca usa a paleta categórica em ordem fixa (máx. 8).
 // `opts` (formato do visual, spec 014) é opcional: sem ele, cada gráfico mantém o visual de sempre.
 
-import { axisLabels, axisTitles, catAttr, esc, framed, isDim, labelled, LEGEND_H, LEGEND_LINE, legendLayout, legendRow, margins, MAX_SLICES, multiTip, options, paint, PARETO_LEGEND_W, roundedBar, svg, tipHtml, tone, truncate, yGrid, yScale } from './chart_kit.js';
+import { axisLabels, axisTitles, catAttr, esc, framed, isDim, labelled, LEGEND_H, LEGEND_LINE, legendLayout, legendRow, margins, MAX_SLICES, multiTip, options, paint, PARETO_LEGEND_W, refFill, refLine, roundedBar, spaced, svg, tipHtml, withRef, tone, truncate, yGrid, yScale } from './chart_kit.js';
 import { bubbleChart, raceChart, sankeyChart } from './charts_motion.js';
 import { fmt, h } from './dom.js';
 
@@ -11,26 +11,27 @@ export function columnChart(series, width, height = 260, opts) {
   const m = margins({ top: 20, right: 12, bottom: 28, left: 44 }, o);
   const w = width - m.left - m.right;
   const ht = height - m.top - m.bottom;
-  const { lo, hi, step } = yScale(series.map((s) => s.value), o, true);
-  const y = (v) => m.top + ht - ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * ht;
+  const sc = yScale(withRef(series.map((s) => s.value), o), o, true);
+  const { lo } = sc;
+  const y = (v) => m.top + ht - sc.frac(v) * ht;
   const band = w / series.length;
   const barW = Math.min(24, band * 0.7);
   const axis = axisLabels(series.map((s) => s.label), band);
-  const shown = labelled(series, o.labels, 'max');
+  const shown = spaced(labelled(series, o.labels, 'max'), (i) => m.left + band * i + band / 2, (i) => o.short(series[i].value));
   const base = y(Math.max(lo, 0));
   const bars = series.map((s, i) => {
     const x = m.left + band * i + (band - barW) / 2;
     const top0 = y(Math.max(lo, s.value));
     return [
       svg('rect', { class: 'hit', x: m.left + band * i, y: m.top, width: band, height: ht, 'data-tip': tipHtml(s.label, s.value, o, s), ...catAttr(o, s.label) }),
-      svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(x, top0, barW, base - top0, true), ...paint(o, i, s.label, false) }),
+      svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(x, top0, barW, base - top0, true), ...paint(o, i, s.label, false), ...(refFill(o, s.value) ? { style: `fill:${refFill(o, s.value)}` } : {}) }),
       axis.show(i) ? svg('text', { class: 'tick x-tick', y: height - 9 - (o.xTitle ? 18 : 0), ...axis.anchor(x + barW / 2, s.label, width) }, axis.text(s.label)) : null,
       shown.has(i) ? svg('text', { class: 'value', x: x + barW / 2, y: top0 - 6, 'text-anchor': 'middle' }, o.short(s.value)) : null,
     ];
   });
   return svg('svg', { class: 'chart', width, height, viewBox: `0 0 ${width} ${height}` },
-    yGrid(lo, hi, step, y, m, width, o),
-    svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: base, y2: base }), bars, axisTitles(o, m, width, height));
+    yGrid(sc, y, m, width, o),
+    svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: base, y2: base }), bars, refLine(o, y, m.left, width - m.right), axisTitles(o, m, width, height));
 }
 
 export function barChart(series, width, _height, opts) {
@@ -40,20 +41,25 @@ export function barChart(series, width, _height, opts) {
   const labelW = Math.min(150, Math.max(40, ...series.map((s) => s.label.length * 6.6)));
   const valueW = 52;
   const w = Math.max(20, width - labelW - valueW - 16);
-  const max = o.yMax ?? Math.max(1e-9, ...series.map((s) => s.value));
+  const max = o.yMax ?? Math.max(1e-9, ...withRef(series.map((s) => s.value), o));
+  // Com escala logarítmica, o comprimento segue o log do valor (spec 042).
+  const sc = o.yLog ? yScale(withRef(series.map((s) => s.value), o), o, true) : null;
+  const along = (v) => (sc ? sc.frac(v) : Math.min(max, Math.max(0, v)) / max) * w;
   const shown = labelled(series, o.labels, 'all');
   const bars = series.map((s, i) => {
     const y = 4 + i * row;
-    const bw = (Math.min(max, Math.max(0, s.value)) / max) * w;
+    const bw = along(s.value);
     return [
       svg('rect', { class: 'hit', x: 0, y, width, height: row, 'data-tip': tipHtml(s.label, s.value, o, s), ...catAttr(o, s.label) }),
       svg('text', { class: 'tick', x: labelW, y: y + row / 2 + 4, 'text-anchor': 'end' }, truncate(s.label, Math.floor(labelW / 6.6))),
-      svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(labelW + 8, y + (row - 16) / 2, bw, 16, false), ...paint(o, i, s.label, false) }),
+      svg('path', { class: isDim(o, s.label) ? 'bar dim' : 'bar', d: roundedBar(labelW + 8, y + (row - 16) / 2, bw, 16, false), ...paint(o, i, s.label, false), ...(refFill(o, s.value) ? { style: `fill:${refFill(o, s.value)}` } : {}) }),
       shown.has(i) ? svg('text', { class: 'value', x: labelW + 14 + bw, y: y + row / 2 + 4 }, o.short(s.value)) : null,
     ];
   });
   return svg('svg', { class: 'chart', width, height, viewBox: `0 0 ${width} ${height}` },
     svg('line', { class: 'axis', x1: labelW + 8, x2: labelW + 8, y1: 2, y2: height - 2 - (o.xTitle ? 18 : 0) }), bars,
+    o.ref ? svg('g', { class: 'ref-line', 'data-tip': `<span>${esc(o.ref.label)}</span><b>${esc(o.full(o.ref.value))}</b>` },
+      svg('line', { x1: labelW + 8 + along(o.ref.value), x2: labelW + 8 + along(o.ref.value), y1: 2, y2: height - 2 - (o.xTitle ? 18 : 0) })) : null,
     o.xTitle ? svg('text', { class: 'axis-title', x: labelW + 8 + w / 2, y: height - 4, 'text-anchor': 'middle' }, o.xTitle) : null);
 }
 
@@ -62,9 +68,10 @@ export function lineChart(series, width, height = 260, opts) {
   const m = margins({ top: 20, right: 40, bottom: 28, left: 44 }, o);
   const w = width - m.left - m.right;
   const ht = height - m.top - m.bottom;
-  const { lo, hi, step } = yScale(series.map((s) => s.value), o, true);
+  const sc = yScale(withRef(series.map((s) => s.value), o), o, true);
+  const { lo } = sc;
   const x = (i) => m.left + (series.length === 1 ? w / 2 : (i / (series.length - 1)) * w);
-  const y = (v) => m.top + ht - ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * ht;
+  const y = (v) => m.top + ht - sc.frac(v) * ht;
   const axis = axisLabels(series.map((s) => s.label), w / Math.max(1, series.length - 1));
   const labels = series.map((s, i) => (axis.show(i)
     ? svg('text', { class: 'tick x-tick', y: height - 9 - (o.xTitle ? 18 : 0), ...axis.anchor(x(i), s.label, width) }, axis.text(s.label)) : null));
@@ -76,11 +83,14 @@ export function lineChart(series, width, height = 260, opts) {
   // A linha usa a cor como traço; paint() devolve preenchimento, então converte.
   const tone = paint(o, 0, series[0]?.label, false);
   const stroke = tone.style ? { style: tone.style.replace('fill:', 'stroke:') } : {};
-  const shown = labelled(series, o.labels, 'last');
+  const shown = spaced(labelled(series, o.labels, 'last'), x, (i) => o.short(series[i].value));
   return svg('svg', { class: 'chart', width, height, viewBox: `0 0 ${width} ${height}` },
-    yGrid(lo, hi, step, y, m, width, o), labels,
+    yGrid(sc, y, m, width, o), labels,
     svg('path', { class: 'area', d: `${d} L${x(series.length - 1)},${y(lo)} L${x(0)},${y(lo)} Z`, ...tone }),
-    svg('path', { class: 'line', d, ...stroke }), hits,
+    svg('path', { class: 'line', d, ...stroke }), refLine(o, y, m.left, width - m.right),
+    // Com a linha de referência pintando, cada ponto mostra de que lado ficou.
+    o.ref?.paint ? series.map((s, i) => svg('circle', { class: 'dot', cx: x(i), cy: y(s.value), r: 3.5, style: `fill:${refFill(o, s.value)}` })) : null,
+    hits,
     [...shown].map((i) => [
       svg('circle', { class: 'dot', cx: x(i), cy: y(series[i].value), r: 4, ...tone }),
       svg('text', { class: 'value', x: x(i) + (i === series.length - 1 ? 8 : 0), y: y(series[i].value) - (i === series.length - 1 ? -4 : 8),
@@ -154,8 +164,11 @@ function multiChart(w, width, height, opts, mode) {
   const pw = width - m.left - m.right;
   const ph = svgH - m.top - m.bottom;
   const peaks = cats.map((c) => (stacked ? names.reduce((acc, n) => acc + cell(c, n), 0) : Math.max(0, ...names.map((n) => cell(c, n)))));
-  const { lo, hi, step } = pct ? { lo: 0, hi: 100, step: 25 } : yScale(peaks, o, true);
-  const y = (v) => m.top + ph - ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * ph;
+  // Empilhados e 100% não têm escala logarítmica: a soma das partes não vale no log.
+  const sc = pct ? { lo: 0, hi: 100, ticks: [0, 25, 50, 75, 100], frac: (v) => Math.min(100, Math.max(0, v)) / 100 }
+    : yScale(stacked ? peaks : withRef(peaks, o), stacked ? { ...o, yLog: false } : o, true);
+  const { lo } = sc;
+  const y = (v) => m.top + ph - sc.frac(v) * ph;
   const band = pw / Math.max(1, cats.length);
   const axis = axisLabels(cats.map((c) => c.label), band);
   const ticks = cats.map((c, i) => (axis.show(i) ? svg('text', { class: 'tick x-tick', y: svgH - 9 - (o.xTitle ? 18 : 0), ...axis.anchor(m.left + band * i + band / 2, c.label, width) },
@@ -183,7 +196,7 @@ function multiChart(w, width, height, opts, mode) {
       marks.push(svg('rect', { class: 'hit', x: m.left + band * i, y: m.top, width: band, height: ph, 'data-tip': tip(c), ...catAttr(o, c.label) }));
     });
     if (!pct) {
-      const shown = labelled(cats, o.labels, 'max');
+      const shown = spaced(labelled(cats, o.labels, 'max'), (i) => m.left + band * i + band / 2, (i) => o.short(peaks[i]));
       for (const i of shown) {
         marks.push(svg('text', { class: 'value', x: m.left + band * i + band / 2, y: y(peaks[i]) - 6, 'text-anchor': 'middle' }, o.short(peaks[i])));
       }
@@ -214,13 +227,14 @@ function multiChart(w, width, height, opts, mode) {
     cats.forEach((c, i) => marks.push(svg('rect', { class: 'hit', x: x(i) - pw / Math.max(1, cats.length) / 2, y: m.top, width: pw / Math.max(1, cats.length), height: ph, 'data-tip': tip(c) })));
   }
   const yTicks = [];
-  for (let v = lo; v <= hi + 1e-9; v += step) {
+  for (const v of sc.ticks) {
     if (o.grid) yTicks.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    yTicks.push(svg('text', { class: 'tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, pct ? `${v}%` : fmt.compact(v)));
+    yTicks.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, pct ? `${v}%` : fmt.compact(v)));
   }
   return framed(o, legendRow(names, colors, width),
     svg('svg', { class: 'chart', width, height: svgH, viewBox: `0 0 ${width} ${svgH}` }, yTicks,
-      svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: y(lo), y2: y(lo) }), ticks, marks, axisTitles(o, m, width, svgH)));
+      svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: y(lo), y2: y(lo) }), ticks, marks,
+      stacked || pct ? null : refLine(o, y, m.left, width - m.right), axisTitles(o, m, width, svgH)));
 }
 
 /**
@@ -255,7 +269,7 @@ function paretoChart(series, width, height, opts, w) {
   const d = series.map((s, i) => `${i ? 'L' : 'M'}${cx(i)},${y(s.cum_pct)}`).join(' ');
   const grid = [0, 25, 50, 75, 100].map((v) => [
     o.grid ? svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }) : null,
-    svg('text', { class: 'tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, `${v}%`),
+    svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, `${v}%`),
   ]);
   const label = cut >= 0 ? [
     svg('circle', { class: 'dot', cx: cx(cut), cy: y(series[cut].cum_pct), r: 4, style: `fill:${lineColor}` }),
@@ -311,26 +325,26 @@ function scatterChart(w, width, height, opts) {
   const pw = width - m.left - m.right;
   const ph = svgH - m.top - m.bottom;
   const xs = yScale(pts.map((p) => p.x), { yMin: null, yMax: null }, false);
-  const ys = yScale(pts.map((p) => p.y), o, false);
+  const ys = yScale(withRef(pts.map((p) => p.y), o), o, false);
   const x = (v) => m.left + ((v - xs.lo) / (xs.hi - xs.lo)) * pw;
-  const y = (v) => m.top + ph - ((Math.min(ys.hi, Math.max(ys.lo, v)) - ys.lo) / (ys.hi - ys.lo)) * ph;
+  const y = (v) => m.top + ph - ys.frac(v) * ph;
   const grid = [];
-  for (let v = ys.lo; v <= ys.hi + 1e-9; v += ys.step) {
+  for (const v of ys.ticks) {
     if (o.grid) grid.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    grid.push(svg('text', { class: 'tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, fmt.compact(v)));
+    grid.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, fmt.compact(v)));
   }
   for (let v = xs.lo; v <= xs.hi + 1e-9; v += xs.step) {
-    grid.push(svg('text', { class: 'tick', x: x(v), y: svgH - 9 - (w.sampled ? 14 : 0) - (o.xTitle ? 18 : 0), 'text-anchor': 'middle' }, fmt.compact(v)));
+    grid.push(svg('text', { class: 'tick x-tick', x: x(v), y: svgH - 9 - (w.sampled ? 14 : 0) - (o.xTitle ? 18 : 0), 'text-anchor': 'middle' }, fmt.compact(v)));
   }
   const dots = pts.map((p) => svg('circle', {
     class: 'scatter-dot', cx: x(p.x), cy: y(p.y), r: 4,
-    style: `fill:${names.length ? colors[idx(p.s)] : tone(o, 0, '')}`,
+    style: `fill:${refFill(o, p.y) || (names.length ? colors[idx(p.s)] : tone(o, 0, ''))}`,
     'data-tip': `${p.s !== undefined ? `<span>${esc(p.s)}</span>` : ''}<span>${esc(w.x_column)}: <b>${fmt.number(p.x)}</b></span><span>${esc(w.y_column)}: <b>${fmt.number(p.y)}</b></span>`,
   }));
   const note = w.sampled ? svg('text', { class: 'tick', x: width - m.right, y: svgH - 4, 'text-anchor': 'end' },
     `Amostra de ${fmt.int(pts.length)} de ${fmt.int(w.point_count)} pontos`) : null;
   const chart = svg('svg', { class: 'chart', width, height: svgH, viewBox: `0 0 ${width} ${svgH}` }, grid,
-    svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: m.top + ph, y2: m.top + ph }), dots, note,
+    svg('line', { class: 'axis', x1: m.left, x2: width - m.right, y1: m.top + ph, y2: m.top + ph }), dots, refLine(o, y, m.left, width - m.right), note,
     axisTitles({ ...o, xTitle: o.xTitle || w.x_column, yTitle: o.yTitle || w.y_column }, m, width, svgH));
   return names.length ? framed(o, legendRow(names, colors, width), chart) : chart;
 }
@@ -451,7 +465,7 @@ const MULTI = ['stacked', 'grouped', 'stacked100', 'line', 'area', 'area_stacked
 /** Escolhe o gráfico e devolve o elemento pronto. `w` é o widget inteiro (séries, pontos, Venn...). */
 export function renderChart(type, series, width, height, opts, w = {}) {
   // A dica (spec 041) precisa do total para o % e dos nomes das colunas para o texto com campos.
-  opts = { ...opts, _total: (series || []).reduce((acc, s) => acc + Math.max(0, Number(s.value) || 0), 0) || null, _x: w.x_column || '', _y: w.y_column || (w.agg === 'count' ? 'contagem' : '') };
+  opts = { ...opts, _total: (series || []).reduce((acc, s) => acc + Math.max(0, Number(s.value) || 0), 0) || null, _x: w.x_column || '', _y: w.y_column || (w.agg === 'count' ? 'contagem' : ''), _ref: w.reference || null };
   if (type === 'race') return raceChart(series, width, height, opts);
   if (type === 'bubble') return bubbleChart(w, width, height, opts);
   if (type === 'sankey') return sankeyChart(w, width, height, opts);

@@ -44,6 +44,7 @@ import { cacheActions, selectionActions } from './canvas_actions.js';
 import { renderNodes } from './canvas_nodes.js';
 import { CARD_H, CARD_W, hiddenNodes, setContainersCollapsed, setNodesCollapsed } from './canvas_collapse.js';
 import { organizeFlow } from './canvas_layout.js';
+import { initBiHover } from './bi_hover.js';
 export { heldBy, showProgress } from './canvas_nodes.js';
 export { cacheActions, selectionActions } from './canvas_actions.js';
 export { addContainerAtCenter } from './canvas_containers.js';
@@ -626,6 +627,7 @@ export function initCanvas(root, opts = {}) {
   root.addEventListener('pointerleave', () => { lastPointer = null; });
   root.addEventListener('wheel', onWheel, { passive: false });
   root.addEventListener('contextmenu', onContextMenu);
+  initBiHover(root); // prévia do visual nas caixas de BI (spec 042)
   root.addEventListener('dragover', onDragOver);
   root.addEventListener('dragleave', () => highlightEdge(null));
   root.addEventListener('drop', onDrop);

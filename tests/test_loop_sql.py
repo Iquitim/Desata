@@ -4,6 +4,7 @@ import time
 from itertools import pairwise
 from typing import Any
 
+import pytest
 from fastapi.testclient import TestClient
 
 ROWS = [["N", 10, "a"], ["N", 20, "b"], ["S", 5, "c"], ["S", 7, "d"], ["L", 1, "e"]]
@@ -89,6 +90,7 @@ def test_variables_go_into_each_turn(client: TestClient) -> None:
     assert "'N'" in data["text"] and "[#valor]" not in data["text"]
 
 
+@pytest.mark.lento
 def test_range_and_last_turn(client: TestClient) -> None:
     body = [
         {

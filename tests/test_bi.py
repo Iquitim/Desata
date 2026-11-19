@@ -9,7 +9,8 @@ import pytest
 
 from prodata.ingestion import DatasetStore
 from prodata.nodes import REGISTRY, NodeContext
-from prodata.nodes.bi import as_date, lens_area, venn2_geometry
+from prodata.nodes.bi import as_date
+from prodata.nodes.venn_geometry import lens_area, venn2_geometry
 
 VENDAS = pl.DataFrame(
     {
@@ -158,3 +159,43 @@ def test_table_sorts_limits_and_totals(tmp_path: Path) -> None:
     assert [r[1] for r in w["rows"]] == [30.0, 20.0, 10.0]
     assert w["truncated"] and w["totals"] == {"valor": 78.0}
     assert w["columns"] == [{"name": "uf", "numeric": False}, {"name": "valor", "numeric": True}]
+
+
+# ------------------------------------------------------------------ linha de referência (spec 042, RF-4258)
+
+
+def test_reference_line_fixed_mean_and_median(tmp_path: Path) -> None:
+    base = {"x_column": "uf", "y_column": "valor", "agg": "sum"}
+    w = widget(
+        "bi.chart", VENDAS, tmp_path, **base, ref_line="value", ref_value="1.234,5", ref_label="Meta do mês"
+    )
+    assert w["reference"] == {"kind": "value", "value": 1234.5, "label": "Meta do mês"}
+    values = [
+        s["value"] for s in widget("bi.chart", VENDAS, tmp_path, **base)["series"]
+    ]  # SP 62, RJ 13, MG 3
+    mean = widget("bi.chart", VENDAS, tmp_path, **base, ref_line="mean")["reference"]
+    assert mean["label"] == "Média" and math.isclose(mean["value"], sum(values) / len(values))
+    assert widget("bi.chart", VENDAS, tmp_path, **base, ref_line="median")["reference"]["value"] == 13
+    assert "reference" not in widget("bi.chart", VENDAS, tmp_path, **base)
+    # Rosca não tem eixo de valor: a linha não vale.
+    assert "reference" not in widget(
+        "bi.chart", VENDAS, tmp_path, **base, chart_type="donut", ref_line="mean"
+    )
+
+
+def test_reference_line_rejects_text_and_empty(tmp_path: Path) -> None:
+    base = {"x_column": "uf", "y_column": "valor", "agg": "sum", "ref_line": "value"}
+    with pytest.raises(ValueError, match="não é um número"):
+        widget("bi.chart", VENDAS, tmp_path, **base, ref_value="metade")
+    with pytest.raises(ValueError, match="escreva o valor"):
+        widget("bi.chart", VENDAS, tmp_path, **base, ref_value=" ")
+
+
+def test_reference_line_takes_a_constant() -> None:
+    from prodata.domain.constants import Constant
+    from prodata.engine.constants import fill_config, node_refs
+
+    cfg = {"ref_line": "value", "ref_value": "[#meta]"}
+    assert node_refs("bi.chart", cfg) == {"meta"}
+    filled = fill_config("bi.chart", cfg, {"meta": Constant(name="meta", type="number", value="50")})
+    assert filled["ref_value"] == "50"

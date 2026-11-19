@@ -1,0 +1,87 @@
+{
+ "id": "exemplo_empilhar",
+ "description": "Exemplo do Manual. Mexa à vontade: nada aqui altera os seus fluxos.",
+ "containers": [],
+ "name": "Exemplo: empilhar tabelas",
+ "nodes": [
+  {
+   "id": "a",
+   "type": "io.input_data",
+   "label": "Clientes",
+   "x": 60,
+   "y": 60,
+   "config": {
+    "dataset": "clientes_enterprise.csv"
+   }
+  },
+  {
+   "id": "b",
+   "type": "io.input_data",
+   "label": "Transações",
+   "x": 60,
+   "y": 240,
+   "config": {
+    "dataset": "transacoes_vendas.csv"
+   }
+  },
+  {
+   "id": "u",
+   "type": "transform.union",
+   "label": "Clientes e transações empilhados",
+   "x": 360,
+   "y": 60,
+   "config": {
+    "mode": "by_name",
+    "source_column": "origem"
+   }
+  },
+  {
+   "id": "j",
+   "type": "transform.join",
+   "label": "Clientes × transações",
+   "x": 360,
+   "y": 260,
+   "config": {
+    "keys": [
+     {
+      "left": "id_cliente",
+      "right": "id_cliente"
+     }
+    ],
+    "stack": "LJ",
+    "stack_column": "saida",
+    "allow_multiply": true
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "source": "a",
+   "sourceHandle": "out",
+   "target": "u",
+   "targetHandle": "in1"
+  },
+  {
+   "id": "e2",
+   "source": "b",
+   "sourceHandle": "out",
+   "target": "u",
+   "targetHandle": "in2"
+  },
+  {
+   "id": "e3",
+   "source": "a",
+   "sourceHandle": "out",
+   "target": "j",
+   "targetHandle": "L"
+  },
+  {
+   "id": "e4",
+   "source": "b",
+   "sourceHandle": "out",
+   "target": "j",
+   "targetHandle": "R"
+  }
+ ]
+}

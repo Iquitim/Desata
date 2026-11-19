@@ -96,3 +96,22 @@ def runner(tmp_path: Path, store: DatasetStore) -> WorkflowRunner:
 @pytest.fixture
 def demo() -> Workflow:
     return Workflow.model_validate(demo_workflow())
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    # Não é -m "not lento": com -m, o pytest-testmon desliga a seleção dos testes afetados (spec 043).
+    parser.addoption(
+        "--sem-lentos", action="store_true", help="pula os testes marcados lento (rodada rápida)"
+    )
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """Spec 043: quem executa o fluxo de exemplo inteiro (fixture demo) é lento e fica fora da rodada rápida."""
+    for item in items:
+        if "demo" in getattr(item, "fixturenames", ()):
+            item.add_marker(pytest.mark.lento)
+    if config.getoption("--sem-lentos"):
+        slow = [i for i in items if i.get_closest_marker("lento")]
+        if slow:
+            config.hook.pytest_deselected(items=slow)
+            items[:] = [i for i in items if not i.get_closest_marker("lento")]

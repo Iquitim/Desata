@@ -3,6 +3,8 @@
 
 export const TARGETS = {
   executar: { sel: '#topActions .btn-primary', tip: 'Roda o fluxo. Atalho: Ctrl+Enter' },
+  salvar: { sel: '#topActions .save-main', tip: 'Salva o fluxo. Atalho: Ctrl+S' },
+  salvar_auto: { sel: '#topActions .save-arrow', tip: 'Liga e desliga o salvamento automático' },
   tema: { sel: "#topActions button[title^='Alternar tema']", tip: 'Troca entre o tema claro e o escuro' },
   exibir: { sel: '.top-menu', text: 'Exibir', tip: 'Mostrar e esconder painéis' },
   vista_dados: { sel: '#viewSwitch .segment[data-view=data]', tip: 'Todas as fontes, para todos os fluxos' },
@@ -30,6 +32,7 @@ export const CONTEXT = {
     'control.reconcile': 'Dados que dá para confiar',
     'control.compare_runs': 'Dados que dá para confiar',
     'transform.join': 'Cruzando tabelas e tratando textos',
+    'transform.union': 'Cruzando tabelas e tratando textos',
     'transform.fuzzy_match': 'Cruzando tabelas e tratando textos',
     'prep.regex': 'Cruzando tabelas e tratando textos',
     'prep.mask': 'Cruzando tabelas e tratando textos',
@@ -39,6 +42,8 @@ export const CONTEXT = {
     'flow.subflow': 'O fechamento que se refaz sozinho',
     'flow.input': 'O fechamento que se refaz sozinho',
     'flow.output': 'O fechamento que se refaz sozinho',
+    'flow.loop_start': 'O fechamento que se refaz sozinho',
+    'flow.loop_end': 'O fechamento que se refaz sozinho',
     'ml.automl_trainer': 'Modelos de previsão',
     'ml.model_input': 'Modelos de previsão',
     'ml.predictor': 'Modelos de previsão',

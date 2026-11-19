@@ -6,6 +6,8 @@ import { PAGE_SIZES, PAGE_W, pageHeight, widgetsByNode } from './dash_model.js';
 import { commitLayout, dash, els, nodeLabel, nodeOf, page as dashPage, ui } from './dash_state.js';
 import { button, h } from './dom.js';
 import { renderFields } from './fields.js';
+import { FORMAT_WIDGETS, formatTabs } from './dash_format_ui.js';
+import { currentPagePalette, paletteColor, PALETTES } from './dash_look.js';
 import { options, tipFields, tipHtml, unknownTipFields } from './chart_kit.js';
 import { updateConfig } from './actions.js';
 import { store, upstreamColumns } from './store.js';
@@ -127,24 +129,25 @@ function itemPanel(item) {
       button({ icon: 'workflow', label: 'Editar dados', size: 'sm', onClick: () => dashPage.goToNode(item.node_id) })) : null,
     item.kind === 'text' ? textContentField(item) : null,
     item.kind === 'image' ? imageField(item) : null,
-    renderFields(fields, f, onChange, ctx));
+    formatTabs(fields, f, onChange, ctx));
 }
 
 /** Barras, funil e Pareto usam uma cor para todas as categorias; os demais, uma por posição. */
 function colorInUse(i, widget, f) {
-  const base = f.palette === 'custom' ? (f.other_palette || 'brand') : (f.palette || 'brand');
+  const chosen = f.palette === 'custom' ? f.other_palette : f.palette;
+  const base = !chosen || chosen === 'page' ? currentPagePalette() : chosen;
   if (base === 'single' && f.color) return f.color;
   const shared = !widget?.series_names?.length && ['bar', 'hbar', 'funnel', 'pareto'].includes(widget?.chart_type);
-  return hex(cssVar(`--${base === 'alt' ? 'alt' : 'series'}-${shared ? 1 : (i % 8) + 1}`));
+  const color = paletteColor(base === 'single' ? 'brand' : base, shared ? 0 : i % 8);
+  return color.startsWith('var(') ? hex(cssVar(color.slice(4, -1))) : color;
 }
 
 /** Quem muda a cor de uma categoria passa a usar cor por categoria, sem mexer nas outras. */
 function keepOtherColors(f) {
   if (f.palette === 'custom') return;
-  if (f.palette && f.palette !== 'brand') f.other_palette = f.palette;
+  if (f.palette && f.palette !== 'page') f.other_palette = f.palette;
   f.palette = 'custom';
-  const select = els.panel?.querySelector('[id^="f_palette_"]');
-  if (select) select.value = 'custom';
+  els.panelKey = null; // as amostras de paleta mostram "Uma cor por categoria" escolhida
 }
 
 /** Atribui `value` no caminho dentro de `obj` (cria listas e objetos no caminho) e devolve `obj`. */
@@ -178,6 +181,25 @@ function imageField(item) {
     h('p', { class: 'field-help' }, 'PNG, JPG ou SVG até 1 MB. A imagem fica dentro do arquivo do fluxo.'));
 }
 
+/** Imagem de fundo da página (spec 042, RF-4231): até 5 MB, dentro do fluxo e do HTML exportado. */
+function backgroundImage(d, imageFields, setPage) {
+  const img = d.page.image || '';
+  const choose = () => pickImage({ maxMb: 5 }).then((picked) => {
+    if (!picked) return;
+    els.panelKey = null;
+    commitLayout((dd) => { dd.page = { ...dd.page, image: picked.data }; });
+  });
+  const remove = () => { els.panelKey = null; commitLayout((dd) => { dd.page = { ...dd.page, image: '' }; }); };
+  return h('div', { class: 'form', style: { marginTop: '16px' } },
+    h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Imagem de fundo'),
+      img ? h('div', { class: 'bg-preview', style: { backgroundImage: `url("${img}")` } }) : null,
+      h('div', { class: 'color-row' },
+        button({ icon: 'upload', label: img ? 'Trocar imagem' : 'Escolher imagem', size: 'sm', onClick: choose }),
+        img ? button({ icon: 'trash', label: 'Remover', size: 'sm', variant: 'ghost', onClick: remove }) : null),
+      h('p', { class: 'field-help' }, 'PNG, JPG ou SVG até 5 MB. A imagem vai dentro do arquivo do fluxo e do HTML exportado.')),
+    img ? renderFields(imageFields, d.page, setPage, { widgets: FORMAT_WIDGETS }) : null);
+}
+
 function multiPanel(sel) {
   return h('div', {},
     h('header', { class: 'dash-panel-head' }, h('span', { class: 'dash-panel-kicker' }, 'Seleção'), h('strong', {}, `${sel.length} itens selecionados`)),
@@ -189,16 +211,27 @@ function pagePanel(d) {
   const fields = [
     { name: 'size', title: 'Tamanho', widget: 'select', default: '16:9', options: PAGE_SIZES.map(([value, label]) => ({ value, label: value === 'free' ? label : `${label} · ${PAGE_W}×${pageHeight({ size: value })}` })) },
     { name: 'height', title: 'Altura (px)', widget: 'number', default: 900, min: 400, max: 20000, step: 8, show_if: { size: ['free'] } },
-    { name: 'background', title: 'Fundo', widget: 'color', default: '' },
+    { name: 'background', title: 'Cor de fundo', widget: 'color', default: '' },
+    { name: 'palette', title: 'Paleta do dashboard', widget: 'palette', default: 'brand', help: 'Vale para todos os visuais que não têm paleta própria.',
+      options: PALETTES.map((p) => ({ value: p.id, label: p.label })) },
+    { name: 'personal_colors', title: 'Cores da paleta personalizada', widget: 'personal_colors', default: [],
+      help: 'Até 8 cores. Escolha "Personalizada" aqui ou na aba Cores de um visual para usá-las.' },
   ];
+  const imageFields = [
+    { name: 'image_fit', title: 'Ajuste', widget: 'segmented', default: 'cover', options: [
+      { value: 'cover', label: 'Cobrir' }, { value: 'contain', label: 'Caber' }, { value: 'repeat', label: 'Repetir' }, { value: 'center', label: 'Centro' }] },
+    { name: 'image_opacity', title: 'Transparência da imagem (opacidade %)', widget: 'number', default: 100, min: 5, max: 100, step: 5 },
+  ];
+  const setPage = ([name], value) => {
+    if (['size', 'palette', 'personal_colors'].includes(name)) els.panelKey = null;
+    commitLayout((dd) => {
+      dd.page = { ...dd.page, [name]: value };
+      if (name === 'size' && value === 'free') dd.page.height = pageHeight(d.page);
+    }, { key: `page:${name}` });
+  };
   return h('div', {},
     h('header', { class: 'dash-panel-head' }, h('span', { class: 'dash-panel-kicker' }, 'Página'), h('strong', {}, 'Nada selecionado')),
-    renderFields(fields, d.page, ([name], value) => {
-      if (name === 'size') els.panelKey = null;
-      commitLayout((dd) => {
-        dd.page = { ...dd.page, [name]: value };
-        if (name === 'size' && value === 'free') dd.page.height = pageHeight(d.page);
-      }, { key: `page:${name}` });
-    }, { defaultColor: () => hex(cssVar('--bg')) }),
+    renderFields(fields, d.page, setPage, { defaultColor: () => hex(cssVar('--bg')), widgets: FORMAT_WIDGETS, pagePanel: true }),
+    backgroundImage(d, imageFields, setPage),
     h('p', { class: 'muted' }, 'Clique num visual para formatá-lo. Arrastar no vazio seleciona vários; Alt solta o encaixe.'));
 }

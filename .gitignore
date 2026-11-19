@@ -31,3 +31,6 @@ packaging/version_info.txt
 packaging/splash.png
 packaging/wizard-*.bmp
 _guia_marca.html
+
+# Base do pytest-testmon (rodada rápida dos testes, spec 043)
+.testmondata*

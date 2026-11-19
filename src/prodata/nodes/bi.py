@@ -18,7 +18,9 @@ from prodata.engine.sql.fragment import Fragment, SqlContext, lit, q, sql_for
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, ToolConfig, tool
 from prodata.nodes.bi_motion import bubble, sankey
+from prodata.nodes.bi_ref import REF_CHARTS, RefLineFields, reference
 from prodata.nodes.bi_tip import Row, others_extras, series_item, tip_aggregates, tip_columns, tip_extras
+from prodata.nodes.venn_geometry import venn2_geometry
 
 ChartAgg = Literal["sum", "mean", "count", "min", "max"]
 _AGG_LABELS = {"sum": "Soma", "mean": "Média", "count": "Contagem", "min": "Mínimo", "max": "Máximo"}
@@ -52,7 +54,7 @@ MAX_SERIES = 8
 MAX_POINTS = 2000
 
 
-class ChartConfig(ToolConfig):
+class ChartConfig(RefLineFields):
     title: str = Field("Novo gráfico", title="Título")
     chart_type: ChartType = Field("bar", title="Tipo", json_schema_extra=ui(labels=_CHART_LABELS))
     x_column: str = Field("", title="Categoria (eixo X)", json_schema_extra=ui(widget="column"))
@@ -257,6 +259,10 @@ def chart(ctx: NodeContext, cfg: ChartConfig) -> NodeOutput:
             series = pareto(series, cfg.pareto_threshold)
             widget["threshold"] = cfg.pareto_threshold
         widget["series"] = series
+    if cfg.chart_type in REF_CHARTS and (
+        ref := reference(cfg.ref_line, cfg.ref_value, cfg.ref_label, widget)
+    ):
+        widget["reference"] = ref
     return NodeOutput(tables={"out": df}, extra={"bi_widget": widget})
 
 
@@ -556,32 +562,6 @@ def membership(df: pl.DataFrame, cfg: VennConfig) -> tuple[list[str], pl.DataFra
         raise ValueError(f"Grupo sem nenhuma linha: {', '.join(absent)} (confira maiúsculas e acentos).")
     wide = data.group_by("k").agg([(pl.col("g") == n).any().alias(n) for n in names])
     return names, wide.select(names)
-
-
-def lens_area(r1: float, r2: float, d: float) -> float:
-    """Área da interseção de dois círculos de raios r1, r2 com centros a distância d."""
-    if d >= r1 + r2:
-        return 0.0
-    if d <= abs(r1 - r2):
-        return math.pi * min(r1, r2) ** 2
-    a1 = r1**2 * math.acos((d * d + r1 * r1 - r2 * r2) / (2 * d * r1))
-    a2 = r2**2 * math.acos((d * d + r2 * r2 - r1 * r1) / (2 * d * r2))
-    k = 0.5 * math.sqrt((-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2))
-    return a1 + a2 - k
-
-
-def venn2_geometry(a: float, b: float, both: float) -> dict[str, float]:
-    """Raios com área proporcional a cada conjunto e distância que faz a lente valer a interseção."""
-    r1, r2 = math.sqrt(a / math.pi), math.sqrt(b / math.pi)
-    target = min(both, a, b)
-    lo, hi = abs(r1 - r2), r1 + r2
-    for _ in range(80):  # bisseção: a área da lente diminui com a distância
-        mid = (lo + hi) / 2
-        if lens_area(r1, r2, mid) > target:
-            lo = mid
-        else:
-            hi = mid
-    return {"r1": r1, "r2": r2, "d": (lo + hi) / 2}
 
 
 @tool(

@@ -17,6 +17,7 @@ from prodata.domain.labels import DEFAULT_LABEL, Confidentiality
 PAGE_WIDTH = 1600
 PAGE_HEIGHTS = {"16:9": 900, "a4-landscape": 1131, "a4-portrait": 2263}
 MAX_IMAGE_BYTES = 1024 * 1024
+MAX_BACKGROUND_BYTES = 5 * 1024 * 1024  # imagem de fundo da página (spec 042, RF-4231)
 IMAGE_TYPES = ("image/png", "image/jpeg", "image/svg+xml")
 
 # Um SVG embutido vira parte da página: nada que execute código ou busque conteúdo de fora.
@@ -35,6 +36,29 @@ class DashPage(BaseModel):
     # Só vale para size="free"; nos demais a altura vem do formato.
     height: int = Field(900, ge=400, le=20000)
     background: str = ""
+    # Spec 042: paleta geral (RF-4238) e imagem de fundo (RF-4231), que fica dentro do fluxo e do HTML.
+    palette: Literal[
+        "brand", "alt", "okabe_ito", "tableau10", "set2", "viridis", "blues", "grays", "personal"
+    ] = "brand"
+    personal_colors: list[str] = Field(default_factory=list, max_length=8)
+    image: str = ""
+    image_fit: Literal["cover", "contain", "repeat", "center"] = "cover"
+    image_opacity: int = Field(100, ge=5, le=100)
+
+    @field_validator("personal_colors")
+    @classmethod
+    def _check_colors(cls, value: list[str]) -> list[str]:
+        clean = [c.strip().lower() for c in value]
+        if any(not re.fullmatch(r"#[0-9a-f]{6}", c) for c in clean):
+            raise ValueError("Cor inválida na paleta personalizada: use o formato #rrggbb.")
+        return clean
+
+    @field_validator("image")
+    @classmethod
+    def _check_background(cls, value: str) -> str:
+        if value:
+            check_image(value, MAX_BACKGROUND_BYTES)
+        return value
 
     @property
     def pixel_height(self) -> int:
@@ -126,8 +150,8 @@ class Dashboard(BaseModel):
                 scene.item_id = None
 
 
-def check_image(data_uri: str) -> None:
-    """Imagens ficam dentro do fluxo como data URI: só PNG, JPEG ou SVG sem código, até 1 MB."""
+def check_image(data_uri: str, max_bytes: int = MAX_IMAGE_BYTES) -> None:
+    """Imagens ficam dentro do fluxo como data URI: só PNG, JPEG ou SVG sem código, até 1 MB (fundo: 5 MB)."""
     match = re.fullmatch(r"data:([\w/+.-]+);base64,([A-Za-z0-9+/=\s]+)", data_uri)
     if not match or match.group(1) not in IMAGE_TYPES:
         raise ValueError("A imagem precisa ser PNG, JPG ou SVG.")
@@ -135,7 +159,8 @@ def check_image(data_uri: str) -> None:
         raw = base64.b64decode(match.group(2), validate=False)
     except (binascii.Error, ValueError) as exc:
         raise ValueError("Imagem corrompida.") from exc
-    if len(raw) > MAX_IMAGE_BYTES:
-        raise ValueError("A imagem passa de 1 MB. Reduza o tamanho antes de inserir.")
+    if len(raw) > max_bytes:
+        mb = max_bytes // (1024 * 1024)
+        raise ValueError(f"A imagem passa de {mb} MB. Reduza o tamanho antes de inserir.")
     if match.group(1) == "image/svg+xml" and _SVG_FORBIDDEN.search(raw.decode("utf-8", "replace")):
         raise ValueError("O SVG contém scripts ou links externos e não pode ser usado.")

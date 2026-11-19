@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.9.0. Este arquivo é gerado a partir do código.
+Versão do programa: 0.9.1. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -695,7 +695,7 @@ Entradas: `in` (Itens), `E` (Eventos). Saídas: `out` (Saída).
 
 Junta [L] e [R] pelas chaves. Saídas: [L] só na esquerda, [J] combinados, [R] só na direita.
 
-Entradas: `L` (Esquerda), `R` (Direita). Saídas: `L` (Só na esquerda), `J` (Combinados), `R` (Só na direita).
+Entradas: `L` (Esquerda), `R` (Direita). Saídas: `L` (Só na esquerda), `J` (Combinados), `R` (Só na direita), `U` (Saídas empilhadas, conforme a configuração).
 
 - `keys` ([{"left": "", "right": ""}]): Chaves de junção
   - `left` (""): Esquerda [L] [nome de coluna]
@@ -708,6 +708,8 @@ Entradas: `L` (Esquerda), `R` (Direita). Saídas: `L` (Só na esquerda), `J` (Co
   - `cast` (""): Cast. Opções: ``, `Int64`, `Float64`, `String`, `Boolean`, `Date`
 - `order` ([]): Ordem
 - `right_prefix` ("r_"): Prefixo para colunas repetidas da direita
+- `stack` ("none"): Empilhar saídas na U. Opções: `none`, `LJR`, `LJ`, `JR`, `LR`. Junta numa saída extra, U, as saídas escolhidas. Colunas com o mesmo nome ficam juntas; a que falta num lado fica vazia
+- `stack_column` ("saida"): Coluna com a saída de origem. Aparece se `stack` em LJR, LJ, JR, LR. Grava L, J ou R em cada linha da U. Vazio = sem a coluna
 - `allow_multiply` (false): Repetição da chave é esperada. Sem isso, o Join avisa quando a chave repete em [R] e as linhas de [L] se multiplicam no J
 
 #### `transform.summarize`: Summarize
@@ -823,6 +825,9 @@ Agrega os dados e publica um gráfico no Dashboard: colunas, linhas, rosca, empi
 
 Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
+- `ref_line` ("none"): Linha de referência. Opções: `none`, `value`, `mean`, `median`. Aparece se `chart_type` em bar, hbar, line, area, grouped, scatter. Uma linha no gráfico; o que fica acima e abaixo dela ganha cores próprias
+- `ref_value` (""): Valor da linha. Aparece se `ref_line` em value
+- `ref_label` (""): Rótulo da linha. Aparece se `ref_line` em value, mean, median
 - `title` ("Novo gráfico"): Título
 - `chart_type` ("bar"): Tipo. Opções: `bar`, `hbar`, `line`, `donut`, `stacked`, `grouped`, `stacked100`, `area`, `area_stacked`, `pareto`, `funnel`, `scatter`, `race`, `bubble`, `sankey`
 - `x_column` (""): Categoria (eixo X) [nome de coluna]

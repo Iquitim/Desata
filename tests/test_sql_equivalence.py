@@ -621,3 +621,29 @@ def test_generate_rows_refuses_a_calendar_column_name(store: DatasetStore, tmp_p
         SQL_REGISTRY["io.generate_rows"](SqlContext({}), cfg)
     plain = spec.config.model_validate({**cfg.model_dump(), "calendar": False})
     assert spec.run(NodeContext({}, {}, store, tmp_path), plain).tables["out"].columns == ["mes"]
+
+
+@pytest.mark.parametrize("stack", ["LJR", "LJ", "JR", "LR"])
+@pytest.mark.parametrize("column", ["saida", ""], ids=["com_coluna", "sem_coluna"])
+def test_join_stacked_output_matches_engine(
+    stack: str, column: str, store: DatasetStore, tmp_path: Path
+) -> None:
+    """Spec 042: a saída U do Join (saídas empilhadas pelo nome) dá o mesmo no motor e no SQL."""
+    config = {"keys": [{"left": "id", "right": "id"}], "stack": stack, "stack_column": column}
+    results = run_both("transform.join", {"L": MESSY, "R": OTHER}, store, tmp_path, **config)
+    assert_same(results)
+    _sql, engine = results["U"]
+    parts = {"L": results["L"][1].height, "J": results["J"][1].height, "R": results["R"][1].height}
+    assert engine.height == sum(parts[p] for p in stack)
+    if column:
+        assert sorted(set(engine[column].to_list())) == sorted(set(stack))
+    # Coluna que só existe num lado fica vazia nas linhas do outro: "extra" (só em R) é nula nas linhas de L.
+    if "L" in stack and column:
+        assert engine.filter(pl.col(column) == "L")["extra"].null_count() == parts["L"]
+
+
+def test_join_without_stack_has_no_u_output(store: DatasetStore, tmp_path: Path) -> None:
+    results = run_both(
+        "transform.join", {"L": MESSY, "R": OTHER}, store, tmp_path, keys=[{"left": "id", "right": "id"}]
+    )
+    assert "U" not in results

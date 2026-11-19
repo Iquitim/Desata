@@ -261,7 +261,7 @@ def arrange(
             y = board.row([item.id], [1], y, REPORT_H, LEFT, RIGHT)
         height = max(y - GAP + MARGIN, *(o.bottom + MARGIN for o in obstacles), 400)
         return Arrangement(
-            positions=board.positions, page=DashPage(size="free", height=height, background=page.background)
+            positions=board.positions, page=page.model_copy(update={"size": "free", "height": height})
         )
 
     build = BUILDERS[template]
@@ -289,7 +289,7 @@ def arrange(
         _stretch_last_row(positions, limit - bottom, obstacles)
         return Arrangement(positions=positions, page=page)
     board, bottom = attempt(CHART_H)
-    grown = DashPage(size="free", height=bottom, background=page.background)
+    grown = page.model_copy(update={"size": "free", "height": bottom})
     return Arrangement(positions=board.positions, page=grown, grew=True)
 
 

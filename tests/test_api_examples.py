@@ -45,6 +45,7 @@ def calls_to(monkeypatch: pytest.MonkeyPatch, handler: Any) -> list[httpx.Reques
     return seen
 
 
+@pytest.mark.lento
 def test_opening_the_demo_calls_nothing(
     runner: WorkflowRunner, demo: Workflow, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -58,6 +59,7 @@ def test_opening_the_demo_calls_nothing(
     assert set(others.values()) == {"executed"}, others
 
 
+@pytest.mark.lento
 def test_running_the_demo_uses_the_api(runner: WorkflowRunner, demo: Workflow) -> None:
     report = runner.run(demo)
     bad = {k: (v.status, v.error) for k, v in report.node_results.items() if v.status != "executed"}
@@ -69,6 +71,7 @@ def test_running_the_demo_uses_the_api(runner: WorkflowRunner, demo: Workflow) -
     assert {s["label"] for s in chart["series"]} >= {"Sudeste", "Sul"}
 
 
+@pytest.mark.lento
 def test_without_network_only_the_api_step_fails(
     runner: WorkflowRunner, demo: Workflow, monkeypatch: pytest.MonkeyPatch
 ) -> None:

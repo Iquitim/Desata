@@ -329,6 +329,7 @@ def test_exportar_e_importar_extracao(client: TestClient, month: Path) -> None:
 # ------------------------------------------------------------------ exemplo com PDFs reais da Receita Federal
 
 
+@pytest.mark.lento
 def test_exemplo_da_receita_le_os_tres_meses(runner: WorkflowRunner, store: DatasetStore) -> None:
     """Os relatórios reais do pacote, com a extração pronta: os três meses aprovados, inclusive setembro, que mudou o
     cabeçalho da tabela."""

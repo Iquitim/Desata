@@ -412,6 +412,7 @@ def test_cache_keeps_everything_in_memory_under_the_limit(tmp_path: Path) -> Non
     assert cache.memory_used() > 0
 
 
+@pytest.mark.lento
 def test_flow_runs_the_same_with_almost_no_memory(
     tmp_path: Path, store: DatasetStore, demo: Workflow
 ) -> None:
@@ -668,6 +669,7 @@ def test_versions_api(client: TestClient) -> None:
     )  # nunca chega à pasta
 
 
+@pytest.mark.lento
 def test_training_always_keeps_only_the_last_versions(
     engine: WorkflowRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

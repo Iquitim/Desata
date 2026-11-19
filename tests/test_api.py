@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from prodata.samples.workflows import DEMO_WORKFLOW_ID
@@ -40,6 +41,7 @@ def test_preview_rejects_traversal(client: TestClient) -> None:
     assert client.post("/api/datasets/..%5Cpyproject.toml/preview", json={}).status_code in (400, 404)
 
 
+@pytest.mark.lento
 def test_execute_and_page_results(client: TestClient) -> None:
     wf = client.get(f"/api/workflows/{DEMO_WORKFLOW_ID}").json()
     report = client.post("/api/execute", json={"workflow": wf}).json()
@@ -84,6 +86,7 @@ def test_formula_validate(client: TestClient) -> None:
     assert ok.json()["valid"]
 
 
+@pytest.mark.lento
 def test_distinct_values_for_pickers(client: TestClient) -> None:
     wf = client.get(f"/api/workflows/{DEMO_WORKFLOW_ID}").json()
     client.post("/api/execute", json={"workflow": wf})

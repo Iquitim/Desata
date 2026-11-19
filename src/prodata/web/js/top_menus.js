@@ -15,6 +15,7 @@ import { allContainers, collapseDisabled, setContainersCollapsed } from './canva
 import { setWireMode, wireMode } from './canvas_wires.js';
 import { organizeFlow } from './canvas_layout.js';
 import { fitView } from './canvas.js';
+import { autosaveOn, setAutosave } from './save_flow.js';
 
 export { slowestNote } from './node_timing.js';
 
@@ -37,10 +38,6 @@ const fileItems = (a) => [
   'separator',
   { label: 'Abrir da biblioteca…', icon: 'folder', shortcut: 'Ctrl+O', onSelect: a.openLibrary },
   { label: 'Abrir arquivo…', icon: 'file', onSelect: () => a.openFile() },
-  'separator',
-  { label: 'Salvar', icon: 'save', shortcut: 'Ctrl+S', onSelect: a.save },
-  { label: 'Salvar como…', icon: 'directory', shortcut: 'Ctrl+Shift+S', onSelect: a.saveAs },
-  { label: 'Salvar com amostra dos dados…', icon: 'database', onSelect: () => shareDialog() },
   'separator',
   { label: 'Executar sem abrir o programa…', icon: 'clock', onSelect: openScheduleDialog },
 ];
@@ -79,6 +76,8 @@ export const commandList = (a) => [
   { name: 'Executar', detail: 'o fluxo inteiro', icon: 'play', end: 'Ctrl+Enter', keywords: 'rodar processar', run: a.run },
   { name: 'Salvar', detail: 'o fluxo aberto', icon: 'save', end: 'Ctrl+S', keywords: 'gravar', run: a.save },
   { name: 'Salvar como…', detail: 'escolher a pasta', icon: 'directory', end: 'Ctrl+Shift+S', keywords: 'gravar copia', run: a.saveAs },
+  { name: 'Salvar com amostra dos dados…', detail: 'para quem não tem as fontes', icon: 'database', keywords: 'compartilhar enviar amostra mascara', run: () => shareDialog() },
+  { name: autosaveOn() ? 'Desligar o salvamento automático' : 'Salvar automaticamente', detail: 'fluxos já salvos', icon: 'refresh', keywords: 'auto save autosave gravar sozinho', run: () => setAutosave(!autosaveOn()) },
   { name: 'Novo fluxo', icon: 'file-plus', keywords: 'criar', run: a.newWorkflow },
   { name: 'Abrir da biblioteca…', icon: 'folder', end: 'Ctrl+O', keywords: 'fluxos', run: a.openLibrary },
   { name: 'Abrir arquivo…', icon: 'file', run: () => a.openFile() },

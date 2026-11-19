@@ -62,6 +62,16 @@ localmente.
 - **Dica editável** nos gráficos (categoria, valor, % do total, colunas extras agregadas e texto com campos, também no
   HTML), **tempo nas caixas** com a mais lenta em destaque e **célula em destaque** na tabela, com largura das colunas
   por arrasto e o resumo das colunas que liga e desliga.
+- **Salvar no topo** (ícone, com Salvar como, amostra e **Salvar automaticamente** na seta): fluxos já salvos gravam sozinhos a cada mudança, com um selo
+  discreto no botão (nunca em modo protegido, no exemplo nem nas lições).
+- **Dashboard mais fácil de formatar**: painel Formato em abas, paletas prontas (Okabe-Ito para daltonismo, Tableau 10,
+  Set2, Viridis, azuis e cinzas), paleta geral do dashboard, rótulos em todos os pontos sem sobreposição, eixos que
+  se escondem e imagem de fundo de até 5 MB (também no PNG e no HTML). Prévia do gráfico ao passar o mouse na caixa.
+  Paleta personalizada do dashboard, grade com estilo, cor e transparência, escala logarítmica no eixo Y, fontes
+  (negrito, itálico, cor, família) e **linha de referência** no Chart (valor, constante, média ou mediana), com as
+  barras e pontos acima e abaixo em cores próprias.
+- **Join com a saída U**: L + J + R, L + J, J + R ou L + R empilhadas pelo nome, também em SQL; **Como funciona** no
+  Union. Oito **lições guiadas** no Manual.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -234,7 +244,8 @@ diagnóstico em [docs/distribuicao.md](docs/distribuicao.md).
 ## Desenvolvimento
 
 ```powershell
-uv run pytest            # testes
+uv run python scripts/testar.py            # testes afetados pela mudança, sem os lentos (dia a dia, antes do commit)
+uv run python scripts/testar.py completo   # todos, em paralelo (antes da release; o CI roda o mesmo)
 uv run ruff check src tests && uv run ruff format src tests
 uv run mypy              # tipos
 $env:PRODATA_RELOAD="true"; uv run prodata   # servidor com reload
@@ -296,6 +307,8 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [039](specs/039-regex-didatico/spec.md) | Regex sem escrever expressão regular: marcar o trecho no exemplo e ajustar as peças |
 | [040](specs/040-datas-e-fluxo-portatil/spec.md) | Datas sem formato certo ("Você quis dizer…", calendário) e fluxo que viaja entre computadores (o que falta e amostra) |
 | [041](specs/041-canvas-organizado-e-loop/spec.md) | Laço (Início e Fim do loop), canvas organizado (recolher, fios que desviam, organizar), listas que recolhem, seletor de fontes, dica editável, tempo nas caixas e célula em destaque |
+| [042](specs/042-licoes-autosave-dashboard/spec.md) | Lições em dia (oito), salvar automático, prévia dos gráficos no Designer, Dashboard em abas com paletas, rótulos, eixos e fundo, saída U do Join e Como funciona do Union |
+| [043](specs/043-testes-rapidos/spec.md) | Testes rápidos (afetados, sem os lentos) no dia a dia e a suíte completa em paralelo antes da release |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 

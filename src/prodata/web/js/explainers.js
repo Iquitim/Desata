@@ -175,12 +175,14 @@ function join(n, cfg, left, right) {
   const lk = key.left || 'id';
   const rk = key.right || 'id';
   const res = nodeResult(n.id);
-  const counts = ['L', 'J', 'R'].map((p) => res?.anchors?.[p]?.row_count);
+  const stack = cfg.stack && cfg.stack !== 'none' ? cfg.stack : '';
   const parts = [
     ['L', 'Só na esquerda', 'Chaves sem par na direita'],
     ['J', 'Casaram', 'Colunas dos dois lados, lado a lado'],
     ['R', 'Só na direita', 'Chaves sem par na esquerda'],
+    ...(stack ? [['U', 'Empilhadas', `${stack.split('').join(' + ')} numa tabela só`]] : []),
   ];
+  const counts = parts.map(([p]) => res?.anchors?.[p]?.row_count);
   const bar = h('div', { class: 'x-join-bar' }, parts.map(([p, label, help], i) => h('button', {
     type: 'button', class: ['x-join-part', `x-${p}`], disabled: counts[i] === undefined,
     title: counts[i] === undefined ? 'Execute o fluxo para ver as linhas' : `Ver as linhas da saída ${p}`,
@@ -208,7 +210,9 @@ function join(n, cfg, left, right) {
     body: [bar, multNote, h('div', { class: 'x-pair' }, side('Esquerda [L]', lk, lv, rv), arrow('casa pela chave'), side('Direita [R]', rk, rv, lv))].filter(Boolean),
     caption: `Linhas com o mesmo valor em [${lk}] e [${rk}] saem juntas em J. As demais saem em L ou R, para você ver o que não encontrou par.`
       + ((cfg.keys?.length || 0) > 1 ? ` Com ${cfg.keys.length} chaves, todas precisam ser iguais.` : '')
-      + ({ both: ' No J ficam as chaves dos dois lados.', left: ` No J fica só [${lk}], da esquerda.`, right: ` No J fica só [${rk}], da direita.` }[cfg.keys_mode || 'both']),
+      + ({ both: ' No J ficam as chaves dos dois lados.', left: ` No J fica só [${lk}], da esquerda.`, right: ` No J fica só [${rk}], da direita.` }[cfg.keys_mode || 'both'])
+      + (stack ? ` A saída U empilha ${stack.split('').join(' + ')} pelo nome das colunas, como um Union depois do Join: a coluna que falta num lado fica vazia`
+        + `${(cfg.stack_column ?? 'saida').trim() ? `, e [${(cfg.stack_column ?? 'saida').trim()}] diz de qual saída veio cada linha` : ''}.` : ''),
   };
 }
 

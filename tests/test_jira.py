@@ -274,6 +274,7 @@ def test_changing_the_query_invalidates_the_local_copy(store: JiraStore) -> None
     assert not info["incremental"]
 
 
+@pytest.mark.lento
 def test_interrupted_load_resumes_and_matches_a_full_one(
     store: JiraStore, fake: FakeJira, monkeypatch: pytest.MonkeyPatch
 ) -> None:

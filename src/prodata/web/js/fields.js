@@ -83,14 +83,14 @@ export function renderFields(fields, values, onChange, ctx = {}) {
 }
 
 function fieldRow(field, value, set, ctx, values) {
-  const widget = WIDGETS[field.widget] || WIDGETS.text;
+  const widget = ctx.widgets?.[field.widget] || WIDGETS[field.widget] || WIDGETS.text; // ctx.widgets: painel Formato
   const id = `f_${field.name}_${Math.random().toString(36).slice(2, 6)}`;
   const control = widget(field, value, set, ctx, id, values);
   if (field.widget === 'toggle') {
-    return h('div', { class: ['field', 'field-toggle', ctx.errorField === field.name && 'has-error'] },
+    return h('div', { class: ['field', 'field-toggle', field.half && 'half', field.wide && 'wide', ctx.errorField === field.name && 'has-error'] },
       control, field.help ? h('p', { class: 'field-help' }, field.help) : null);
   }
-  return h('div', { class: ['field', ctx.errorField === field.name && 'has-error'] },
+  return h('div', { class: ['field', field.half && 'half', ctx.errorField === field.name && 'has-error'] }, // half: painel Formato
     h('label', { class: 'field-label', for: id }, field.title),
     control,
     field.help ? h('p', { class: 'field-help' }, field.help) : null);

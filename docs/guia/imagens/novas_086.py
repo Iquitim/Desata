@@ -67,7 +67,7 @@ def part_086(pg: Any, shot: Callable[..., None]) -> None:
         "wf.edges = wf.edges.filter((e) => !e.id.startsWith('x86e')); })"
     )
     # "Salvar com amostra dos dados": linhas e máscara por fonte, com a prévia mascarada
-    pg.locator(".top-menu", has_text="Arquivo").click()
+    pg.locator("#topActions .save-arrow").click()  # desde a 0.9.1, na seta do Salvar
     pg.locator("[role=menuitem]", has_text="Salvar com amostra dos dados").click()
     pg.wait_for_selector("dialog[open] .pt-src", timeout=120000)
     boxes = pg.locator("dialog[open] .pt-src input[type=checkbox]:not([disabled])")

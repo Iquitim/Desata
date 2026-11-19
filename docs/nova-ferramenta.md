@@ -87,7 +87,7 @@ ressalvas. A tradução precisa dar o mesmo resultado que o `run`: acrescente o 
 
 ## 6. Teste
 
-Adicione um teste em `tests/test_nodes.py` e rode `uv run pytest`.
+Adicione um teste em `tests/test_nodes.py` e rode `uv run python scripts/testar.py`.
 
 ## Entradas extras e caixas que só rodam a pedido
 

@@ -5,7 +5,7 @@ import { h } from './dom.js';
 import { icon } from './icons.js';
 import { sourceProblem } from './portable_state.js';
 import { timingBadge, timingOf } from './node_timing.js';
-import { isSelected, nodeResult, store, toolOf, visibleInputs } from './store.js';
+import { isSelected, nodeResult, store, toolOf, visibleInputs, visibleOutputs } from './store.js';
 import { els, nodeEls, state } from './canvas_state.js';
 import { nodeHeight, nodeWidth } from './canvas_geometry.js';
 import { hiddenNodes } from './canvas_collapse.js';
@@ -77,7 +77,7 @@ function buildNode(n, hidden) {
   const res = nodeResult(n.id);
   const status = statusOf(n);
   const inputs = visibleInputs(n).map((p, index) => ({ ...p, index }));
-  const outputs = (spec?.outputs || []).map((p, index) => ({ ...p, index }));
+  const outputs = visibleOutputs(n).map((p, index) => ({ ...p, index }));
   const cp = state.held.get(n.id);
   const annotation = status === 'error' ? 'Erro — veja a configuração'
     : cp && status === 'held' ? 'Pulada pelo cache'

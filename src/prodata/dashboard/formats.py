@@ -42,6 +42,10 @@ def _label_map(value: dict[str, str]) -> dict[str, str]:
     return {k[:200]: v.strip()[:100] for k, v in list(value.items())[:200] if v.strip() and v.strip() != k}
 
 
+FONTS = {"theme": "Do tema", "sans": "Sem serifa", "serif": "Com serifa", "mono": "Monoespaçada"}
+FontName = Literal["theme", "sans", "serif", "mono"]
+
+
 class _Format(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -60,7 +64,17 @@ class CardFormat(_Format):
     title_align: Literal["left", "center"] = Field(
         "left",
         title="Alinhamento do título",
-        json_schema_extra=ui(labels={"left": "Esquerda", "center": "Centro"}),
+        json_schema_extra=ui(widget="segmented", labels={"left": "Esquerda", "center": "Centro"}),
+    )
+    # Fontes (spec 042, RF-4259)
+    title_bold: bool = Field(
+        True, title="Título em negrito", json_schema_extra=ui(show_if={"show_title": [True]})
+    )
+    title_italic: bool = Field(
+        False, title="Título em itálico", json_schema_extra=ui(show_if={"show_title": [True]})
+    )
+    title_color: Color = Field(
+        "", title="Cor do título", json_schema_extra=ui(widget="color", show_if={"show_title": [True]})
     )
     show_subtitle: bool = Field(True, title="Mostrar subtítulo")
     subtitle: str = Field(
@@ -71,6 +85,19 @@ class CardFormat(_Format):
             placeholder="Automático (o que o visual mostra)", show_if={"show_subtitle": [True]}
         ),
     )
+    subtitle_size: int = Field(
+        12, ge=9, le=24, title="Tamanho do subtítulo", json_schema_extra=ui(show_if={"show_subtitle": [True]})
+    )
+    subtitle_bold: bool = Field(
+        False, title="Subtítulo em negrito", json_schema_extra=ui(show_if={"show_subtitle": [True]})
+    )
+    subtitle_italic: bool = Field(
+        False, title="Subtítulo em itálico", json_schema_extra=ui(show_if={"show_subtitle": [True]})
+    )
+    subtitle_color: Color = Field(
+        "", title="Cor do subtítulo", json_schema_extra=ui(widget="color", show_if={"show_subtitle": [True]})
+    )
+    font: FontName = Field("theme", title="Fonte do cartão", json_schema_extra=ui(group=CARD, labels=FONTS))
     background: Color = Field("", title="Fundo", json_schema_extra=ui(widget="color", group=CARD))
     border: bool = Field(True, title="Borda", json_schema_extra=ui(group=CARD))
     border_color: Color = Field(
@@ -80,29 +107,61 @@ class CardFormat(_Format):
     shadow: bool = Field(False, title="Sombra", json_schema_extra=ui(group=CARD))
 
 
+# Paletas prontas (spec 042, RF-4234): as cores ficam em web/js/dash_look.js, que também vai no HTML exportado.
+PALETTE_LABELS = {
+    "brand": "Marca",
+    "alt": "Alternativa",
+    "okabe_ito": "Okabe-Ito (daltonismo)",
+    "tableau10": "Tableau 10",
+    "set2": "Set2 (ColorBrewer)",
+    "viridis": "Viridis",
+    "blues": "Tons de azul",
+    "grays": "Tons de cinza",
+    "personal": "Personalizada",
+}
+PaletteName = Literal["brand", "alt", "okabe_ito", "tableau10", "set2", "viridis", "blues", "grays"]
+_OWN = {"page": "Paleta do dashboard", **PALETTE_LABELS, "single": "Uma cor só"}
+
+
 class ChartFormat(CardFormat):
-    palette: Literal["brand", "alt", "single", "custom"] = Field(
+    # "page" (padrão) segue a paleta geral do dashboard (RF-4238); qualquer outra é a paleta própria do visual.
+    palette: Literal[
+        "page",
         "brand",
+        "alt",
+        "okabe_ito",
+        "tableau10",
+        "set2",
+        "viridis",
+        "blues",
+        "grays",
+        "personal",
+        "single",
+        "custom",
+    ] = Field(
+        "page",
         title="Cores",
         json_schema_extra=ui(
-            group=COLORS,
-            labels={
-                "brand": "Paleta da marca",
-                "alt": "Paleta alternativa",
-                "single": "Uma cor só",
-                "custom": "Uma cor por categoria",
-            },
+            widget="palette", group=COLORS, labels={**_OWN, "custom": "Uma cor por categoria"}
         ),
     )
-    other_palette: Literal["brand", "alt", "single"] = Field(
+    other_palette: Literal[
+        "page",
         "brand",
+        "alt",
+        "okabe_ito",
+        "tableau10",
+        "set2",
+        "viridis",
+        "blues",
+        "grays",
+        "personal",
+        "single",
+    ] = Field(
+        "page",
         title="Demais categorias",
         description="Cor do que não tem cor própria na lista abaixo.",
-        json_schema_extra=ui(
-            group=COLORS,
-            show_if={"palette": ["custom"]},
-            labels={"brand": "Paleta da marca", "alt": "Paleta alternativa", "single": "Uma cor só"},
-        ),
+        json_schema_extra=ui(widget="palette", group=COLORS, show_if={"palette": ["custom"]}, labels=_OWN),
     )
     color: Color = Field(
         "",
@@ -115,13 +174,19 @@ class ChartFormat(CardFormat):
         description="Mude uma cor para destacar só aquela categoria.",
         json_schema_extra=ui(widget="category_colors", group=COLORS),
     )
-    data_labels: Literal["none", "max", "max_min"] = Field(
+    data_labels: Literal["none", "max", "max_min", "all"] = Field(
         "max",
         title="Rótulos de dados",
-        description="Números em destaque no gráfico. Os demais aparecem ao passar o mouse.",
+        description="Números em destaque no gráfico. Com Todos, os que não cabem são omitidos para não se sobrepor;"
+        " todos aparecem ao passar o mouse.",
         json_schema_extra=ui(
-            group=LABELS, labels={"none": "Nenhum", "max": "Maior valor", "max_min": "Maior e menor"}
+            group=LABELS,
+            labels={"none": "Nenhum", "max": "Maior valor", "max_min": "Maior e menor", "all": "Todos"},
         ),
+    )
+    labels_bold: bool = Field(True, title="Rótulos em negrito", json_schema_extra=ui(group=LABELS))
+    labels_color: Color = Field(
+        "", title="Cor dos rótulos de dados", json_schema_extra=ui(widget="color", group=LABELS)
     )
     label_format: Literal["compact", "full"] = Field(
         "compact",
@@ -148,8 +213,9 @@ class ChartFormat(CardFormat):
         "top",
         title="Posição da legenda",
         json_schema_extra=ui(
+            widget="segmented",
             group=LABELS,
-            labels={"top": "Acima do gráfico", "bottom": "Abaixo do gráfico"},
+            labels={"top": "Acima", "bottom": "Abaixo"},
             show_if={"show_legend": [True]},
         ),
     )
@@ -159,7 +225,56 @@ class ChartFormat(CardFormat):
         description="Troque o texto exibido de cada série, categoria ou conjunto (o dado não muda).",
         json_schema_extra=ui(widget="rename_labels", group=LABELS),
     )
+    show_y_values: bool = Field(True, title="Valores do eixo Y", json_schema_extra=ui(group=AXES))
+    axis_text_color: Color = Field(
+        "", title="Cor dos textos dos eixos", json_schema_extra=ui(widget="color", group=AXES)
+    )
+    show_x_labels: bool = Field(True, title="Rótulos do eixo X", json_schema_extra=ui(group=AXES))
     grid: bool = Field(True, title="Linhas de grade", json_schema_extra=ui(group=AXES))
+    # Spec 042 (RF-4256, RF-4257): desenho da grade e escala do eixo Y.
+    grid_style: Literal["solid", "dashed", "dotted"] = Field(
+        "solid",
+        title="Estilo da grade",
+        json_schema_extra=ui(
+            widget="segmented",
+            group=AXES,
+            labels={"solid": "Contínua", "dashed": "Tracejada", "dotted": "Pontilhada"},
+            show_if={"grid": [True]},
+        ),
+    )
+    grid_color: Color = Field(
+        "", title="Cor da grade", json_schema_extra=ui(widget="color", group=AXES, show_if={"grid": [True]})
+    )
+    grid_opacity: int = Field(
+        100,
+        ge=10,
+        le=100,
+        title="Opacidade da grade (%)",
+        json_schema_extra=ui(group=AXES, show_if={"grid": [True]}),
+    )
+    ref_paint: bool = Field(
+        True,
+        title="Pintar acima e abaixo da linha de referência",
+        description="A linha de referência é ligada no Configurar da caixa Chart.",
+        json_schema_extra=ui(group=AXES),
+    )
+    ref_above: Color = Field(
+        "", title="Cor acima", json_schema_extra=ui(widget="color", group=AXES, show_if={"ref_paint": [True]})
+    )
+    ref_below: Color = Field(
+        "",
+        title="Cor abaixo",
+        json_schema_extra=ui(widget="color", group=AXES, show_if={"ref_paint": [True]}),
+    )
+    y_scale: Literal["linear", "log"] = Field(
+        "linear",
+        title="Escala do eixo Y",
+        description="Logarítmica: cada marca vale 10 vezes a anterior. Zero e negativos ficam fora da escala; "
+        "empilhados, 100% e rosca não usam.",
+        json_schema_extra=ui(
+            widget="segmented", group=AXES, labels={"linear": "Linear", "log": "Logarítmica"}
+        ),
+    )
     x_title: str = Field("", max_length=80, title="Título do eixo X", json_schema_extra=ui(group=AXES))
     y_title: str = Field("", max_length=80, title="Título do eixo Y", json_schema_extra=ui(group=AXES))
     y_min: float | None = Field(
@@ -221,7 +336,9 @@ class KpiFormat(CardFormat):
     value_size: int = Field(30, ge=16, le=96, title="Tamanho do número")
     value_color: Color = Field("", title="Cor do número", json_schema_extra=ui(widget="color"))
     align: Literal["left", "center"] = Field(
-        "left", title="Alinhamento", json_schema_extra=ui(labels={"left": "Esquerda", "center": "Centro"})
+        "left",
+        title="Alinhamento",
+        json_schema_extra=ui(widget="segmented", labels={"left": "Esquerda", "center": "Centro"}),
     )
     show_footer: bool = Field(True, title="Mostrar rodapé (métrica e linhas)")
     value_rules: list[ValueRule] = Field(
@@ -249,18 +366,22 @@ class VisualFormat(ChartFormat, KpiFormat, TableFormat):
 
 class TextFormat(_Format):
     size: int = Field(16, ge=8, le=96, title="Tamanho")
+    font: FontName = Field("theme", title="Fonte", json_schema_extra=ui(labels=FONTS))
     bold: bool = Field(False, title="Negrito")
     italic: bool = Field(False, title="Itálico")
+    underline: bool = Field(False, title="Sublinhado")
     color: Color = Field("", title="Cor", json_schema_extra=ui(widget="color"))
     align: Literal["left", "center", "right"] = Field(
         "left",
         title="Alinhamento",
-        json_schema_extra=ui(labels={"left": "Esquerda", "center": "Centro", "right": "Direita"}),
+        json_schema_extra=ui(
+            widget="segmented", labels={"left": "Esquerda", "center": "Centro", "right": "Direita"}
+        ),
     )
     vertical: Literal["top", "middle", "bottom"] = Field(
         "top",
         title="Posição vertical",
-        json_schema_extra=ui(labels={"top": "Topo", "middle": "Meio", "bottom": "Base"}),
+        json_schema_extra=ui(widget="segmented", labels={"top": "Topo", "middle": "Meio", "bottom": "Base"}),
     )
     background: Color = Field("", title="Fundo", json_schema_extra=ui(widget="color"))
 
@@ -308,8 +429,71 @@ VALIDATORS: dict[str, type[_Format]] = {
 }
 
 
+TEXT = "Texto"
+# Layout do painel Formato (spec 042, RF-4260): aba, bloco com título, meia largura, ordem e widget de cada campo.
+# Fica aqui, separado dos modelos, para os campos continuarem iguais no arquivo do fluxo.
+_TEXT_FIELDS = (
+    "font",
+    "title_size",
+    "title_align",
+    "title_bold",
+    "title_italic",
+    "title_color",
+    "subtitle_size",
+    "subtitle_bold",
+    "subtitle_italic",
+    "subtitle_color",
+    "labels_bold",
+    "labels_color",
+    "axis_text_color",
+    "value_size",
+    "value_color",
+    "align",
+)
+LAYOUT: dict[str, dict[str, Any]] = {
+    **{name: {"group": TEXT} for name in _TEXT_FIELDS},
+    # Cartão
+    "background": {"half": True, "order": 1},
+    "border_color": {"half": True, "order": 2},
+    "border": {"order": 3},
+    "shadow": {"order": 4},
+    "radius": {"widget": "slider", "order": 5},
+    # Rótulos
+    "label_format": {"half": True},
+    "decimals": {"half": True},
+    "prefix": {"half": True},
+    "suffix": {"half": True},
+    # Eixos, em blocos
+    "show_y_values": {"sub": "Eixo Y", "order": 1},
+    "y_scale": {"sub": "Eixo Y", "order": 2},
+    "y_title": {"sub": "Eixo Y", "order": 3},
+    "y_min": {"sub": "Eixo Y", "half": True, "order": 4},
+    "y_max": {"sub": "Eixo Y", "half": True, "order": 5},
+    "show_x_labels": {"sub": "Eixo X", "order": 10},
+    "x_title": {"sub": "Eixo X", "order": 11},
+    "grid": {"sub": "Grade", "order": 20},
+    "grid_style": {"sub": "Grade", "order": 21},
+    "grid_color": {"sub": "Grade", "half": True, "order": 22},
+    "grid_opacity": {"sub": "Grade", "half": True, "widget": "slider", "order": 23},
+    "ref_paint": {"sub": "Linha de referência", "wide": True, "order": 30},
+    "ref_above": {"sub": "Linha de referência", "half": True, "order": 31},
+    "ref_below": {"sub": "Linha de referência", "half": True, "order": 32},
+}
+
+
 def describe_formats() -> dict[str, list[dict[str, Any]]]:
-    return {kind: describe_fields(model) for kind, model in FORMATS.items()}
+    out: dict[str, list[dict[str, Any]]] = {}
+    for kind, model in FORMATS.items():
+        fields = describe_fields(model)
+        if kind in ("chart", "kpi", "table"):  # texto, imagem e forma continuam num formulário só
+            for field in fields:
+                for key, value in LAYOUT.get(field["name"], {}).items():
+                    if value is None:
+                        field.pop(key, None)
+                    else:
+                        field[key] = value
+        out[kind] = fields
+    return out
 
 
 def clean_format(kind: str, data: dict[str, Any]) -> dict[str, Any]:

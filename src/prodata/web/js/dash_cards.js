@@ -7,6 +7,7 @@ import { gaugeChart, renderChart, sparkline } from './charts.js';
 import { isClickChart, isCrossChart } from './dash_filters.js';
 import { button, fmt, h } from './dom.js';
 import { icon } from './icons.js';
+import { currentPagePalette } from './dash_look.js';
 
 export const AGG_LABELS = {
   sum: 'Soma', mean: 'Média', count: 'Contagem', min: 'Mínimo', max: 'Máximo', n_unique: 'Distintos',
@@ -20,8 +21,27 @@ export function setCardEnv(next) { Object.assign(env, next); }
 const tableMode = new Set();
 
 /** Fundo, borda, cantos e sombra do cartão. */
+// Fontes do painel Formato (spec 042, RF-4259): famílias que existem em qualquer Windows, também no HTML exportado.
+const FONT_FAMILY = {
+  sans: "'Segoe UI', Arial, sans-serif",
+  serif: "Georgia, 'Times New Roman', serif",
+  mono: "Consolas, 'Courier New', monospace",
+};
+
 function cardStyle(f = {}) {
   return {
+    fontFamily: FONT_FAMILY[f.font] || null,
+    '--card-font': FONT_FAMILY[f.font] || null, // o título usa a fonte de destaque da marca, a não ser que se escolha outra
+    '--title-weight': f.title_bold === false ? '400' : null,
+    '--title-style': f.title_italic ? 'italic' : null,
+    '--title-color': f.title_color || null,
+    '--sub-size': f.subtitle_size ? `${f.subtitle_size}px` : null,
+    '--sub-style': f.subtitle_italic ? 'italic' : null,
+    '--sub-weight': f.subtitle_bold ? '600' : null,
+    '--sub-color': f.subtitle_color || null,
+    '--label-weight': f.labels_bold === false ? '400' : null,
+    '--label-color': f.labels_color || null,
+    '--axis-color': f.axis_text_color || null,
     background: f.background || null,
     border: f.border === false ? '0' : null,
     borderColor: f.border !== false && f.border_color ? f.border_color : null,
@@ -197,9 +217,14 @@ export function chartCard(original, { width, height = 260, className = '', actio
   } else {
     const canCross = cross && isCrossChart(w);
     const filterable = cross && isClickChart(w) && env.canFilter(original);
-    const body = h('div', { class: 'chart-body' }, renderChart(w.chart_type, w.series || [], Math.max(220, width - 34), height, {
-      ...f, _keyOf: w._keyOf, _filterable: filterable, _selected: canCross ? env.selectedFor(original) : null,
+    const note = logNote(w, f); // o aviso do rodapé tira uma linha da altura do gráfico
+    const body = h('div', { class: 'chart-body' }, renderChart(w.chart_type, w.series || [], Math.max(220, width - 34), note ? height - 20 : height, {
+      ...f, _keyOf: w._keyOf, _filterable: filterable, _selected: canCross ? env.selectedFor(original) : null, _page_palette: currentPagePalette(),
     }, w));
+    // Eixos escondidos (spec 042, RF-4236): as margens já encolheram; aqui saem os textos.
+    if (f.show_x_labels === false) body.querySelectorAll('.x-tick').forEach((t) => t.remove());
+    if (f.show_y_values === false) body.querySelectorAll('.y-tick').forEach((t) => t.remove());
+    styleGrid(body, f);
     if (filterable) {
       body.addEventListener('click', (e) => {
         const mark = e.target.closest('[data-cat]');
@@ -207,9 +232,43 @@ export function chartCard(original, { width, height = 260, className = '', actio
       });
     }
     card.append(body);
+    if (note) card.append(h('p', { class: 'chart-note' }, icon('alert', 12), h('span', {}, note)));
     withTooltip(card, body);
   }
   return card;
+}
+
+// Linhas de grade do formato (spec 042, RF-4256): estilo, cor e transparência, também no PNG e no HTML.
+const GRID_DASH = { dashed: '6 4', dotted: '1.5 3.5' };
+function styleGrid(body, f) {
+  if (!f.grid_style && !f.grid_color && !f.grid_opacity) return;
+  for (const line of body.querySelectorAll('line.grid')) {
+    if (GRID_DASH[f.grid_style]) { line.setAttribute('stroke-dasharray', GRID_DASH[f.grid_style]); line.setAttribute('stroke-linecap', 'round'); }
+    if (f.grid_color) line.style.stroke = f.grid_color;
+    if (f.grid_opacity) line.style.strokeOpacity = String(f.grid_opacity / 100);
+  }
+}
+
+// Escala logarítmica (spec 042, RF-4257): zero e negativos não cabem no log, e alguns gráficos não usam log.
+const LOG_CHARTS = new Set(['bar', 'hbar', 'line', 'area', 'grouped', 'scatter']);
+const STACKED = new Set(['stacked', 'stacked100', 'area_stacked']);
+
+/** O aviso do rodapé quando a escala logarítmica não vale do jeito pedido (ou null). */
+export function logNote(w, f) {
+  if (f.y_scale !== 'log') return null;
+  const type = w.chart_type;
+  if (w.widget_type === 'venn' || !LOG_CHARTS.has(type) || (w.series_names?.length && STACKED.has(type))) {
+    return 'Escala logarítmica não vale para este tipo de gráfico: o eixo continua linear.';
+  }
+  const values = type === 'scatter' ? (w.points || []).map((p) => p.y)
+    : w.series_names?.length ? (w.series || []).flatMap((c) => Object.values(c.values || {}))
+      : (w.series || []).map((s) => s.value);
+  const numbers = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
+  if (!numbers.some((v) => v > 0)) return 'Escala logarítmica: nenhum valor acima de zero, então o eixo continua linear.';
+  const out = numbers.filter((v) => v <= 0).length;
+  if (!out) return null;
+  const who = out === 1 ? '1 valor zero ou negativo fica' : `${out} valores zero ou negativos ficam`;
+  return `Escala logarítmica: ${who} no pé do eixo, fora da escala.`;
 }
 
 /** Tabela formatada (ferramenta Table): totais, linhas alternadas e cores por faixa com ícone. */
@@ -253,6 +312,7 @@ export function freeEl(item, { editing }) {
       class: 'dash-text',
       style: {
         fontSize: `${f.size || 16}px`, fontWeight: f.bold ? '700' : null, fontStyle: f.italic ? 'italic' : null,
+        fontFamily: FONT_FAMILY[f.font] || null, textDecoration: f.underline ? 'underline' : null,
         color: f.color || null, textAlign: f.align || null, background: f.background || null,
         justifyContent: { middle: 'center', bottom: 'flex-end' }[f.vertical] || null,
       },

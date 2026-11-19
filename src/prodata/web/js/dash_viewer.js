@@ -10,6 +10,7 @@ import { createReplay, makeTables, momentsOf } from './dash_replay.js';
 import { openStory } from './dash_story.js';
 import { stillBadge, timelineBar } from './dash_timeline.js';
 import { h, setNumberStyle } from './dom.js';
+import { pageLook } from './dash_look.js';
 
 const PAGE_W = 1600;
 const root = document.getElementById('prodata-pagina');
@@ -54,10 +55,9 @@ function start(data) {
 
   const page = () => {
     const { out, missing } = widgets();
-    return h('div', {
-      class: 'dash-page dash-viewer-page',
-      style: { width: `${PAGE_W}px`, height: `${data.height}px`, backgroundColor: data.page.background || null },
-    }, data.items.map((item) => itemNode(item, out, missing)));
+    const look = pageLook(data.page, { width: PAGE_W, height: data.height });
+    return h('div', { class: 'dash-page dash-viewer-page', style: look.style },
+      look.backdrop, data.items.map((item) => itemNode(item, out, missing)));
   };
 
   const itemNode = (item, out, missing = {}) => {
@@ -92,10 +92,10 @@ function start(data) {
       label: data.label_name ? { level: data.label, name: data.label_name } : '',
       render: (scene) => {
         const current = { ...out, ...replay.snapshot(scene.filters || [], scene.moment || replay.moment) };
+        const look = pageLook(data.page, { width: PAGE_W, height: data.height });
         return h('div', {
-          class: ['dash-page', 'dash-viewer-page', scene.item_id && 'has-spot'],
-          style: { width: `${PAGE_W}px`, height: `${data.height}px`, backgroundColor: data.page.background || null },
-        }, data.items.map((item) => {
+          class: ['dash-page', 'dash-viewer-page', scene.item_id && 'has-spot'], style: look.style,
+        }, look.backdrop, data.items.map((item) => {
           const el = itemNode(item, current);
           if (el && item.id === scene.item_id) el.classList.add('spot');
           return el;

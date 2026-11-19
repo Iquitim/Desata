@@ -192,7 +192,32 @@ def test_formats_are_described_for_every_kind(client: TestClient) -> None:
     widgets = {f["name"]: f["widget"] for f in data["chart"]}
     assert widgets["color"] == "color" and widgets["category_colors"] == "category_colors"
     labels = {o["value"] for f in data["chart"] if f["name"] == "data_labels" for o in f["options"]}
-    assert labels == {"none", "max", "max_min"}  # nunca um número em cada ponto
+    # Spec 042: "Todos" (os que não cabem são omitidos no desenho, sem sobreposição).
+    assert labels == {"none", "max", "max_min", "all"}
+    palettes = {o["value"] for f in data["chart"] if f["name"] == "palette" for o in f["options"]}
+    assert {"page", "okabe_ito", "tableau10", "set2", "viridis", "blues", "grays"} <= palettes
+    assert widgets["palette"] == "palette" and widgets["legend_position"] == "segmented"
+    assert {"show_y_values", "show_x_labels"} <= set(widgets)
+
+
+def test_page_palette_and_background_image() -> None:
+    """Spec 042: paleta geral e imagem de fundo de até 5 MB; o visual sem paleta própria não grava 'page'."""
+    import base64
+
+    from prodata.domain.dashboard import DashItem, DashPage
+
+    png = "data:image/png;base64," + base64.b64encode(b"0" * (2 * 1024 * 1024)).decode()
+    page = DashPage(palette="okabe_ito", image=png, image_fit="contain", image_opacity=40)
+    assert page.palette == "okabe_ito" and page.image_opacity == 40
+    big = "data:image/png;base64," + base64.b64encode(b"0" * (6 * 1024 * 1024)).decode()
+    with pytest.raises(ValueError, match="5 MB"):
+        DashPage(image=big)
+    with pytest.raises(ValueError, match="1 MB"):
+        DashItem(id="i1", kind="image", content=png)
+    item = DashItem(id="v1", node_id="n1", format={"palette": "page", "data_labels": "all"})
+    assert item.format == {"data_labels": "all"}
+    own = DashItem(id="v2", node_id="n1", format={"palette": "brand"})
+    assert own.format == {"palette": "brand"}  # a marca escolhida no visual é paleta própria
 
 
 def test_format_keeps_only_what_differs_from_default() -> None:

@@ -34,6 +34,16 @@ class JoinKey(BaseModel):
     right: str = Field("", title="Direita [R]", json_schema_extra=ui(widget="column", port="R"))
 
 
+STACK_LABELS = {
+    "none": "Não empilhar",
+    "LJR": "L + J + R: tudo (como um full outer join)",
+    "LJ": "L + J: toda a esquerda (como um left join)",
+    "JR": "J + R: toda a direita (como um right join)",
+    "LR": "L + R: só o que não casou",
+}
+STACK_ON = ["LJR", "LJ", "JR", "LR"]
+
+
 class JoinConfig(ToolConfig):
     keys: list[JoinKey] = Field(default_factory=lambda: [JoinKey()], title="Chaves de junção")
     keys_mode: Literal["both", "left", "right"] = Field(
@@ -57,6 +67,20 @@ class JoinConfig(ToolConfig):
     order: list[str] = Field(default_factory=list, title="Ordem", json_schema_extra=ui(widget="hidden"))
     right_prefix: str = Field(
         "r_", title="Prefixo para colunas repetidas da direita", json_schema_extra=ui(group="Avançado")
+    )
+    # Saída U (spec 042): as saídas escolhidas empilhadas pelo nome, como um Union logo depois do Join.
+    stack: Literal["none", "LJR", "LJ", "JR", "LR"] = Field(
+        "none",
+        title="Empilhar saídas na U",
+        description="Junta numa saída extra, U, as saídas escolhidas. Colunas com o mesmo nome ficam juntas; "
+        "a que falta num lado fica vazia.",
+        json_schema_extra=ui(labels=STACK_LABELS),
+    )
+    stack_column: str = Field(
+        "saida",
+        title="Coluna com a saída de origem",
+        description="Grava L, J ou R em cada linha da U. Vazio = sem a coluna.",
+        json_schema_extra=ui(show_if={"stack": ["LJR", "LJ", "JR", "LR"]}),
     )
     allow_multiply: bool = Field(
         False,
@@ -123,8 +147,16 @@ def multiplication_warning(stats: dict[str, int]) -> str:
     config=JoinConfig,
     explainer="join",
     inputs=[Port("L", "L", "Esquerda"), Port("R", "R", "Direita")],
-    outputs=[Port("L", "L", "Só na esquerda"), Port("J", "J", "Combinados"), Port("R", "R", "Só na direita")],
-    annotate=lambda c: " · ".join(f"{k.left} = {k.right}" for k in c.keys if k.left),
+    outputs=[
+        Port("L", "L", "Só na esquerda"),
+        Port("J", "J", "Combinados"),
+        Port("R", "R", "Só na direita"),
+        Port("U", "U", "Saídas empilhadas", when={"stack": STACK_ON}),
+    ],
+    annotate=lambda c: (
+        " · ".join(f"{k.left} = {k.right}" for k in c.keys if k.left)
+        + (f" · U = {'+'.join(c.stack)}" if c.stack != "none" else "")
+    ),
 )
 def join(ctx: NodeContext, cfg: JoinConfig) -> NodeOutput:
     left, right = ctx.input("L"), ctx.input("R")
@@ -160,14 +192,20 @@ def join(ctx: NodeContext, cfg: JoinConfig) -> NodeOutput:
             warnings = [multiplication_warning(stats), *warnings]
     if warnings:
         extra["warnings"] = warnings
-    return NodeOutput(
-        tables={
-            "L": left.join(right, left_on=left_on, right_on=right_on, how="anti"),
-            "J": joined,
-            "R": right.join(left, left_on=right_on, right_on=left_on, how="anti"),
-        },
-        extra=extra,
-    )
+    tables = {
+        "L": left.join(right, left_on=left_on, right_on=right_on, how="anti"),
+        "J": joined,
+        "R": right.join(left, left_on=right_on, right_on=left_on, how="anti"),
+    }
+    if cfg.stack != "none":
+        tables["U"] = stack_outputs(tables, cfg.stack, cfg.stack_column.strip())
+    return NodeOutput(tables=tables, extra=extra)
+
+
+def stack_outputs(tables: dict[str, pl.DataFrame], parts: str, column: str) -> pl.DataFrame:
+    """Saída U: as saídas escolhidas, empilhadas pelo nome das colunas (a que falta num lado fica vazia)."""
+    frames = [tables[p].with_columns(pl.lit(p).alias(column)) if column else tables[p] for p in parts]
+    return pl.concat(frames, how="diagonal_relaxed")
 
 
 def _keep_key_side(
@@ -347,6 +385,7 @@ class UnionConfig(ToolConfig):
     icon="stack",
     description="Empilha as entradas verticalmente, alinhando colunas pelo nome ou pela posição.",
     config=UnionConfig,
+    explainer="union",
     inputs=[Port("in1", "1", "Entrada 1"), Port("in2", "2", "Entrada 2", required=False)],
     annotate=lambda c: "Pelo nome" if c.mode == "by_name" else "Pela posição",
 )
@@ -449,11 +488,23 @@ def join_sql(ctx: SqlContext, cfg: JoinConfig) -> dict[str, Fragment]:
     only_right = "SELECT r.*\nFROM {b} AS r\nWHERE NOT EXISTS (\n  SELECT 1 FROM {a} AS l WHERE {c}\n)"
     names = {"a": q(left.block), "b": q(right.block), "c": condition}
     explain = f"Junta por {label} e mantém as linhas que casaram" + (f"; {', '.join(what)}" if what else "")
-    return {
+    out = {
         "L": Fragment(only.format(**names), f"Linhas da esquerda sem par em {label}"),
         "J": Fragment(f"SELECT\n  {join_list(items)}\n{sides}", explain),
         "R": Fragment(only_right.format(**names), f"Linhas da direita sem par em {label}"),
     }
+    if cfg.stack != "none":
+        out["U"] = stack_sql(out, cfg.stack, cfg.stack_column.strip())
+    return out
+
+
+def stack_sql(parts: dict[str, Fragment], chosen: str, column: str) -> Fragment:
+    """Saída U em SQL: cada saída escolhida vira uma consulta, empilhadas com UNION ALL BY NAME."""
+    tag = (lambda p: f", '{p}' AS {q(column)}") if column else (lambda p: "")
+    pieces = [f"SELECT *{tag(p)}\nFROM (\n{_indent(parts[p].sql)}\n)" for p in chosen]
+    return Fragment(
+        "\nUNION ALL BY NAME\n".join(pieces), f"Empilha as saídas {' + '.join(chosen)} pelo nome das colunas"
+    )
 
 
 def _agg_sql(item: Aggregation) -> str:
@@ -547,3 +598,7 @@ def sql_query_sql(ctx: SqlContext, cfg: SqlConfig) -> dict[str, Fragment]:
             ["A consulta foi escrita à mão: revise se ela depende de algo do DuckDB."],
         )
     }
+
+
+def _indent(sql: str) -> str:
+    return "\n".join(f"  {line}" for line in sql.splitlines())

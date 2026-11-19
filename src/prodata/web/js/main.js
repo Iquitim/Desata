@@ -19,7 +19,7 @@ import { openFlowConstants } from './constants_ui.js';
 import { renderSourcesPanel } from './data_panel.js';
 import { initDataView, openInData, showDataView } from './data_view.js';
 import { enableFileDropOnCanvas, refreshDatasets } from './datasets.js';
-import { basename, chooseOpenFile, chooseSaveFile, dirname } from './desktop.js';
+import { basename, chooseOpenFile, dirname } from './desktop.js';
 import {
   activeIndex, anyDirty, dirtyTabs, findTab, openTab, persistTabs, removeTab, savedTabs, switchTab, tabCount, tabInfo,
 } from './tabs.js';
@@ -31,19 +31,19 @@ import { initCommandPalette, togglePalette } from './command_palette.js';
 import { initManual, manualEntries, toggleManual } from './manual.js';
 import { initSelectPicker } from './select_picker.js';
 import { commandList, isStopping, slowestNote, stopRun, topMenus } from './top_menus.js';
+import { RECENT_FILES, rememberRecent, saveAs, saveButton, saveFlow as save } from './save_flow.js';
 import { enterFocus, inFocus, initLayout, leaveFocus, panelControls } from './layout.js';
 import { renderPalette } from './palette.js';
 import { initResults, inTableFocus, showLog, toggleTableFocus } from './results.js';
 import { handleSqlKey, initSqlView, renderSqlView } from './sql_view.js';
 import { blockedByTrust, initTrustBanner, refreshTrust, resetTrustBanner } from './trust_banner.js';
 import {
-  canRedo, canUndo, emit, inspect, markSaved, mutate, on, redo, select, selectedIds, selectMany, setExecution, store, undo,
+  canRedo, canUndo, emit, inspect, mutate, on, redo, select, selectedIds, selectMany, setExecution, store, undo,
 } from './store.js';
 import { confirmDialog, openDialog, toast, toastError } from './ui.js';
 import { brand } from './brand.js';
 
 const LAST_WORKFLOW = 'prodata.lastWorkflow'; // versões anteriores (antes das abas)
-const RECENT_FILES = 'prodata.recentFiles';
 
 // ------------------------------------------------------------------ execução
 
@@ -176,52 +176,6 @@ async function open(workflow, { saved = true, autorun = true, filePath = null } 
   openTab(workflow, { saved, filePath });
   if (saved && filePath) rememberRecent(filePath, workflow.name);
   if (autorun && workflow.nodes.length) await run(null, { auto: true });
-}
-
-/** Fluxos abertos/salvos fora da biblioteca, mais recentes primeiro (só neste computador). */
-function rememberRecent(path, name) {
-  const items = storage(RECENT_FILES, []).filter((r) => r.path.toLowerCase() !== path.toLowerCase());
-  persist(RECENT_FILES, [{ path, name, at: new Date().toISOString() }, ...items].slice(0, 8));
-}
-
-/** Salva a aba ativa. Devolve true se salvou. */
-async function save() {
-  if (store.filePath) return saveToFile(store.filePath);
-  try {
-    const saved = await api.saveWorkflow(store.workflow);
-    markSaved();
-    persistTabs();
-    emit('tabs');
-    toast('Fluxo salvo', { kind: 'success', detail: `Biblioteca do ${brand.nome} · ${saved.id}.prodata.json` });
-    return true;
-  } catch (err) {
-    toastError(err, 'Não foi possível salvar');
-    return false;
-  }
-}
-
-async function saveToFile(path) {
-  try {
-    const res = await api.saveWorkflowFile(path, store.workflow);
-    store.filePath = res.path;
-    markSaved();
-    rememberRecent(res.path, store.workflow.name);
-    persistTabs();
-    emit('file');
-    emit('tabs');
-    toast('Fluxo salvo', { kind: 'success', detail: res.path });
-    return true;
-  } catch (err) {
-    toastError(err, 'Não foi possível salvar');
-    return false;
-  }
-}
-
-const fileSlug = (name) => (name || 'fluxo').normalize('NFKD').replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '') || 'fluxo';
-
-async function saveAs() {
-  const path = await chooseSaveFile(`${fileSlug(store.workflow.name)}.prodata.json`, dirname(store.filePath));
-  return path ? saveToFile(path) : false;
 }
 
 async function openFile(path = null) {
@@ -458,7 +412,7 @@ function buildTopbar() {
   initManual({ setView, openExample: async (workflow) => { setView('designer'); await open(workflow, { saved: false }); } });
   const helpBtn = button({ label: '?', title: 'Manual (F1)', variant: 'ghost', onClick: toggleManual });
   helpBtn.classList.add('top-help');
-  $('#topActions').replaceChildren(...topMenus(actions), themeBtn, helpBtn, runBtn);
+  $('#topActions').replaceChildren(...topMenus(actions), themeBtn, helpBtn, saveButton(), runBtn);
   on('running', () => {
     runBtn.disabled = store.running && isStopping(); // enquanto executa, o botão vira Parar (spec 041)
     runBtn.classList.toggle('stop', store.running);

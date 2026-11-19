@@ -1,9 +1,12 @@
 name: CI
 
+# Spec 043: a suíte completa, em paralelo, a cada push e pull request. Mudança só de documentação não roda.
 on:
   push:
     branches: [main, master]
+    paths-ignore: ["docs/**", "specs/**", "**/*.md"]
   pull_request:
+    paths-ignore: ["docs/**", "specs/**", "**/*.md"]
 
 jobs:
   check:
@@ -16,8 +19,8 @@ jobs:
       - run: uv python install 3.14
       - run: uv sync --frozen
       - name: Lint
-        run: uv run ruff check src tests && uv run ruff format --check src tests
+        run: uv run ruff check src tests scripts && uv run ruff format --check src tests scripts
       - name: Tipos
         run: uv run mypy
-      - name: Testes
-        run: uv run pytest
+      - name: Testes (todos, em paralelo)
+        run: uv run pytest -n auto
