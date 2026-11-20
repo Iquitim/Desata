@@ -40,4 +40,4 @@
 ## Documentação e publicação
 
 - [x] T18 Guia, Manual, prints nas duas marcas e lição de Rank (RF-4451)
-- [ ] T19 Versão 0.9.2, testes completos, guias e instaladores nas duas marcas (RF-4451)
+- [x] T19 Versão 0.9.2, testes completos, guias e instaladores nas duas marcas (RF-4451)
