@@ -82,47 +82,5 @@ export function confirmDialog({ title, message, confirm = 'Confirmar', danger = 
 
 // ------------------------------------------------------------------ menu flutuante
 
-let openMenu = null;
-
-export function closeMenu() {
-  openMenu?.remove();
-  openMenu = null;
-}
-
-/** items: [{label, icon, onSelect, danger, disabled, shortcut} | 'separator'] */
-/** Ícone com cor própria no menu, como a cor de uma pasta (spec 034). */
-function tinted(svg, color) {
-  if (color) svg.style.color = color;
-  return svg;
-}
-
-export function showMenu(x, y, items) {
-  closeMenu();
-  const menu = h('div', { class: 'menu', role: 'menu' },
-    items.map((item) => (item === 'separator' || item.heading || item.note
-      ? h('div', item.heading ? { class: 'menu-heading' } : item.note ? { class: 'menu-note' } : { class: 'menu-sep', role: 'separator' }, item.heading || item.note || null)
-      : h('button', {
-        type: 'button',
-        role: 'menuitem',
-        class: ['menu-item', item.danger && 'danger'],
-        disabled: item.disabled,
-        onclick: () => { closeMenu(); item.onSelect(); },
-      },
-      item.icon ? tinted(icon(item.icon, 15), item.color) : h('span', { class: 'icon' }),
-      h('span', {}, item.label),
-      item.shortcut ? h('kbd', {}, item.shortcut) : null))));
-  (document.querySelector('dialog[open]') || document.body).append(menu); // numa janela, fora dela ficaria por baixo
-  const { innerWidth, innerHeight } = window;
-  const rect = menu.getBoundingClientRect();
-  menu.style.left = `${Math.max(8, Math.min(x, innerWidth - rect.width - 8))}px`;
-  menu.style.top = `${Math.max(8, Math.min(y, innerHeight - rect.height - 8))}px`; // lista longa: rola por dentro
-  openMenu = menu;
-  menu.querySelector('.menu-item:not([disabled])')?.focus();
-}
-
-document.addEventListener('pointerdown', (e) => {
-  if (openMenu && !openMenu.contains(e.target)) closeMenu();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeMenu();
-});
+// Menu flutuante com submenus: menu.js (spec 044).
+export { closeMenu, showMenu } from './menu.js';

@@ -71,7 +71,13 @@ localmente.
   (negrito, itálico, cor, família) e **linha de referência** no Chart (valor, constante, média ou mediana), com as
   barras e pontos acima e abaixo em cores próprias.
 - **Join com a saída U**: L + J + R, L + J, J + R ou L + R empilhadas pelo nome, também em SQL; **Como funciona** no
-  Union. Oito **lições guiadas** no Manual.
+  Union.
+- **Rank** (top N por grupo, com três jeitos de tratar o empate), **média e soma móvel** na Multi-Row e **Append
+  Fields** com a conta de linhas antes de executar. Nove **lições guiadas** no Manual.
+- **Agendador visual no Windows** (Arquivo › Agendar este fluxo…): frequência em botões, frase de resumo com a
+  próxima execução, lista de agendamentos com executar agora, pausar, editar e o resultado da última execução, e
+  aviso quando uma execução agendada falha. Roda sem janela, com a pessoa conectada, sem guardar a senha do Windows.
+- **Aviso ao terminar a execução**, com as cores da marca (desliga em Exibir).
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -102,8 +108,8 @@ localmente.
 - **Replay analítico**: linha do tempo no dashboard, corrida de barras, bolhas, Sankey,
   destaques com critério, história em cenas, GIF por gráfico e HTML com tudo isso.
 - **Lições guiadas** no Manual, cada uma num fluxo próprio.
-- **44 ferramentas** na paleta, em 6 famílias: entrada/saída, preparação (com
-  Text To Columns, Record ID, Running Total, Multi-Row Formula e Data Quality), combinação e transformação (Join
+- **45 ferramentas** na paleta, em 6 famílias: entrada/saída, preparação (com
+  Text To Columns, Record ID, Running Total, Multi-Row Formula, Rank e Data Quality), combinação e transformação (Join
   com saídas L/J/R, Cross Tab, Transpose, Append Fields, Summarize, Union, SQL via
   DuckDB, Fuzzy Match), conferência e reúso (Reconcile, Compare Runs, Subflow), BI (Chart, KPI Card, Venn e Table)
   e Machine Learning (scikit-learn). Entradas sem fonte cadastrada: Text Input e Generate Rows.
@@ -309,6 +315,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [041](specs/041-canvas-organizado-e-loop/spec.md) | Laço (Início e Fim do loop), canvas organizado (recolher, fios que desviam, organizar), listas que recolhem, seletor de fontes, dica editável, tempo nas caixas e célula em destaque |
 | [042](specs/042-licoes-autosave-dashboard/spec.md) | Lições em dia (oito), salvar automático, prévia dos gráficos no Designer, Dashboard em abas com paletas, rótulos, eixos e fundo, saída U do Join e Como funciona do Union |
 | [043](specs/043-testes-rapidos/spec.md) | Testes rápidos (afetados, sem os lentos) no dia a dia e a suíte completa em paralelo antes da release |
+| [044](specs/044-rank-agendador-aviso/spec.md) | Rank e médias móveis, Append Fields com a conta de linhas, agendador visual no Windows e aviso de fim de execução |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 

@@ -42,6 +42,8 @@ import {
 } from './store.js';
 import { confirmDialog, openDialog, toast, toastError } from './ui.js';
 import { brand } from './brand.js';
+import { showRunNotice } from './run_notice.js';
+import { offerRemoveSchedules, watchScheduleFailures } from './schedules_list.js';
 
 const LAST_WORKFLOW = 'prodata.lastWorkflow'; // versões anteriores (antes das abas)
 
@@ -93,8 +95,10 @@ async function run(targetNodeId = null, { auto = false } = {}) {
     const report = await api.execute(workflow, targetNodeId, auto);
     setExecution(report, Object.keys(report.node_results));
     const errors = Object.values(report.node_results).filter((r) => r.status === 'error').length;
+    // Aviso de fim (spec 044): só na execução pedida pela pessoa; com ele desligado, o erro continua avisando.
+    const notice = !auto && showRunNotice(report, store.workflow?.name, { onLog: showLog });
     if (errors) {
-      toast(`${errors} caixa(s) com erro`, { kind: 'error', detail: 'Veja os detalhes na caixa ou no Log.' });
+      if (!notice) toast(`${errors} caixa(s) com erro`, { kind: 'error', detail: 'Veja os detalhes na caixa ou no Log.' });
       showLog();
     }
     const focus = targetNodeId || store.inspect.nodeId || store.selection.nodeId;
@@ -296,6 +300,7 @@ async function openDialogList() {
           await api.deleteWorkflow(w.id);
           items = items.filter((x) => x.id !== w.id);
           draw();
+          await offerRemoveSchedules(w.id, w.name);
         } catch (err) { toastError(err, 'Não foi possível excluir'); }
       },
     }))) : [h('p', { class: 'muted' }, 'Nenhum fluxo salvo.')]));
@@ -669,6 +674,7 @@ async function boot() {
   buildCanvasToolbar();
   buildStatusbar();
   initTrustBanner($('#canvas'), { confirmed: () => run() });
+  watchScheduleFailures(); // execução agendada que falhou: avisa ao abrir e enquanto aberto (spec 044)
   on('workflow:loaded', () => { resetTrustBanner(); refreshTrust(); });
   initCanvas($('#canvas'), { runTo: (id) => run(id), run: () => run(), refreshCache, viewSql: (id) => setView('sql', { sqlNode: id }) });
   enableFileDropOnCanvas($('#canvas'));

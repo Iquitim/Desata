@@ -3,6 +3,7 @@
 
 import { shareDialog } from './portable.js';
 import { openScheduleDialog } from './schedule_dialog.js';
+import { openSchedulesList } from './schedules_list.js';
 import { NUMBER_STYLES, button, getNumberStyle, setNumberStyle } from './dom.js';
 import { icon } from './icons.js';
 import { densityMenuItem, panelMenuItems, resetLayout } from './layout.js';
@@ -16,6 +17,7 @@ import { setWireMode, wireMode } from './canvas_wires.js';
 import { organizeFlow } from './canvas_layout.js';
 import { fitView } from './canvas.js';
 import { autosaveOn, setAutosave } from './save_flow.js';
+import { runNoticeOn, setRunNotice } from './run_notice.js';
 
 export { slowestNote } from './node_timing.js';
 
@@ -39,34 +41,43 @@ const fileItems = (a) => [
   { label: 'Abrir da biblioteca…', icon: 'folder', shortcut: 'Ctrl+O', onSelect: a.openLibrary },
   { label: 'Abrir arquivo…', icon: 'file', onSelect: () => a.openFile() },
   'separator',
-  { label: 'Executar sem abrir o programa…', icon: 'clock', onSelect: openScheduleDialog },
+  { label: 'Agendar este fluxo…', icon: 'clock', disabled: !store.workflow, onSelect: () => openScheduleDialog() },
+  { label: 'Agendamentos…', icon: 'list', onSelect: openSchedulesList },
 ];
 
-const viewItems = (a) => [
-  { heading: 'Painéis' },
-  ...panelMenuItems(),
-  { label: a.inFocus() ? 'Sair do modo foco' : 'Modo foco', icon: 'maximize', shortcut: 'F11', disabled: store.view !== 'designer', onSelect: a.toggleFocus },
-  'separator',
-  densityMenuItem(),
-  { heading: 'Canvas' },
-  { label: 'Organizar o fluxo', icon: 'columns', disabled: store.view !== 'designer' || !store.workflow?.nodes.length, onSelect: () => { organizeFlow(); requestAnimationFrame(() => fitView()); } },
-  { label: 'Fios organizados', icon: wireMode() === 'routed' ? 'check' : null, onSelect: () => setWireMode('routed') },
-  { label: 'Fios curvos', icon: wireMode() === 'curved' ? 'check' : null, onSelect: () => setWireMode('curved') },
-  { label: 'Recolher todas as etapas', icon: 'minimize', disabled: !allContainers().length, onSelect: () => setContainersCollapsed(allContainers(), true) },
-  { label: 'Expandir todas as etapas', icon: 'maximize', disabled: !allContainers().length, onSelect: () => setContainersCollapsed(allContainers(), false) },
-  { label: 'Recolher as caixas desativadas', icon: 'power', disabled: !store.workflow?.nodes.some((n) => n.disabled), onSelect: collapseDisabled },
-  { label: 'Tempo nas caixas', icon: timingOn() ? 'check' : 'clock', onSelect: () => setTiming(!timingOn()) },
-  { label: 'Resumo das colunas na tabela', icon: summaryShown() ? 'check' : 'chart', onSelect: () => setSummary(!summaryShown()) },
-  { heading: 'Números' },
-  ...Object.entries(NUMBER_STYLES).map(([style, sample]) => ({
-    label: style === 'virgula' ? `${sample} · vírgula decimal` : `${sample} · ponto decimal`,
-    icon: getNumberStyle() === style ? 'check' : null,
-    onSelect: () => { setNumberStyle(style); emit('numbers'); },
-  })),
-  'separator',
-  { label: 'Atalhos do teclado', icon: 'keyboard', shortcut: '?', onSelect: a.shortcuts },
-  { label: 'Restaurar layout padrão', icon: 'refresh', onSelect: resetLayout },
-];
+// Exibir (spec 044): o que é escolha entre opções vira submenu, com o valor atual à direita; o que liga e desliga
+// fica à vista, com a marca de ligado.
+const NUMBER_NAMES = { virgula: 'vírgula decimal', ponto: 'ponto decimal' };
+const viewItems = (a) => {
+  const containers = allContainers().length;
+  return [
+    { label: 'Painéis', icon: 'panel', submenu: () => [...panelMenuItems(), 'separator', { label: 'Restaurar layout padrão', icon: 'refresh', onSelect: resetLayout }] },
+    densityMenuItem(),
+    { label: a.inFocus() ? 'Sair do modo foco' : 'Modo foco', icon: 'maximize', shortcut: 'F11', disabled: store.view !== 'designer', onSelect: a.toggleFocus },
+    { heading: 'Canvas' },
+    { label: 'Organizar o fluxo', icon: 'columns', disabled: store.view !== 'designer' || !store.workflow?.nodes.length, onSelect: () => { organizeFlow(); requestAnimationFrame(() => fitView()); } },
+    { label: 'Fios', icon: 'workflow', value: wireMode() === 'routed' ? 'organizados' : 'curvos', submenu: () => [
+      { label: 'Organizados (desviam das caixas)', checked: wireMode() === 'routed', radio: true, onSelect: () => setWireMode('routed') },
+      { label: 'Curvos', checked: wireMode() === 'curved', radio: true, onSelect: () => setWireMode('curved') },
+    ] },
+    { label: 'Etapas e caixas', icon: 'group', submenu: () => [
+      { label: 'Recolher todas as etapas', icon: 'minimize', disabled: !containers, onSelect: () => setContainersCollapsed(allContainers(), true) },
+      { label: 'Expandir todas as etapas', icon: 'maximize', disabled: !containers, onSelect: () => setContainersCollapsed(allContainers(), false) },
+      'separator',
+      { label: 'Recolher as caixas desativadas', icon: 'power', disabled: !store.workflow?.nodes.some((n) => n.disabled), onSelect: collapseDisabled },
+    ] },
+    { label: 'Tempo nas caixas', checked: timingOn(), onSelect: () => setTiming(!timingOn()) },
+    { heading: 'Tabela e avisos' },
+    { label: 'Resumo das colunas na tabela', checked: summaryShown(), onSelect: () => setSummary(!summaryShown()) },
+    { label: 'Aviso ao terminar a execução', checked: runNoticeOn(), onSelect: () => setRunNotice(!runNoticeOn()) },
+    { label: 'Números', icon: 'hash', value: NUMBER_STYLES[getNumberStyle()], submenu: () => Object.entries(NUMBER_STYLES).map(([style, sample]) => ({
+      label: `${sample} · ${NUMBER_NAMES[style] || style}`, checked: getNumberStyle() === style, radio: true,
+      onSelect: () => { setNumberStyle(style); emit('numbers'); },
+    })) },
+    'separator',
+    { label: 'Atalhos do teclado', icon: 'keyboard', shortcut: '?', onSelect: a.shortcuts },
+  ];
+};
 
 /** Os menus do topo. `a`: as ações do programa, montadas em main.js. */
 export const topMenus = (a) => [menuButton('Arquivo', 'file', () => fileItems(a)), menuButton('Exibir', 'eye', () => viewItems(a))];

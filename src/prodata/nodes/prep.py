@@ -305,12 +305,14 @@ class SortItem(BaseModel):
     descending: bool = Field(False, title="Decrescente")
 
 
-_GUIDED_RECIPES = ["fill", "diff", "pct", "prev", "next", "changed"]
+_GUIDED_RECIPES = ["fill", "diff", "pct", "prev", "next", "changed", "mavg", "msum"]
+_WINDOW_RECIPES = ["mavg", "msum"]  # média e soma móvel (spec 044)
+MAX_WINDOW = 24
 
 
 class MultiRowConfig(ToolConfig):
     # A receita só escreve a fórmula, na tela: o motor e o SQL leem ``expression``. Fluxos antigos abrem em "custom".
-    recipe: Literal["custom", "fill", "diff", "pct", "prev", "next", "changed"] = Field(
+    recipe: Literal["custom", "fill", "diff", "pct", "prev", "next", "changed", "mavg", "msum"] = Field(
         "custom", title="O que você quer fazer?", json_schema_extra=ui(widget="recipe_cards")
     )
     base: str = Field(
@@ -325,6 +327,14 @@ class MultiRowConfig(ToolConfig):
         title="Quantas linhas de distância",
         description="1 é a linha vizinha. Em dados mensais, 12 compara com o mesmo mês do ano anterior.",
         json_schema_extra=ui(show_if={"recipe": ["diff", "pct", "prev", "next", "changed"]}),
+    )
+    window: int = Field(
+        3,
+        ge=2,
+        le=MAX_WINDOW,
+        title="Quantas linhas na janela",
+        description="A linha atual e as anteriores. Em dados mensais, 3 é a média dos últimos 3 meses.",
+        json_schema_extra=ui(show_if={"recipe": _WINDOW_RECIPES}),
     )
     order_by: list[SortItem] = Field(
         default_factory=list,
@@ -368,7 +378,11 @@ class MultiRowConfig(ToolConfig):
         "null",
         title="Linha que não existe vale",
         description="Antes da primeira ou depois da última linha.",
-        json_schema_extra=ui(labels={"null": "Vazio (nulo)", "empty": "0 ou texto vazio"}),
+        # Média e soma móvel: com 0 no lugar da linha que falta, a conta sairia errada; a receita fixa "vazio".
+        json_schema_extra=ui(
+            labels={"null": "Vazio (nulo)", "empty": "0 ou texto vazio"},
+            show_if={"recipe": ["custom", *(r for r in _GUIDED_RECIPES if r not in _WINDOW_RECIPES)]},
+        ),
     )
 
 
@@ -377,7 +391,10 @@ class MultiRowConfig(ToolConfig):
     name="Multi-Row Formula",
     category="prep",
     icon="function",
-    description="Olha outras linhas: preencher para baixo, diferença e variação para a linha anterior, o que mudou.",
+    description=(
+        "Olha outras linhas: preencher para baixo, diferença e variação para a anterior, o que mudou, "
+        "média e soma móvel (LAG, LEAD e janelas)."
+    ),
     config=MultiRowConfig,
     explainer="multirow",
     annotate=lambda c: c.existing if c.target == "existing" else c.column,

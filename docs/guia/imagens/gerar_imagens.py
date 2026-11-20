@@ -32,6 +32,7 @@ from novas_075 import part_new_tools  # noqa: E402
 from novas_086 import part_086 as new_086  # noqa: E402
 from novas_090 import part_090 as new_090  # noqa: E402
 from novas_091 import part_091 as new_091  # noqa: E402
+from novas_092 import part_092 as new_092  # noqa: E402
 from organizar_dados import part_organize as organize  # noqa: E402
 from pasta_dados import part_folder_source as folder_source  # noqa: E402
 
@@ -124,9 +125,16 @@ def part_screen(pg: Pg) -> None:
     # spec 038: vírgula ou ponto nos números, no menu Exibir
     pg.locator(".top-menu", has_text="Exibir").click()
     pg.wait_for_selector(".menu [role=menuitem]")
-    pg.locator(".menu [role=menuitem]", has_text="ponto decimal").hover()
+    pg.locator(".menu:not(.submenu) .menu-item", has_text="Números").hover()  # spec 044: Números abre ao lado
+    pg.wait_for_selector(".menu.submenu")
+    pg.locator(".menu.submenu .menu-item", has_text="ponto decimal").hover()
     pg.wait_for_timeout(200)
-    shot(pg.locator(".menu"), "numeros-menu")
+    main, sub = pg.locator(".menu:not(.submenu)").bounding_box(), pg.locator(".menu.submenu").bounding_box()
+    # o submenu abre de um lado ou do outro, conforme o espaço: o recorte pega os dois
+    left, right = min(main["x"], sub["x"]) - 4, max(main["x"] + main["width"], sub["x"] + sub["width"]) + 4
+    top, bottom = min(main["y"], sub["y"]) - 4, max(main["y"] + main["height"], sub["y"] + sub["height"]) + 4
+    shot(pg, "numeros-menu", clip={"x": left, "y": top, "width": right - left, "height": bottom - top})
+    pg.keyboard.press("Escape")
     pg.keyboard.press("Escape")
     pg.wait_for_timeout(200)
 
@@ -577,9 +585,13 @@ def part_091(pg: Pg) -> None:
     new_091(pg, shot)
 
 
+def part_092(pg: Pg) -> None:
+    new_092(pg, shot)
+
+
 def PARTS(tmp):  # noqa: N802
     every = ((part_screen, ()), (part_cache_dashboard, ()), (part_sql, ()), (part_tools, ()), (part_quality_lists, ()), (part_data_trust, (tmp,)), (part_manual, ()))
-    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()))
+    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()), (part_092, ()))
     only = os.environ.get("IMAGENS_SO")
     return [e for e in every if not only or e[0].__name__ in only.split(",")]
 

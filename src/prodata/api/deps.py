@@ -15,6 +15,7 @@ from prodata.connectors.queries import QueryStore
 from prodata.engine.cache import ResultCache
 from prodata.engine.runner import WorkflowRunner
 from prodata.ingestion import DatasetStore
+from prodata.scheduling.service import SchedulingService
 from prodata.services.constants import ConstantStore
 from prodata.services.organization import OrganizationStore
 from prodata.services.trust import TrustRegistry
@@ -37,6 +38,7 @@ class Services:
     usage: UsageIndex
     constants: ConstantStore
     organization: OrganizationStore
+    schedules: SchedulingService
 
 
 def get_services(request: Request) -> Services:

@@ -36,6 +36,7 @@ MESSY = pl.DataFrame(
     }
 )
 EMPTY = MESSY.clear()
+MAVG3 = "IF IsNull([Row-2:valor]) THEN Null ELSE ([valor] + [Row-1:valor] + [Row-2:valor]) / 3 ENDIF"
 OTHER = pl.DataFrame(
     {"id": [2, 3, None, 9, 2], "uf": ["RJ", "X", "SP", "Y", "Z"], "extra": [1.5, None, 3.0, 4.0, 5.0]}
 )
@@ -289,6 +290,53 @@ CASES: list[tuple[str, str, dict[str, Any]]] = [
     ("record_id_first", "prep.record_id", {"column": "n", "start": 10}),
     ("record_id_last", "prep.record_id", {"column": "n", "position": "last"}),
     ("running_total", "prep.running_total", {"columns": ["valor", "qtd"]}),
+    # Média e soma móvel (spec 044): a fórmula que a receita escreve
+    (
+        "multirow_moving_avg",
+        "prep.multirow",
+        {
+            "recipe": "mavg",
+            "base": "valor",
+            "window": 3,
+            "order_by": [{"column": "select"}],
+            "column": "mm",
+            "type": "Float64",
+            "expression": MAVG3,
+        },
+    ),
+    (
+        "multirow_moving_sum_groups",
+        "prep.multirow",
+        {
+            "recipe": "msum",
+            "base": "qtd",
+            "window": 2,
+            "group_by": ["uf"],
+            "column": "sm",
+            "expression": "IF IsNull([Row-1:qtd]) THEN Null ELSE [qtd] + [Row-1:qtd] ENDIF",
+        },
+    ),
+    # Rank (spec 044): empates (10,5 duas vezes), vazios por último, grupos e top N
+    ("rank_row", "prep.rank", {"order_by": [{"column": "valor", "descending": True}], "method": "row"}),
+    (
+        "rank_rank_groups",
+        "prep.rank",
+        {"order_by": [{"column": "valor", "descending": True}], "method": "rank", "group_by": ["uf"]},
+    ),
+    (
+        "rank_dense_top",
+        "prep.rank",
+        {"order_by": [{"column": "valor"}], "method": "dense", "keep_top": True, "top": 2},
+    ),
+    (
+        "rank_two_columns",
+        "prep.rank",
+        {
+            "order_by": [{"column": "uf"}, {"column": "qtd", "descending": True}],
+            "method": "rank",
+            "column": "pos",
+        },
+    ),
     (
         "running_total_groups",
         "prep.running_total",

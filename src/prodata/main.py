@@ -47,6 +47,8 @@ from prodata.samples.workflows import (
     add_replay_section,
     demo_workflow,
 )
+from prodata.scheduling.service import SchedulingService
+from prodata.scheduling.store import ScheduleStore
 from prodata.services.audit import setup_audit
 from prodata.services.constants import ConstantStore
 from prodata.services.organization import OrganizationStore
@@ -127,6 +129,14 @@ def build_services(settings: Settings) -> Services:
         usage=UsageIndex(settings.workflows_dir),
         constants=constants,
         organization=OrganizationStore(settings.storage_dir / "organizacao.json"),
+        schedules=SchedulingService(
+            ScheduleStore(
+                settings.storage_dir / "agendamentos.json",
+                settings.storage_dir / "logs" / "agendamentos.jsonl",
+            ),
+            workflows,
+            trust,
+        ),
     )
 
 

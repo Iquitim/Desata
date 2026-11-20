@@ -4,6 +4,7 @@
 import { api } from './api.js';
 import { emit, on, store } from './store.js';
 import { toast } from './ui.js';
+import { runNoticeOn } from './run_notice.js';
 
 let stopping = false;
 
@@ -21,5 +22,5 @@ on('running', () => { if (!store.running) stopping = false; });
 // Depois de parar: avisa quantas caixas ficaram de fora.
 on('execution', () => {
   const stopped = Object.values(store.execution?.node_results || {}).filter((r) => r.extra?.stopped).length;
-  if (stopped) toast('Execução interrompida', { detail: `${stopped} caixa(s) não executaram. Clique em Executar para continuar.` });
+  if (stopped && !runNoticeOn()) toast('Execução interrompida', { detail: `${stopped} caixa(s) não executaram. Clique em Executar para continuar.` });
 });

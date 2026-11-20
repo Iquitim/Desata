@@ -91,6 +91,7 @@ const PATHS = {
   transpose: '<path d="M7 4v16M7 20l-3-3M7 20l3-3"/><path d="M14 7h7M21 7l-3-3M21 7l-3 3"/><path d="M13 13h8v7h-8z"/>',
   'text-columns': '<path d="M4 6h16"/><path d="M4 12h6M14 12h6"/><path d="M4 18h6M14 18h6"/><path d="M12 9v12" stroke-dasharray="2 2"/>',
   hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.4M17 6h2.5a2.5 2.5 0 0 1-2.6 3.4"/>',
   'trending-up': '<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
   append: '<rect x="3" y="4" width="10" height="16" rx="2"/><path d="M17 8v8M13 12h8"/>',
   clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',

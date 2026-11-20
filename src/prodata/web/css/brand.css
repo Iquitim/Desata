@@ -46,3 +46,27 @@
 
 /* Títulos na fonte de títulos da marca (sem ela, a fonte do texto). */
 h1, h2, h3, .brand-name { font-family: var(--font-title, var(--font)); }
+
+/* ---------------------------------------------------------------- aviso de fim de execução (spec 044) */
+.run-notice {
+  overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-md); animation: toast-in .2s ease-out;
+}
+.run-notice.leaving { opacity: 0; transform: translateY(4px); transition: .18s; }
+.run-notice-band {
+  display: flex; align-items: center; gap: 8px; padding: 7px 6px 7px 10px;
+  background: var(--marca-barra); color: var(--marca-barra-texto); border-bottom: 3px solid var(--marca-barra-borda);
+}
+.run-notice-logo { width: 20px; height: 20px; object-fit: contain; }
+.run-notice-icon { display: inline-flex; color: var(--marca-realce); }
+.run-notice-title { flex: 1; min-width: 0; font-size: var(--fs-sm); }
+.run-notice-band .btn { color: var(--marca-barra-texto); }
+.run-notice-band .btn:hover { background: color-mix(in srgb, var(--marca-barra-texto) 14%, transparent); }
+.run-notice-body { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px 10px; }
+.run-notice-flow { font-weight: 600; overflow-wrap: anywhere; }
+.run-notice-time { font-weight: 400; color: var(--text-2); }
+.run-notice-detail { font-size: var(--fs-xs); color: var(--text-2); }
+.run-notice-actions { display: flex; gap: 6px; margin-top: 5px; }
+.run-notice-error .run-notice-band { border-bottom-color: var(--err); }
+.run-notice-error .run-notice-icon { color: var(--err); background: var(--surface); border-radius: 50%; }
+.run-notice-stopped .run-notice-band { border-bottom-color: var(--warn, #e6a700); }

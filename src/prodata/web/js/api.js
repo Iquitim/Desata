@@ -121,6 +121,19 @@ export const api = {
   saveWorkflow: (wf) => request('PUT', `/api/workflows/${enc(wf.id)}`, wf),
   deleteWorkflow: (id) => request('DELETE', `/api/workflows/${enc(id)}`),
 
+  // Agendamentos (spec 044)
+  schedules: () => request('GET', '/api/schedules'),
+  schedulePreview: (plan) => request('POST', '/api/schedules/preview', plan),
+  createSchedule: (plan) => request('POST', '/api/schedules', plan),
+  updateSchedule: (id, plan) => request('PUT', `/api/schedules/${enc(id)}`, plan),
+  pauseSchedule: (id) => request('POST', `/api/schedules/${enc(id)}/pause`),
+  resumeSchedule: (id) => request('POST', `/api/schedules/${enc(id)}/resume`),
+  runSchedule: (id) => request('POST', `/api/schedules/${enc(id)}/run`),
+  recreateSchedule: (id) => request('POST', `/api/schedules/${enc(id)}/recreate`),
+  deleteSchedule: (id) => request('DELETE', `/api/schedules/${enc(id)}`),
+  scheduleFailures: () => request('GET', '/api/schedules/failures/unseen'),
+  scheduleFailuresSeen: () => request('POST', '/api/schedules/failures/seen'),
+
   sqlGenerate: (workflow, selection = [], temporaryNode = null, dialect = 'duckdb') =>
     request('POST', '/api/sql/generate', { workflow, selection, temporary_node: temporaryNode, dialect }),
   sqlVerify: (workflow) => request('POST', '/api/sql/verify', { workflow }),

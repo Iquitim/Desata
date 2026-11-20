@@ -89,11 +89,49 @@ def _print_report(workflow: Workflow, report: ExecutionReport, quiet: bool) -> i
     return failed
 
 
+def _record(
+    args: argparse.Namespace,
+    started: datetime,
+    status: str,
+    name: str,
+    message: str,
+    report: ExecutionReport | None = None,
+) -> None:
+    """Agendamento (spec 044, RF-4434/4435): grava a execução no histórico, inclusive quando recusa."""
+    schedule = getattr(args, "agendamento", None)
+    if not schedule or not re.fullmatch(r"[a-f0-9]{8}", schedule):
+        return
+    from prodata.scheduling.store import RunRecord, ScheduleStore
+
+    results = report.node_results.values() if report else []
+    storage = Settings().storage_dir
+    try:
+        ScheduleStore(storage / "agendamentos.json", storage / "logs" / "agendamentos.jsonl").record(
+            RunRecord(
+                schedule_id=schedule,
+                workflow=name,
+                started_at=started,
+                finished_at=datetime.now(),
+                status=status,
+                errors=sum(r.status == "error" for r in results),
+                files=sum(
+                    bool(r.extra.get("exported_path") or r.extra.get("exported_file")) for r in results
+                ),
+                message=message[:500],
+            )
+        )
+    except OSError as exc:
+        print(f"Histórico do agendamento não gravado: {exc}", file=sys.stderr)
+
+
 def run(args: argparse.Namespace) -> int:
+    started = datetime.now()
+    name = args.fluxo
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     try:
         services = _services()
         workflow = find_workflow(services, args.fluxo)
+        name = workflow.name
         # A mesma conferência da tela (spec 028): fluxo de fora só roda depois de aberto e confirmado no programa.
         if not services.trust.opened(workflow):
             print(
@@ -101,14 +139,23 @@ def run(args: argparse.Namespace) -> int:
                 f"Abra o fluxo no {marca().nome}, confira o que ele faz na faixa do topo e escolha Confiar e executar.",
                 file=sys.stderr,
             )
+            _record(
+                args,
+                started,
+                "refused",
+                name,
+                "O fluxo veio de fora e ainda não foi confiado neste computador.",
+            )
             return REFUSED
         print(f"{marca().nome} {__version__} · {workflow.name} ({len(workflow.nodes)} caixas)")
         report = services.runner.run(workflow, args.ate)
     except ProdataError as exc:
         print(f"Erro: {exc.message}", file=sys.stderr)
+        _record(args, started, "refused", name, exc.message)
         return REFUSED
     except (OSError, ValueError, KeyError) as exc:
         print(f"Erro: {exc}", file=sys.stderr)
+        _record(args, started, "refused", name, str(exc))
         return REFUSED
     failed = _print_report(workflow, report, args.silencioso)
     saved = _save_report(services.settings.storage_dir / "logs" / "execucoes", workflow, report)
@@ -122,6 +169,8 @@ def run(args: argparse.Namespace) -> int:
             target.write_text(report.model_dump_json(indent=1), encoding="utf-8")
     seconds = f"{report.total_elapsed_ms / 1000:.1f}".replace(".", ",")
     print(f"{'FALHOU' if failed else 'Concluído'} em {seconds} s · {failed} erro(s) · relatório: {saved}")
+    first_error = next((r.error for r in report.node_results.values() if r.status == "error" and r.error), "")
+    _record(args, started, "failed" if failed else "ok", name, first_error or "", report)
     return FAILED if failed else OK
 
 
@@ -146,6 +195,11 @@ def parser() -> argparse.ArgumentParser:
         "--relatorio", metavar="ARQUIVO.json", help="Grava o relatório também neste arquivo."
     )
     run_cmd.add_argument("--silencioso", action="store_true", help="Mostra só os erros e o resumo.")
+    run_cmd.add_argument(
+        "--agendamento",
+        metavar="ID",
+        help="Execução agendada: grava o resultado no histórico dos agendamentos.",
+    )
     run_cmd.set_defaults(handler=run)
     list_cmd = commands.add_parser("list", help="Lista os fluxos da biblioteca.")
     list_cmd.set_defaults(handler=list_workflows)

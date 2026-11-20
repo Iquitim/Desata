@@ -6,7 +6,7 @@ import { api } from './api.js';
 import { fmt, h, persist, storage } from './dom.js';
 import { icon } from './icons.js';
 import { extraExplain, hasExtraExplainer } from './explainers_extra.js';
-import { distanceOf, recipeOf, targetOf } from './multirow_recipes.js';
+import { distanceOf, recipeOf, targetOf, windowOf } from './multirow_recipes.js';
 import { qualityExplain } from './quality_ui.js';
 import { inspect, nodeResult, on, placeholdersOf, store } from './store.js';
 
@@ -428,9 +428,10 @@ function multirowExplain(cfg, rows, answers) {
   const useAnswers = custom && answers?.length;
   const groupName = groups[0] || (live || useAnswers ? null : 'uf');
   const orderName = order[0]?.column || (live || useAnswers ? null : 'mês');
+  const win = recipe.window ? windowOf(cfg) : null; // média e soma móvel: quantas linhas na janela
   const offset = custom
     ? (ref ? (ref[1] === '-' ? -1 : 1) * Number(ref[2]) : -1)
-    : recipe.offset * (recipe.fixedDistance ? 1 : distanceOf(cfg));
+    : win ? -(win - 1) : recipe.offset * (recipe.fixedDistance ? 1 : distanceOf(cfg));
   const source = useAnswers ? answers : live ? rows : multirowExample(cfg, base, groupName, orderName);
   const orderBy = order.length ? order : orderName && !live && !useAnswers ? [{ column: orderName }] : [];
   const sorted = useAnswers ? source : sortRows(source, orderBy);
@@ -449,6 +450,7 @@ function multirowExplain(cfg, rows, answers) {
       const other = seq[i + offset];
       outcome.set(row, useAnswers ? row[target] : calc({
         value: row[base], neighbor: other?.[base], hasNeighbor: Boolean(other), before: i ? outcome.get(seq[i - 1]) ?? null : null,
+        win: win ? seq.slice(Math.max(0, i - win + 1), i + 1).map((r) => r[base]) : null, k: win,
       }));
     });
   }
@@ -459,8 +461,9 @@ function multirowExplain(cfg, rows, answers) {
   const usedBy = new Map(shown.map((s) => [s.row, []]));
   shown.forEach((s, i) => {
     usedBy.get(s.row).push(`r${i}`);
-    const other = byGroup.get(s.key)[s.i + offset];
-    if (other && usedBy.has(other)) usedBy.get(other).push(`r${i}`);
+    // Na janela (média e soma móvel), todas as linhas que entram na conta acendem; nas outras, só a vizinha.
+    const used = win ? byGroup.get(s.key).slice(Math.max(0, s.i - win + 1), s.i) : [byGroup.get(s.key)[s.i + offset]];
+    for (const other of used) if (other && usedBy.has(other)) usedBy.get(other).push(`r${i}`);
   });
   // Um par fica aceso desde o começo: dá para entender o esquema sem passar o mouse.
   const sampleAt = shown.findIndex((s) => { const o = byGroup.get(s.key)[s.i + offset]; return o && number.has(o); });
@@ -491,13 +494,13 @@ function multirowExplain(cfg, rows, answers) {
   const inGroup = groups.length ? ` do mesmo [${groups.join('], [')}]` : '';
   const sentence = custom
     ? (ref ? `A fórmula olha para a linha ${where}${inGroup}.` : 'Use [Row-1:coluna] para olhar a linha de cima e [Row+1:coluna] para a de baixo. Sem isso, seria uma Formula comum.')
-    : recipe.explain(base, distanceOf(cfg));
+    : recipe.explain(base, win || distanceOf(cfg));
   const ordering = order.length
     ? ` A ordem vem de [${order.map((i) => i.column).join('], [')}].`
     : ' Sem "Ordenar por", vale a ordem em que as linhas chegam.';
-  const edges = groups.length || (!live && !useAnswers)
-    ? ` A primeira linha de cada grupo não tem ${where === 'anterior' ? 'anterior' : 'próxima'}, e as contas nunca atravessam um grupo.`
-    : '';
+  const edges = !(groups.length || (!live && !useAnswers)) ? ''
+    : win ? ' A janela recomeça em cada grupo: nunca mistura linhas de grupos diferentes.'
+      : ` A primeira linha de cada grupo não tem ${where === 'anterior' ? 'anterior' : 'próxima'}, e as contas nunca atravessam um grupo.`;
   return {
     body: [before, before ? arrow('Multi-Row') : null, after].filter(Boolean),
     caption: `${sentence}${ordering}${edges} Passe o mouse no resultado para ver as células que ele usou.`,

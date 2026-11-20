@@ -138,14 +138,7 @@ def part_new_tools(pg: Any, tmp: Path, shot: Callable[..., None]) -> None:
     pg.keyboard.press("Escape")
     pg.wait_for_timeout(300)
 
-    # linha de comando
-    pg.get_by_role("button", name="Arquivo").first.click()
-    pg.wait_for_timeout(200)
-    pg.get_by_text("Executar sem abrir o programa…", exact=True).click()
-    pg.wait_for_selector("dialog[open]")
-    pg.wait_for_timeout(300)
-    shot(pg.locator("dialog[open]"), "cli-dialogo")
-    pg.keyboard.press("Escape")
+    # a linha de comando agora fica em Agendar › Avançado: o print é o do agendador (novas_092)
 
     # SQL para o Fabric
     pg.click("#viewSwitch .segment[data-view=sql]")

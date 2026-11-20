@@ -206,7 +206,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.9.1 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.9.2 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -226,7 +226,7 @@
     <tr><td>Enviar um print do gráfico</td><td>Dashboard em imagem ou em HTML, com filtros que funcionam no arquivo</td></tr>
   </table>
   <div class="stat-row">
-    <div class="stat"><b>44</b><span>ferramentas prontas, da leitura de dados ao Machine Learning</span></div>
+    <div class="stat"><b>45</b><span>ferramentas prontas, da leitura de dados ao Machine Learning</span></div>
     <div class="stat"><b>0</b><span>linhas de código necessárias no uso do dia a dia</span></div>
     <div class="stat"><b>1</b><span>clique para refazer o processo inteiro com dados novos</span></div>
     <div class="stat"><b>100%</b><span>do processamento no seu computador, sem nuvem</span></div>
@@ -325,7 +325,7 @@
     <figcaption>O Manual ao lado do fluxo. Aqui, Mostrar onde fica acendeu o botão Constantes.</figcaption>
   </figure>
   <h3>Lições guiadas</h3>
-  <p>No começo do Manual ficam oito exercícios curtos, cada um num fluxo próprio, que não mexe nos seus. Cada passo diz onde agir, acende o lugar na tela e avança sozinho quando a ação acontece. Dá para pular um passo ou sair a qualquer momento, e o programa marca as lições concluídas. O fluxo de uma lição nunca é salvo sozinho.</p>
+  <p>No começo do Manual ficam nove exercícios curtos, cada um num fluxo próprio, que não mexe nos seus. Cada passo diz onde agir, acende o lugar na tela e avança sozinho quando a ação acontece. Dá para pular um passo ou sair a qualquer momento, e o programa marca as lições concluídas. O fluxo de uma lição nunca é salvo sozinho.</p>
   <table class="avoid">
     <tr><th style="width:30%">Lição</th><th>O que você faz</th></tr>
     <tr><td>Seu primeiro fluxo</td><td>Traz um arquivo, filtra e vê o resultado.</td></tr>
@@ -334,6 +334,7 @@
     <tr><td>Montar um dashboard</td><td>Cria um gráfico, vê a página pronta e escolhe uma paleta de cores.</td></tr>
     <tr><td>Repetir com um laço</td><td>Faz a mesma conta para cada setor, com <code>[#valor]</code>, e escolhe uma volta para ver.</td></tr>
     <tr><td>Um arquivo por valor</td><td>Grava um arquivo para cada UF, com <code>{uf}</code> no nome.</td></tr>
+    <tr><td>Os 3 maiores de cada grupo</td><td>Dá a posição de cada cliente com o Rank, recomeçando em cada uf, e fica com o top 3.</td></tr>
     <tr><td>Valores com nome: constantes</td><td>Cria a constante <code>meta</code> e usa numa fórmula.</td></tr>
     <tr><td>Organizar um fluxo grande</td><td>Agrupa caixas numa etapa, recolhe a etapa e arruma o fluxo em colunas.</td></tr>
   </table>
@@ -488,7 +489,7 @@
   <div class="eyebrow">5 · Ferramentas</div>
   <h2>Montando o fluxo</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_ferramentas">Mostrar onde fica</button></div>
-  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 44 ferramentas está no capítulo 23.</p>
+  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 45 ferramentas está no capítulo 23.</p>
   <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e escreve fórmulas sem decorar funções.</span></div>
 
   <h3>Configurando uma caixa</h3>
@@ -575,11 +576,30 @@
   <ul>
     <li>Em <strong>Ordenar por</strong>, diga a ordem, com uma ou mais colunas: "a linha anterior" depende dela.</li>
     <li>Com <strong>Agrupar por</strong>, as contas não atravessam grupos.</li>
+    <li><strong>Média móvel</strong> e <strong>Soma móvel</strong> olham para uma janela: a linha atual e as anteriores (em <strong>Quantas linhas na janela</strong>, de 2 a 24). Em dados mensais, uma janela de 3 é a média dos últimos 3 meses. Enquanto ainda não há linhas suficientes, as primeiras de cada grupo ficam vazias, e o esquema acende a janela inteira de cada resultado.</li>
     <li><strong>Escrever a minha</strong> abre a fórmula livre, com botões para inserir <code>[Row-1:coluna]</code> e <code>[Row+1:coluna]</code>.</li>
   </ul>
   <div class="grid-2 tight" style="max-width:48%">
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/multirow.png" alt="Receitas da Multi-Row Formula"></div><figcaption>As receitas: a pergunta vem antes da fórmula.</figcaption></figure>
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-multirow.png" alt="Esquema da Multi-Row Formula"></div><figcaption>O esquema, como no Join: passe o mouse no resultado para ver as células que ele usou.</figcaption></figure>
+  </div>
+  <h3>Ranking: o 1º, o 2º e o 3º de cada grupo</h3>
+  <div class="side">
+    <div>
+      <p>O <strong>Rank</strong> dá a posição de cada linha pela ordem de uma coluna: os clientes que mais pagam, os vendedores que mais venderam. Em <strong>Classificar por</strong>, escolha a coluna e a direção (decrescente: o maior é o 1º). Com <strong>Recomeçar a cada grupo</strong>, cada região, UF ou loja tem o seu próprio 1º lugar.</p>
+      <p>Em <strong>Quando empatar</strong>, cada cartão mostra o próprio exemplo:</p>
+      <ul>
+        <li><strong>Posição única</strong> (1, 2, 3, 4): no empate, quem chegou antes fica na frente.</li>
+        <li><strong>Empate divide e pula</strong> (1, 1, 3, 4): dois em 1º, e o próximo é o 3º, como num pódio.</li>
+        <li><strong>Empate divide sem pular</strong> (1, 1, 2, 3): dois em 1º, e o próximo é o 2º.</li>
+      </ul>
+      <p><strong>Manter só os primeiros</strong> fica com as N primeiras posições de cada grupo, o "top 3 por UF". Com empate, podem vir mais linhas. Vazios ficam por último. Na aba SQL, o Rank vira <code>ROW_NUMBER</code>, <code>RANK</code> ou <code>DENSE_RANK</code>, conferido com o resultado.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/rank-empates.png" alt="Cartões de empate do Rank"></div><figcaption>Os três jeitos de tratar o empate, cada um com o seu exemplo.</figcaption></figure>
+  </div>
+  <div class="grid-2 tight" style="max-width:62%">
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/rank-explicacao.png" alt="Esquema do Rank"></div><figcaption>Top 3 de MRR por UF: a posição recomeça em cada UF, e o 4º aparece apagado, como "fora".</figcaption></figure>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-media-movel.png" alt="Esquema da média móvel"></div><figcaption>Média móvel de 3 meses: as duas primeiras linhas ficam vazias até a janela se completar.</figcaption></figure>
   </div>
   <h3>Editando com agilidade</h3>
   <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
@@ -602,14 +622,18 @@
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/lista-formulas.png" alt="Fórmulas recolhidas com nome"></div><figcaption>Duas fórmulas recolhidas, com nome e resumo.</figcaption></figure>
   </div>
   <h3>Recolher caixas e etapas</h3>
-  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos.</p>
+  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Etapas e caixas → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos.</p>
+  <div class="side">
+    <div>
   <p>Uma <strong>caixa</strong> também recolhe (botão direito → <em>Recolher a caixa</em>): fica só com o ícone e as portas, e o nome aparece ao passar o mouse. Recolher é só desenho: o resultado, o SQL e o cache não mudam, e buscar uma caixa escondida abre a etapa dela.</p>
-  <figure class="m80"><div class="frame"><img src="../../src/prodata/web/manual/img/recolher-etapas.png" alt="Fluxo com etapas recolhidas"></div><figcaption>Quatro etapas recolhidas em cartões: os fios ligam direto neles.</figcaption></figure>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/recolher-etapas.png" alt="Fluxo com etapas recolhidas"></div><figcaption>Quatro etapas recolhidas em cartões: os fios ligam direto neles.</figcaption></figure>
+  </div>
   <h3>Fios organizados</h3>
   <div class="side">
     <div>
       <p>Os fios seguem em linhas retas, com cantos arredondados, e <strong>desviam das caixas</strong> e dos títulos das etapas. Fios que correm juntos ganham pistas separadas; os que saem da mesma porta dividem o tronco. Ao arrastar uma caixa, o fio dela fica curvo até você soltar.</p>
-      <p><strong>Exibir → Fios curvos</strong> volta ao desenho anterior. <strong>Organizar o fluxo</strong> (em Exibir, ou botão direito no canvas vazio) arruma as caixas em colunas, da esquerda para a direita, mantendo cada etapa junta; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
+      <p><strong>Exibir → Fios → Curvos</strong> volta ao desenho anterior. <strong>Organizar o fluxo</strong> (em Exibir, ou botão direito no canvas vazio) arruma as caixas em colunas, da esquerda para a direita, mantendo cada etapa junta; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fios-organizados.png" alt="Fios que desviam das caixas"></div><figcaption>Os fios contornam as caixas, cada um na sua pista.</figcaption></figure>
   </div>
@@ -648,6 +672,15 @@
       <p>Em <strong>Coluna de origem</strong>, dê um nome (como <code>origem</code>) para gravar 1 ou 2, a entrada de onde veio cada linha. O esquema <strong>Como funciona</strong> mostra as duas entradas e o resultado, com os seus dados.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/union-explicacao.png" alt="Esquema do Union com a coluna que falta vazia"></div><figcaption>Clientes e transações empilhados pelo nome: o que só existe de um lado aparece vazio no outro.</figcaption></figure>
+  </div>
+  <h3>Combinar tudo com tudo: Append Fields</h3>
+  <div class="side">
+    <div>
+      <p>O <strong>Append Fields</strong> repete cada linha de [T] para cada linha de [S], sem precisar de coluna em comum (no SQL, <code>CROSS JOIN</code>). Serve para aplicar a todas as linhas uma tabela pequena de parâmetros: a taxa do mês, ou cenários base, otimista e pessimista.</p>
+      <p>Como o resultado multiplica, o painel faz a conta antes de executar, com as linhas que chegam: <em>"[T] 10 × [S] 3 = 30 linhas e 4 colunas"</em>. Acima de 100 mil linhas, o aviso fica amarelo; acima de 1 milhão, vermelho, lembrando que, para juntar por uma coluna em comum, a caixa certa é o Join. O limite é de 10 milhões de linhas.</p>
+      <figure style="margin:6pt 0 0; max-width:60%"><div class="frame"><img src="../../src/prodata/web/manual/img/append-conta.png" alt="Conta de linhas do Append Fields antes de executar"></div></figure>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/append-explicacao.png" alt="Esquema do Append Fields"></div><figcaption>Cada UF aparece uma vez para cada cenário, com a cor de onde veio.</figcaption></figure>
   </div>
   <h3>Junção que multiplica linhas</h3>
   <div class="side feature">
@@ -1322,15 +1355,31 @@
   </div>
   <figure class="m80"><div class="frame"><img src="../../src/prodata/web/manual/img/laco-volta.png" alt="Resultado de uma volta escolhida"></div><figcaption>Numa caixa de dentro, a aba Resultado mostra qualquer volta: aqui, a 2ª de 5.</figcaption></figure>
   <div class="callout tip"><strong>Antes de usar um laço</strong>Se o laço só agrupa e soma por um valor, um <em>Summarize</em> agrupado por aquela coluna faz o mesmo, mais rápido, e o {{produto}} avisa. O laço brilha no que um agrupamento não resolve: os N maiores de cada grupo, um arquivo por filial, um cálculo que se repete até convergir. Na aba SQL, o laço vira uma consulta por valor, empilhadas com <code>UNION ALL</code> e conferidas com o resultado; Enquanto e Acumular ficam sem tradução, com o motivo.</div>
-  <h3>Executar sem abrir o programa</h3>
-  <p>Para o fechamento estar pronto quando você chega, o fluxo pode rodar sozinho. Em <strong>Arquivo → Executar sem abrir o programa…</strong>, o {{produto}} mostra a linha de comando do fluxo aberto e o comando que cria a tarefa no <strong>Agendador do Windows</strong>. É só copiar.</p>
-  <figure class="m50" style="max-width:42%">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/cli-dialogo.png" alt="Diálogo Executar sem abrir o programa"></div>
-    <figcaption>A linha de comando do fluxo aberto e o comando do Agendador, prontos para copiar.</figcaption>
-  </figure>
+  <h3>Agendar um fluxo</h3>
+  <div class="side">
+    <div>
+    <p>Para o fechamento estar pronto quando você chega, o fluxo pode rodar sozinho, sem abrir o programa. Em <strong>Arquivo → Agendar este fluxo…</strong>, escolha com botões:</p>
+    <ul>
+      <li><strong>Quando:</strong> todo dia, em dias da semana (clique nas fichas S T Q Q S S D, ou em <em>Dias úteis</em>), todo mês num dia de 1 a 28, ou a cada 1, 2, 3, 4, 6, 8 ou 12 horas a partir de um horário.</li>
+      <li><strong>Opções:</strong> rodar assim que o computador ligar, se ele estava desligado na hora (ligado por padrão); acordar o computador da suspensão; rodar também na bateria.</li>
+    </ul>
+    <p>O quadro ao lado resume a escolha numa frase, como <em>"Roda de segunda a sexta às 06:00"</em>, com a próxima execução e os dias acesos. Fluxo com mudanças não salvas mostra <strong>Salvar e agendar</strong>: o agendamento roda sempre a versão salva.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/agendar.png" alt="Diálogo Agendar este fluxo"></div><figcaption>De segunda a sexta às 06:00, com a próxima execução no quadro de resumo.</figcaption></figure>
+  </div>
+  <div class="side">
+    <div>
+      <p>Em <strong>Arquivo → Agendamentos…</strong> ficam todos os fluxos agendados neste computador: a frequência, a próxima execução e como foi a última (quando, quanto tempo, quantos arquivos, ou a mensagem do erro). Cada um tem o interruptor <strong>Ativo</strong>, que desativa sem perder a configuração (a tarefa fica no Windows, mas não roda), <strong>Executar agora</strong>, <strong>Editar</strong> e <strong>Excluir</strong>. Dentro do Editar também dá para desativar e excluir.</p>
+      <p>Se uma execução agendada falhou, o {{produto}} avisa ao abrir, numa caixinha com as cores da marca, com o fluxo, a hora e o erro.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/agendamento-falhou.png" alt="Aviso de agendamento que falhou"></div><figcaption>O aviso leva direto à lista de agendamentos.</figcaption></figure>
+  </div>
+  <figure class="m50"><div class="frame"><img src="../../src/prodata/web/manual/img/agendamentos.png" alt="Lista de agendamentos"></div><figcaption>Um que deu certo, um que falhou com o motivo e um desativado.</figcaption></figure>
   <ul>
-    <li>O comando executa o fluxo salvo, grava as saídas e termina com código 0 quando tudo executou, ou 1 quando alguma caixa falhou. O relatório fica na pasta de dados, em <code>logs/execucoes</code>. Fluxo recebido de fora só executa depois de confiado no programa.</li>
-    <li>Saída em <strong>Perguntar ao executar</strong> nunca sobrescreve sem alguém para responder: cria um arquivo novo com data e hora. Para manter sempre o mesmo nome, escolha <strong>Substituir o arquivo</strong>. Com <strong>Data Quality</strong> ou <strong>Reconcile</strong> em modo de interromper, a tarefa falha em vez de gravar um número errado.</li>
+    <li>Cada agendamento é uma tarefa do <strong>Agendador de Tarefas do Windows</strong>, com o nome do programa e do fluxo. Roda sem abrir janela, com você conectado ao Windows: o {{produto}} nunca pede nem guarda a senha do Windows. Tarefa apagada pelo Agendador aparece com <strong>Recriar</strong>; regra da empresa que bloqueia tarefas é explicada no diálogo.</li>
+    <li>Fluxo recebido de fora só agenda (e só roda) depois de confiado. Ao excluir da biblioteca um fluxo agendado, o {{produto}} pergunta se exclui o agendamento junto.</li>
+    <li>Saída em <strong>Perguntar ao executar</strong> cria um arquivo novo com data e hora; para manter o mesmo nome, escolha <strong>Substituir o arquivo</strong>. Com <strong>Data Quality</strong> ou <strong>Reconcile</strong> em modo de interromper, a execução falha em vez de gravar um número errado.</li>
+    <li>Em <strong>Avançado</strong> fica a linha de comando, para outro agendador: termina com código 0 quando tudo executou, ou 1 quando alguma caixa falhou, e o relatório fica em <code>logs/execucoes</code>.</li>
   </ul>
 </section>
 <!-- ================================================================ MODELOS -->
@@ -1389,9 +1438,10 @@
   </div>
   <h3>Painéis do seu jeito</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="exibir">Mostrar o menu Exibir</button><button type="button" class="manual-only m-act" data-show="foco">Mostrar o botão Foco</button></div>
-  <p>Os três painéis — ferramentas/configuração, resultados e gráficos — podem ser arrastados pela alça <span class="muted">⠿</span> para a esquerda, a direita ou embaixo, ou ocultados. O menu <strong>Exibir</strong>, na barra superior, reexibe e restaura o padrão. Pelo menu de cada painel, <strong>Recolher em faixa</strong> o deixa fino, a um clique de voltar; em janelas pequenas, o resultado e os gráficos já começam assim. O arranjo é lembrado.</p>
+  <p>Os três painéis — ferramentas/configuração, resultados e gráficos — podem ser arrastados pela alça <span class="muted">⠿</span> para a esquerda, a direita ou embaixo, ou ocultados. Em <strong>Exibir → Painéis</strong>, na barra superior, cada painel é reexibido, e <strong>Restaurar layout padrão</strong> volta ao arranjo inicial. Pelo menu de cada painel, <strong>Recolher em faixa</strong> o deixa fino, a um clique de voltar; em janelas pequenas, o resultado e os gráficos já começam assim. O arranjo é lembrado.</p>
   <p><strong>Modo foco</strong> (<kbd>F11</kbd> ou o botão <strong>Foco</strong>, na barra do canvas) esconde os painéis e mostra o fluxo inteiro. <kbd>F11</kbd> ou <kbd>Esc</kbd> devolvem tudo como estava.</p>
-  <p><strong>Telas menores</strong>: a interface fica <strong>compacta</strong> sozinha em monitores menores, e no menu Exibir dá para fixar a densidade.</p>
+  <p><strong>Telas menores</strong>: a interface fica <strong>compacta</strong> sozinha em monitores menores, e em <strong>Exibir → Densidade</strong> dá para fixar confortável ou compacta.</p>
+  <p>No menu <strong>Exibir</strong>, o que é escolha entre opções (painéis, densidade, fios, números) abre ao lado, ao passar o mouse, com o valor atual escrito à direita; o que liga e desliga, como <strong>Tempo nas caixas</strong>, fica à vista, com a marca de ligado. Pelo teclado, as setas andam no menu e <kbd>→</kbd> abre a lista ao lado.</p>
   <figure class="m50">
     <div class="frame"><img src="../../src/prodata/web/manual/img/layoutAlt.png" alt="Arranjo alternativo dos painéis"></div>
     <figcaption>Um arranjo alternativo: resultados embaixo e gráficos empilhados à direita.</figcaption>
@@ -1403,7 +1453,7 @@
       <p>É só a forma de mostrar: os dados e os fluxos não mudam, e um fluxo enviado a um colega abre com os números no formato dele. Nas fórmulas o número continua com ponto (<code>0.5</code>), porque a vírgula separa os argumentos.</p>
       <p>Para o <strong>CSV gravado</strong>, o <em>Output Data</em> tem o próprio campo <strong>Separador decimal</strong>: ponto, como sempre foi, ou vírgula, para abrir direto no Excel em português.</p>
     </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/numeros-menu.png" alt="Menu Exibir com a escolha entre vírgula e ponto decimal"></div><figcaption>A escolha fica no menu Exibir, ao lado da densidade.</figcaption></figure>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/numeros-menu.png" alt="Menu Exibir com a escolha entre vírgula e ponto decimal"></div><figcaption>Em Exibir → Números, com o formato atual à direita.</figcaption></figure>
   </div>
   <h3>Tempo nas caixas</h3>
   <div class="side">
@@ -1412,6 +1462,14 @@
       <p>Mudou de ideia no meio de uma execução longa? o botão <strong>Executar</strong>, no topo, vira <strong>Parar</strong> enquanto o fluxo roda: a caixa que está rodando termina, e as seguintes ficam como não executadas até o próximo Executar.</p>
     </div>
     <div><figure><div class="frame"><img src="../../src/prodata/web/manual/img/tempo-caixas.png" alt="Tempo de execução em cada caixa"></div><figcaption>A leitura dos PDFs em vermelho: é ela que segura o fluxo.</figcaption></figure><figure style="margin-top:6pt"><div class="frame"><img src="../../src/prodata/web/manual/img/parar-topo.png" alt="Botão Parar no topo, enquanto o fluxo executa"></div></figure></div>
+  </div>
+  <h3>Aviso ao terminar a execução</h3>
+  <div class="side">
+    <div>
+      <p>Num fluxo demorado, dá para fazer outra coisa enquanto ele roda: ao terminar, uma caixinha com as cores da marca avisa no canto da tela, com o nome do fluxo, quanto tempo levou, quantas caixas executaram e quantos arquivos foram gravados. Com erro, ela diz quantas caixas falharam e leva ao Log; parado pelo <strong>Parar</strong>, diz que foi interrompido.</p>
+      <p>Com o programa em primeiro plano, o aviso some sozinho em alguns segundos. Com a janela em segundo plano, ele espera você voltar. A execução automática, ao abrir um fluxo, não avisa. Para desligar, use <strong>Exibir → Aviso ao terminar a execução</strong>.</p>
+    </div>
+    <div><figure><div class="frame"><img src="../../src/prodata/web/manual/img/aviso-fim.png" alt="Aviso de fim de execução"></div></figure><figure style="margin-top:6pt"><div class="frame"><img src="../../src/prodata/web/manual/img/aviso-fim-menu.png" alt="Opção Aviso ao terminar a execução no menu Exibir"></div></figure></div>
   </div>
   <h3>Vários fluxos em abas</h3>
   <p>Cada fluxo aberto ganha uma aba logo abaixo da barra superior, com seu próprio resultado e seu próprio desfazer. Um ponto laranja indica alterações não salvas. Ao fechar uma aba — ou o programa — com alterações, o {{produto}} pergunta: <strong>Salvar</strong>, <strong>Não salvar</strong> ou <strong>Cancelar</strong>. As abas salvas reabrem sozinhas na próxima vez.</p>
@@ -1504,8 +1562,8 @@
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.1-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.1-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.2-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.2-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
@@ -1532,7 +1590,7 @@
     <div>
       <h3>Incluído nesta versão</h3>
       <ul class="scope-in">
-        <li>Fluxos visuais com 44 ferramentas, inclusive subfluxos</li>
+        <li>Fluxos visuais com 45 ferramentas, inclusive subfluxos</li>
         <li>Pastas de arquivos na vista Dados: todos os arquivos de um padrão de nome numa tabela só</li>
         <li>Consultas a PostgreSQL, SQL Server e, por ODBC, a outros bancos</li>
         <li>APIs em JSON, CSV ou XML, com paginação e uma chamada por linha</li>
@@ -1545,13 +1603,13 @@
         <li>Expressões regulares montadas sem escrever a expressão</li>
         <li>Fluxo em outro computador: o que falta aparece em vermelho, e dá para salvar com amostra dos dados, com máscara por coluna</li>
         <li>Dashboard com filtros, 18 tipos de visual, linha do tempo, história, PNG, GIF por gráfico e HTML</li>
-        <li>Leitura do Jira Cloud com token e oito lições guiadas no Manual</li>
+        <li>Leitura do Jira Cloud com token e nove lições guiadas no Manual</li>
         <li>Modelos de ML guardados com versão, biblioteca de modelos com importar e exportar, execução incremental e ponto de cache</li>
-        <li>Execução por linha de comando, para o Agendador do Windows</li>
         <li>Conferência de totais, interrupção por qualidade e comparação com a execução anterior</li>
         <li>Aba SQL: o fluxo em SQL do DuckDB, por saída, conferido com o resultado, e convertido para Spark SQL e T-SQL sem conferência</li>
         <li>Laços, canvas organizado, seletor de fontes, dica editável e tempo nas caixas</li>
         <li>Salvar automático, paletas prontas e personalizada, linha de referência, escala log, fontes, fundo no dashboard e saída U do Join</li>
+        <li>Rank, médias móveis, agendador visual e aviso ao terminar</li>
         <li>Aplicativo de desktop para Windows, que funciona offline (exceto as fontes em rede que você cadastrar)</li>
       </ul>
     </div>
@@ -1559,7 +1617,7 @@
       <h3>Fora do escopo</h3>
       <ul class="scope-out">
         <li>Uso em equipe com login e permissões (é um app individual)</li>
-        <li>Agendador próprio: o agendamento usa o Agendador do Windows</li>
+        <li>Agendar com ninguém conectado ao Windows (exigiria guardar a senha do Windows)</li>
         <li>Comandos que gravam ou alteram dados na caixa SQL: ela aceita só uma consulta SELECT</li>
         <li>Gravar dados de volta no banco ou publicar no lake (o {{produto}} gera o código; quem publica é o time de dados)</li>
         <li>Fontes na nuvem e bancos sem driver ODBC</li>
@@ -1589,7 +1647,7 @@
 <section class="chapter">
   <div class="eyebrow">23 · Referência</div>
   <h2>Todas as ferramentas</h2>
-  <p class="intro">As 44 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
+  <p class="intro">As 45 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
   <table>
     <tr><th style="width:23%">Ferramenta</th><th>Para que serve</th></tr>
     <tr><td colspan="2"><span class="tag">Entrada e saída</span></td></tr>
@@ -1603,7 +1661,8 @@
     <tr><td class="tool">Select</td><td>Escolhe, renomeia, reordena (arrastando) e muda o tipo das colunas. Entende números no padrão brasileiro, datas como 29/10/2026 e sim/não, e avisa quantos valores não converteram.</td></tr>
     <tr><td class="tool">Filter</td><td>Separa linhas por condição, com modo simples ou expressão. No simples, coluna de data tem calendário (com hora opcional em data e hora).</td></tr>
     <tr><td class="tool">Formula</td><td>Cria colunas calculadas ou altera colunas existentes (SE/ENTÃO, texto, matemática, datas).</td></tr>
-    <tr><td class="tool">Multi-Row Formula</td><td>Olha outras linhas, com receitas prontas: preencher para baixo, diferença, variação %, valor anterior, próximo valor e "mudou?". Tem o próprio <strong>Ordenar por</strong>.</td></tr>
+    <tr><td class="tool">Multi-Row Formula</td><td>Olha outras linhas, com receitas prontas: preencher para baixo, diferença, variação %, valor anterior, próximo valor, "mudou?", média móvel e soma móvel. Tem o próprio <strong>Ordenar por</strong>.</td></tr>
+    <tr><td class="tool">Rank</td><td>Dá a posição de cada linha pela ordem de uma coluna, por grupo, com três jeitos de tratar o empate, e fica com o top N.</td></tr>
     <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 7.</td></tr>
     <tr><td class="tool">Data Cleansing</td><td>Remove espaços, padroniza maiúsculas e trata vazios em um passo.</td></tr>
     <tr><td class="tool">Unique</td><td>Separa a primeira ocorrência de cada chave das duplicadas.</td></tr>
@@ -1620,7 +1679,7 @@
     <tr><td class="tool">Union</td><td>Empilha tabelas, alinhando colunas pelo nome ou posição. Pelo nome, a coluna que só existe numa tabela fica vazia nas linhas da outra.</td></tr>
     <tr><td class="tool">Estado por período</td><td>Transforma eventos em fotos: uma linha por item e por dia, semana ou mês, com o estado no fim de cada período e há quantos dias está nele. O Configurar desenha o antes e o depois.</td></tr>
     <tr><td class="tool">Cross Tab · Transpose</td><td>Tabela dinâmica (valores de uma coluna viram colunas) e o inverso (colunas viram linhas). O Configurar desenha o antes e o depois com os seus dados.</td></tr>
-    <tr><td class="tool">Append Fields</td><td>Anexa uma tabela pequena (parâmetros, taxa do mês) a todas as linhas.</td></tr>
+    <tr><td class="tool">Append Fields</td><td>Combina tudo com tudo (CROSS JOIN): anexa uma tabela pequena (parâmetros, cenários) a todas as linhas, com a conta de linhas antes de executar.</td></tr>
     <tr><td class="tool">SQL</td><td>Para quem conhece SQL: consulta livre sobre os dados do fluxo.</td></tr>
     <tr><td colspan="2"><span class="tag">Conferência e reúso</span></td></tr>
     <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 7.</td></tr>

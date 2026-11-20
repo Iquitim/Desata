@@ -143,6 +143,23 @@ export const LESSONS = [
     ],
   },
   {
+    id: 'ranking',
+    title: 'Os 3 maiores de cada grupo',
+    about: 'Dar a posição de cada cliente e ficar com o top 3 de cada uf.',
+    start: () => flow('ranking', 'Os 3 maiores de cada grupo', [input('a', 'Clientes', CLIENTES, 120)]),
+    steps: () => [
+      addStep('prep.rank', 'Ele dá a posição de cada linha: 1º, 2º, 3º…'),
+      linkStep('io.input_data', 'prep.rank', 'Ligue Clientes à entrada do Rank.'),
+      { text: 'Clique no Rank e, em Classificar por, adicione mrr_mensal e marque Decrescente: o maior fica em 1º.', target: nodeEl('prep.rank'),
+        done: () => (configOf('prep.rank').order_by || []).some((o) => o.column && o.descending) },
+      { text: 'Em Recomeçar a cada grupo, escolha uf: cada uf ganha o seu próprio 1º lugar.', target: nodeEl('prep.rank'),
+        done: () => (configOf('prep.rank').group_by || []).length > 0 },
+      { text: 'Veja os cartões de Quando empatar: cada um mostra o próprio exemplo. Depois, ligue Manter só os primeiros e deixe 3.', target: () => document.querySelector('#leftPanel .rk-cards') || nodeEl('prep.rank')(),
+        done: () => Boolean(configOf('prep.rank').keep_top) },
+      runStep('prep.rank', 'Clique em Executar. O Resultado traz o top 3 de cada uf, e o Como funciona, no Configurar, mostra a posição recomeçando em cada grupo.'),
+    ],
+  },
+  {
     id: 'constantes',
     title: 'Valores com nome: constantes',
     about: 'Dar nome a um valor e usá-lo numa fórmula.',

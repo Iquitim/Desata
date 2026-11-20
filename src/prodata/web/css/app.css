@@ -461,6 +461,12 @@ body[data-view="dashboard"] .dashboard { display: block; }
 .menu-item.danger { color: var(--err); }
 .menu-item kbd { font-size: var(--fs-2xs); color: var(--text-3); }
 .menu-sep { height: 1px; margin: 4px 2px; background: var(--border); }
+/* Submenus (spec 044): o valor atual à direita e a seta; o item fica aceso enquanto a lista ao lado está aberta. */
+.menu-more { display: inline-flex; align-items: center; gap: 6px; color: var(--text-3); }
+.menu-value { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-xs); color: var(--text-2); }
+.menu-item.has-sub[aria-expanded="true"] { background: var(--surface-3); }
+.menu-item.checked > .icon:first-child { color: var(--accent); }
+.menu.submenu { min-width: 190px; }
 
 .toasts { position: fixed; right: 16px; bottom: calc(var(--statusbar-h) + 12px); z-index: 2000; display: flex; flex-direction: column; gap: 8px; width: min(380px, calc(100vw - 32px)); }
 .toast {

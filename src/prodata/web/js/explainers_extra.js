@@ -6,6 +6,7 @@ import { fmt, h } from './dom.js';
 import { icon } from './icons.js';
 import { patternOf, sayPiece } from './regex_builder.js';
 import { nodeResult, store } from './store.js';
+import { WINDOW_EXPLAINERS } from './explainers_window.js';
 
 // Tabela pequena e seta do explainers.js, entregues por ele a cada desenho.
 let mini;
@@ -410,12 +411,12 @@ async function union(n, cfg) {
 
 const EXTRA = {
   union, input_folder: inputFolder, generate_rows: generateRows, reconcile, compare_runs: compareRuns, subflow, fuzzy,
-  regex, multi_field: multiField, mask, model_card: modelCard,
+  regex, multi_field: multiField, mask, model_card: modelCard, ...WINDOW_EXPLAINERS,
 };
 
 export const hasExtraExplainer = (name) => name in EXTRA;
 
 export function extraExplain(name, n, cfg, kit) {
   ({ mini, arrow } = kit);
-  return EXTRA[name](n, cfg);
+  return EXTRA[name](n, cfg, kit);
 }

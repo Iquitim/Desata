@@ -170,7 +170,8 @@ export async function openSourcePicker({ value = '', onPick, kinds = PICKABLE, t
     onclick: () => select(s.value), ondblclick: () => choose(s.value),
   },
   h('span', { class: 'sp-item-icon' }, icon(KINDS[s.kind].icon, ui.view === 'grid' ? 22 : 15)),
-  h('span', { class: 'sp-item-text' }, h('b', { class: 'ellipsis' }, s.title), h('small', { class: 'ellipsis' }, s.blocked || s.meta)),
+  // Nos ícones, o nome pode quebrar depois de _ . - (clientes_ | enterprise.csv), não no meio da palavra.
+  h('span', { class: 'sp-item-text' }, h('b', { class: 'ellipsis' }, ui.view === 'grid' ? s.title.replace(/([_.\-])/g, '$1​') : s.title), h('small', { class: 'ellipsis' }, s.blocked || s.meta)),
   ui.view === 'list' ? h('span', { class: 'sp-item-kind' }, KINDS[s.kind].one) : null,
   ui.view === 'list' ? h('span', { class: ['sp-item-use', usageText(s) === 'sem uso' && 'muted'] }, usageText(s)) : null);
 

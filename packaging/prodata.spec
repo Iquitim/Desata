@@ -89,6 +89,17 @@ cli_exe = EXE(  # noqa: F821
     icon=f"{HERE}/prodata.ico",
     version=f"{HERE}/version_info.txt",
 )
+# Execução agendada (spec 044, RF-4436): o mesmo da linha de comando, sem console nem tela de abertura.
+task_exe = EXE(  # noqa: F821
+    pyz,
+    cli_scripts,
+    [],
+    exclude_binaries=True,
+    name="prodata-tarefa",
+    console=False,
+    icon=f"{HERE}/prodata.ico",
+    version=f"{HERE}/version_info.txt",
+)
 coll = COLLECT(  # noqa: F821
-    exe, cli_exe, a.binaries, a.datas, splash.binaries, name=BRAND.nome_curto
+    exe, cli_exe, task_exe, a.binaries, a.datas, splash.binaries, name=BRAND.nome_curto
 )

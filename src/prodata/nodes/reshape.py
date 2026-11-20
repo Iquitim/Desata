@@ -25,6 +25,8 @@ from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
 
 MAX_NEW_COLUMNS = 500  # proteção contra "explosão" de colunas (Cross Tab, Text To Columns)
 MAX_APPEND_ROWS = 10_000_000  # Append Fields multiplica linhas
+APPEND_WARN_ROWS = 100_000  # aviso amarelo (spec 044)
+APPEND_HEAVY_ROWS = 1_000_000  # aviso forte
 
 
 def _require(df: pl.DataFrame, *columns: str) -> None:
@@ -289,8 +291,12 @@ class AppendFieldsConfig(ToolConfig):
     name="Append Fields",
     category="transform",
     icon="append",
-    description="Anexa as colunas de [S] a todas as linhas de [T] (combina tudo com tudo). Ideal para parâmetros.",
+    description=(
+        "Combina tudo com tudo (CROSS JOIN): cada linha de [T] se repete para cada linha de [S], sem coluna em "
+        "comum. Ideal para parâmetros e cenários."
+    ),
     config=AppendFieldsConfig,
+    explainer="append_fields",
     inputs=[Port("T", "T", "Destino"), Port("S", "S", "Fonte")],
     annotate=lambda c: "Todas as linhas × fonte",
 )
@@ -303,7 +309,22 @@ def append_fields(ctx: NodeContext, cfg: AppendFieldsConfig) -> NodeOutput:
             f"{MAX_APPEND_ROWS:,}. A fonte [S] costuma ter poucas linhas.".replace(",", ".")
         )
     clashes = {c: f"{cfg.prefix}{c}" for c in source.columns if c in target.columns}
-    return NodeOutput(tables={"out": target.join(source.rename(clashes), how="cross")})
+    extra: dict[str, object] = {}
+    if total > APPEND_WARN_ROWS:
+        extra["warnings"] = [append_warning(target.height, source.height)]
+    return NodeOutput(tables={"out": target.join(source.rename(clashes), how="cross")}, extra=extra)
+
+
+def append_warning(t_rows: int, s_rows: int) -> str:
+    """Aviso de volume (spec 044, RF-4422): o mesmo texto da tela, depois de executar."""
+    total = t_rows * s_rows
+    text = f"{t_rows:,} × {s_rows:,} = {total:,} linhas".replace(",", ".")
+    if total > APPEND_HEAVY_ROWS:
+        return (
+            f"Resultado muito grande ({text}): as próximas caixas vão ficar lentas. [S] costuma ser uma tabela "
+            "pequena de parâmetros; para juntar por uma coluna em comum, use o Join."
+        )
+    return f"Resultado pesado ({text}). Confira se [S] tem só as linhas de que você precisa."
 
 
 # ------------------------------------------------------------------ tradução para SQL (spec 020)

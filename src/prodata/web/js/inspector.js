@@ -11,6 +11,7 @@ import { connectionTables, openConnectionDialog, openQueryEditor, refreshQueries
 import { chooseDataFile, chooseFolder, isDesktop, reveal } from './desktop.js';
 import { button, debounce, fmt, h } from './dom.js';
 import { explainerEl } from './explainers.js';
+import { APPEND_MAX, appendEstimate } from './explainers_window.js';
 import { isGuided, recipeOf, recipePatch } from './multirow_recipes.js';
 import { renderFields } from './fields.js';
 import { formatOf, openPreview } from './datasets.js';
@@ -417,12 +418,25 @@ function formulaBox(n, onEdit) {
   return root;
 }
 
+/** Append Fields (spec 044, RF-4421/4422): quantas linhas vão sair, antes de executar, com aviso por volume. */
+function appendBanner(n) {
+  const res = nodeResult(n.id);
+  if (res && !store.pending.has(n.id) && res.status !== 'error') return null; // executado: o status já mostra
+  const est = appendEstimate(n);
+  if (!est) return banner('muted', 'info', 'A conta de linhas aparece aqui depois de executar as caixas ligadas em [T] e [S].');
+  const sum = `[T] ${fmt.int(est.t.rows)} × [S] ${fmt.int(est.s.rows)} = ${fmt.int(est.rows)} linhas${est.cols !== null ? ` e ${est.cols} colunas` : ''}`;
+  if (est.level === 'error') return banner('error', 'alert', `Vai passar do limite: ${sum}.`, `O limite é ${fmt.int(APPEND_MAX)} linhas. [S] costuma ser uma tabela pequena de parâmetros; para juntar por uma coluna em comum, use o Join.`);
+  if (est.level === 'heavy') return banner('error', 'alert', `Resultado muito grande: ${sum}.`, 'As próximas caixas vão ficar lentas. [S] costuma ser uma tabela pequena de parâmetros; para juntar por uma coluna em comum, use o Join.');
+  if (est.level === 'warn') return banner('warn', 'alert', `Vai ficar pesado: ${sum}.`, 'Confira se [S] tem só as linhas de que você precisa.');
+  return banner('muted', 'info', `Vai sair: ${sum}.`);
+}
+
 function nodePanel(n) {
   const spec = toolOf(n);
   if (!spec) return banner('error', 'alert', `Ferramenta desconhecida: ${n.type}`);
   const controlling = controllingFields(spec);
   const multirow = spec.explainer === 'multirow';
-  const lead = spec.explainer === 'api_loop' ? spec.config_fields.slice(0, 2) : multirow ? spec.config_fields.slice(0, 3) : [];
+  const lead = spec.explainer === 'api_loop' ? spec.config_fields.slice(0, 2) : multirow ? spec.config_fields.slice(0, 4) : [];
   const rest = spec.config_fields.slice(lead.length);
   // Esquema visual (Cross Tab, Transpose, Join): redesenha quando a configuração muda (spec 015).
   const explainer = spec.explainer ? explainerEl(n, spec) : null;
@@ -482,6 +496,7 @@ function nodePanel(n) {
     cacheBanner(n),
     statusBanner(n),
     sourceBanner(n),
+    n.type === 'transform.append_fields' ? appendBanner(n) : null,
     lead.length ? h('div', { class: 'pad' }, renderFields(lead, n.config, onChange, leadContext(n, multirow))) : null,
     recipeFormula,
     explainer,

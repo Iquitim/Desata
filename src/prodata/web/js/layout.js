@@ -261,11 +261,11 @@ export function panelControls(id) {
 const DENSITY_NAMES = { auto: 'automática', comfortable: 'confortável', compact: 'compacta' };
 
 /** Clicar passa para a próxima densidade. */
+/** Densidade no menu Exibir (spec 044): o valor atual no item e as três escolhas no submenu. */
 export function densityMenuItem() {
-  const order = Object.keys(DENSITIES);
   return {
-    label: `Densidade: ${DENSITY_NAMES[density]}`, icon: 'columns', title: DENSITIES[density],
-    onSelect: () => setDensity(order[(order.indexOf(density) + 1) % order.length]),
+    label: 'Densidade', icon: 'columns', value: DENSITY_NAMES[density],
+    submenu: () => Object.entries(DENSITIES).map(([id, text]) => ({ label: text, checked: density === id, radio: true, onSelect: () => setDensity(id) })),
   };
 }
 
@@ -273,7 +273,7 @@ export function densityMenuItem() {
 export function panelMenuItems() {
   return Object.entries(PANELS).map(([id, p]) => ({
       label: isVisible(id) ? `${p.title} · ${SLOTS[slotOf(id)].toLowerCase()}${collapsed.ids.has(id) ? ' (recolhido)' : ''}` : `${p.title} · oculto`,
-      icon: isVisible(id) ? 'check' : null,
+      checked: isVisible(id),
       onSelect: () => togglePanel(id),
   }));
 }

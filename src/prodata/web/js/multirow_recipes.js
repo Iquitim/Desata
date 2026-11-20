@@ -1,6 +1,9 @@
 // Receitas da Multi-Row Formula (spec 026): a pessoa escolhe o que quer fazer e a fórmula sai pronta.
 // A fórmula continua sendo a única regra que o motor executa; a receita só a escreve.
 
+/** [c] + [Row-1:c] + … + [Row-(k-1):c] */
+const windowTerms = (c, k) => [`[${c}]`, ...Array.from({ length: k - 1 }, (_, i) => `[Row-${i + 1}:${c}]`)].join(' + ');
+
 const NUMBER = (v) => (v === null || v === undefined || v === '' || Number.isNaN(Number(v)) ? null : Number(v));
 
 export const RECIPES = [
@@ -46,12 +49,28 @@ export const RECIPES = [
     calc: ({ value, neighbor, hasNeighbor }) => (!hasNeighbor || neighbor === null || neighbor === undefined ? 'Início' : value === neighbor ? 'Igual' : 'Mudou'),
     explain: (c) => `Cada linha diz se [${c}] mudou em relação à anterior.`,
   },
+  // Janelas (spec 044): a linha atual e as N-1 anteriores; vazio enquanto a janela não está completa.
+  {
+    id: 'mavg', icon: 'trending-up', name: 'Média móvel', hint: 'Média desta linha e das anteriores', numeric: true,
+    target: 'new', suffix: 'media_movel', offset: -1, window: true,
+    formula: (c, k) => `IF IsNull([Row-${k - 1}:${c}]) THEN Null ELSE (${windowTerms(c, k)}) / ${k} ENDIF`,
+    calc: ({ win, k }) => (win.length < k || win.some((v) => NUMBER(v) === null) ? null : win.reduce((a, v) => a + NUMBER(v), 0) / k),
+    explain: (c, k) => `Cada linha mostra a média de [${c}] nela e nas ${k - 1} anteriores. As primeiras ${k - 1} ficam vazias: ainda não há ${k} linhas.`,
+  },
+  {
+    id: 'msum', icon: 'sigma', name: 'Soma móvel', hint: 'Soma desta linha e das anteriores', numeric: true,
+    target: 'new', suffix: 'soma_movel', offset: -1, window: true,
+    formula: (c, k) => `IF IsNull([Row-${k - 1}:${c}]) THEN Null ELSE ${windowTerms(c, k)} ENDIF`,
+    calc: ({ win, k }) => (win.length < k || win.some((v) => NUMBER(v) === null) ? null : win.reduce((a, v) => a + NUMBER(v), 0)),
+    explain: (c, k) => `Cada linha mostra a soma de [${c}] nela e nas ${k - 1} anteriores. As primeiras ${k - 1} ficam vazias: ainda não há ${k} linhas.`,
+  },
   { id: 'custom', icon: 'function', name: 'Escrever a minha', hint: 'Fórmula livre, com ajuda para olhar outras linhas' },
 ];
 
 export const recipeOf = (id) => RECIPES.find((r) => r.id === id) || RECIPES.at(-1);
 export const isGuided = (cfg) => recipeOf(cfg.recipe).id !== 'custom';
 export const distanceOf = (cfg) => Math.min(100, Math.max(1, Math.round(Number(cfg.distance) || 1)));
+export const windowOf = (cfg) => Math.min(24, Math.max(2, Math.round(Number(cfg.window) || 3)));
 export const targetOf = (cfg) => (cfg.target === 'existing' ? cfg.existing : cfg.column) || '';
 
 const AUTO_NAME = new RegExp(`^(nova_coluna|.*_(${RECIPES.filter((r) => r.suffix).map((r) => r.suffix).join('|')}))?$`);
@@ -60,7 +79,7 @@ const AUTO_NAME = new RegExp(`^(nova_coluna|.*_(${RECIPES.filter((r) => r.suffix
 function formulaFor(cfg) {
   const recipe = recipeOf(cfg.recipe);
   if (recipe.id === 'custom' || !cfg.base) return '';
-  return recipe.formula(cfg.base, distanceOf(cfg), targetOf(cfg) || cfg.base);
+  return recipe.formula(cfg.base, recipe.window ? windowOf(cfg) : distanceOf(cfg), targetOf(cfg) || cfg.base);
 }
 
 /** O que muda na caixa quando um campo da receita muda. Nome digitado pela pessoa nunca é trocado. */
@@ -69,6 +88,7 @@ export function recipePatch(cfg, field) {
   if (recipe.id === 'custom') return {};
   const next = { ...cfg };
   if (field === 'recipe') next.target = recipe.target;
+  if (recipe.window) next.missing = 'null'; // com 0 no lugar da linha que falta, a média sairia errada
   if (field === 'recipe' || field === 'base') {
     if (next.target === 'existing' && next.base && (field === 'base' || !next.existing)) next.existing = next.base;
     if (next.target === 'new' && next.base && AUTO_NAME.test(next.column || '')) next.column = `${next.base}_${recipe.suffix}`;

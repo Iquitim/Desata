@@ -18,6 +18,7 @@ from prodata.nodes import (  # noqa: F401  (registro por efeito de import)
     temporal,
     textual,
     transform,
+    window,
 )
 from prodata.nodes.base import CATEGORIES, REGISTRY, NodeContext, NodeOutput, Port, ToolSpec, catalog
 

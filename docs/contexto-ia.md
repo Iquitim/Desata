@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.9.1. Este arquivo é gerado a partir do código.
+Versão do programa: 0.9.2. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -460,13 +460,14 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
 #### `prep.multirow`: Multi-Row Formula
 
-Olha outras linhas: preencher para baixo, diferença e variação para a linha anterior, o que mudou.
+Olha outras linhas: preencher para baixo, diferença e variação para a anterior, o que mudou, média e soma móvel (LAG, LEAD e janelas).
 
 Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
-- `recipe` ("custom"): O que você quer fazer?. Opções: `custom`, `fill`, `diff`, `pct`, `prev`, `next`, `changed`
-- `base` (""): Coluna [nome de coluna]. Aparece se `recipe` em fill, diff, pct, prev, next, changed
+- `recipe` ("custom"): O que você quer fazer?. Opções: `custom`, `fill`, `diff`, `pct`, `prev`, `next`, `changed`, `mavg`, `msum`
+- `base` (""): Coluna [nome de coluna]. Aparece se `recipe` em fill, diff, pct, prev, next, changed, mavg, msum
 - `distance` (1): Quantas linhas de distância. De 1 a 100. Aparece se `recipe` em diff, pct, prev, next, changed. 1 é a linha vizinha. Em dados mensais, 12 compara com o mesmo mês do ano anterior
+- `window` (3): Quantas linhas na janela. De 2 a 24. Aparece se `recipe` em mavg, msum. A linha atual e as anteriores. Em dados mensais, 3 é a média dos últimos 3 meses
 - `order_by` ([]): Ordenar por. Em que ordem olhar as linhas: "a anterior" depende disso. Vazio = a ordem em que chegam
   - `column` (""): Coluna [nome de coluna]
   - `descending` (false): Decrescente
@@ -476,7 +477,7 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 - `existing` (""): Coluna a alterar [nome de coluna]. Aparece se `target` em existing
 - `type` ("Auto"): Tipo. Opções: `Auto`, `Float64`, `Int64`, `String`, `Boolean`, `Date`
 - `expression` (""): Expressão [fórmula]. Aparece se `recipe` em custom. Use [Row-1:coluna] para a linha anterior e [Row+1:coluna] para a seguinte. Na própria coluna, [Row-1:…] usa o valor já calculado. Ex.: IF IsNull([uf]) THEN [Row-1:uf] ELSE [uf] ENDIF
-- `missing` ("null"): Linha que não existe vale. Opções: `null`, `empty`. Antes da primeira ou depois da última linha
+- `missing` ("null"): Linha que não existe vale. Opções: `null`, `empty`. Aparece se `recipe` em custom, fill, diff, pct, prev, next, changed. Antes da primeira ou depois da última linha
 
 #### `prep.cleanse`: Data Cleansing
 
@@ -624,6 +625,21 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 - `keep` (4): Quantos caracteres mostrar. De 0 a 50. Aparece se `method` em keep_last, keep_first
 - `text` ("***"): Texto. Aparece se `method` em fixed
 
+#### `prep.rank`: Rank
+
+Ranking: dá a posição de cada linha (1º, 2º, 3º…) pela ordem de uma coluna, por grupo, e fica com o top N. Equivale a ROW_NUMBER, RANK e DENSE_RANK.
+
+Entradas: `in` (Entrada). Saídas: `out` (Saída).
+
+- `order_by` ([]): Classificar por. A coluna que decide quem fica na frente. Ex.: vendas, decrescente (a maior é a 1ª)
+  - `column` (""): Coluna [nome de coluna]
+  - `descending` (false): Decrescente
+- `method` ("rank"): Quando empatar. Opções: `row`, `rank`, `dense`
+- `group_by` ([]): Recomeçar a cada grupo [lista de colunas]. Opcional. Ex.: região: cada região tem o seu 1º lugar. Vazio = um ranking só
+- `column` ("posicao"): Nome da coluna nova
+- `keep_top` (false): Manter só os primeiros
+- `top` (3): Quantas posições manter. De 1 a 1000000. Aparece se `keep_top` em True. De cada grupo. Com empate, podem vir mais linhas (dois 3º lugares contam como 3º)
+
 ### Combinar e transformar
 
 #### `transform.fuzzy_match`: Fuzzy Match
@@ -666,7 +682,7 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 
 #### `transform.append_fields`: Append Fields
 
-Anexa as colunas de [S] a todas as linhas de [T] (combina tudo com tudo). Ideal para parâmetros.
+Combina tudo com tudo (CROSS JOIN): cada linha de [T] se repete para cada linha de [S], sem coluna em comum. Ideal para parâmetros e cenários.
 
 Entradas: `T` (Destino), `S` (Fonte). Saídas: `out` (Saída).
 
