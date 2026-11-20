@@ -622,7 +622,7 @@
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/lista-formulas.png" alt="Fórmulas recolhidas com nome"></div><figcaption>Duas fórmulas recolhidas, com nome e resumo.</figcaption></figure>
   </div>
   <h3>Recolher caixas e etapas</h3>
-  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Etapas e caixas → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos.</p>
+  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Etapas e caixas → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos. Um laço dentro de uma etapa recolhida fica representado pelo cartão, sem a moldura tracejada.</p>
   <div class="side">
     <div>
   <p>Uma <strong>caixa</strong> também recolhe (botão direito → <em>Recolher a caixa</em>): fica só com o ícone e as portas, e o nome aparece ao passar o mouse. Recolher é só desenho: o resultado, o SQL e o cache não mudam, e buscar uma caixa escondida abre a etapa dela.</p>
@@ -1477,14 +1477,19 @@
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="salvar_auto">Mostrar onde fica</button></div>
   <div class="side">
     <div>
-      <p>O ícone <strong>Salvar</strong> fica no topo, ao lado do Executar (<kbd>Ctrl</kbd>+<kbd>S</kbd>). A seta ao lado dele reúne <strong>Salvar como…</strong>, <strong>Salvar com amostra dos dados…</strong> e <strong>Salvar automaticamente</strong>, que grava sozinho, alguns segundos depois de cada mudança, todo fluxo que já foi salvo uma vez, na biblioteca ou num arquivo escolhido. Fluxo novo continua pedindo o primeiro Salvar.</p>
+      <p>O ícone <strong>Salvar</strong> fica no topo, ao lado do Executar (<kbd>Ctrl</kbd>+<kbd>S</kbd>). A seta ao lado dele reúne <strong>Salvar como…</strong>, <strong>Salvar com amostra dos dados…</strong> e <strong>Salvar automaticamente</strong>, que grava sozinho, alguns segundos depois de cada mudança, todo fluxo que já foi salvo uma vez, na biblioteca ou num arquivo escolhido. Num fluxo novo, a opção fica indisponível, com o motivo, até o primeiro Salvar, que pergunta o nome do fluxo (e oferece <strong>Salvar numa pasta…</strong>).</p>
       <p>Com o automático ligado, o botão ganha um selo discreto, e a dica dele diz a hora do último salvamento. Não há aviso a cada vez, e o selo "não salvo" deixa de piscar. Se um salvamento falhar, o {{produto}} avisa e desliga o automático daquele fluxo até o próximo Salvar.</p>
       <p>Nunca salvam sozinhos: um fluxo aberto em modo protegido, o exemplo que vem no programa (use <strong>Salvar como…</strong> para ter a sua cópia) e os fluxos das lições. A escolha fica guardada neste computador.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/salvar-auto.png" alt="Botão Salvar com a opção Salvar automaticamente"></div><figcaption>A seta do Salvar, com o automático ligado e o selo no botão.</figcaption></figure>
   </div>
   <h3>Onde ficam seus arquivos</h3>
-  <p><strong>Salvar</strong> guarda o fluxo na biblioteca do {{produto}}. <strong>Salvar como…</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>) grava um arquivo <code>.prodata.json</code> na pasta que você escolher — do projeto, da rede ou do OneDrive — e daí em diante <kbd>Ctrl</kbd>+<kbd>S</kbd> salva nele. <strong>Abrir arquivo…</strong> abre fluxos de qualquer pasta, e os recentes ficam listados. No <em>Output Data</em>, o campo <strong>Pasta de destino</strong> abre o seletor de pastas do Windows; depois de executar, o botão "Mostrar na pasta" leva até o arquivo gerado.</p>
+  <div class="side">
+    <div>
+    <p><strong>Salvar</strong> guarda o fluxo na biblioteca do {{produto}}; na primeira vez, pergunta o nome e avisa se já existe um fluxo com o mesmo nome. <strong>Salvar como…</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>) grava um arquivo <code>.prodata.json</code> na pasta que você escolher — do projeto, da rede ou do OneDrive — e daí em diante <kbd>Ctrl</kbd>+<kbd>S</kbd> salva nele. <strong>Abrir arquivo…</strong> abre fluxos de qualquer pasta, e os recentes ficam listados. No <em>Output Data</em>, o campo <strong>Pasta de destino</strong> abre o seletor de pastas do Windows; depois de executar, o botão "Mostrar na pasta" leva até o arquivo gerado.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/primeiro-salvar.png" alt="Diálogo do primeiro Salvar, pedindo o nome do fluxo"></div><figcaption>No primeiro Salvar, o nome do fluxo; ou Salvar numa pasta.</figcaption></figure>
+  </div>
   <h3>Ponto de cache</h3>
   <p>Consultas a banco e arquivos grandes não precisam ser lidos a cada ajuste. Clique com o botão direito numa caixa e escolha <strong>Cachear até aqui e executar</strong>: só o resultado dela fica guardado (inclusive depois de fechar o programa), e por isso as caixas anteriores deixam de executar — aparecem douradas e tracejadas, com "Pulada pelo cache", e a barra de status conta quantas foram puladas. O aviso da caixa lista as puladas e tem o botão <strong>Mostrar as puladas</strong>. Mudou algo antes do ponto, ou um arquivo de origem foi atualizado? O cache se refaz sozinho. Para fontes de banco, que só mudam por dentro, escolha em <strong>Renovar</strong> "também todo dia" ou "a cada hora". Para forçar uma nova leitura, use <strong>Atualizar cache</strong>.</p>
   <figure class="m50">

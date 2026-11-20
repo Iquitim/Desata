@@ -62,7 +62,7 @@ localmente.
 - **Dica editável** nos gráficos (categoria, valor, % do total, colunas extras agregadas e texto com campos, também no
   HTML), **tempo nas caixas** com a mais lenta em destaque e **célula em destaque** na tabela, com largura das colunas
   por arrasto e o resumo das colunas que liga e desliga.
-- **Salvar no topo** (ícone, com Salvar como, amostra e **Salvar automaticamente** na seta): fluxos já salvos gravam sozinhos a cada mudança, com um selo
+- **Salvar no topo** (ícone, com Salvar como, amostra e **Salvar automaticamente** na seta; o primeiro Salvar pergunta o nome, e o automático só fica disponível depois dele): fluxos já salvos gravam sozinhos a cada mudança, com um selo
   discreto no botão (nunca em modo protegido, no exemplo nem nas lições).
 - **Dashboard mais fácil de formatar**: painel Formato em abas, paletas prontas (Okabe-Ito para daltonismo, Tableau 10,
   Set2, Viridis, azuis e cinzas), paleta geral do dashboard, rótulos em todos os pontos sem sobreposição, eixos que
@@ -316,6 +316,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [042](specs/042-licoes-autosave-dashboard/spec.md) | Lições em dia (oito), salvar automático, prévia dos gráficos no Designer, Dashboard em abas com paletas, rótulos, eixos e fundo, saída U do Join e Como funciona do Union |
 | [043](specs/043-testes-rapidos/spec.md) | Testes rápidos (afetados, sem os lentos) no dia a dia e a suíte completa em paralelo antes da release |
 | [044](specs/044-rank-agendador-aviso/spec.md) | Rank e médias móveis, Append Fields com a conta de linhas, agendador visual no Windows e aviso de fim de execução |
+| [045](specs/045-correcoes-092/spec.md) | Correções na 0.9.2: laço em etapa recolhida, salvar automático só em fluxo já salvo e o primeiro Salvar pedindo o nome |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 

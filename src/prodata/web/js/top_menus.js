@@ -16,7 +16,7 @@ import { allContainers, collapseDisabled, setContainersCollapsed } from './canva
 import { setWireMode, wireMode } from './canvas_wires.js';
 import { organizeFlow } from './canvas_layout.js';
 import { fitView } from './canvas.js';
-import { autosaveOn, setAutosave } from './save_flow.js';
+import { autoBlockedReason, autosaveActive, setAutosave } from './save_flow.js';
 import { runNoticeOn, setRunNotice } from './run_notice.js';
 
 export { slowestNote } from './node_timing.js';
@@ -88,7 +88,7 @@ export const commandList = (a) => [
   { name: 'Salvar', detail: 'o fluxo aberto', icon: 'save', end: 'Ctrl+S', keywords: 'gravar', run: a.save },
   { name: 'Salvar como…', detail: 'escolher a pasta', icon: 'directory', end: 'Ctrl+Shift+S', keywords: 'gravar copia', run: a.saveAs },
   { name: 'Salvar com amostra dos dados…', detail: 'para quem não tem as fontes', icon: 'database', keywords: 'compartilhar enviar amostra mascara', run: () => shareDialog() },
-  { name: autosaveOn() ? 'Desligar o salvamento automático' : 'Salvar automaticamente', detail: 'fluxos já salvos', icon: 'refresh', keywords: 'auto save autosave gravar sozinho', run: () => setAutosave(!autosaveOn()) },
+  ...(autoBlockedReason() ? [] : [{ name: autosaveActive() ? 'Desligar o salvamento automático' : 'Salvar automaticamente', detail: 'fluxos já salvos', icon: 'refresh', keywords: 'auto save autosave gravar sozinho', run: () => setAutosave(!autosaveActive()) }]),
   { name: 'Novo fluxo', icon: 'file-plus', keywords: 'criar', run: a.newWorkflow },
   { name: 'Abrir da biblioteca…', icon: 'folder', end: 'Ctrl+O', keywords: 'fluxos', run: a.openLibrary },
   { name: 'Abrir arquivo…', icon: 'file', run: () => a.openFile() },

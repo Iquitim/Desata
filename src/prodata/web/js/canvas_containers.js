@@ -11,7 +11,7 @@ import {
   updateContainer,
 } from './actions.js';
 import { NODE_W, nodeHeight, nodeWidth } from './canvas_geometry.js';
-import { CARD_H, CARD_W, containerCard, setContainersCollapsed } from './canvas_collapse.js';
+import { CARD_H, CARD_W, containerCard, hiddenNodes, setContainersCollapsed } from './canvas_collapse.js';
 import { frameEl, loopFrames } from './loops.js';
 import { els, state, viewportCenter } from './canvas_state.js';
 import { copySelection, cutSelection } from './clipboard.js';
@@ -48,7 +48,14 @@ export function renderContainers() {
 
 /** Moldura de cada laço (spec 041): acompanha o Início, o corpo e o Fim. */
 function renderLoopFrames() {
-  const frames = loopFrames((n) => ({ x1: n.x, y1: n.y, x2: n.x + nodeWidth(n), y2: n.y + nodeHeight(n) }));
+  // Caixa dentro de uma etapa recolhida (spec 045): conta o cartão da etapa no lugar dela. Laço inteiro dentro da
+  // mesma etapa recolhida não ganha moldura: o cartão já o representa.
+  const hidden = hiddenNodes();
+  const frames = loopFrames((n) => {
+    const c = hidden.get(n.id);
+    return c ? { x1: c.x, y1: c.y, x2: c.x + CARD_W, y2: c.y + CARD_H, card: c.id }
+      : { x1: n.x, y1: n.y, x2: n.x + nodeWidth(n), y2: n.y + nodeHeight(n) };
+  });
   els.containers.prepend(...frames.map(frameEl));
 }
 

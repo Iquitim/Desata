@@ -10,8 +10,8 @@ import { icon } from './icons.js';
 import { shareDialog } from './portable.js';
 import { persistTabs } from './tabs.js';
 import { isProtected } from './trust_banner.js';
-import { emit, isDirty, markSaved, on, store } from './store.js';
-import { showMenu, toast, toastError } from './ui.js';
+import { emit, isDirty, markSaved, mutate, on, store } from './store.js';
+import { openDialog, showMenu, toast, toastError } from './ui.js';
 
 export const RECENT_FILES = 'prodata.recentFiles';
 const AUTO_KEY = 'prodata.autosave';
@@ -64,9 +64,55 @@ async function write(path, silent) {
   }
 }
 
+/**
+ * Primeiro Salvar de um fluxo nunca salvo (spec 045): pergunta o nome, para a biblioteca não juntar fluxos chamados
+ * "Novo fluxo". Devolve o nome, TO_FOLDER (a pessoa preferiu Salvar como…) ou null (cancelou).
+ */
+const TO_FOLDER = Symbol('pasta');
+async function askFirstName() {
+  let names = [];
+  try { names = (await api.workflows()).map((w) => w.name.toLowerCase()); } catch { /* sem a lista, salva mesmo assim */ }
+  return new Promise((resolve) => {
+    let answer = null;
+    const input = h('input', { class: 'input', value: store.workflow.name, 'aria-label': 'Nome do fluxo', maxlength: 120 });
+    const warn = h('p', { class: 'field-help' });
+    const check = () => {
+      const name = input.value.trim();
+      warn.textContent = !name ? 'Dê um nome ao fluxo.'
+        : names.includes(name.toLowerCase()) ? 'Já existe um fluxo com esse nome na biblioteca: os dois continuam, cada um com o seu arquivo.' : '';
+      ok.disabled = !name;
+    };
+    const finish = (value) => { answer = value; close(); };
+    const ok = button({ icon: 'save', label: 'Salvar', variant: 'primary', onClick: () => finish(input.value.trim()) });
+    input.addEventListener('input', check);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) { e.preventDefault(); finish(input.value.trim()); } });
+    const { close } = openDialog({
+      title: 'Salvar o fluxo',
+      size: 'sm',
+      body: h('div', { class: 'form' },
+        h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Nome do fluxo'), input, warn),
+        h('p', { class: 'field-help' }, `Vai para a biblioteca do ${brand.nome}, em Arquivo › Abrir da biblioteca. Para guardar numa pasta sua (do projeto, da rede, do OneDrive), use Salvar numa pasta.`)),
+      actions: [
+        button({ icon: 'directory', label: 'Salvar numa pasta…', variant: 'ghost', onClick: () => finish(TO_FOLDER) }),
+        button({ label: 'Cancelar', onClick: () => close() }),
+        ok,
+      ],
+      onClose: () => resolve(answer),
+    });
+    check();
+    requestAnimationFrame(() => { input.focus(); input.select(); });
+  });
+}
+
 /** Salva a aba ativa (Ctrl+S, botão do topo). Devolve true se salvou. Um Salvar manual religa o automático. */
 export async function saveFlow() {
   blocked = null;
+  if (!store.filePath && !store.savedSnapshot && store.workflow) {
+    const name = await askFirstName();
+    if (name === null) return false;
+    if (name === TO_FOLDER) return saveAs();
+    if (name !== store.workflow.name) mutate((wf) => { wf.name = name; }, { key: 'wf:name' });
+  }
   try {
     return await write(store.filePath, false);
   } catch (err) {
@@ -119,6 +165,7 @@ const autoTick = debounce(async () => {
 }, AUTO_DELAY);
 
 export function setAutosave(onOff) {
+  if (onOff && autoBlockedReason()) return; // fluxo nunca salvo (ou protegido, exemplo, lição): não liga
   autoOn = Boolean(onOff);
   persist(AUTO_KEY, autoOn);
   emit('autosave');
@@ -140,8 +187,9 @@ export function saveButton() {
       const r = e.currentTarget.getBoundingClientRect();
       const why = autoBlockedReason();
       showMenu(Math.max(8, r.right - 270), r.bottom + 4, [
-        { label: 'Salvar automaticamente', icon: autoOn ? 'check' : 'refresh', onSelect: () => setAutosave(!autoOn) },
-        { note: autoOn && why ? `Neste fluxo não: ${why}.` : 'Grava sozinho a cada mudança, nos fluxos já salvos uma vez.' },
+        // Só liga num fluxo que pode salvar sozinho (spec 045): o nunca salvo, o protegido, o exemplo e a lição não.
+        { label: 'Salvar automaticamente', checked: autosaveActive(), disabled: Boolean(why), onSelect: () => setAutosave(!autoOn) },
+        { note: why ? `Indisponível: ${why}.` : 'Grava sozinho a cada mudança, nos fluxos já salvos uma vez.' },
         'separator',
         { label: 'Salvar como…', icon: 'directory', shortcut: 'Ctrl+Shift+S', onSelect: () => saveAs() },
         { label: 'Salvar com amostra dos dados…', icon: 'database', onSelect: () => shareDialog() },
@@ -151,13 +199,11 @@ export function saveButton() {
   arrow.classList.add('save-arrow');
   const wrap = h('div', { class: 'save-split' }, main, arrow);
   const draw = () => {
+    // O selo só aparece quando o fluxo aberto está de fato salvando sozinho (spec 045).
     const active = autosaveActive();
-    wrap.classList.toggle('auto', autoOn);
-    wrap.classList.toggle('auto-off-here', autoOn && !active);
-    const why = autoBlockedReason();
-    main.title = !autoOn ? 'Salvar (Ctrl+S)'
-      : active ? `Salvamento automático ligado${lastSaved ? ` · salvo às ${hhmm(lastSaved)}` : ''} (Ctrl+S salva agora)`
-        : `Salvamento automático ligado, mas não neste fluxo: ${why} (Ctrl+S)`;
+    wrap.classList.toggle('auto', active);
+    wrap.classList.remove('auto-off-here');
+    main.title = active ? `Salvamento automático ligado${lastSaved ? ` · salvo às ${hhmm(lastSaved)}` : ''} (Ctrl+S salva agora)` : 'Salvar (Ctrl+S)';
     // Com o automático cuidando do fluxo, o selo "não salvo" não pisca a cada mudança.
     const dirtyBadge = document.getElementById('dirtyBadge');
     if (dirtyBadge && active) dirtyBadge.hidden = true;

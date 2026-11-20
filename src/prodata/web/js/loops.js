@@ -68,8 +68,10 @@ const MODE_TEXT = (cfg) => (cfg.mode === 'range' ? `de ${cfg.start ?? 1} até ${
 /** Retângulos das molduras (coordenadas do canvas), com o texto. `rectOf(node)` vem do canvas. */
 export function loopFrames(rectOf) {
   const byId = new Map(store.workflow.nodes.map((n) => [n.id, n]));
-  return loopsOf().map((l) => {
+  return loopsOf().flatMap((l) => {
     const rects = [l.start, ...l.body, l.end].map((id) => byId.get(id)).filter(Boolean).map(rectOf);
+    // Tudo no mesmo cartão de etapa recolhida: sem moldura (spec 045).
+    if (rects.length && rects.every((r) => r.card && r.card === rects[0].card)) return [];
     const pad = 16;
     const x1 = Math.min(...rects.map((r) => r.x1)) - pad;
     const y1 = Math.min(...rects.map((r) => r.y1)) - pad - 20;
