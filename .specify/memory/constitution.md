@@ -4,7 +4,7 @@ Princípios não negociáveis do projeto. Toda spec, plano e PR deve ser compat�
 com eles; quando um princípio precisar mudar, altere este arquivo primeiro, em PR
 separado, com justificativa.
 
-Versão: 1.5.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-09 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033)
+Versão: 1.6.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-21 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047)
 
 ## I. Spec antes do código (SDD)
 
@@ -50,6 +50,11 @@ exceto widgets especializados reutilizáveis.
 - O que uma caixa guarda entre execuções (modelos de ML, tabelas do Compare Runs) fica na pasta de dados do
   computador, num caminho montado com o ID do fluxo e da caixa. Nunca vai no arquivo do fluxo, e um arquivo
   de modelo só é lido dali, depois de conferido o seu SHA-256.
+- A pasta de um **espaço da equipe** (spec 047) é a única outra pasta em que o programa grava por conta
+  própria: caminho absoluto escolhido explicitamente pela pessoa, já existente. Ali ele grava só os
+  arquivos do espaço, em formatos e nomes fixos e saneados (fluxos, versões, assinaturas, membros, marcas
+  de edição, comentários e o estado dos agendamentos). Nunca grava ali dados das fontes, resultados de
+  execução, amostras ou segredos.
 - Uploads têm lista de extensões permitidas e tamanho máximo.
 - Segredos (senhas de banco, chaves de API) nunca são salvos em workflows,
   arquivos do projeto ou logs, nem devolvidos pela API. Ficam no cofre do
@@ -76,3 +81,24 @@ dados de validação, não nos dados de treino.
 - `uv run pytest` e `uv run ruff check` passam antes de qualquer merge (CI).
 - Todo requisito funcional do motor tem ao menos um teste automatizado.
 - Tipagem estática em todo código Python novo (`mypy` sem erros em `src/`).
+
+## VIII. Colaboração opcional e verificável
+
+O trabalho em equipe acontece numa pasta compartilhada (rede, OneDrive, SharePoint), sem servidor nem nuvem
+próprios do programa.
+
+- **Opcional.** Sem um espaço da equipe configurado, a tela, o comportamento e os arquivos gravados são
+  idênticos aos do programa usado só no computador. Um teste automatizado garante isso.
+- **Identidade por chave pessoal.** Cada pessoa tem um par de chaves (Ed25519) gerado no próprio computador.
+  A chave privada fica só no cofre do sistema operacional; nunca vai para a pasta, para um fluxo ou para um log.
+- **Tudo o que dá permissão é assinado.** A lista de membros e papéis é assinada por um administrador; cada
+  versão salva é assinada por quem salvou; a versão oficial de um fluxo é assinada por quem tem o papel de
+  publicar. Uma mudança feita fora do programa, ou por quem não tinha o papel, não tem assinatura válida.
+- **O que não confere não executa.** Fluxo, versão ou lista de membros com assinatura ausente ou inválida
+  abre em modo protegido, com o motivo, e nada dele executa. Agendamentos executam só a versão oficial com
+  assinatura válida.
+- **Honestidade sobre o limite.** A permissão que de fato impede gravar é a da própria pasta, definida no
+  sistema de arquivos. O programa lê essa permissão e se adapta, mas não promete impedir o que só a pasta
+  pode impedir: ele garante detectar e recusar, não bloquear quem tem acesso de escrita.
+- **Nada se perde.** Gravações concorrentes e sincronização atrasada nunca sobrescrevem trabalho em silêncio:
+  as duas versões ficam guardadas e a pessoa é avisada.
