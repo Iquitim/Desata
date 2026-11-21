@@ -288,6 +288,43 @@ $env:PRODATA_RELOAD="true"; uv run prodata   # servidor com reload
 A CI (`.github/workflows/ci.yml`) roda lint, tipos e testes em todo push e PR.
 Para hooks locais: `uvx pre-commit install`.
 
+### Testes
+
+São mais de 1.500 testes automáticos (`pytest`, em `tests/`), em camadas:
+
+| Camada | O que garante | Onde |
+|---|---|---|
+| Motor e ferramentas | Cada ferramenta, o executor, o cache, os laços, as fórmulas e a ingestão dão o resultado esperado | `test_nodes.py`, `test_runner.py`, `test_formula.py`, `test_loop.py`… |
+| Equivalência SQL | O SQL gerado na aba SQL, rodado no DuckDB, dá o mesmo resultado que o fluxo | `test_sql_equivalence.py`, `test_sql_plan.py` |
+| API | Rotas, validação e erros em português | `test_api*.py`, `test_errors_pt.py` |
+| Segurança | Abertura protegida, conectores só leitura, senhas fora do disco e a API recusando outros sites e endereços | `test_trust.py`, `test_api_protection.py`, `test_connectors.py` |
+| Confiança (0.9.3) | Formato das fontes, troca de coluna, parada sem ninguém olhando, versões anteriores | `test_schema_drift.py`, `test_versions.py` |
+| Qualidade do código | Nenhum arquivo passa de 800 linhas, o JavaScript não tem importações circulares e o dashboard exportado não depende do programa (a complexidade das funções é limitada pelo ruff) | `test_code_quality.py` |
+| Interface e documentação | Cores e tamanhos de letra pela escala de tokens; Manual e `contexto-ia.md` em dia com o código | `test_theme.py`, `test_manual.py`, `test_ai_context.py` |
+
+- **No dia a dia**, `scripts/testar.py` roda só os testes afetados pela mudança (pytest-testmon), sem os lentos, em
+  paralelo: poucos segundos. Mudou algo em `src/prodata/web/`? Ele roda também os testes que leem a interface.
+- **Antes de uma versão**, `scripts/testar.py completo` roda todos, em paralelo, como o CI.
+- **O CI não roda** quando o commit muda só `docs/`, `specs/` ou arquivos `.md` (`paths-ignore`): uma correção só de
+  documentação não reabre a execução. Nesse caso, confira localmente com `scripts/testar.py completo`.
+
+Antes de publicar uma versão, além da suíte completa:
+
+```powershell
+uv run --with playwright python scripts/conferir_tela.py   # a tela no navegador: cliques, arrastos, diálogos, animações
+uv run python packaging/build.py                           # instalador e portátil (--marca protege para a outra marca)
+uv run python scripts/conferir_exe.py                      # os executáveis gerados, como quem instalou o programa
+uv run --no-project --with pypdfium2 --with pillow python docs/guia/verificar_pdf.py docs/guia/Desata-Guia-do-Produto.pdf
+```
+
+- `conferir_tela.py` sobe o próprio servidor com uma pasta de dados temporária e confere de ponta a ponta o primeiro
+  Salvar, as versões anteriores, o fio inteligente, a fonte que muda de formato, os erros e a pílula deslizante (também
+  com "reduzir movimento"). Falha se a página tiver erro de JavaScript.
+- `conferir_exe.py` roda o `prodata-cli.exe` de cada marca: versão, biblioteca, o fluxo de exemplo inteiro (PDFs e
+  laço), código de saída e a tarefa agendada gravando o histórico.
+- `verificar_pdf.py` procura texto cortado e páginas com problema nos guias; os prints dos guias saem de
+  `docs/guia/imagens/gerar_imagens.py`, também com servidor e dados temporários.
+
 ### Spec-Driven Development
 
 O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/spec-kit):
@@ -372,7 +409,8 @@ src/prodata/
 ├── samples/           datasets e fluxo de demonstração
 ├── desktop.py         app de desktop (servidor local + janela WebView2)
 └── web/               frontend (ES modules nativos, sem build)
-tests/                 pytest: grafo, fórmulas, ingestão, ferramentas, executor, API, conectores, exploração
+tests/                 pytest: motor, ferramentas, equivalência SQL, API, segurança, qualidade do código (ver Testes)
+scripts/               testes no ritmo certo, conferências da tela e dos executáveis antes de cada versão
 specs/                 especificações (SDD)
 storage/               datasets, workflows, cache e exportações (configurável)
 ```
