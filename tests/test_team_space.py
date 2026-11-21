@@ -165,7 +165,7 @@ def test_move_to_space_and_copy_back(tmp_path: Path) -> None:
     folder.mkdir()
     library = WorkflowRepository(tmp_path / "biblioteca")
     team = TeamService(Workspaces(tmp_path / "espacos.json", "desata", "Desata"),
-                       IdentityStore(MemorySecretStore(), tmp_path / "equipe.json"), library)  # fmt: skip
+                       IdentityStore(MemorySecretStore(), tmp_path / "equipe.json"), library, tmp_path / "estado")  # fmt: skip
     space = team.workspaces.get(team.create(str(folder), "Equipe")["id"])
     library.save(flow())
     team.move_from_library(space.id, "vendas")

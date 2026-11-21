@@ -41,11 +41,11 @@ log = logging.getLogger(__name__)
 
 class TeamService:
     def __init__(self, workspaces: Workspaces, identity: IdentityStore, library: WorkflowRepository,
-                 state_dir: Path | None = None) -> None:  # fmt: skip
+                 state_dir: Path) -> None:  # fmt: skip
         self.workspaces = workspaces
         self.identity = identity
         self.library = library
-        self.state_dir = state_dir or Path("equipe")  # listas de membros aceitas: só neste computador
+        self.state_dir = state_dir  # pasta de dados deste computador: listas aceitas, o que viu e conferiu
 
     # ------------------------------------------------------------------ espaços e papéis
 
