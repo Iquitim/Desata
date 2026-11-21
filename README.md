@@ -77,6 +77,20 @@ localmente.
 - **Agendador visual no Windows** (Arquivo › Agendar este fluxo…): frequência em botões, frase de resumo com a
   próxima execução, lista de agendamentos com executar agora, pausar, editar e o resultado da última execução, e
   aviso quando uma execução agendada falha. Roda sem janela, com a pessoa conectada, sem guardar a senha do Windows.
+  Cada agendamento é uma tarefa do Agendador de Tarefas do Windows, e o comportamento é o dele:
+  - **Computador desligado na hora:** com "rodar assim que ligar" (ligado por padrão), o Windows roda a execução
+    perdida assim que puder, depois que o computador liga e a pessoa entra. Desligada a opção, espera a próxima hora.
+  - **Em suspensão:** só acorda o computador com "acordar o computador para rodar" (e se a energia do Windows
+    permitir); senão, conta como execução perdida.
+  - **Sessão encerrada (ninguém conectado):** não roda. Rodar sem ninguém conectado exigiria guardar a senha do
+    Windows, o que o programa não faz. Com a tela bloqueada, a sessão continua aberta e a execução acontece.
+  - **Na bateria:** roda, a menos que "rodar também na bateria" seja desligado.
+  - **Credenciais:** senhas de banco e tokens de API vêm do Gerenciador de Credenciais do Windows da própria pessoa,
+    disponíveis sempre que ela está conectada. Se uma faltar ou expirar, a caixa falha com a mensagem, o histórico
+    registra a falha e o programa avisa ao abrir.
+  - **Outros limites:** uma execução para depois de 4 horas; se a anterior ainda estiver rodando, a nova não
+    começa. Fluxo de fora ainda não confiado é recusado na hora de rodar. Coluna usada que sumiu da fonte para tudo
+    antes de gravar (spec 046).
 - **Aviso ao terminar a execução**, com as cores da marca (desliga em Exibir).
 - **Fonte que muda de formato**: cada entrada lembra as colunas e os tipos (nunca os valores). Quando mudam, ganha o
   selo "formato mudou", lista o que entrou, saiu e mudou de tipo, acende as caixas atingidas e oferece **Trocar
@@ -169,7 +183,7 @@ localmente.
   com alterações pergunta *Salvar / Não salvar / Cancelar*.
 - **Editor de fórmulas**: cores por tipo (coluna, função, controle, operador
   lógico, comparação, texto, número), autocompletar de funções e colunas
-  (`Ctrl+Espaço`), dica da assinatura da função e assistente com 82 funções
+  (`Ctrl+Espaço`), dica da assinatura da função e assistente com 85 funções
   documentadas (inclusive números e datas no padrão brasileiro, CPF/CNPJ,
   expressões regulares) e botões de operadores. Diferente é `!=` (`<>` também
   vale). A Formula cria colunas novas ou altera colunas existentes, e calcula
@@ -183,7 +197,9 @@ localmente.
   ficam em vermelho. Copie ou baixe `.sql` ou `.zip` para o time de dados. O código também
   sai em Spark SQL e T-SQL (Microsoft Fabric), marcado como não conferido. Fontes de banco, API,
   Jira, pasta e PDF viram uma tabela de origem, com a ressalva de criá-la no destino. Regex e Generate
-  Rows também têm tradução; Machine Learning, API Loop, Subflow, Fuzzy Match, Mask, Multi-Field Formula,
+  Rows também têm tradução. A Multi-Row Formula, inclusive as receitas de média e soma móvel, e o Rank viram
+  funções de janela (`LAG` e `LEAD` na Multi-Row; `ROW_NUMBER`, `RANK` e `DENSE_RANK` no Rank), conferidas com o resultado; a
+  Multi-Row que usa a própria coluna na fórmula vira uma consulta recursiva. Machine Learning, API Loop, Subflow, Fuzzy Match, Mask, Multi-Field Formula,
   Compare Runs, Reconcile e Estado por período ficam como "sem SQL".
 - **Join como no Alteryx**: escolha se o J mantém as chaves dos dois lados, só
   da esquerda ou só da direita, e selecione, renomeie, converta e reordene as
@@ -437,7 +453,9 @@ a organização da vista Dados em `storage/organizacao.json`, as constantes comp
 
 ## Desempenho
 
-Decisões medidas (detalhes nos comentários do código):
+Decisões medidas (detalhes nos comentários do código). Os números vêm de medições pontuais na máquina de
+desenvolvimento, feitas na época de cada decisão, e servem de ordem de grandeza: ainda não há um script no
+repositório que os reproduza.
 
 - Bibliotecas pesadas carregam sob demanda: scikit-learn só ao treinar e
   connectorx só ao consultar um banco; o scikit-learn é pré-carregado em segundo
