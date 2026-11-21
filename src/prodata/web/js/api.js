@@ -132,8 +132,14 @@ export const api = {
   addSpace: (acao, caminho, nome = '') => request('POST', '/api/equipe/espacos', { acao, caminho, nome }),
   leaveSpace: (id) => request('DELETE', `/api/equipe/espacos/${enc(id)}`),
   spaceFlows: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos`),
-  spaceFlow: (id, wid) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}`),
-  saveSpaceFlow: (id, wf) => request('PUT', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wf.id)}`, wf),
+  // abrir: { fluxo, sha256 (base do Salvar), autor, atualizado, conferir } (spec 047, RF-4732)
+  spaceFlow: (id, wid) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/abrir`),
+  // salvar: { fluxo, sha256, adiado }; 409 (code conflict) se outra pessoa salvou depois da base (RF-4761)
+  saveSpaceFlow: (id, wf, { base = null, forcar = false, origem = 'manual' } = {}) => request('PUT',
+    `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wf.id)}?origem=${origem}${base ? `&base=${base}` : ''}${forcar ? '&forcar=true' : ''}`, wf),
+  spaceVersions: (id, wid, current) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/versoes/comparar`, { current }),
+  spaceVersion: (id, wid, version) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/versoes/${enc(version)}`),
+  recordSpaceVersion: (id, wid, workflow) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/versoes`, { workflow, origin: 'restore' }),
   moveToSpace: (id, workflowId) => request('POST', `/api/equipe/espacos/${enc(id)}/mover`, { workflow_id: workflowId }),
   copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
   spaceMembers: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/membros`),

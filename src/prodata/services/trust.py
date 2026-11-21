@@ -45,6 +45,12 @@ class TrustRegistry:
         self._reasons: dict[
             str, str
         ] = {}  # motivo do bloqueio de um fluxo do espaço da equipe (só em memória)
+        self._only: dict[
+            str, list[str]
+        ] = {}  # confiança por diferença: só estas caixas a conferir (spec 047)
+        self._spaces: dict[
+            str, str
+        ] = {}  # fluxo aberto de um espaço → espaço (para guardar o que foi conferido)
         # Versão lida do disco por id: a tela completa a configuração com os padrões ao abrir, então o que ela
         # confirma não é idêntico ao arquivo. Confiar nas duas evita pedir confirmação de novo na próxima abertura.
         self._read: dict[str, str] = {}
@@ -135,10 +141,16 @@ class TrustRegistry:
 
     # ------------------------------------------------------------------ espaço da equipe (spec 047)
 
-    def space_flow(self, workflow: Workflow, reason: str | None) -> None:
+    def space_flow(self, workflow: Workflow, reason: str | None, *, space: str | None = None,
+                   only: list[str] | None = None) -> None:  # fmt: skip
         """Fluxo aberto de um espaço da equipe: a assinatura decide. Confere → liberado; não confere → protegido,
-        com o motivo que a faixa mostra (RF-4715). A conferência manual de sempre continua possível."""
+        com o motivo que a faixa mostra (RF-4715). A conferência manual de sempre continua possível.
+        ``only``: confiança por diferença (RF-4741): a faixa mostra só essas caixas, as que mudaram de parte
+        sensível desde a última conferência."""
         with self._lock:
+            if space:
+                self._spaces[workflow.id] = space
+            self._only.pop(workflow.id, None)
             if reason is None:
                 self._trusted[fingerprint(workflow)] = None
                 self._blocked.discard(workflow.id)
@@ -146,11 +158,22 @@ class TrustRegistry:
             else:
                 self._blocked.add(workflow.id)
                 self._reasons[workflow.id] = reason
+                if only:
+                    self._only[workflow.id] = list(only)
             self._save()
 
     def reason(self, workflow_id: str) -> str | None:
         with self._lock:
             return self._reasons.get(workflow_id) if workflow_id in self._blocked else None
+
+    def only(self, workflow_id: str) -> list[str] | None:
+        """As caixas a conferir, quando o bloqueio é por diferença; None quando é o fluxo inteiro."""
+        with self._lock:
+            return self._only.get(workflow_id) if workflow_id in self._blocked else None
+
+    def space_of(self, workflow_id: str) -> str | None:
+        with self._lock:
+            return self._spaces.get(workflow_id)
 
 
 # ---------------------------------------------------------------- resumo do que o fluxo faz

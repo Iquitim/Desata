@@ -74,8 +74,9 @@ registra a marca dona do espaço: só a mesma marca entra (RF-4701); a outra mos
 - `trust_diff.py` — confiança por diferença: compara o `summary()` de `services/trust.py` entre a última versão
   confiada/executada (guardada localmente por fluxo) e a nova; devolve só as partes sensíveis novas ou alteradas,
   com autor e data (RF-4741, RF-4742).
-- O `VersionStore` (spec 046) ganha uma raiz por espaço e o campo `autor`; o histórico dos fluxos do espaço vai para
-  `_equipe/versoes/`.
+- `versions.py` — histórico dos fluxos do espaço (`SpaceVersions`), no formato do `VersionStore` (spec 046) mais o autor,
+  a assinatura e as origens `conflito` e `copia`; fica em
+  `_equipe/versoes/`. `local_state.py` guarda neste computador o que cada pessoa viu e conferiu e os envios adiados.
 - Agendamentos (spec 044): um agendamento de fluxo do espaço guarda `espaco_id` + `fluxo`; o CLI em
   `--agendamento` carrega a versão **oficial**, confere a assinatura de Publicador e só então executa (RF-4752);
   publica o estado em `_equipe/agendamentos/` (RF-4753). "Assumir" cria a tarefa local e marca o anterior como

@@ -12,7 +12,9 @@ import { persistTabs } from './tabs.js';
 import { isProtected } from './trust_banner.js';
 import { emit, isDirty, markSaved, mutate, on, store } from './store.js';
 import { openDialog, showMenu, toast, toastError } from './ui.js';
+import { reloadFromSpace } from './team_editing.js';
 import { chooseSpace, teamConfigured } from './team_spaces.js';
+import { openVersionsDialog } from './versions_dialog.js';
 
 export const RECENT_FILES = 'prodata.recentFiles';
 const AUTO_KEY = 'prodata.autosave';
@@ -49,9 +51,22 @@ async function write(path, silent, origin = silent ? 'auto' : 'manual') {
   try {
     if (store.space && !path) {
       // Fluxo do espaço da equipe (spec 047): grava na pasta do espaço, nunca na biblioteca
-      await api.saveSpaceFlow(store.space.id, store.workflow);
+      const space = store.space;
+      let res;
+      try {
+        res = await api.saveSpaceFlow(space.id, store.workflow, { base: space.base, origem: SPACE_ORIGINS.has(origin) ? origin : 'manual' });
+      } catch (err) {
+        if (err.code !== 'conflict') throw err;
+        if (silent) { blocked = flowKey(); emit('autosave'); } // o automático para até a pessoa escolher
+        conflictDialog(err.message); // RF-4761: nada sobrescrito, as duas versões guardadas
+        return false;
+      }
+      if (store.space === space) store.space = { ...space, base: res.sha256, nova: null, atualizado: null };
       settle(sent);
-      if (!silent) toast('Fluxo salvo no espaço', { kind: 'success', detail: `Espaço da equipe "${store.space.nome}"` });
+      emit('readonly');
+      if (res.adiado) {
+        toast('Salvo neste computador; o envio para o espaço fica para depois', { detail: 'A sincronização está segurando o arquivo. O programa tenta de novo sozinho, sem perder nada.' });
+      } else if (!silent) toast('Fluxo salvo no espaço', { kind: 'success', detail: `Espaço da equipe "${space.nome}"` });
     } else if (path) {
       const res = await api.saveWorkflowFile(path, store.workflow, origin);
       store.filePath = res.path;
@@ -68,6 +83,37 @@ async function write(path, silent, origin = silent ? 'auto' : 'manual') {
   } finally {
     saving = false;
   }
+}
+
+const SPACE_ORIGINS = new Set(['manual', 'auto', 'restore']);
+
+/** "Bruno salvou enquanto você editava" (RF-4761): ver as duas, ficar com a minha ou abrir a do colega. */
+function conflictDialog(message) {
+  const { close } = openDialog({
+    title: 'Outra pessoa salvou este fluxo',
+    size: 'sm',
+    body: h('div', { class: 'form' },
+      h('p', { class: 'dialog-text' }, message),
+      h('p', { class: 'field-help' }, 'A sua versão está guardada em Versões anteriores, com o seu nome. Escolha qual fica como a versão do espaço; a outra continua guardada.')),
+    actions: [
+      button({ icon: 'clock', label: 'Ver as duas', variant: 'ghost', onClick: () => { close(); openVersionsDialog(); } }),
+      button({ icon: 'refresh', label: 'Abrir a do colega', onClick: async () => {
+        close();
+        try { await reloadFromSpace(); toast('Agora você vê a versão do colega', { detail: 'A sua está em Versões anteriores.' }); } catch (err) { toastError(err, 'Não foi possível abrir'); }
+      } }),
+      button({ icon: 'save', label: 'Ficar com a minha', variant: 'primary', onClick: async () => {
+        close();
+        const sent = JSON.stringify(store.workflow);
+        try {
+          const res = await api.saveSpaceFlow(store.space.id, store.workflow, { forcar: true });
+          store.space = { ...store.space, base: res.sha256, nova: null, atualizado: null };
+          settle(sent);
+          emit('readonly');
+          toast('A sua versão ficou no espaço', { kind: 'success', detail: 'A do colega está em Versões anteriores.' });
+        } catch (err) { toastError(err, 'Não foi possível salvar'); }
+      } }),
+    ],
+  });
 }
 
 /**
@@ -144,13 +190,14 @@ const fileSlug = (name) => (name || 'fluxo').normalize('NFKD').replace(/[^\w-]+/
 export async function saveToSpace() {
   const space = await chooseSpace('Salvar no espaço da equipe');
   if (!space) return false;
+  let res;
   try {
-    await api.saveSpaceFlow(space.id, store.workflow);
+    res = await api.saveSpaceFlow(space.id, store.workflow);
   } catch (err) {
     toastError(err, 'Não foi possível salvar no espaço');
     return false;
   }
-  store.space = { id: space.id, nome: space.nome };
+  store.space = { id: space.id, nome: space.nome, base: res.sha256 };
   store.filePath = null;
   markSaved();
   persistTabs();

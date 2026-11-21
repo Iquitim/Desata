@@ -39,3 +39,7 @@
 .ver-empty strong { color: var(--text); font-size: var(--fs-lg); }
 .ver-foot { margin-right: auto; font-size: var(--fs-xs); }
 @media (max-width: 720px) { .ver-layout { grid-template-columns: 1fr; } .ver-list { border-right: 0; border-bottom: 1px solid var(--border); max-height: 220px; } }
+/* Versões do espaço da equipe: autor de cada versão (spec 047, RF-4731) */
+.ver-item-author { font-size: var(--fs-xs); font-weight: 600; color: var(--text); }
+.ver-author { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-sm); color: var(--text-2); }
+.ver-chip.warn { color: var(--warn); background: var(--warn-weak); }

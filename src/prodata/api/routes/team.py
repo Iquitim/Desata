@@ -5,18 +5,20 @@ from __future__ import annotations
 import secrets
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Path, Response
+from fastapi import APIRouter, Path, Query, Response
 from pydantic import BaseModel, Field
 
-from prodata.api.deps import ServicesDep
+from prodata.api.deps import Services, ServicesDep
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.team.repository import SpaceFlow
 from prodata.team.signing import Role
+from prodata.team.versions import SpaceVersionInfo
 from prodata.team.workspaces import SPACE_ID
 
 router = APIRouter(prefix="/api/equipe", tags=["equipe"])
 SpaceId = Annotated[str, Path(pattern=SPACE_ID)]
 WorkflowId = Annotated[str, Path(pattern=ID_PATTERN)]
+VersionId = Annotated[str, Path(pattern=r"^\d{8}-\d{6}-\d{6}-[a-z]+-[A-Za-z0-9._-]{1,64}$")]
 
 
 class NameRequest(BaseModel):
@@ -77,22 +79,71 @@ def list_flows(space_id: SpaceId, services: ServicesDep) -> list[SpaceFlow]:
     return services.team.flows(space_id)
 
 
+def _open(space_id: str, workflow_id: str, services: Services) -> dict[str, Any]:
+    workflow, reason = services.team.get(space_id, workflow_id)
+    info = services.team.opened(space_id, workflow, reason)
+    # a assinatura decide (RF-4715); com assinatura válida, só pede conferência do que mudou de sensível (RF-4741)
+    services.trust.space_flow(
+        workflow, reason or info["motivo"], space=space_id, only=info["conferir"] or None
+    )
+    return {"fluxo": workflow, **info}
+
+
 @router.get("/espacos/{space_id}/fluxos/{workflow_id}")
 def get_flow(space_id: SpaceId, workflow_id: WorkflowId, services: ServicesDep) -> Workflow:
-    workflow, reason = services.team.get(space_id, workflow_id)
-    # a assinatura decide: confere → liberado; não confere → protegido, com o motivo (RF-4715)
-    services.trust.space_flow(workflow, reason)
-    return workflow
+    flow: Workflow = _open(space_id, workflow_id, services)["fluxo"]
+    return flow
+
+
+@router.get("/espacos/{space_id}/fluxos/{workflow_id}/abrir")
+def open_flow(space_id: SpaceId, workflow_id: WorkflowId, services: ServicesDep) -> dict[str, Any]:
+    """O fluxo e o que a tela mostra ao abrir: a base para o Salvar, quem salvou por último e "Atualizado por"."""
+    return _open(space_id, workflow_id, services)
 
 
 @router.put("/espacos/{space_id}/fluxos/{workflow_id}")
-def save_flow(
-    space_id: SpaceId, workflow_id: WorkflowId, workflow: Workflow, services: ServicesDep
-) -> Workflow:
+def save_flow(space_id: SpaceId, workflow_id: WorkflowId, workflow: Workflow, services: ServicesDep,
+              base: Annotated[str | None, Query(pattern=r"^[0-9a-f]{64}$")] = None, forcar: bool = False,
+              origem: Literal["manual", "auto", "restore"] = "manual") -> dict[str, Any]:  # fmt: skip
+    """Grava no espaço. ``base``: a versão que estava aberta; se outra pessoa salvou depois dela, responde 409 e as duas
+    versões ficam guardadas (RF-4761). ``adiado``: a sincronização segurou o arquivo e o envio ficou para depois."""
     workflow = workflow.model_copy(update={"id": workflow_id})
-    saved = services.team.save(space_id, services.runner.snapshot(workflow))
-    services.trust.saved(saved)
-    return saved
+    res = services.team.save(
+        space_id, services.runner.snapshot(workflow), base=base, force=forcar, origin=origem
+    )
+    services.trust.saved(res["fluxo"])
+    return res
+
+
+class SpaceVersionRequest(BaseModel):
+    current: Workflow | None = None
+
+
+class RecordRequest(BaseModel):
+    workflow: Workflow
+    origin: Literal["restore"] = "restore"
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/versoes/comparar")
+def list_versions(space_id: SpaceId, workflow_id: WorkflowId, req: SpaceVersionRequest,
+                  services: ServicesDep) -> list[SpaceVersionInfo]:  # fmt: skip
+    """Versões anteriores do fluxo do espaço, com o autor (RF-4731), comparadas com o que está aberto."""
+    return services.team.history(space_id, workflow_id, req.current)
+
+
+@router.get("/espacos/{space_id}/fluxos/{workflow_id}/versoes/{version_id}")
+def get_version(
+    space_id: SpaceId, workflow_id: WorkflowId, version_id: VersionId, services: ServicesDep
+) -> Workflow:
+    return services.team.version(space_id, workflow_id, version_id)
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/versoes", status_code=204)
+def record_version(
+    space_id: SpaceId, workflow_id: WorkflowId, req: RecordRequest, services: ServicesDep
+) -> Response:
+    services.team.record_version(space_id, req.workflow.model_copy(update={"id": workflow_id}), req.origin)
+    return Response(status_code=204)
 
 
 @router.post("/espacos/{space_id}/mover")

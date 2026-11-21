@@ -7,7 +7,7 @@ Sobe o próprio servidor, com uma pasta de dados temporária (nada vai para a bi
 janela e confere o comportamento de ponta a ponta: o que os testes do motor não enxergam (cliques, arrastos, diálogos,
 animações). Sai com 1 se alguma conferência falhar ou se a página tiver erro de JavaScript.
 
-Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe e equipe2 (spec 047,
+Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2 e equipe3 (spec 047,
 duas pessoas: sobe um segundo servidor).
 """
 
@@ -603,6 +603,111 @@ def equipe2(pg: Page) -> None:
         shutil.rmtree(folder, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- spec 047: duas pessoas (marco 4)
+
+SQL_FLOW = {"id": "fluxo_sql", "name": "Fluxo com SQL", "edges": [],
+            "nodes": [{"id": "n1", "type": "prep.select", "x": 200, "y": 160, "config": {}},
+                      {"id": "q1", "type": "transform.sql_query", "x": 520, "y": 160,
+                       "config": {"sql": "SELECT 1"}}]}  # fmt: skip
+
+
+def bruno_saves(bruno: Page, sid: str, x: int = 200, sql: str = "SELECT 1") -> None:
+    body = json.loads(json.dumps(SQL_FLOW))
+    body["nodes"][0]["x"] = x
+    body["nodes"][1]["config"]["sql"] = sql
+    bruno.evaluate(PUT, [f"/api/equipe/espacos/{sid}/fluxos/fluxo_sql", body])
+
+
+def equipe3(pg: Page) -> None:
+    folder = Path(tempfile.mkdtemp(prefix="conferir-espaco3-"))
+    ctx2 = pg.context.browser.new_context(viewport={"width": 1500, "height": 950})  # type: ignore[union-attr]
+    bruno = ctx2.new_page()
+    try:
+        pg.evaluate(POST, ["/api/equipe/identidade", {"nome": "Ana Souza"}])
+        sid = pg.evaluate(
+            POST, ["/api/equipe/espacos", {"acao": "criar", "caminho": str(folder), "nome": "Time 4"}]
+        )["id"]
+        pg.evaluate(PUT, [f"/api/equipe/espacos/{sid}/fluxos/fluxo_sql", SQL_FLOW])
+        ready(bruno, URL_BRUNO)
+        bruno.evaluate(POST, ["/api/equipe/identidade", {"nome": "Bruno Lima"}])
+        bruno.evaluate(POST, ["/api/equipe/espacos", {"acao": "entrar", "caminho": str(folder)}])
+        pg.evaluate(
+            POST,
+            [
+                f"/api/equipe/espacos/{sid}/membros",
+                {"acao": "aceitar", "usuario": "bruno", "papel": "editor"},
+            ],
+        )
+
+        # Conflito: Bruno salva enquanto a Ana edita (RF-4761)
+        open_space_flow(pg, "Time 4", "Fluxo com SQL")
+        pg.wait_for_function("() => window.__S.store.workflow?.id === 'fluxo_sql'", timeout=10000)
+        bruno_saves(bruno, sid, x=420)
+        pg.evaluate("() => window.__S.mutate((wf) => { wf.description = 'da Ana'; })")
+        pg.keyboard.press("Control+s")
+        dlg = pg.locator("dialog[open][aria-label='Outra pessoa salvou este fluxo']")
+        dlg.wait_for(timeout=10000)
+        check(
+            "salvar por cima do colega avisa e não sobrescreve",
+            "Bruno Lima salvou enquanto você editava" in dlg.inner_text()
+            and "da Ana" not in (folder / "fluxo_sql.prodata.json").read_text(encoding="utf-8"),
+            dlg.inner_text(),
+        )
+        dlg.locator("button", has_text="Ver as duas").click()
+        versions = pg.locator("dialog[open] .ver-list")
+        versions.locator(".ver-item").first.wait_for(timeout=10000)
+        text = versions.inner_text()
+        check(
+            "Versões anteriores mostra as duas, com o autor",
+            "Bruno Lima" in text and "Ana Souza" in text and "outra pessoa editava" in text,
+            text,
+        )
+        pg.keyboard.press("Escape")
+        pg.keyboard.press("Control+s")
+        dlg.wait_for(timeout=10000)
+        dlg.locator("button", has_text="Abrir a do colega").click()
+        pg.wait_for_function("() => window.__S.store.workflow.nodes[0].x === 420", timeout=10000)
+        check("Abrir a do colega troca pela versão dele", not pg.evaluate("() => window.__S.isDirty()"))
+
+        # Recarregar: Bruno salva de novo com o fluxo aberto na Ana (RF-4733)
+        bruno_saves(bruno, sid, x=640)
+        news = pg.locator(".news-bar")
+        news.wait_for(timeout=40000)  # a tela confere a cada 30 s
+        check(
+            "a faixa avisa a versão nova do colega", "Bruno Lima salvou uma versão nova" in news.inner_text()
+        )
+        news.locator("button", has_text="Recarregar").click()
+        pg.wait_for_function("() => window.__S.store.workflow.nodes[0].x === 640", timeout=10000)
+        check("Recarregar traz a versão nova", pg.locator(".news-bar").count() == 0)
+
+        # Atualizado por e confiança por diferença (RF-4732, RF-4741, CA-06)
+        pg.locator(".wf-tab.active .wf-tab-close").click()
+        pg.wait_for_timeout(500)
+        bruno_saves(bruno, sid, x=640, sql="SELECT * FROM clientes")
+        open_space_flow(pg, "Time 4", "Fluxo com SQL")
+        news.wait_for(timeout=10000)
+        check(
+            "ao abrir: Atualizado por Bruno",
+            "Atualizado por Bruno Lima" in news.inner_text(),
+            news.inner_text(),
+        )
+        banner = pg.locator(".trust-banner")
+        banner.wait_for(timeout=10000)
+        check(
+            "mudança sensível: conferir só o que mudou",
+            banner.locator(".trust-item").count() == 1
+            and "SQL" in banner.inner_text()
+            and banner.locator("button", has_text="Conferir e confiar").count() == 1,
+            banner.inner_text(),
+        )
+        banner.locator("button", has_text="Conferir e confiar").click()
+        pg.wait_for_selector(".trust-banner", state="detached", timeout=10000)
+        check("depois de conferir, o fluxo fica liberado", pg.locator(".trust-banner").count() == 0)
+    finally:
+        ctx2.close()
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -626,6 +731,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "salvar": salvar, "versoes": versoes, "fio": fio, "fonte": fonte, "erros": erros, "pilula": pilula,
     "equipe": equipe,
     "equipe2": equipe2,
+    "equipe3": equipe3,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
@@ -671,7 +777,9 @@ def main() -> int:
         server = start_server(Path(folder) / "dados")
         # Duas pessoas (spec 047): o Bruno tem o próprio servidor, pasta de dados e usuário.
         second = (
-            start_server(Path(folder) / "dados-bruno", PORT_BRUNO, "bruno") if "equipe2" in chosen else None
+            start_server(Path(folder) / "dados-bruno", PORT_BRUNO, "bruno")
+            if {"equipe2", "equipe3"} & set(chosen)
+            else None
         )
         try:
             with sync_playwright() as p:

@@ -23,10 +23,10 @@
 
 ## Marco 4 — O que mudou, confiança por diferença, conflito
 
-- [ ] T13 Versões com autor na pasta do espaço; faixa "Atualizado por"; Recarregar (RF-4731..4733)
-- [ ] T14 Confiança por diferença: partes sensíveis desde a última versão confiada; Conferir e confiar (RF-4741, RF-4742, CA-06)
-- [ ] T15 Conflito por base: nada sobrescrito, as duas versões guardadas, aviso (RF-4761, CA-08)
-- [ ] T16 Cópias de conflito da sincronização viram versões; arquivo preso: novas tentativas e envio adiado (RF-4762, RF-4763)
+- [x] T13 Versões com autor na pasta do espaço; faixa "Atualizado por"; Recarregar (RF-4731..4733)
+- [x] T14 Confiança por diferença: partes sensíveis desde a última versão confiada; Conferir e confiar (RF-4741, RF-4742, CA-06)
+- [x] T15 Conflito por base: nada sobrescrito, as duas versões guardadas, aviso (RF-4761, CA-08)
+- [x] T16 Cópias de conflito da sincronização viram versões; arquivo preso: novas tentativas e envio adiado (RF-4762, RF-4763)
 
 ## Marco 5 — Versão oficial e agendamentos
 

@@ -14,6 +14,8 @@ const ORIGIN = {
   auto: ['refresh', 'Salvar automático'],
   restore: ['undo', 'Antes de restaurar'],
   columns: ['columns', 'Antes de trocar colunas'],
+  conflito: ['alert', 'Salvo enquanto outra pessoa editava'], // espaço da equipe (spec 047, RF-4761)
+  copia: ['copy', 'Cópia da sincronização'], // RF-4762
 };
 const EXAMPLES = new Set(['demo_pipeline_360']);
 
@@ -24,7 +26,6 @@ export function versionsBlockedReason() {
   if (EXAMPLES.has(wf.id)) return 'o fluxo de exemplo não guarda versões (Salvar como faz a sua cópia)';
   if (wf.id.startsWith('licao_')) return 'o fluxo de uma lição não guarda versões';
   if (!store.filePath && !store.savedSnapshot) return 'as versões começam no primeiro Salvar';
-  if (store.space) return 'as versões dos fluxos do espaço da equipe ainda não estão disponíveis';
   return null;
 }
 
@@ -134,11 +135,12 @@ function legend() {
     h('span', { class: 'ver-key changed' }, 'Configuração diferente da atual'));
 }
 
-export async function openVersionsDialog() {
+export async function openVersionsDialog({ choose = null } = {}) {
   const why = versionsBlockedReason();
   if (why) { toast('Versões anteriores', { detail: `Indisponível: ${why}.` }); return; }
   const wf = store.workflow;
   const path = store.filePath || null;
+  const space = store.space; // espaço da equipe: as versões ficam na pasta do espaço, com o autor (RF-4731)
   const list = h('div', { class: 'ver-list', role: 'listbox', 'aria-label': 'Versões guardadas' });
   const side = h('div', { class: 'ver-side' }, h('p', { class: 'muted' }, 'Carregando…'));
   const restoreBtn = button({ icon: 'undo', label: 'Restaurar esta versão', variant: 'primary', disabled: true });
@@ -149,7 +151,9 @@ export async function openVersionsDialog() {
     size: 'xl',
     body: h('div', { class: 'ver-layout' }, list, side),
     actions: [
-      h('span', { class: 'ver-foot muted' }, 'Guardadas neste computador, a cada Salvar (até 30 por fluxo).'),
+      h('span', { class: 'ver-foot muted' }, space
+        ? `Guardadas na pasta do espaço "${space.nome}", para todos do espaço (até 50 por fluxo).`
+        : 'Guardadas neste computador, a cada Salvar (até 30 por fluxo).'),
       button({ label: 'Fechar', onClick: () => close() }),
       restoreBtn,
     ],
@@ -157,7 +161,7 @@ export async function openVersionsDialog() {
 
   let items = [];
   try {
-    items = await api.versions(wf.id, wf, path);
+    items = space ? await api.spaceVersions(space.id, wf.id, wf) : await api.versions(wf.id, wf, path);
   } catch (err) {
     toastError(err, 'Não foi possível ler as versões');
     close();
@@ -176,27 +180,32 @@ export async function openVersionsDialog() {
     side.replaceChildren(h('p', { class: 'muted' }, 'Carregando a prévia…'));
     restoreBtn.disabled = true;
     try {
-      const version = await api.version(wf.id, item.id, path);
+      const version = space ? await api.spaceVersion(space.id, wf.id, item.id) : await api.version(wf.id, item.id, path);
       if (row.getAttribute('aria-selected') !== 'true') return; // a pessoa já escolheu outra
       chosen = { item, version };
       const same = item.changes && Object.entries(item.changes).every(([, v]) => !v);
       side.replaceChildren(
         h('div', { class: 'ver-side-head' },
           h('strong', {}, when(item.created_at)),
+          space ? h('span', { class: 'ver-author' }, icon('user', 12), item.autor_nome) : null,
+          space && !item.confere ? h('span', { class: 'ver-chip warn', title: 'Sem a assinatura de um membro que podia editar: ao restaurar, você confere e salva com a sua.' }, icon('alert', 12), 'Assinatura não confere') : null,
           h('span', { class: 'ver-chip' }, icon(ORIGIN[item.origin][0], 12), ORIGIN[item.origin][1]),
           version.name !== wf.name ? h('span', { class: 'muted' }, `nome: ${version.name}`) : null),
         h('p', { class: 'ver-changes' }, same ? 'Igual ao que está aberto agora.' : `Se restaurar: ${summary(item.changes)}.`),
         preview(version),
         legend());
-      restoreBtn.disabled = same;
+      restoreBtn.disabled = same || Boolean(store.readonly);
+      if (store.readonly) restoreBtn.title = 'Aberto só para ver: para restaurar, comece a editar.';
     } catch (err) {
       side.replaceChildren(h('p', { class: 'field-error' }, err.message || 'Não foi possível abrir esta versão.'));
     }
   };
 
+  if (choose && !items.some((item) => item.id === choose)) choose = null; // já saiu do histórico: mostra a mais nova
   items.forEach((item, i) => {
     const row = h('button', { type: 'button', class: 'ver-item', role: 'option', 'aria-selected': 'false' },
       h('span', { class: 'ver-item-when' }, when(item.created_at)),
+      space ? h('span', { class: 'ver-item-author' }, item.autor_nome) : null,
       h('span', { class: 'ver-item-origin' }, icon(ORIGIN[item.origin][0], 12), ORIGIN[item.origin][1]),
       h('span', { class: 'ver-item-sum' }, `${plural(item.node_count, 'caixa', 'caixas')} · ${summary(item.changes)}`));
     row.addEventListener('click', () => show(item, row));
@@ -206,14 +215,15 @@ export async function openVersionsDialog() {
       if (k !== rows.indexOf(row) && rows[k]) { e.preventDefault(); rows[k].focus(); rows[k].click(); }
     });
     list.append(row);
-    if (i === 0) show(item, row);
+    if (choose ? item.id === choose : i === 0) show(item, row);
   });
 
   restoreBtn.addEventListener('click', async () => {
     if (!chosen) return;
     restoreBtn.disabled = true;
     try {
-      await api.recordVersion(wf.id, store.workflow, 'restore', path); // o que estava aberto não se perde
+      if (space) await api.recordSpaceVersion(space.id, wf.id, store.workflow); // o que estava aberto não se perde
+      else await api.recordVersion(wf.id, store.workflow, 'restore', path);
     } catch (err) {
       toastError(err, 'Não foi possível guardar a versão atual antes de restaurar');
       restoreBtn.disabled = false;

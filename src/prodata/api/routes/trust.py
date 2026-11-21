@@ -37,10 +37,17 @@ def state(services: Services, workflow: Workflow) -> dict[str, Any]:
     if not protected:
         return {"protected": False, "summary": []}
     missing = {s["key"] for s in check_sources(workflow, services) if s["state"] != "ok"}
+    items = summary(workflow, _names(services), missing)
+    only = services.trust.only(
+        workflow.id
+    )  # espaço da equipe: só o que mudou de sensível (spec 047, RF-4741)
+    if only is not None:
+        items = [i for i in items if i["node_id"] in only]
     return {
         "protected": True,
-        "summary": summary(workflow, _names(services), missing),
+        "summary": items,
         "reason": services.trust.reason(workflow.id),  # espaço da equipe: por que não confere (spec 047)
+        "diff": only is not None,
     }
 
 
@@ -54,4 +61,6 @@ def trust_state(req: TrustRequest, services: ServicesDep) -> dict[str, Any]:
 def trust_confirm(req: TrustRequest, services: ServicesDep) -> dict[str, Any]:
     """A pessoa conferiu e confiou: o conteúdo de agora fica liberado neste computador."""
     services.trust.confirm(req.workflow)
+    if space := services.trust.space_of(req.workflow.id):  # o que foi conferido vira a referência (RF-4741)
+        services.team.accept_sensitive(space, req.workflow.id)
     return state(services, req.workflow)

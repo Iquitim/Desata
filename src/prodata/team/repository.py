@@ -29,6 +29,10 @@ RETRY_WAIT = 0.4
 _ID = re.compile(ID_PATTERN)
 
 
+class HeldFileError(InvalidInputError):
+    """A sincronização segurou o arquivo além das novas tentativas (RF-4763): quem chama pode adiar o envio."""
+
+
 class SpaceFlow(BaseModel):
     id: str
     name: str
@@ -111,11 +115,40 @@ class SpaceRepository:
             if signature is not None:
                 atomic_write(path.with_name(f"{path.name}{SIG}"), signature)
         except PermissionError as exc:
-            raise InvalidInputError(
+            raise HeldFileError(
                 "A pasta do espaço segurou o arquivo por tempo demais (a sincronização ainda está enviando?) ou não "
                 "permite gravar. Tente de novo em instantes; nada foi perdido."
             ) from exc
         return workflow.model_copy(update={"samples": {}})
+
+    def conflict_copies(self) -> list[tuple[Path, Workflow]]:
+        """Cópias de conflito criadas pela sincronização (RF-4762): ``fluxo-NOTEANA.prodata.json`` (OneDrive,
+        SharePoint), ``fluxo (1).prodata.json``, ``fluxo.prodata.sync-conflict-….json`` (Syncthing). Valem só as de
+        um fluxo que existe no espaço; o resto da pasta não é da conta do programa."""
+        out: list[tuple[Path, Workflow]] = []
+        for path in sorted(self.root.glob("*.json")):
+            if ".prodata" not in path.name or path.name.endswith(".tmp"):
+                continue
+            try:
+                wf = Workflow.model_validate_json(path.read_text(encoding="utf-8"))
+            except OSError, ValidationError, ValueError:
+                continue
+            if path.name != f"{wf.id}{SUFFIX}" and _ID.match(wf.id) and self.exists(wf.id):
+                out.append((path, wf))
+        return out
+
+    def copy_signature(self, path: Path) -> str | None:
+        try:
+            return path.with_name(f"{path.name}{SIG}").read_text(encoding="utf-8")
+        except OSError:
+            return None
+
+    def remove_copy(self, path: Path) -> None:
+        """Tira da pasta uma cópia de conflito que já virou versão (o conteúdo está guardado em Versões)."""
+        if path.parent != self.root or not any(path == p for p, _ in self.conflict_copies()):
+            raise InvalidInputError("Esse arquivo não é uma cópia de conflito do espaço.")
+        path.unlink(missing_ok=True)
+        path.with_name(f"{path.name}{SIG}").unlink(missing_ok=True)
 
     def signature(self, workflow_id: str) -> str | None:
         """O texto da assinatura da versão de trabalho, ou None se não houver (alterado ou criado fora do programa)."""

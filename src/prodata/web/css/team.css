@@ -28,3 +28,8 @@
 .ro-fields { border: 0; margin: 0; padding: 0; min-width: 0; }
 .ro-fields:disabled { opacity: .75; }
 .wf-main .team-chip { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; }
+/* Novidade no fluxo do espaço: Atualizado por, Recarregar (spec 047, RF-4732, RF-4733) */
+.readonly-host { display: grid; gap: 6px; }
+.readonly-host[hidden] { display: none; }
+.news-bar { border-color: var(--border-strong, var(--border)); }
+.news-bar .icon { color: var(--text-2); }

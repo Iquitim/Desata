@@ -92,11 +92,14 @@ function draw() {
       h('div', { class: 'grow' },
         // Espaço da equipe (spec 047): a assinatura não conferiu, e a faixa diz por quê
         h('strong', {}, store.trust.reason ? `${store.trust.reason} Nada foi executado.` : 'Este fluxo veio de fora: nada foi executado'),
-        h('p', {}, store.trust.reason
-          ? 'Confira o que ele lê, calcula e grava antes de confiar, ou peça a quem edita o espaço para restaurar a última versão salva pelo programa.'
-          : 'Confira o que ele lê, calcula e grava. Clique num item para ver a caixa. Você pode editar à vontade; executar só depois de confiar.')),
+        h('p', {}, store.trust.diff
+          // confiança por diferença (spec 047, RF-4741): só as partes sensíveis novas ou alteradas
+          ? 'Aparece só o que mudou desde a última vez que você conferiu. Filtros, fórmulas e layout não pedem conferência. Clique num item para ver a caixa.'
+          : store.trust.reason
+            ? 'Confira o que ele lê, calcula e grava antes de confiar, ou peça a quem edita o espaço para restaurar a última versão salva pelo programa.'
+            : 'Confira o que ele lê, calcula e grava. Clique num item para ver a caixa. Você pode editar à vontade; executar só depois de confiar.')),
       button({ icon: 'eye', label: 'Só olhar', variant: 'ghost', onClick: () => { collapsed = true; draw(); } }),
-      button({ icon: 'check', label: 'Confiar e executar', variant: 'primary', onClick: confirm })),
+      button({ icon: 'check', label: store.trust.diff ? 'Conferir e confiar' : 'Confiar e executar', variant: 'primary', onClick: confirm })),
     groups.length
       ? h('div', { class: 'trust-groups' }, groups.map((g) => h('div', { class: 'trust-group' },
         h('span', { class: 'trust-group-title' }, g.title), g.items.map(itemEl))))
