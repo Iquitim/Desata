@@ -17,9 +17,9 @@
 
 ## Marco 3 — Quem está editando e modo só leitura
 
-- [ ] T10 Marcas de edição: criar, renovar, soltar, expirar com folga para a sincronização (RF-4721, RF-4723)
-- [ ] T11 Modo só leitura no store e na interface; Leitor e pasta sem escrita usam o mesmo modo (RF-4722, RF-4716)
-- [ ] T12 Quem está editando na biblioteca; diálogo Abrir só para ver / Editar mesmo assim (RF-4721, RF-4724, CA-05)
+- [x] T10 Marcas de edição: criar, renovar, soltar, expirar com folga para a sincronização (RF-4721, RF-4723)
+- [x] T11 Modo só leitura no store e na interface; Leitor e pasta sem escrita usam o mesmo modo (RF-4722, RF-4716)
+- [x] T12 Quem está editando na biblioteca; diálogo Abrir só para ver / Editar mesmo assim (RF-4721, RF-4724, CA-05)
 
 ## Marco 4 — O que mudou, confiança por diferença, conflito
 

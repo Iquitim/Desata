@@ -7,7 +7,8 @@ Sobe o próprio servidor, com uma pasta de dados temporária (nada vai para a bi
 janela e confere o comportamento de ponta a ponta: o que os testes do motor não enxergam (cliques, arrastos, diálogos,
 animações). Sai com 1 se alguma conferência falhar ou se a página tiver erro de JavaScript.
 
-Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe (spec 047).
+Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe e equipe2 (spec 047,
+duas pessoas: sobe um segundo servidor).
 """
 
 from __future__ import annotations
@@ -29,6 +30,8 @@ from playwright.sync_api import Page, sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 PORT = 8795
 URL = f"http://127.0.0.1:{PORT}/"
+PORT_BRUNO = 8794  # segunda pessoa, para as conferências com duas pessoas (spec 047)
+URL_BRUNO = f"http://127.0.0.1:{PORT_BRUNO}/"
 UPLOAD = """async ([name, text]) => { const fd = new FormData(); fd.append('file', new File([text], name, { type: 'text/csv' }));
   fd.append('overwrite', 'true'); const r = await fetch('/api/datasets', { method: 'POST', body: fd }); return (await r.json()).name; }"""
 
@@ -49,8 +52,8 @@ check = Checks()
 # ---------------------------------------------------------------- ajudantes
 
 
-def ready(pg: Page) -> None:
-    pg.goto(URL)
+def ready(pg: Page, url: str = URL) -> None:
+    pg.goto(url)
     pg.wait_for_function("() => document.querySelectorAll('.node').length > 15", timeout=90000)
     pg.evaluate("""async () => { window.__S = await import('/static/js/store.js'); window.__A = await import('/static/js/actions.js');
       window.__CV = await import('/static/js/canvas.js'); }""")
@@ -481,6 +484,125 @@ def equipe(pg: Page) -> None:
         shutil.rmtree(folder, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- spec 047: duas pessoas (marco 3)
+
+POST = """async ([url, body]) => { const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body) }); const j = await r.json(); if (!r.ok) throw new Error(JSON.stringify(j)); return j; }"""
+PUT = """async ([url, body]) => { const r = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body) }); if (!r.ok) throw new Error(await r.text()); return r.json(); }"""
+TEAM_FLOW = {"id": "fluxo_time", "name": "Fluxo do time", "edges": [],
+             "nodes": [{"id": "n1", "type": "prep.select", "x": 200, "y": 160, "config": {}}]}  # fmt: skip
+
+
+def open_space_flow(pg: Page, space_name: str, flow_name: str) -> None:
+    pg.locator(".top-menu", has_text="Arquivo").click()
+    pg.locator(".menu .menu-item", has_text="Abrir da biblioteca").click()
+    lib = pg.locator("dialog[open]")
+    lib.locator(".team-tabs .segment", has_text=space_name).click()
+    lib.locator(".wf-item", has_text=flow_name).locator(".wf-main").click()
+
+
+def node_x(pg: Page) -> float:
+    return float(pg.evaluate("() => window.__S.store.workflow.nodes[0].x"))
+
+
+def equipe2(pg: Page) -> None:
+    folder = Path(tempfile.mkdtemp(prefix="conferir-espaco2-"))
+    ctx2 = pg.context.browser.new_context(viewport={"width": 1500, "height": 950})  # type: ignore[union-attr]
+    bruno = ctx2.new_page()
+    try:
+        pg.evaluate(POST, ["/api/equipe/identidade", {"nome": "Ana Souza"}])
+        sid = pg.evaluate(
+            POST, ["/api/equipe/espacos", {"acao": "criar", "caminho": str(folder), "nome": "Time"}]
+        )["id"]
+        pg.evaluate(PUT, [f"/api/equipe/espacos/{sid}/fluxos/fluxo_time", TEAM_FLOW])
+        ready(bruno, URL_BRUNO)
+        bruno.evaluate(POST, ["/api/equipe/identidade", {"nome": "Bruno Lima"}])
+        joined = bruno.evaluate(POST, ["/api/equipe/espacos", {"acao": "entrar", "caminho": str(folder)}])
+        check("Bruno entra como pedido", joined["papel"] is None and joined["pedido"])
+        pg.evaluate(
+            POST,
+            [
+                f"/api/equipe/espacos/{sid}/membros",
+                {"acao": "aceitar", "usuario": "bruno", "papel": "editor"},
+            ],
+        )
+
+        open_space_flow(pg, "Time", "Fluxo do time")
+        pg.wait_for_function("() => window.__S.store.workflow?.id === 'fluxo_time'", timeout=10000)
+        check("Ana abre para editar (sem faixa)", pg.locator(".readonly-bar").count() == 0)
+
+        bruno.locator(".top-menu", has_text="Arquivo").click()
+        bruno.locator(".menu .menu-item", has_text="Abrir da biblioteca").click()
+        lib = bruno.locator("dialog[open]")
+        lib.locator(".team-tabs .segment", has_text="Time").click()
+        item = lib.locator(".wf-item", has_text="Fluxo do time")
+        item.wait_for(timeout=10000)
+        check(
+            "a biblioteca do Bruno mostra que a Ana está editando",
+            "Ana Souza" in item.inner_text(),
+            item.inner_text(),
+        )
+        item.locator(".wf-main").click()
+        conflict = bruno.locator("dialog[open][aria-label='Este fluxo está sendo editado']")
+        conflict.wait_for(timeout=10000)
+        check("Bruno é avisado: Ana está editando", "Ana Souza está editando" in conflict.inner_text())
+        conflict.locator("button", has_text="Abrir só para ver").click()
+        bar = bruno.locator(".readonly-bar")
+        bar.wait_for(timeout=10000)
+        check("abre só para ver, com a faixa", "Aberto só para ver" in bar.inner_text())
+        before = node_x(bruno)
+        box = bruno.locator(".node[data-id='n1'] .node-card").bounding_box()
+        assert box is not None
+        bruno.mouse.move(box["x"] + 40, box["y"] + 20)
+        bruno.mouse.down()
+        bruno.mouse.move(box["x"] + 240, box["y"] + 120, steps=8)
+        bruno.mouse.up()
+        check("só para ver: arrastar não move a caixa", node_x(bruno) == before)
+        bruno.keyboard.press("Control+s")
+        bruno.wait_for_timeout(400)
+        check(
+            "só para ver: Salvar não grava", "nada para salvar" in bruno.locator(".toast").last.inner_text()
+        )
+
+        pg.locator(".wf-tab.active .wf-tab-close").click()  # Ana fecha o fluxo: a marca é solta
+        pg.wait_for_timeout(800)
+        bar.locator("button", has_text="Editar").click()
+        bruno.wait_for_selector(".readonly-bar", state="detached", timeout=10000)
+        check("Bruno passa a editar quando fica livre", bruno.locator(".readonly-bar").count() == 0)
+        box = bruno.locator(".node[data-id='n1'] .node-card").bounding_box()
+        assert box is not None
+        bruno.mouse.move(box["x"] + 40, box["y"] + 20)
+        bruno.mouse.down()
+        bruno.mouse.move(box["x"] + 240, box["y"] + 120, steps=8)
+        bruno.mouse.up()
+        bruno.keyboard.press("Control+s")
+        bruno.wait_for_function("() => !window.__S.isDirty()", timeout=10000)
+        saved = json.loads((folder / "fluxo_time.prodata.json").read_text(encoding="utf-8"))
+        check(
+            "editando, a mudança do Bruno vai para o espaço",
+            saved["nodes"][0]["x"] != TEAM_FLOW["nodes"][0]["x"],
+        )
+
+        pg.evaluate(
+            POST,
+            [f"/api/equipe/espacos/{sid}/membros", {"acao": "papel", "usuario": "bruno", "papel": "leitor"}],
+        )
+        bruno.locator(".wf-tab.active .wf-tab-close").click()
+        bruno.wait_for_timeout(500)
+        open_space_flow(bruno, "Time", "Fluxo do time")
+        bar = bruno.locator(".readonly-bar")
+        bar.wait_for(timeout=10000)
+        check(
+            "Leitor abre só para ver, sem botão Editar",
+            "Leitor" in bar.inner_text() and bar.locator("button").count() == 0,
+            bar.inner_text(),
+        )
+    finally:
+        ctx2.close()
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -503,15 +625,17 @@ def pilula(pg: Page, reduced: bool = False) -> None:
 CHECKS: dict[str, Callable[[Page], None]] = {
     "salvar": salvar, "versoes": versoes, "fio": fio, "fonte": fonte, "erros": erros, "pilula": pilula,
     "equipe": equipe,
+    "equipe2": equipe2,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
 
 
-def start_server(data: Path) -> subprocess.Popen[bytes]:
+def start_server(data: Path, port: int = PORT, user: str = "ana") -> subprocess.Popen[bytes]:
     env = {
         **os.environ,
-        "PRODATA_PORT": str(PORT),
+        "PRODATA_USUARIO": user,  # identidade de teste (spec 047): cada servidor é uma pessoa
+        "PRODATA_PORT": str(port),
         "PRODATA_STORAGE_DIR": str(data),
         "PRODATA_SECRETS_BACKEND": "memory",
     }
@@ -520,7 +644,7 @@ def start_server(data: Path) -> subprocess.Popen[bytes]:
     server = subprocess.Popen([uv, "run", "prodata"], cwd=ROOT, env=env, stdout=quiet, stderr=quiet)  # noqa: S603
     for _ in range(120):
         try:
-            urllib.request.urlopen(URL + "api/health")  # noqa: S310
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/api/health")
             return server
         except OSError:
             time.sleep(1)
@@ -545,6 +669,10 @@ def main() -> int:
     errors: list[str] = []
     with tempfile.TemporaryDirectory(prefix="conferir-tela-") as folder:
         server = start_server(Path(folder) / "dados")
+        # Duas pessoas (spec 047): o Bruno tem o próprio servidor, pasta de dados e usuário.
+        second = (
+            start_server(Path(folder) / "dados-bruno", PORT_BRUNO, "bruno") if "equipe2" in chosen else None
+        )
         try:
             with sync_playwright() as p:
                 browser = p.chromium.launch(channel="chrome", headless=True)
@@ -570,6 +698,8 @@ def main() -> int:
                 browser.close()
         finally:
             stop_server(server)
+            if second is not None:
+                stop_server(second)
     check("nenhum erro de JavaScript na página", not errors, errors[:3])
     print(
         f"{check.total - check.failed}/{check.total} conferências"

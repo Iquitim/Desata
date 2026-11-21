@@ -107,3 +107,16 @@ def copy_to_library(space_id: SpaceId, workflow_id: WorkflowId, services: Servic
     copy = services.team.copy_to_library(space_id, workflow_id, f"wf_{secrets.token_hex(4)}")
     services.trust.saved(copy)
     return copy
+
+
+class EditingRequest(BaseModel):
+    acao: Literal["abrir", "renovar", "soltar", "estado"]
+    forcar: bool = False
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/edicao")
+def editing(
+    space_id: SpaceId, workflow_id: WorkflowId, req: EditingRequest, services: ServicesDep
+) -> dict[str, Any]:
+    """Quem está editando (spec 047, RF-4721..4723): abrir, renovar, soltar ou consultar a marca de edição."""
+    return services.team.editing(space_id, workflow_id, req.acao, force=req.forcar)

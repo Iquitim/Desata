@@ -500,12 +500,12 @@ function nodePanel(n) {
     schemaNotice(n),
     sourceBanner(n),
     n.type === 'transform.append_fields' ? appendBanner(n) : null,
-    lead.length ? h('div', { class: 'pad' }, renderFields(lead, n.config, onChange, leadContext(n, multirow))) : null,
+    lead.length ? roFields(h('div', { class: 'pad' }, renderFields(lead, n.config, onChange, leadContext(n, multirow)))) : null,
     recipeFormula,
     explainer,
-    h('div', { class: 'pad' }, rest.length
+    roFields(h('div', { class: 'pad' }, rest.length
       ? renderFields(rest, n.config, onChange, nodeContext(n))
-      : h('p', { class: 'muted' }, 'Esta ferramenta não tem configurações.')));
+      : h('p', { class: 'muted' }, 'Esta ferramenta não tem configurações.'))));
 }
 
 // ------------------------------------------------------------------ caixa de organização (spec 007)
@@ -557,4 +557,9 @@ function containerPanel(c) {
           : h('p', { class: 'field-help' }, 'Nenhuma caixa dentro. Arraste caixas para dentro da etapa ou mude o tamanho dela.')),
       h('div', { class: 'stack-xs' },
         button({ icon: 'fit', label: 'Ajustar às caixas de dentro', disabled: !inside.length, onClick: () => fitContainer(c.id, NODE_W, nodeHeight) }))));
+}
+
+/** Aberto só para ver (spec 047, RF-4722): os campos ficam visíveis, mas desativados. */
+function roFields(el) {
+  return store.readonly ? h('fieldset', { class: 'ro-fields', disabled: true, title: store.readonly.motivo }, el) : el;
 }

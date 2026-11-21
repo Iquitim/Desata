@@ -175,7 +175,7 @@ export function setCanvasTool(next) {
 
 function onPointerDown(e) {
   // A barra flutuante fica dentro do canvas: sem isto o pan capturaria o ponteiro e o clique não chegaria aos botões.
-  if (e.button === 2 || e.target.closest('.canvas-toolbar, .trust-host')) return;
+  if (e.button === 2 || e.target.closest('.canvas-toolbar, .trust-host, .readonly-host')) return;
   closeMenu();
   const target = e.target;
   const world = toWorld(e.clientX, e.clientY);
@@ -222,6 +222,8 @@ function onPointerDown(e) {
   } else if (target.closest('g.edge')) {
     gesture = { type: 'edge', edge: target.closest('g.edge').dataset.edge };
   }
+  // Aberto só para ver (spec 047, RF-4722): clicar seleciona e inspeciona; arrastar e ligar não mexem em nada.
+  if (gesture && store.readonly && EDIT_GESTURES.has(gesture.type)) gesture.locked = true;
   try {
     els.viewport.setPointerCapture(e.pointerId);
   } catch {
@@ -257,6 +259,7 @@ const MOVING = new Set(['drag', 'group-drag', 'container-move', 'container-resiz
 // ------------------------------------------------------------------ andar a tela ao arrastar até a borda
 
 const AUTO_PAN_GESTURES = new Set(['connect', 'drag', 'group-drag', 'container-move']);
+const EDIT_GESTURES = new Set(['connect', 'drag', 'group-drag', 'container-move', 'container-resize']);
 const AUTO_PAN_EDGE = 56; // faixa da borda, em px, onde a tela começa a andar
 const AUTO_PAN_SPEED = 16; // px por quadro, com o cursor na borda ou fora dela
 const AUTO_PAN_ROOM = 200; // ao puxar uma ligação, espaço livre depois da última caixa
@@ -302,6 +305,7 @@ function autoPanTick() {
 function handleMove(e) {
   const far = Math.hypot(e.clientX - gesture.startX, e.clientY - gesture.startY) > DRAG_THRESHOLD;
   if (!gesture.moved && !far) return;
+  if (gesture.locked) return; // só para ver: o gesto vira um clique (seleciona), nunca um arraste
   autoPanEvent = e;
   if (!autoPanFrame && AUTO_PAN_GESTURES.has(gesture.type)) autoPanFrame = requestAnimationFrame(autoPanTick);
   const world = toWorld(e.clientX, e.clientY);
@@ -463,7 +467,7 @@ function onPointerUp(e) {
 }
 
 function onWheel(e) {
-  if (e.target.closest('.trust-host')) return; // a lista da faixa rola sozinha, sem mexer no zoom
+  if (e.target.closest('.trust-host, .readonly-host')) return; // a lista da faixa rola sozinha, sem mexer no zoom
   e.preventDefault();
   if (e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX)) {
     zoomBy(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX, e.clientY);
@@ -485,7 +489,7 @@ function renameNodeInInspector(id) {
 
 function onContextMenu(e) {
   e.preventDefault();
-  if (e.target.closest('.canvas-toolbar, .trust-host')) return;
+  if (e.target.closest('.canvas-toolbar, .trust-host, .readonly-host')) return;
   const world = toWorld(e.clientX, e.clientY);
   const pasteItem = (label = 'Colar aqui') => ({
     label, icon: 'clipboard', shortcut: 'Ctrl+V', disabled: !hasClipboard(), onSelect: () => paste(world),
@@ -628,7 +632,7 @@ export function initCanvas(root, opts = {}) {
   root.addEventListener('dragleave', () => highlightEdge(null));
   root.addEventListener('drop', onDrop);
   root.addEventListener('dblclick', (e) => {
-    if (!e.target.closest('.node, .container-box, .canvas-toolbar, .trust-host')) openQuickAdd(e.clientX, e.clientY, { to: toWorld(e.clientX, e.clientY) });
+    if (!e.target.closest('.node, .container-box, .canvas-toolbar, .trust-host, .readonly-host')) openQuickAdd(e.clientX, e.clientY, { to: toWorld(e.clientX, e.clientY) });
   });
 
   on('workflow:loaded', (payload) => {

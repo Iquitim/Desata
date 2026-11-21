@@ -113,6 +113,7 @@ async function askFirstName() {
 /** Salva a aba ativa (Ctrl+S, botão do topo). Devolve true se salvou. Um Salvar manual religa o automático. */
 export async function saveFlow() {
   blocked = null;
+  if (store.readonly) { toast('Aberto só para ver: nada para salvar', { detail: store.readonly.motivo }); return false; }
   if (!store.filePath && !store.savedSnapshot && store.workflow) {
     const name = await askFirstName();
     if (name === null) return false;
@@ -168,6 +169,7 @@ export async function saveAs() {
 export function autoBlockedReason() {
   if (!store.workflow) return 'nenhum fluxo aberto';
   if (!store.savedSnapshot && !store.filePath) return 'este fluxo ainda não foi salvo: use Salvar uma vez';
+  if (store.readonly) return 'o fluxo está aberto só para ver';
   if (isProtected()) return 'o fluxo está em modo protegido';
   if (EXAMPLES.has(store.workflow.id)) return 'é o fluxo de exemplo (Salvar como faz a sua cópia)';
   if (store.workflow.id.startsWith('licao_')) return 'é o fluxo de uma lição';

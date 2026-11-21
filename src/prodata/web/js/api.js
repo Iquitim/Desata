@@ -138,6 +138,7 @@ export const api = {
   copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
   spaceMembers: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/membros`),
   changeMembers: (id, acao, usuario, papel = 'leitor') => request('POST', `/api/equipe/espacos/${enc(id)}/membros`, { acao, usuario, papel }),
+  spaceEditing: (id, wid, acao, forcar = false) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/edicao`, { acao, forcar }),
 
   // Agendamentos (spec 044)
   schedules: () => request('GET', '/api/schedules'),

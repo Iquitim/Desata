@@ -157,7 +157,8 @@ export function spacePane(space, { onOpen, onCopied }) {
       box.replaceChildren(...(flows.length ? flows.map((f) => h('div', { class: 'wf-item' },
         h('button', { type: 'button', class: 'wf-main', onclick: () => onOpen(f) },
           icon('workflow', 16), h('span', { class: 'grow' }, h('strong', {}, f.name),
-            h('small', { class: 'muted' }, ` · ${f.node_count} caixas · ${fmt.date(f.modified_at)}`))),
+            h('small', { class: 'muted' }, ` · ${f.node_count} caixas · ${fmt.date(f.modified_at)}`)),
+            f.editando ? h('span', { class: 'team-chip warn', title: `${f.editando} está editando agora` }, icon('edit', 11), ` ${f.editando}`) : null),
         button({
           icon: 'copy', title: 'Fazer uma cópia em Meus fluxos', size: 'sm', variant: 'ghost',
           onClick: async () => {

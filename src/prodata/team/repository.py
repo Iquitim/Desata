@@ -34,6 +34,8 @@ class SpaceFlow(BaseModel):
     name: str
     node_count: int
     modified_at: datetime
+    editando: str | None = None  # quem está editando agora (spec 047, RF-4724)
+    editando_desde: datetime | None = None
 
 
 def atomic_write(path: Path, text: str, *, retries: int = RETRIES, wait: float = RETRY_WAIT,

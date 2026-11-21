@@ -15,6 +15,7 @@ from prodata.domain.workflow import Workflow
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.services.workflows import WorkflowRepository
 from prodata.team.identity import Identity, IdentityStore
+from prodata.team.locks import LockStore
 from prodata.team.members import MembersStore
 from prodata.team.repository import SpaceFlow, SpaceRepository
 from prodata.team.signing import (
@@ -129,7 +130,58 @@ class TeamService:
     # ------------------------------------------------------------------ fluxos
 
     def flows(self, space_id: str) -> list[SpaceFlow]:
-        return self._require(space_id, "leitor")[1].flows()
+        """Os fluxos do espaço, com quem está editando cada um agora (RF-4724)."""
+        _, repo, _ = self._require(space_id, "leitor")
+        locks = LockStore(repo.root).all()
+        me = self.identity.current()
+        out = []
+        for f in repo.flows():
+            lock = locks.get(f.id)
+            if lock and lock.usuario != me.usuario:
+                f = f.model_copy(update={"editando": lock.nome, "editando_desde": lock.desde})
+            out.append(f)
+        return out
+
+    # ------------------------------------------------------------------ quem está editando (RF-4721..4723)
+
+    def editing(self, space_id: str, workflow_id: str, action: str, *, force: bool = False) -> dict[str, Any]:
+        """``abrir``: diz se o fluxo abre para editar, só para ver (papel ou pasta) ou se outra pessoa está editando;
+        ``renovar``/``soltar``: a minha marca; ``estado``: quem está editando agora."""
+        space = self.workspaces.get(space_id)
+        if space.estado not in READABLE:
+            raise InvalidInputError(space.motivo or "O espaço não está disponível agora.")
+        members, reason = self.members(space_id)
+        role = self.my_role(members)
+        if role is None:
+            raise InvalidInputError(reason or "Você ainda não é membro deste espaço.")
+        locks = LockStore(self.workspaces.root(space_id))
+        me = self.identity.current()
+
+        def who(lock: Any) -> dict[str, Any] | None:
+            return (
+                {"nome": lock.nome, "desde": lock.desde.isoformat(), "maquina": lock.maquina}
+                if lock
+                else None
+            )
+
+        if action == "estado":
+            return {"editando": who(locks.other(workflow_id, me))}
+        if action == "soltar":
+            locks.release(workflow_id, me)
+            return {"editando": None}
+        if action == "renovar":
+            return {"ok": locks.renew(workflow_id, me), "editando": who(locks.other(workflow_id, me))}
+        if RANK[role] < RANK["editor"]:
+            return {
+                "modo": "ver",
+                "motivo": f"Seu papel neste espaço é {ROLE_NAMES[role]}: você abre só para ver.",
+            }
+        if space.estado != "ok":
+            return {"modo": "ver", "motivo": space.motivo}
+        theirs = locks.acquire(workflow_id, me, force=force)
+        if theirs:
+            return {"modo": "conflito", "editando": who(theirs)}
+        return {"modo": "editar"}
 
     def get(self, space_id: str, workflow_id: str) -> tuple[Workflow, str | None]:
         """O fluxo e, se a versão não confere, o motivo (abre protegido e não executa, RF-4715)."""

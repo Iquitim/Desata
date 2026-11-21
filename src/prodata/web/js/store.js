@@ -23,6 +23,7 @@ export const store = {
   workflow: null,
   filePath: null, // arquivo .prodata.json fora da biblioteca, quando aberto/salvo por "Salvar como"
   space: null, // espaço da equipe de onde o fluxo veio (spec 047): { id, nome }; null = biblioteca ou arquivo
+  readonly: null, // aberto só para ver (spec 047, RF-4722): { motivo, editando }; null = edita normalmente
 
   savedSnapshot: '',
   execution: null,
@@ -78,6 +79,7 @@ export function markSaved() {
  * único passo de desfazer. `affects` lista nós cujo resultado fica desatualizado.
  */
 export function mutate(fn, { key = null, affects = [], structural = false } = {}) {
+  if (store.readonly) { emit('readonly:blocked'); return; } // aberto só para ver (spec 047): nada muda
   const now = Date.now();
   const coalesce = key && key === history.lastKey && now - history.lastAt < COALESCE_MS;
   if (!coalesce) {
@@ -106,6 +108,7 @@ export function silently(fn) {
 
 /** Para gestos contínuos (arrastar): registra um passo de desfazer agora e confirma no fim. */
 export function checkpoint() {
+  if (store.readonly) return;
   history.undo.push(snapshot());
   history.redo = [];
   history.lastKey = null;
@@ -132,6 +135,7 @@ function restore(serialized) {
 }
 
 export function undo() {
+  if (store.readonly) { emit('readonly:blocked'); return false; }
   if (!history.undo.length) return false;
   history.redo.push(snapshot());
   restore(history.undo.pop());
@@ -139,6 +143,7 @@ export function undo() {
 }
 
 export function redo() {
+  if (store.readonly) { emit('readonly:blocked'); return false; }
   if (!history.redo.length) return false;
   history.undo.push(snapshot());
   restore(history.redo.pop());
@@ -160,6 +165,7 @@ export function snapshotState() {
     inspect: store.inspect,
     filePath: store.filePath,
     space: store.space,
+    readonly: store.readonly,
     undo: history.undo,
     redo: history.redo,
   };
@@ -176,6 +182,7 @@ export function restoreState(state, payload = {}) {
     inspect: state.inspect,
     filePath: state.filePath,
     space: state.space || null,
+    readonly: state.readonly || null,
   });
   history.undo = state.undo;
   history.redo = state.redo;

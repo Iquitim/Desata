@@ -17,7 +17,8 @@ const stateOf = (i) => (i === active ? snapshotState() : tabs[i].frozen);
 export function tabInfo(i) {
   const st = stateOf(i);
   const dirty = i === active ? isDirty() : JSON.stringify(st.workflow) !== st.savedSnapshot;
-  return { key: tabs[i].key, name: st.workflow?.name || 'Sem nome', dirty, filePath: st.filePath, space: st.space || null };
+  return { key: tabs[i].key, id: st.workflow?.id || null, name: st.workflow?.name || 'Sem nome', dirty, filePath: st.filePath,
+    space: st.space || null, readonly: st.readonly || null };
 }
 
 export const anyDirty = () => tabs.some((_, i) => tabInfo(i).dirty);
