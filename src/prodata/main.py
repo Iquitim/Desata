@@ -56,6 +56,9 @@ from prodata.services.trust import TrustRegistry
 from prodata.services.usage import UsageIndex
 from prodata.services.versions import VersionStore
 from prodata.services.workflows import WorkflowRepository
+from prodata.team.identity import IdentityStore
+from prodata.team.service import TeamService
+from prodata.team.workspaces import Workspaces
 
 WEB_DIR = Path(__file__).parent / "web"
 log = logging.getLogger("prodata")
@@ -139,6 +142,11 @@ def build_services(settings: Settings) -> Services:
             trust,
         ),
         versions=VersionStore(settings.storage_dir / "versoes"),
+        team=TeamService(
+            Workspaces(settings.storage_dir / "espacos.json", marca().id, marca().nome),
+            IdentityStore(secrets, settings.storage_dir / "equipe.json"),
+            workflows,
+        ),
     )
 
 

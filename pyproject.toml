@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "connectorx>=0.4.6",
+    "cryptography>=50.0.2",
     "duckdb>=2.0.0",
     "fastapi>=0.162.0",
     "fastexcel>=0.21.0",

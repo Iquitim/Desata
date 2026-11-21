@@ -45,6 +45,7 @@ import { brand } from './brand.js';
 import { showRunNotice } from './run_notice.js';
 import { offerRemoveSchedules, watchScheduleFailures } from './schedules_list.js';
 import { startPills } from './segmented_pill.js';
+import { libraryTabs, moveButton, refreshTeam } from './team_spaces.js';
 
 const LAST_WORKFLOW = 'prodata.lastWorkflow'; // versões anteriores (antes das abas)
 
@@ -168,8 +169,8 @@ function askSave(name, { many = 0 } = {}) {
 }
 
 /** Abre o fluxo numa aba (ou ativa a aba onde ele já está). */
-async function open(workflow, { saved = true, autorun = true, filePath = null } = {}) {
-  const existing = saved ? findTab(workflow.id, filePath) : -1;
+async function open(workflow, { saved = true, autorun = true, filePath = null, space = null } = {}) {
+  const existing = saved ? findTab(workflow.id, filePath, space?.id) : -1;
   if (existing >= 0) {
     switchTab(existing);
     return;
@@ -178,7 +179,7 @@ async function open(workflow, { saved = true, autorun = true, filePath = null } 
   for (const n of workflow.nodes) {
     n.config = { ...structuredClone(store.tools[n.type]?.default_config || {}), ...n.config };
   }
-  openTab(workflow, { saved, filePath });
+  openTab(workflow, { saved, filePath, space });
   if (saved && filePath) rememberRecent(filePath, workflow.name);
   if (autorun && workflow.nodes.length) await run(null, { auto: true });
 }
@@ -250,7 +251,7 @@ function buildTabs() {
         const info = tabInfo(i);
         return h('div', {
           class: ['wf-tab', i === activeIndex() && 'active', info.dirty && 'dirty'], role: 'tab',
-          'aria-selected': String(i === activeIndex()), title: info.filePath || `${info.name} · biblioteca do ${brand.nome}`,
+          'aria-selected': String(i === activeIndex()), title: info.filePath || (info.space ? `${info.name} · espaço ${info.space.nome}` : `${info.name} · biblioteca do ${brand.nome}`),
           onclick: () => {
             if (store.running && i !== activeIndex()) { toast('Aguarde a execução terminar', { kind: 'info' }); return; }
             switchTab(i);
@@ -258,7 +259,7 @@ function buildTabs() {
           },
           onauxclick: (e) => { if (e.button === 1) closeTab(i); },
         },
-        icon(info.filePath ? 'file' : 'workflow', 13),
+        icon(info.filePath ? 'file' : info.space ? 'folder' : 'workflow', 13),
         h('span', { class: 'wf-tab-name' }, info.name),
         h('span', { class: 'wf-tab-dot', title: 'Alterações não salvas' }),
         h('button', {
@@ -278,7 +279,7 @@ function buildTabs() {
 async function openDialogList() {
   let items;
   try {
-    items = await api.workflows();
+    [items] = await Promise.all([api.workflows(), refreshTeam()]);
   } catch (err) {
     toastError(err, 'Não foi possível listar os fluxos');
     return;
@@ -293,6 +294,7 @@ async function openDialogList() {
       },
     }, icon('workflow', 16), h('span', { class: 'grow' }, h('strong', {}, w.name), h('small', { class: 'muted' }, ` · ${w.node_count} caixas · ${fmt.date(w.modified_at)}`),
       w.description ? h('span', { class: 'wf-desc' }, w.description) : null)),
+    moveButton(w, () => { items = items.filter((x) => x.id !== w.id); draw(); }),
     button({
       icon: 'trash', title: 'Excluir fluxo', size: 'sm', variant: 'ghost',
       onClick: async () => {
@@ -320,7 +322,13 @@ async function openDialogList() {
   const dlg = openDialog({
     title: 'Abrir fluxo',
     body: h('div', { class: 'stack-sm' }, h('p', { class: 'muted small' }, 'O fluxo abre numa nova aba.'),
-      h('div', { class: 'panel-subtitle' }, `Biblioteca do ${brand.nome}`), list, recentList),
+      libraryTabs(h('div', { class: 'stack-sm' }, h('div', { class: 'panel-subtitle' }, `Biblioteca do ${brand.nome}`), list, recentList), {
+        onOpen: async (space, f) => {
+          dlg.close();
+          try { await open(await api.spaceFlow(space.id, f.id), { space: { id: space.id, nome: space.nome } }); } catch (err) { toastError(err, 'Não foi possível abrir'); }
+        },
+        onCopied: (copy) => { items = [{ ...copy, node_count: copy.nodes.length, modified_at: new Date().toISOString() }, ...items]; draw(); },
+      })),
     actions: [
       button({ label: 'Abrir arquivo…', icon: 'folder', onClick: () => { dlg.close(); openFile(); } }),
       button({ label: 'Fluxo de demonstração', icon: 'refresh', onClick: async () => {
@@ -382,10 +390,11 @@ function buildTopbar() {
   name.addEventListener('input', () => mutate((wf) => { wf.name = name.value; }, { key: 'wf:name' }));
   on('workflow:loaded', () => { name.value = store.workflow.name; });
   const showFile = () => {
-    name.title = store.filePath ? `Arquivo: ${store.filePath}` : `Biblioteca do ${brand.nome}`;
-    $('#fileBadge').hidden = !store.filePath;
-    $('#fileBadge').textContent = store.filePath ? basename(store.filePath) : '';
-    $('#fileBadge').title = store.filePath || '';
+    const space = store.space;
+    name.title = store.filePath ? `Arquivo: ${store.filePath}` : space ? `Espaço da equipe: ${space.nome}` : `Biblioteca do ${brand.nome}`;
+    $('#fileBadge').hidden = !store.filePath && !space;
+    $('#fileBadge').textContent = store.filePath ? basename(store.filePath) : space ? `Espaço · ${space.nome}` : '';
+    $('#fileBadge').title = store.filePath || (space ? `Este fluxo está no espaço da equipe "${space.nome}"` : '');
   };
   on('workflow:loaded', showFile);
   on('file', showFile);
@@ -715,6 +724,7 @@ async function boot() {
   ]);
 
   const returning = Boolean(savedTabs());
+  await refreshTeam(); // espaço da equipe (spec 047): sem espaço, nada muda na tela
   await restoreTabs();
   buildTabs();
   emit('tabs');
@@ -745,6 +755,8 @@ async function restoreTabs() {
       if (item.kind === 'file') {
         const res = await api.openWorkflowFile(item.path);
         await open(res.workflow, { filePath: res.path, autorun: false });
+      } else if (item.kind === 'space') {
+        await open(await api.spaceFlow(item.space, item.id), { autorun: false, space: { id: item.space, nome: item.name } });
       } else {
         await open(await api.workflow(item.id), { autorun: false });
       }

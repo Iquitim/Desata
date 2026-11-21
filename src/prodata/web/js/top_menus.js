@@ -19,6 +19,7 @@ import { fitView } from './canvas.js';
 import { autoBlockedReason, autosaveActive, setAutosave } from './save_flow.js';
 import { runNoticeOn, setRunNotice } from './run_notice.js';
 import { openVersionsDialog, versionsBlockedReason } from './versions_dialog.js';
+import { openSpacesDialog } from './team_spaces.js';
 
 export { slowestNote } from './node_timing.js';
 
@@ -45,6 +46,9 @@ const fileItems = (a) => [
   'separator',
   { label: 'Agendar este fluxo…', icon: 'clock', disabled: !store.workflow, onSelect: () => openScheduleDialog() },
   { label: 'Agendamentos…', icon: 'list', onSelect: openSchedulesList },
+  'separator',
+  // Espaço da equipe (spec 047): o único item de equipe que aparece para quem usa só no computador (RF-4702).
+  { label: 'Espaços da equipe…', icon: 'folder', title: 'Trabalhar junto numa pasta compartilhada (opcional)', onSelect: () => openSpacesDialog() },
 ];
 
 // Exibir (spec 044): o que é escolha entre opções vira submenu, com o valor atual à direita; o que liga e desliga

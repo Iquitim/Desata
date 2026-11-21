@@ -22,6 +22,7 @@ export const store = {
   organization: { folders: [], sources: {} }, // pastas, nomes de exibição e descrições da vista Dados (spec 034)
   workflow: null,
   filePath: null, // arquivo .prodata.json fora da biblioteca, quando aberto/salvo por "Salvar como"
+  space: null, // espaço da equipe de onde o fluxo veio (spec 047): { id, nome }; null = biblioteca ou arquivo
 
   savedSnapshot: '',
   execution: null,
@@ -158,6 +159,7 @@ export function snapshotState() {
     selection: store.selection,
     inspect: store.inspect,
     filePath: store.filePath,
+    space: store.space,
     undo: history.undo,
     redo: history.redo,
   };
@@ -173,6 +175,7 @@ export function restoreState(state, payload = {}) {
     selection: state.selection,
     inspect: state.inspect,
     filePath: state.filePath,
+    space: state.space || null,
   });
   history.undo = state.undo;
   history.redo = state.redo;

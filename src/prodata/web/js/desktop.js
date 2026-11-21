@@ -14,7 +14,8 @@ function askPath({ title, label, value = '', placeholder = '' }) {
     let answer = null;
     const input = h('input', { class: 'input mono', value, placeholder, 'aria-label': label });
     const ok = () => { answer = input.value.trim() || null; resolve(answer); close(); };
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok(); });
+    // preventDefault: sem ele, o mesmo Enter "clica" o botão que ganha o foco no diálogo seguinte (spec 047)
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
     const { close } = openDialog({
       title,
       size: 'sm',
@@ -38,9 +39,9 @@ async function call(fn, ...args) {
   }
 }
 
-export async function chooseFolder(start = '') {
+export async function chooseFolder(start = '', title = 'Pasta de destino', placeholder = 'D:\\Relatorios') {
   if (native()) return call('choose_folder', start);
-  return askPath({ title: 'Pasta de destino', label: 'Pasta', value: start, placeholder: 'D:\\Relatorios' });
+  return askPath({ title, label: 'Pasta', value: start, placeholder });
 }
 
 export async function chooseSaveFile(suggested, start = '') {

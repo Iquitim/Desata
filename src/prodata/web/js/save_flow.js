@@ -12,6 +12,7 @@ import { persistTabs } from './tabs.js';
 import { isProtected } from './trust_banner.js';
 import { emit, isDirty, markSaved, mutate, on, store } from './store.js';
 import { openDialog, showMenu, toast, toastError } from './ui.js';
+import { chooseSpace, teamConfigured } from './team_spaces.js';
 
 export const RECENT_FILES = 'prodata.recentFiles';
 const AUTO_KEY = 'prodata.autosave';
@@ -46,7 +47,12 @@ async function write(path, silent, origin = silent ? 'auto' : 'manual') {
   const sent = JSON.stringify(store.workflow);
   saving = true;
   try {
-    if (path) {
+    if (store.space && !path) {
+      // Fluxo do espaço da equipe (spec 047): grava na pasta do espaço, nunca na biblioteca
+      await api.saveSpaceFlow(store.space.id, store.workflow);
+      settle(sent);
+      if (!silent) toast('Fluxo salvo no espaço', { kind: 'success', detail: `Espaço da equipe "${store.space.nome}"` });
+    } else if (path) {
       const res = await api.saveWorkflowFile(path, store.workflow, origin);
       store.filePath = res.path;
       rememberRecent(res.path, store.workflow.name);
@@ -133,6 +139,26 @@ export async function saveToFile(path) {
 
 const fileSlug = (name) => (name || 'fluxo').normalize('NFKD').replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '') || 'fluxo';
 
+/** Salvar no espaço da equipe…: grava uma cópia do fluxo aberto no espaço, e a aba passa a ser a do espaço. */
+export async function saveToSpace() {
+  const space = await chooseSpace('Salvar no espaço da equipe');
+  if (!space) return false;
+  try {
+    await api.saveSpaceFlow(space.id, store.workflow);
+  } catch (err) {
+    toastError(err, 'Não foi possível salvar no espaço');
+    return false;
+  }
+  store.space = { id: space.id, nome: space.nome };
+  store.filePath = null;
+  markSaved();
+  persistTabs();
+  emit('file');
+  emit('tabs');
+  toast(`Salvo no espaço "${space.nome}"`, { kind: 'success', detail: 'Daqui em diante, Salvar grava no espaço. A cópia que estava antes continua onde estava.' });
+  return true;
+}
+
 export async function saveAs() {
   const path = await chooseSaveFile(`${fileSlug(store.workflow.name)}.prodata.json`, dirname(store.filePath));
   return path ? saveToFile(path) : false;
@@ -193,6 +219,8 @@ export function saveButton() {
         'separator',
         { label: 'Salvar como…', icon: 'directory', shortcut: 'Ctrl+Shift+S', onSelect: () => saveAs() },
         { label: 'Salvar com amostra dos dados…', icon: 'database', onSelect: () => shareDialog() },
+        // Só com algum espaço da equipe (spec 047, RF-4702): sem espaço, o menu é o de sempre.
+        ...(teamConfigured() ? [{ label: 'Salvar no espaço da equipe…', icon: 'folder', disabled: Boolean(store.space), onSelect: () => saveToSpace() }] : []),
       ]);
     },
   });

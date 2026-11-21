@@ -17,6 +17,7 @@ from prodata.api.routes import (
     schedules,
     schema,
     sql,
+    team,
     trust,
     usage,
     versions,
@@ -46,4 +47,5 @@ routers = [
     schedules.router,
     versions.router,
     schema.router,
+    team.router,
 ]

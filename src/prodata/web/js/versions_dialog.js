@@ -24,6 +24,7 @@ export function versionsBlockedReason() {
   if (EXAMPLES.has(wf.id)) return 'o fluxo de exemplo não guarda versões (Salvar como faz a sua cópia)';
   if (wf.id.startsWith('licao_')) return 'o fluxo de uma lição não guarda versões';
   if (!store.filePath && !store.savedSnapshot) return 'as versões começam no primeiro Salvar';
+  if (store.space) return 'as versões dos fluxos do espaço da equipe ainda não estão disponíveis';
   return null;
 }
 

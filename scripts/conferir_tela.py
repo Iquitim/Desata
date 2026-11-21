@@ -7,7 +7,7 @@ Sobe o próprio servidor, com uma pasta de dados temporária (nada vai para a bi
 janela e confere o comportamento de ponta a ponta: o que os testes do motor não enxergam (cliques, arrastos, diálogos,
 animações). Sai com 1 se alguma conferência falhar ou se a página tiver erro de JavaScript.
 
-Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046).
+Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe (spec 047).
 """
 
 from __future__ import annotations
@@ -351,6 +351,97 @@ def erros(pg: Page) -> None:
     )
 
 
+# ---------------------------------------------------------------- spec 047: espaço da equipe (marco 1)
+
+
+def equipe(pg: Page) -> None:
+    # Sem espaço, nada de equipe aparece além do item de menu (RF-4702)
+    pg.locator(".top-menu", has_text="Arquivo").click()
+    check(
+        "sem espaço: Arquivo tem Espaços da equipe…",
+        pg.locator(".menu .menu-item", has_text="Espaços da equipe").count() == 1,
+    )
+    pg.locator(".menu .menu-item", has_text="Abrir da biblioteca").click()
+    pg.locator("dialog[open]").wait_for()
+    check(
+        "sem espaço: a biblioteca não tem abas de equipe", pg.locator("dialog[open] .team-tabs").count() == 0
+    )
+    pg.keyboard.press("Escape")
+    pg.locator("#topActions .save-arrow").click()
+    check(
+        "sem espaço: Salvar não oferece o espaço",
+        pg.locator(".menu .menu-item", has_text="Salvar no espaço").count() == 0,
+    )
+    pg.keyboard.press("Escape")
+
+    folder = Path(tempfile.mkdtemp(prefix="conferir-espaco-"))
+    try:
+        pg.locator(".top-menu", has_text="Arquivo").click()
+        pg.locator(".menu .menu-item", has_text="Espaços da equipe").click()
+        dlg = pg.locator("dialog[open][aria-label='Espaços da equipe']")
+        dlg.wait_for()
+        dlg.locator("input[aria-label='Seu nome no espaço']").fill("Ana Souza")
+        dlg.locator("button", has_text="Criar espaço").click()
+        ask = pg.locator("dialog[open][aria-label='Pasta do espaço da equipe']")
+        ask.locator("input").fill(str(folder))
+        ask.locator("input").press("Enter")
+        name = pg.locator("dialog[open][aria-label='Nome do espaço']")
+        name.locator("input[aria-label='Nome do espaço']").fill("Equipe de teste")
+        name.locator("input[aria-label='Nome do espaço']").press("Enter")
+        pg.wait_for_selector("dialog[open] .team-space", timeout=10000)
+        check("cria o espaço na pasta", (folder / "_equipe" / "espaco.json").is_file())
+        check(
+            "o espaço aparece disponível",
+            "Disponível" in pg.locator("dialog[open] .team-space").first.inner_text(),
+        )
+        pg.keyboard.press("Escape")
+
+        new_flow(pg)
+        pg.evaluate("() => window.__A.addNode('prep.select', 200, 200)")
+        save_named(pg, "Fluxo da equipe")
+        pg.locator("#topActions .save-arrow").click()
+        pg.locator(".menu .menu-item", has_text="Salvar no espaço").click()
+        pg.wait_for_timeout(600)
+        wid = pg.evaluate("() => window.__S.store.workflow.id")
+        badge = pg.locator("#fileBadge").inner_text()
+        check(
+            f"salvo no espaço, com o selo ({badge!r})",
+            (folder / f"{wid}.prodata.json").is_file() and "Equipe de teste" in badge,
+        )
+        pg.evaluate("() => window.__S.mutate((wf) => { wf.description = 'mudou no espaço'; })")
+        pg.keyboard.press("Control+s")
+        pg.wait_for_function("() => !window.__S.isDirty()", timeout=10000)
+        check(
+            "Salvar de novo grava no espaço",
+            "mudou no espaço" in (folder / f"{wid}.prodata.json").read_text(encoding="utf-8"),
+        )
+        check(
+            "nada de amostra ou resultado na pasta",
+            {p.name for p in folder.iterdir()} == {"_equipe", f"{wid}.prodata.json"},
+        )
+
+        pg.locator(".top-menu", has_text="Arquivo").click()
+        pg.locator(".menu .menu-item", has_text="Abrir da biblioteca").click()
+        lib = pg.locator("dialog[open]")
+        lib.locator(".team-tabs").wait_for()
+        lib.locator(".team-tabs .segment", has_text="Equipe de teste").click()
+        lib.locator(".wf-item", has_text="Fluxo da equipe").wait_for(timeout=10000)
+        check(
+            "a biblioteca ganha a aba do espaço, com o fluxo",
+            lib.locator(".wf-item", has_text="Fluxo da equipe").count() == 1,
+        )
+        pg.keyboard.press("Escape")
+
+        pg.reload()
+        ready(pg)
+        check(
+            "a aba do espaço volta ao reabrir",
+            pg.locator(".wf-tab[title*='espaço Equipe de teste']").count() >= 1,
+        )
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -372,6 +463,7 @@ def pilula(pg: Page, reduced: bool = False) -> None:
 
 CHECKS: dict[str, Callable[[Page], None]] = {
     "salvar": salvar, "versoes": versoes, "fio": fio, "fonte": fonte, "erros": erros, "pilula": pilula,
+    "equipe": equipe,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
@@ -431,11 +523,10 @@ def main() -> int:
                         ready(pg)
                         fn(pg)
                     except Exception as exc:  # uma conferência quebrada não impede as outras
-                        check(
-                            f"{name} rodou até o fim",
-                            False,
-                            f"{type(exc).__name__}: {str(exc).splitlines()[0]}",
-                        )
+                        shot = Path(tempfile.gettempdir()) / f"conferir-{name}.png"
+                        pg.screenshot(path=str(shot))  # a tela no momento da falha, para entender o que houve
+                        detail = f"{type(exc).__name__}: {str(exc).splitlines()[0]} (tela em {shot})"
+                        check(f"{name} rodou até o fim", False, detail)
                     ctx.close()
                 browser.close()
         finally:

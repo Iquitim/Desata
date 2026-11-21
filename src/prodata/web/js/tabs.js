@@ -17,17 +17,18 @@ const stateOf = (i) => (i === active ? snapshotState() : tabs[i].frozen);
 export function tabInfo(i) {
   const st = stateOf(i);
   const dirty = i === active ? isDirty() : JSON.stringify(st.workflow) !== st.savedSnapshot;
-  return { key: tabs[i].key, name: st.workflow?.name || 'Sem nome', dirty, filePath: st.filePath };
+  return { key: tabs[i].key, name: st.workflow?.name || 'Sem nome', dirty, filePath: st.filePath, space: st.space || null };
 }
 
 export const anyDirty = () => tabs.some((_, i) => tabInfo(i).dirty);
 export const dirtyTabs = () => tabs.map((_, i) => i).filter((i) => tabInfo(i).dirty);
 
-/** Aba que já mostra este fluxo (pelo arquivo ou, na biblioteca, pelo id). */
-export function findTab(workflowId, filePath = null) {
+/** Aba que já mostra este fluxo (pelo arquivo, pelo espaço da equipe ou, na biblioteca, pelo id). */
+export function findTab(workflowId, filePath = null, spaceId = null) {
   return tabs.findIndex((_, i) => {
     const st = stateOf(i);
     if (filePath || st.filePath) return Boolean(filePath && st.filePath && st.filePath.toLowerCase() === filePath.toLowerCase());
+    if (spaceId || st.space) return Boolean(spaceId && st.space?.id === spaceId && st.workflow?.id === workflowId);
     return st.workflow?.id === workflowId && Boolean(st.savedSnapshot);
   });
 }
@@ -41,16 +42,17 @@ function freeze() {
 /** Aba nova e intocada (sem caixas e sem alterações) pode ser reaproveitada. */
 function activeIsPristine() {
   const wf = store.workflow;
-  return Boolean(wf) && !wf.nodes.length && !(wf.containers || []).length && !store.filePath && !isDirty();
+  return Boolean(wf) && !wf.nodes.length && !(wf.containers || []).length && !store.filePath && !store.space && !isDirty();
 }
 
-export function openTab(workflow, { saved = true, filePath = null } = {}) {
+export function openTab(workflow, { saved = true, filePath = null, space = null } = {}) {
   if (active < 0 || !activeIsPristine()) {
     freeze();
     tabs.push({ key: uid('t'), frozen: null, view: null });
     active = tabs.length - 1;
   }
   store.filePath = filePath;
+  store.space = space;
   loadWorkflow(workflow, { saved });
   changed();
 }
@@ -91,6 +93,7 @@ export function persistTabs() {
     const st = stateOf(i);
     let item = null;
     if (st.filePath) item = { kind: 'file', path: st.filePath };
+    else if (st.space && st.workflow) item = { kind: 'space', space: st.space.id, name: st.space.nome, id: st.workflow.id };
     else if (st.savedSnapshot && st.workflow) item = { kind: 'library', id: st.workflow.id };
     if (!item) return;
     if (i === active) activeItem = items.length;

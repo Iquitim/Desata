@@ -2,11 +2,11 @@
 
 ## Marco 1 — Espaço, identidade e biblioteca
 
-- [ ] T01 Simulador de sincronização nos testes: atraso, conflito no padrão do OneDrive, trava temporária (base de CA-05, CA-08)
-- [ ] T02 Identidade: nome de exibição, chave Ed25519 no cofre da marca (identidades separadas por marca), usuário de teste (RF-4704)
-- [ ] T03 Espaços configurados: criar, entrar, sair, detecção de escrita na pasta (RF-4701, RF-4716)
-- [ ] T04 Repositório do espaço: listar, abrir, salvar, mover e copiar fluxos; só arquivos do espaço (RF-4703, RF-4705)
-- [ ] T05 Biblioteca com abas, que só aparecem com algum espaço; garantia do opcional (RF-4702, RF-4703, CA-01)
+- [x] T01 Simulador de sincronização nos testes: atraso, conflito no padrão do OneDrive, trava temporária (base de CA-05, CA-08)
+- [x] T02 Identidade: nome de exibição, chave Ed25519 no cofre da marca (identidades separadas por marca), usuário de teste (RF-4704)
+- [x] T03 Espaços configurados: criar, entrar, sair, detecção de escrita na pasta (RF-4701, RF-4716)
+- [x] T04 Repositório do espaço: listar, abrir, salvar, mover e copiar fluxos; só arquivos do espaço (RF-4703, RF-4705)
+- [x] T05 Biblioteca com abas, que só aparecem com algum espaço; garantia do opcional (RF-4702, RF-4703, CA-01)
 
 ## Marco 2 — Papéis e assinaturas
 

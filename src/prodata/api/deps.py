@@ -22,6 +22,7 @@ from prodata.services.trust import TrustRegistry
 from prodata.services.usage import UsageIndex
 from prodata.services.versions import VersionStore
 from prodata.services.workflows import WorkflowRepository
+from prodata.team.service import TeamService
 
 
 @dataclass
@@ -41,6 +42,7 @@ class Services:
     organization: OrganizationStore
     schedules: SchedulingService
     versions: VersionStore
+    team: TeamService
 
 
 def get_services(request: Request) -> Services:

@@ -126,6 +126,17 @@ export const api = {
   schemaRename: (workflow, source, old, nw, onlyNode = false) => request('POST', '/api/schema/rename', { workflow, source, old, new: nw, only_node: onlyNode }),
   deleteWorkflow: (id) => request('DELETE', `/api/workflows/${enc(id)}`),
 
+  // Espaço da equipe (spec 047)
+  team: () => request('GET', '/api/equipe'),
+  teamName: (nome) => request('POST', '/api/equipe/identidade', { nome }),
+  addSpace: (acao, caminho, nome = '') => request('POST', '/api/equipe/espacos', { acao, caminho, nome }),
+  leaveSpace: (id) => request('DELETE', `/api/equipe/espacos/${enc(id)}`),
+  spaceFlows: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos`),
+  spaceFlow: (id, wid) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}`),
+  saveSpaceFlow: (id, wf) => request('PUT', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wf.id)}`, wf),
+  moveToSpace: (id, workflowId) => request('POST', `/api/equipe/espacos/${enc(id)}/mover`, { workflow_id: workflowId }),
+  copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
+
   // Agendamentos (spec 044)
   schedules: () => request('GET', '/api/schedules'),
   schedulePreview: (plan) => request('POST', '/api/schedules/preview', plan),
