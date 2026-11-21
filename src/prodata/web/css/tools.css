@@ -153,3 +153,19 @@ body[data-view="designer"] .center, body[data-view="data"] .data-view, body[data
 .sch-summary.off { background: var(--surface-2); border-color: var(--border); }
 .sch-summary.off .sch-summary-icon, .sch-summary.off .sch-day.on { color: var(--text-3); background: none; }
 .sch-summary.off .sch-day.on { background: var(--surface-3); }
+
+/* ------------------------------------------------------------------ pílula deslizante (spec 046, RF-4651) */
+.segmented.has-pill { position: relative; isolation: isolate; }
+.segmented.has-pill > .segment { position: relative; z-index: 1; transition: color .16s ease-out; }
+.segmented.has-pill > .segment[aria-selected="true"], .segmented.has-pill > .segment[aria-checked="true"],
+.segmented.has-pill > .segment.active { background: transparent; box-shadow: none; }
+.seg-pill { position: absolute; z-index: 0; left: 0; top: 0; border-radius: 4px; pointer-events: none;
+  background: var(--surface); box-shadow: var(--shadow-sm); }
+.segmented.seg-ready > .seg-pill {
+  transition: left .2s cubic-bezier(.2, .8, .2, 1), top .2s cubic-bezier(.2, .8, .2, 1),
+    width .2s cubic-bezier(.2, .8, .2, 1), height .2s cubic-bezier(.2, .8, .2, 1), opacity .12s;
+}
+.topbar .seg-pill { background: var(--marca-selecao-fundo); box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  .segmented.seg-ready > .seg-pill, .segmented.has-pill > .segment { transition: none; }
+}

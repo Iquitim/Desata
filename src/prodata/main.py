@@ -54,6 +54,7 @@ from prodata.services.constants import ConstantStore
 from prodata.services.organization import OrganizationStore
 from prodata.services.trust import TrustRegistry
 from prodata.services.usage import UsageIndex
+from prodata.services.versions import VersionStore
 from prodata.services.workflows import WorkflowRepository
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -137,6 +138,7 @@ def build_services(settings: Settings) -> Services:
             workflows,
             trust,
         ),
+        versions=VersionStore(settings.storage_dir / "versoes"),
     )
 
 

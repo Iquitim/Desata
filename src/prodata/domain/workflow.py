@@ -10,6 +10,7 @@ from prodata.domain.constants import Constant, ConstantValue
 from prodata.domain.dashboard import Dashboard
 from prodata.domain.samples import MAX_BYTES as MAX_SAMPLE_BYTES
 from prodata.domain.samples import SourceSample
+from prodata.domain.schemas import RememberedSchema
 
 ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 
@@ -70,6 +71,8 @@ class Workflow(BaseModel):
     shared_constants: dict[str, ConstantValue] = Field(default_factory=dict)
     # Amostra das fontes, só em "Salvar com amostra dos dados" (spec 040). Chave: a fonte, como no Input Data.
     samples: dict[str, SourceSample] = Field(default_factory=dict)
+    # Formato lembrado das fontes e saídas (spec 046), por id da caixa. Ausente em fluxos antigos.
+    schemas: dict[str, RememberedSchema] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _check_references(self) -> Workflow:

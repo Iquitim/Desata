@@ -15,9 +15,11 @@ from prodata.api.routes import (
     portable,
     queries,
     schedules,
+    schema,
     sql,
     trust,
     usage,
+    versions,
     workflows,
 )
 
@@ -42,4 +44,6 @@ routers = [
     usage.router,
     portable.router,
     schedules.router,
+    versions.router,
+    schema.router,
 ]

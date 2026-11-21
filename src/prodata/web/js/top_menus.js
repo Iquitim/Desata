@@ -18,6 +18,7 @@ import { organizeFlow } from './canvas_layout.js';
 import { fitView } from './canvas.js';
 import { autoBlockedReason, autosaveActive, setAutosave } from './save_flow.js';
 import { runNoticeOn, setRunNotice } from './run_notice.js';
+import { openVersionsDialog, versionsBlockedReason } from './versions_dialog.js';
 
 export { slowestNote } from './node_timing.js';
 
@@ -40,6 +41,7 @@ const fileItems = (a) => [
   'separator',
   { label: 'Abrir da biblioteca…', icon: 'folder', shortcut: 'Ctrl+O', onSelect: a.openLibrary },
   { label: 'Abrir arquivo…', icon: 'file', onSelect: () => a.openFile() },
+  { label: 'Versões anteriores…', icon: 'undo', disabled: Boolean(versionsBlockedReason()), title: versionsBlockedReason() ? `Indisponível: ${versionsBlockedReason()}.` : 'O que foi guardado a cada Salvar, com prévia e Restaurar', onSelect: () => openVersionsDialog() },
   'separator',
   { label: 'Agendar este fluxo…', icon: 'clock', disabled: !store.workflow, onSelect: () => openScheduleDialog() },
   { label: 'Agendamentos…', icon: 'list', onSelect: openSchedulesList },

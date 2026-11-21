@@ -148,7 +148,7 @@ def run(args: argparse.Namespace) -> int:
             )
             return REFUSED
         print(f"{marca().nome} {__version__} · {workflow.name} ({len(workflow.nodes)} caixas)")
-        report = services.runner.run(workflow, args.ate)
+        report = services.runner.run(workflow, args.ate, unattended=True)
     except ProdataError as exc:
         print(f"Erro: {exc.message}", file=sys.stderr)
         _record(args, started, "refused", name, exc.message)

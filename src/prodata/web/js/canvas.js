@@ -2,8 +2,6 @@
 
 import {
   addNode,
-  connect,
-  connectionError,
   duplicateNode,
   removeEdge,
   removeNodes,
@@ -38,6 +36,7 @@ import { els, nodeEls, state, toWorld, view } from './canvas_state.js';
 import { NODE_MIN_H, NODE_W, nodeHeight, portPoint } from './canvas_geometry.js';
 import { canSplice, edgeNear, edgeThroughRect, highlightEdge } from './canvas_hit.js';
 import { openQuickAdd } from './canvas_quickadd.js';
+import { choosePort, endWiring, showWireTarget, startWiring, wire, wireTarget } from './canvas_snap.js';
 import { renderEdges } from './canvas_edges.js';
 import { containerMenu, dropContainer, placeContainerEl, renameContainer, renderContainers } from './canvas_containers.js';
 import { cacheActions, selectionActions } from './canvas_actions.js';
@@ -362,17 +361,14 @@ function handleMove(e) {
       ? edgeThroughRect({ x: n.x, y: n.y, w: NODE_W, h: nodeHeight(n) }, n.id) : null;
     highlightEdge(gesture.spliceEdge);
   } else if (gesture.type === 'connect') {
+    if (!gesture.moved) startWiring(gesture);
     gesture.moved = true;
-    gesture.to = world;
+    // Fio inteligente (spec 046): ímã, caixa inteira, faixa neutra e vazio; a ponta gruda na entrada-alvo.
+    const target = wireTarget(gesture, e.clientX, e.clientY);
+    gesture.target = target;
+    gesture.to = target.point || world;
     renderEdges();
-    const hover = document.elementFromPoint(e.clientX, e.clientY)?.closest('.port.in');
-    for (const p of els.nodes.querySelectorAll('.port.in.can-drop, .port.in.cannot-drop')) {
-      p.classList.remove('can-drop', 'cannot-drop');
-    }
-    if (hover) {
-      const ok = !connectionError(gesture.nodeId, gesture.port, hover.dataset.node, hover.dataset.port);
-      hover.classList.add(ok ? 'can-drop' : 'cannot-drop');
-    }
+    showWireTarget(gesture, target, e.clientX, e.clientY);
   }
 }
 
@@ -446,13 +442,13 @@ function onPointerUp(e) {
       inspect(g.nodeId, g.port);
       openResultsOnClick();
     } else {
-      const hover = document.elementFromPoint(e.clientX, e.clientY)?.closest('.port.in');
-      if (hover) connect(g.nodeId, g.port, hover.dataset.node, hover.dataset.port);
-      else if (els.viewport.contains(document.elementFromPoint(e.clientX, e.clientY))
-        && !document.elementFromPoint(e.clientX, e.clientY)?.closest('.node')) {
-        // Soltar fora do canvas (a tela anda quando o cursor passa da borda) só cancela.
-        openQuickAdd(e.clientX, e.clientY, g);
-      }
+      endWiring();
+      const t = wireTarget(g, e.clientX, e.clientY);
+      const overCanvas = els.viewport.contains(document.elementFromPoint(e.clientX, e.clientY));
+      if (t.kind === 'port') wire(g.nodeId, g.port, t.nodeId, t.port);
+      else if (t.kind === 'node') choosePort(e.clientX, e.clientY, g, t);
+      // Soltar fora do canvas (a tela anda quando o cursor passa da borda) só cancela; na faixa neutra, o fio volta.
+      else if (t.kind === 'empty' && overCanvas) openQuickAdd(e.clientX, e.clientY, g);
       renderEdges();
     }
   } else if (g.type === 'pill') {
@@ -619,7 +615,7 @@ export function initCanvas(root, opts = {}) {
   root.addEventListener('pointerdown', onPointerDown);
   root.addEventListener('pointermove', onPointerMove);
   root.addEventListener('pointerup', onPointerUp);
-  root.addEventListener('pointercancel', () => { gesture = null; pendingMove = null; els.marquee.hidden = true; });
+  root.addEventListener('pointercancel', () => { if (gesture?.type === 'connect') endWiring(); gesture = null; pendingMove = null; els.marquee.hidden = true; });
   // Arrastar a partir do canvas, mesmo saindo dele, não pode selecionar o texto da tela.
   root.addEventListener('selectstart', (e) => {
     if (!e.target.closest?.('input, textarea, [contenteditable]')) e.preventDefault();

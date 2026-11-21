@@ -21,6 +21,8 @@ import {
   API_PREFIX, apiOf, FOLDER_PREFIX, JIRA_PREFIX, PDF_PREFIX, mutate, node, nodeResult, on, QUERY_PREFIX, queryOf, select, selectedIds, selectMany, sourceLabel, store, toolOf, upstreamColumns,
 } from './store.js';
 import { showMenu, toast, toastError } from './ui.js';
+import { schemaNotice } from './schema_notice.js';
+import { errorDetails } from './error_panel.js';
 
 let root;
 let handlers = {};
@@ -90,7 +92,7 @@ function statusBanner(n) {
   const pending = store.pending.has(n.id);
   if (n.disabled) return banner('muted', 'power', 'Caixa desabilitada: não é executada, e as caixas depois dela ficam sem entrada.');
   if (res?.status === 'error') {
-    return banner('error', 'alert', res.error, res.error_field ? `Campo: ${res.error_field}` : null);
+    return banner('error', 'alert', res.error, errorDetails(n, res));
   }
   if (!res || pending) {
     return banner('muted', 'clock', res ? 'Alterado desde a última execução.' : 'Ainda não executado.',
@@ -495,6 +497,7 @@ function nodePanel(n) {
         button({ icon: 'refresh', label: 'Converter para Input Data', size: 'sm', onClick: () => convertLegacy(n) })) : null,
     cacheBanner(n),
     statusBanner(n),
+    schemaNotice(n),
     sourceBanner(n),
     n.type === 'transform.append_fields' ? appendBanner(n) : null,
     lead.length ? h('div', { class: 'pad' }, renderFields(lead, n.config, onChange, leadContext(n, multirow))) : null,

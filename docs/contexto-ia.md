@@ -337,6 +337,7 @@ Lê qualquer fonte cadastrada na vista Dados: arquivos (CSV, Excel, Parquet, JSO
 
 Entradas: nenhuma. Saídas: `out` (Dados).
 
+- `on_new_columns` ("seguir"): Se aparecer coluna nova. Opções: `seguir`, `parar`. Vale para execuções agendadas e pela linha de comando. Uma coluna usada no fluxo que sumiu sempre para a execução antes de gravar qualquer saída
 - `format` ("auto"): Formato. Opções: `auto`, `csv`, `excel`, `parquet`, `json`, `ndjson`, `arrow`. 'auto' detecta pela extensão e pelo conteúdo
 - `delimiter` ("auto"): Delimitador. Opções: `auto`, `,`, `;`, `	`, `|`. Aparece se `$format` em csv
 - `encoding` ("auto"): Encoding. Opções: `auto`, `utf-8`, `utf-8-sig`, `cp1252`, `latin-1`. Aparece se `$format` em csv
@@ -401,6 +402,7 @@ Entradas: `in` (Entrada), `in2` (Planilha 2, opcional, conforme a configuração
 - `template_header` (true): Gravar o cabeçalho. Aparece se `format` em excel
 - `template_clear` (true): Limpar linhas antigas abaixo dos dados. Aparece se `format` em excel
 - `if_exists` ("ask"): Se o arquivo já existir. Opções: `ask`, `replace`, `new_file`, `add_sheet`. "Adicionar planilha" só vale para Excel: vários Output Data podem montar um arquivo só
+- `stop_on_schema_change` (false): Parar se o formato da saída mudar. Desligado: grava e avisa no resultado quando sai uma coluna a mais, a menos ou com outro tipo
 
 #### `io.generate_rows`: Generate Rows
 

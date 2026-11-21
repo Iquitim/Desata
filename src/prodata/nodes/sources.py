@@ -16,9 +16,9 @@ from prodata.brand import marca
 from prodata.engine.sql.fragment import Fragment, SqlContext, lit, q, sql_for
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.forms import ui
-from prodata.ingestion.folders import files_signature, folder_files, odd_warning, read_folder
+from prodata.ingestion.folders import files_signature, folder_files, folder_warnings, read_folder
 from prodata.ingestion.options import ReadOptions
-from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
+from prodata.nodes.base import NodeContext, NodeOutput, Port, SchemaPolicy, ToolConfig, tool
 
 MAX_FILES = 500
 MAX_ROWS = 5_000_000
@@ -26,7 +26,7 @@ MAX_ROWS = 5_000_000
 # ------------------------------------------------------------------ Input Folder
 
 
-class InputFolderConfig(ReadOptions, ToolConfig):
+class InputFolderConfig(ReadOptions, SchemaPolicy, ToolConfig):
     folder: str = Field(
         "",
         title="Pasta",
@@ -74,11 +74,12 @@ def input_folder(ctx: NodeContext, cfg: InputFolderConfig) -> NodeOutput:
         raise InvalidInputError(
             f"Nenhum arquivo em {cfg.folder.strip()} casa com '{cfg.pattern.strip() or '*'}'."
         )
-    table, odd = read_folder(files, cfg, cfg.file_column, limit=cfg.limit or None, report=ctx.report)
+    seen: dict[str, list[str]] = {}
+    table, odd = read_folder(
+        files, cfg, cfg.file_column, limit=cfg.limit or None, report=ctx.report, seen=seen
+    )
     extra: dict[str, Any] = {"folder_files": [p.name for p in files], "source_read_at": _now()}
-    if odd:
-        extra["warnings"] = [odd_warning(odd, files[0].name)]
-    return NodeOutput(tables={"out": table}, extra=extra)
+    return NodeOutput(tables={"out": table}, extra=folder_warnings(extra, odd, seen, files[0].name))
 
 
 def _now() -> str:

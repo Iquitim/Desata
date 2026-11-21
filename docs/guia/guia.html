@@ -206,7 +206,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.9.2 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.9.3 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -522,6 +522,23 @@
   </div>
   <div class="callout tip"><strong>Dica</strong>Soltar uma ferramenta em cima de uma ligação existente encaixa a caixa no meio, já conectada, e abre espaço empurrando o restante do fluxo. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz qualquer alteração.</div>
 
+  <h3>Ligando as caixas</h3>
+  <div class="side">
+    <div>
+      <p>Puxe o fio pela saída de uma caixa. Você não precisa acertar a entrada: perto dela, o fio gruda sozinho, a entrada fica verde e uma etiqueta junto ao cursor diz o que vai acontecer, como <strong>Ligar em Select</strong>. Enquanto você arrasta, as entradas que aceitam aquele fio ganham um anel, e as que não aceitam esmaecem.</p>
+      <ul>
+        <li><strong>Perto de uma entrada ou em cima da caixa:</strong> liga. Se a caixa tem mais de uma entrada livre, como o L e o R do Join, aparece um seletor pequeno para escolher. Numa entrada que já tem fio, a etiqueta diz <strong>Trocar a ligação</strong> e o fio antigo fica tracejado.</li>
+        <li><strong>Logo em volta das caixas:</strong> soltar não faz nada, e o fio volta. Quem solta ali quase sempre só errou a caixa por pouco.</li>
+        <li><strong>Longe de tudo:</strong> a etiqueta vira <strong>Soltar para adicionar uma caixa</strong>, e a lista de ferramentas abre com as <strong>Sugeridas</strong> no topo: o que você mais liga depois daquela ferramenta, contado só neste computador.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fio-ima.png" alt="Fio grudando na entrada do Select, com a etiqueta Ligar em Select"></div><figcaption>Perto da entrada, o fio gruda e a etiqueta diz o que vai acontecer.</figcaption></figure>
+  </div>
+  <div class="grid-2 tight" style="max-width:76%">
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fio-seletor.png" alt="Seletor de entradas do Join"></div><figcaption>Em cima do Join, a escolha entre a entrada L e a R.</figcaption></figure>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fio-sugeridas.png" alt="Lista de ferramentas com as sugeridas no topo"></div><figcaption>No vazio, a lista começa pelas sugeridas.</figcaption></figure>
+  </div>
+
   <h3>Escrevendo fórmulas</h3>
   <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
     <div>
@@ -813,6 +830,40 @@
       </ul>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/explain-compare.png" alt="Esquema do Compare Runs"></div><figcaption>A execução guardada, a de agora e o que mudou entre elas.</figcaption></figure>
+  </div>
+  <h3>Quando a fonte muda de formato</h3>
+  <div class="side feature">
+    <div>
+      <p>A planilha de todo mês chegou com <code>valor_total</code> no lugar de <code>valor</code>, ou com uma coluna a mais. Cada entrada do fluxo (arquivo, pasta de arquivos, banco, API ou Jira) <strong>lembra as colunas e os tipos</strong> da última leitura. Quando eles mudam, o aviso aparece na própria entrada, e não lá na frente, na caixa que quebrou.</p>
+      <ul>
+        <li>A entrada ganha o selo <strong>formato mudou</strong>. No Configurar, o aviso lista as colunas novas, as que sumiram (com quantas caixas usam cada uma) e as que mudaram de tipo, com os valores que causaram a mudança, como "N/D" numa coluna de números.</li>
+        <li><strong>Mostrar caixas atingidas</strong> acende essas caixas no canvas, com o nome da coluna embaixo.</li>
+        <li><strong>Trocar por…</strong> escolhe a coluna que ocupa o lugar da que sumiu. Quando uma coluna nova tem o mesmo tipo, ela já vem sugerida, com os primeiros valores. A troca vale em todas as caixas de uma vez (campos de coluna e fórmulas) e volta com um único <kbd>Ctrl</kbd>+<kbd>Z</kbd>. Antes dela, a versão de agora fica guardada em Versões anteriores.</li>
+        <li><strong>Entendi, usar o formato novo</strong> passa a lembrar o formato de agora.</li>
+      </ul>
+      <p>O {{produto}} sugere e nunca troca sozinho. Ele guarda só nomes e tipos de coluna, nunca valores. Uma caixa SQL que cita a coluna aparece como "talvez", porque o texto livre dela não é alterado.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fonte-mudou.png" alt="Aviso de formato mudado no Configurar da entrada"></div><figcaption>Duas colunas novas e uma que sumiu, usada em duas caixas.</figcaption></figure>
+  </div>
+  <div class="grid-2 tight" style="max-width:86%">
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fonte-caixas.png" alt="Caixas atingidas acesas no canvas"></div><figcaption>As caixas que usam a coluna, acesas, com o nome dela.</figcaption></figure>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/trocar-coluna.png" alt="Diálogo Trocar a coluna, com a sugestão"></div><figcaption>A sugerida tem o mesmo tipo e mostra os primeiros valores.</figcaption></figure>
+  </div>
+  <div class="two-col side-figure">
+    <div>
+      <p><strong>Sem ninguém olhando.</strong> Numa execução agendada ou pela linha de comando, uma coluna usada que sumiu <strong>para tudo antes de gravar qualquer arquivo</strong>, com a frase no histórico do agendamento e no aviso de falha ("A coluna 'valor' sumiu de vendas.xlsx, usada em 2 caixas"). Para coluna nova, cada entrada escolhe em <strong>Avançado</strong>: seguir com o fluxo (o padrão) ou parar.</p>
+      <p><strong>A saída também.</strong> O <em>Output Data</em> lembra o formato que gravou. Quando o arquivo vai sair com uma coluna a mais, a menos ou com outro tipo, o resultado avisa, porque quem consome o arquivo (um relatório, outro fluxo) pode quebrar. Com <strong>Parar se o formato da saída mudar</strong>, em Avançado, ele nem grava.</p>
+      <p><strong>Pasta de arquivos.</strong> O formato é o conjunto das colunas de todos os arquivos, e o aviso diz quais arquivos não têm cada coluna, como "3 arquivos sem a coluna 'desconto'".</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fonte-explicacao.png" alt="Como funciona: formato lembrado e formato de agora lado a lado"></div><figcaption>Como funciona: o lembrado e o de agora, lado a lado.</figcaption></figure>
+  </div>
+  <h3>Quando uma caixa dá erro</h3>
+  <div class="side">
+    <div>
+      <p>O erro aparece em português, dizendo o que aconteceu e como resolver. Quando a caixa cita uma coluna que não chega até ela, o aviso traz as <strong>colunas parecidas</strong>: um clique troca nesta caixa. <strong>Escolher outra coluna</strong> leva ao campo certo. Se a coluna sumiu da fonte, um botão leva ao aviso da entrada.</p>
+      <p>Arquivo aberto no Excel na hora de gravar, função que não existe numa fórmula ou erro de sintaxe na caixa SQL também ganham uma frase clara. O texto original do motor continua disponível, recolhido, em <strong>Detalhes técnicos</strong>.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/erro-coluna.png" alt="Erro de coluna inexistente com a coluna parecida e o conserto"></div><figcaption>A parecida vira botão: um clique troca.</figcaption></figure>
   </div>
 </section>
 <!-- ================================================================ 6. RESULTADOS -->
@@ -1490,6 +1541,10 @@
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/primeiro-salvar.png" alt="Diálogo do primeiro Salvar, pedindo o nome do fluxo"></div><figcaption>No primeiro Salvar, o nome do fluxo; ou Salvar numa pasta.</figcaption></figure>
   </div>
+  <h3>Versões anteriores</h3>
+  <p>O <kbd>Ctrl</kbd>+<kbd>Z</kbd> vale enquanto o fluxo está aberto. Para voltar ao fluxo de ontem, use <strong>Arquivo › Versões anteriores…</strong>. Cada Salvar guarda uma versão; com o salvamento automático, no máximo uma a cada 10 minutos de trabalho. Antes de restaurar e antes de trocar uma coluna em todas as caixas, a versão de agora também fica guardada. Cada fluxo guarda as 30 mais recentes.</p>
+  <p>Escolha uma versão para ver a prévia do canvas, com o que mudaria se restaurar: em verde as caixas que voltam, tracejadas as que voltam à configuração de antes. <strong>Restaurar esta versão</strong> coloca a versão no lugar do fluxo aberto como uma mudança ainda não salva, e um <kbd>Ctrl</kbd>+<kbd>Z</kbd> volta. As versões ficam numa pasta interna deste computador, nunca na biblioteca. Um fluxo salvo numa pasta tem o histórico do próprio arquivo, e duas cópias em pastas diferentes não se misturam. Exemplo, lições e modo protegido não guardam versões.</p>
+  <figure class="m50"><div class="frame"><img src="../../src/prodata/web/manual/img/versoes.png" alt="Versões anteriores com a prévia do canvas"></div><figcaption>Duas caixas apagadas voltam se restaurar a versão anterior.</figcaption></figure>
   <h3>Ponto de cache</h3>
   <p>Consultas a banco e arquivos grandes não precisam ser lidos a cada ajuste. Clique com o botão direito numa caixa e escolha <strong>Cachear até aqui e executar</strong>: só o resultado dela fica guardado (inclusive depois de fechar o programa), e por isso as caixas anteriores deixam de executar — aparecem douradas e tracejadas, com "Pulada pelo cache", e a barra de status conta quantas foram puladas. O aviso da caixa lista as puladas e tem o botão <strong>Mostrar as puladas</strong>. Mudou algo antes do ponto, ou um arquivo de origem foi atualizado? O cache se refaz sozinho. Para fontes de banco, que só mudam por dentro, escolha em <strong>Renovar</strong> "também todo dia" ou "a cada hora". Para forçar uma nova leitura, use <strong>Atualizar cache</strong>.</p>
   <figure class="m50">
@@ -1567,8 +1622,8 @@
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.2-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.2-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.3-setup.exe</code> (212 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.3-portable.zip</code> (297 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>

@@ -44,6 +44,7 @@ import { confirmDialog, openDialog, toast, toastError } from './ui.js';
 import { brand } from './brand.js';
 import { showRunNotice } from './run_notice.js';
 import { offerRemoveSchedules, watchScheduleFailures } from './schedules_list.js';
+import { startPills } from './segmented_pill.js';
 
 const LAST_WORKFLOW = 'prodata.lastWorkflow'; // versões anteriores (antes das abas)
 
@@ -677,6 +678,7 @@ async function boot() {
   watchScheduleFailures(); // execução agendada que falhou: avisa ao abrir e enquanto aberto (spec 044)
   on('workflow:loaded', () => { resetTrustBanner(); refreshTrust(); });
   initCanvas($('#canvas'), { runTo: (id) => run(id), run: () => run(), refreshCache, viewSql: (id) => setView('sql', { sqlNode: id }) });
+  startPills(); // spec 046: o destaque dos controles segmentados desliza
   enableFileDropOnCanvas($('#canvas'));
   buildLeftPanel();
   initResults($('#results'));

@@ -52,7 +52,7 @@ def test_folder_stacks_files_that_match(store: DatasetStore, tmp_path: Path, mon
 def test_folder_warns_when_columns_differ(store: DatasetStore, tmp_path: Path, month: Path) -> None:
     out = run("io.input_folder", {}, store, tmp_path, folder=str(month), pattern="*.csv", file_column="")
     assert out.tables["out"].columns == ["x", "uf", "valor"] and "arquivo" not in out.tables["out"].columns
-    assert "colunas diferentes" in warnings(out)[0]
+    assert "sem a coluna" in warnings(out)[0]  # spec 046: diz qual coluna falta e em quais arquivos
 
 
 @pytest.mark.parametrize(

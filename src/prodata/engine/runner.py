@@ -30,7 +30,8 @@ from prodata.domain.execution import (
 )
 from prodata.domain.workflow import Node, Workflow
 from prodata.engine import constants as constants_engine
-from prodata.engine import graph, loops, subflow
+from prodata.engine import errors_pt, graph, loops, subflow
+from prodata.engine import schema_drift as drift
 from prodata.engine.cache import FrozenEntry, NodeEntry, ResultCache
 from prodata.engine.loop_run import LoopRun
 from prodata.engine.profiling import simple_type
@@ -96,10 +97,7 @@ def _summarize(entry: NodeEntry) -> dict[str, AnchorSummary]:
     return anchors
 
 
-def _validation_message(exc: ValidationError) -> tuple[str, str | None]:
-    first = exc.errors()[0]
-    field = ".".join(str(p) for p in first["loc"]) or None
-    return f"Configuração inválida em '{field}': {first['msg']}", field
+_validation_message = errors_pt.validation_message  # spec 046: tipos de erro do Pydantic em português
 
 
 class WorkflowRunner:
@@ -141,10 +139,17 @@ class WorkflowRunner:
         self._ran: dict[str, dict[str, str]] = {}
 
     def run(
-        self, workflow: Workflow, target_node_id: str | None = None, *, hold_exports: bool = False
+        self,
+        workflow: Workflow,
+        target_node_id: str | None = None,
+        *,
+        hold_exports: bool = False,
+        unattended: bool = False,
     ) -> ExecutionReport:
         """Executa o fluxo. ``hold_exports``: execução automática (ao abrir o fluxo, trocar de aba): exportações
-        em "Perguntar" cujo arquivo já existe esperam o usuário clicar em Executar (spec 017)."""
+        em "Perguntar" cujo arquivo já existe esperam o usuário clicar em Executar (spec 017).
+        ``unattended``: ninguém olhando (agendada, linha de comando): as fontes leem primeiro e, se o formato de
+        uma delas mudou de um jeito perigoso, nada mais executa nem grava (spec 046, RF-4607)."""
         started = time.perf_counter()
         order = graph.topological_order(workflow)
         found = loops.find(workflow, order)  # laços (spec 041)
@@ -159,11 +164,16 @@ class WorkflowRunner:
                     target_node_id = end
             keep = graph.ancestors(workflow, target_node_id) | {target_node_id}
             order = [n for n in order if n in keep]
+        if unattended:  # fontes não têm entradas: lê-las antes de tudo continua respeitando a ordem do grafo
+            sources = [n for n in order if workflow.node(n).type in drift.SOURCE_TYPES]
+            order = [*sources, *(n for n in order if n not in sources)]
 
         progress: dict[str, Any] = {"order": order, "running": None, "done": {}}
         self._progress[workflow.id] = progress
         try:
-            return self._run_locked(workflow, order, progress, started, hold_exports, resolution, found)
+            return self._run_locked(
+                workflow, order, progress, started, hold_exports, resolution, found, unattended=unattended
+            )
         finally:
             self._progress.pop(workflow.id, None)
 
@@ -237,9 +247,12 @@ class WorkflowRunner:
         hold_exports: bool,
         resolution: constants_engine.Resolution,
         found: loops.Found | None = None,
+        *,
+        unattended: bool = False,
     ) -> ExecutionReport:
         found = found or loops.Found()
         looper = LoopRun(self, workflow, found, hold_exports, progress, resolution)
+        stop_reason: str | None = None  # spec 046: formato perigoso numa execução sem ninguém olhando
         # O corpo dos laços roda dentro do Fim de fora; aqui fica de fora.
         inside = found.members - {e for e, loop in found.loops.items() if loop.depth == 1}
         results: dict[str, NodeResult] = {}
@@ -259,8 +272,8 @@ class WorkflowRunner:
                 waiting = self._waiting_export(node) if hold_exports else None
                 progress["running"] = node_id
                 progress["detail"] = None
-                if progress.get("cancel"):  # Parar (spec 041): o que falta não executa
-                    result = STOPPED.model_copy()
+                if progress.get("cancel") or stop_reason:  # Parar (spec 041) ou formato perigoso (spec 046)
+                    result = self._halted(stop_reason)
                 elif node_id not in needed:
                     result = self._held_result(workflow, node, spec)
                 elif waiting:
@@ -278,9 +291,12 @@ class WorkflowRunner:
                 elif node_id in found.problems:
                     result = NodeResult(status="error", error=found.problems[node_id])
                 else:
-                    result = self._run_node(
+                    # "Parar se o formato da saída mudar" (spec 046, RF-4608): o Output nem executa
+                    result = self._output_check(workflow, node, results) or self._run_node(
                         workflow, node, spec, results, fingerprints, hold_exports, progress, resolution
                     )
+                    if node.type in drift.SOURCE_TYPES | drift.OUTPUT_TYPES:
+                        stop_reason = self._schema_result(workflow, node, spec, result, results, unattended)
                     if node_id in signatures and result.status in ("executed", "cached"):
                         entry = self.cache.get(workflow.id, node_id)
                         if entry is not None:
@@ -319,6 +335,106 @@ class WorkflowRunner:
             bi_widgets=widgets,
             logs=logs,
         )
+
+    # ------------------------------------------------------------------ formato das fontes e saídas (spec 046)
+
+    def _error_result(
+        self, exc: BaseException, inputs: _Inputs, annotation: str, started: float
+    ) -> NodeResult:
+        """Erro em português, com o texto técnico guardado e as colunas parecidas (spec 046, RF-4621..4623)."""
+        columns = list(dict.fromkeys(c for df in inputs.tables.values() for c in df.columns))
+        friendly = errors_pt.translate(exc, columns)
+        extra: dict[str, Any] = {}
+        if friendly.technical:
+            extra["error_detail"] = friendly.technical
+            log.info("Erro traduzido; texto original: %s", friendly.technical)
+        if friendly.hint:
+            extra["error_hint"] = friendly.hint
+        return NodeResult(
+            status="error",
+            error=friendly.message,
+            annotation=annotation,
+            elapsed_ms=self._ms(started),
+            extra=extra,
+        )
+
+    @staticmethod
+    def _halted(stop_reason: str | None) -> NodeResult:
+        if not stop_reason:
+            return STOPPED.model_copy()
+        return NodeResult(
+            status="skipped", annotation="Não executado", error=f"Execução parada: {stop_reason}"
+        )
+
+    @staticmethod
+    def _incoming_schema(
+        workflow: Workflow, node: Node, results: dict[str, NodeResult]
+    ) -> dict[str, list[drift.ColumnSpec]]:
+        """O que chega em cada entrada da caixa, pelo resumo do resultado das caixas de antes."""
+        out: dict[str, list[drift.ColumnSpec]] = {}
+        for e in workflow.edges:
+            src = results.get(e.source) if e.target == node.id else None
+            anchor = src.anchors.get(e.source_handle) if src else None
+            if anchor is not None and anchor.kind == "data":
+                out[e.target_handle] = [drift.ColumnSpec(name=c.name, type=c.type) for c in anchor.columns]
+        return out
+
+    def _output_check(
+        self, workflow: Workflow, node: Node, results: dict[str, NodeResult]
+    ) -> NodeResult | None:
+        """Output com "Parar se o formato da saída mudar" e formato diferente do gravado: não executa (RF-4608)."""
+        if node.type not in drift.OUTPUT_TYPES or not node.config.get("stop_on_schema_change"):
+            return None
+        current = self._incoming_schema(workflow, node, results)
+        change, sentence = drift.output_change(workflow.schemas.get(node.id), current)
+        if change is None:
+            return None
+        return NodeResult(
+            status="error",
+            annotation="Formato mudou: nada gravado",
+            error=f"{sentence} Nada foi gravado, porque a caixa está configurada para parar nesse caso.",
+            extra={"schema": {p: [c.model_dump() for c in cols] for p, cols in current.items()},
+                   "schema_change": change},
+        )  # fmt: skip
+
+    def _schema_result(
+        self,
+        workflow: Workflow,
+        node: Node,
+        spec: ToolSpec | None,
+        result: NodeResult,
+        results: dict[str, NodeResult],
+        unattended: bool,
+    ) -> str | None:
+        """Junta ao resultado o formato atual e a diferença do lembrado. Sem ninguém olhando, devolve o motivo
+        para parar tudo antes das saídas (RF-4607)."""
+        if result.status not in ("executed", "cached"):
+            return None
+        if node.type in drift.OUTPUT_TYPES:
+            current = self._incoming_schema(workflow, node, results)
+            change, sentence = drift.output_change(workflow.schemas.get(node.id), current)
+            extra: dict[str, Any] = {
+                "schema": {p: [c.model_dump() for c in cols] for p, cols in current.items()}
+            }
+            if change:
+                extra["schema_change"] = change
+                extra["warnings"] = [*result.extra.get("warnings", []), sentence]
+            result.extra = {**result.extra, **extra}
+            return None
+        entry = self.cache.get(workflow.id, node.id)
+        frame = entry.tables.get("out") if entry is not None else None
+        if frame is None:
+            return None
+        result.extra = {**result.extra, **drift.source_extra(workflow, node, frame)}
+        change = result.extra.get("schema_change")
+        if not unattended or not change:
+            return None
+        name = result.annotation or node.label or (spec.name if spec else node.type)
+        reason = drift.unattended_stop(change, str(node.config.get("on_new_columns") or "seguir"), name)
+        if reason:
+            result.status = "error"
+            result.error = reason
+        return reason
 
     # ------------------------------------------------------------------ pontos de cache (spec 012)
 
@@ -514,21 +630,22 @@ class WorkflowRunner:
             output = spec.run(ctx, cfg)
         except (ProdataError, ValueError, KeyError, pl.exceptions.PolarsError) as exc:
             self.cache.drop(workflow.id, node.id)
-            return NodeResult(
-                status="error",
-                error=getattr(exc, "message", None) or str(exc),
-                annotation=annotation,
-                elapsed_ms=self._ms(started),
-            )
+            return self._error_result(exc, inputs, annotation, started)
         except Exception as exc:  # isolamento: um nó com bug não derruba o fluxo inteiro
-            log.exception("Falha inesperada na caixa %s (%s)", node.id, node.type)
             self.cache.drop(workflow.id, node.id)
-            return NodeResult(
-                status="error",
-                error=f"Erro interno: {exc}",
-                annotation=annotation,
-                elapsed_ms=self._ms(started),
-            )
+            friendly = errors_pt.translate(exc)
+            if (
+                friendly.technical is None
+            ):  # nada conhecido (arquivo aberto, memória…): é bug, vai inteiro ao log
+                log.exception("Falha inesperada na caixa %s (%s)", node.id, node.type)
+                return NodeResult(
+                    status="error",
+                    error=f"Erro interno: {exc}",
+                    annotation=annotation,
+                    elapsed_ms=self._ms(started),
+                )
+            log.warning("Caixa %s (%s): %s", node.id, node.type, friendly.technical)
+            return self._error_result(exc, inputs, annotation, started)
 
         elapsed = self._ms(started)
         entry = NodeEntry(

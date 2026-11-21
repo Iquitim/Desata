@@ -350,3 +350,48 @@ g.edge.held .edge-line { stroke: var(--marca-org, #a9852f); stroke-dasharray: 6 
 .node-time.cache { color: var(--marca-org, #a9852f); text-transform: uppercase; letter-spacing: .04em; }
 .node-alert { position: absolute; top: -10px; right: -8px; z-index: 4; padding: 1px 8px; font-size: var(--fs-xs); font-weight: 700; color: #fff; background: var(--err); border-radius: 999px; box-shadow: var(--shadow-sm); pointer-events: none; }
 
+
+/* ------------------------------------------------------------------ fio inteligente (spec 046, RF-4641..4646) */
+.wiring .port.in.wire-ok { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.wiring .port.in.wire-no { opacity: .35; }
+.wiring .port.in.can-drop { transform: scale(1.45); background: var(--ok); border-color: var(--ok); color: var(--surface);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--ok) 25%, transparent); }
+.node.drop-node .node-card { border-color: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent), var(--shadow-md); }
+.node.drop-invalid .node-card { border-color: var(--err); }
+g.edge.will-replace .edge-line { stroke-dasharray: 6 5; opacity: .45; }
+g.edge.will-replace .edge-arrow { opacity: .3; }
+.wire-tip {
+  position: absolute; z-index: 30; pointer-events: none; display: inline-flex; align-items: center; gap: 6px;
+  max-width: 320px; padding: 4px 9px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 600; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.wire-tip-port, .wire-tip-node { border-color: var(--ok); color: var(--ok); }
+.wire-tip-invalid { border-color: var(--err); color: var(--err); }
+.wire-tip-empty { border-style: dashed; color: var(--text-2); }
+.port-chooser {
+  position: fixed; z-index: 1000; display: grid; gap: 2px; min-width: 240px; max-width: 340px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg, var(--shadow-md));
+}
+.port-chooser-title { padding: 4px 8px 6px; font-size: var(--fs-xs); font-weight: 600; color: var(--text-2); }
+.port-choice { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border: 0; border-radius: 4px; background: none;
+  color: var(--text); text-align: left; cursor: pointer; font: inherit; }
+.port-choice:hover, .port-choice:focus-visible { background: var(--surface-3); outline: none; }
+.port-choice-letter { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 4px;
+  font: 700 var(--fs-xs)/1 var(--mono); background: var(--accent-weak); color: var(--accent); }
+.port-choice-text { display: grid; gap: 1px; }
+.port-choice-text small { font-size: var(--fs-2xs); color: var(--text-2); }
+.quick-group { padding: 6px 8px 2px; font-size: var(--fs-2xs); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
+@media (prefers-reduced-motion: reduce) { .wiring .port.in.can-drop { transform: none; } }
+
+/* ------------------------------------------------------------------ formato da fonte mudou (spec 046, RF-4603, RF-4655) */
+.node-missing.node-drift { background: var(--warn); }
+.node.drift-hit .node-card {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 30%, transparent), 0 0 18px color-mix(in srgb, var(--warn) 35%, transparent);
+}
+.node.drift-hit::after {
+  content: attr(data-drift); position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); z-index: 4;
+  max-width: 180px; padding: 1px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none;
+  font: 700 var(--fs-2xs)/1.6 var(--mono); color: var(--warn); background: var(--warn-weak); border: 1px solid var(--warn); border-radius: 999px;
+}

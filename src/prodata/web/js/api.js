@@ -106,7 +106,7 @@ export const api = {
   deleteQuery: (id) => request('DELETE', `/api/queries/${enc(id)}`),
   previewQuery: (definition, rows = 100) => request('POST', `/api/queries/preview?rows=${rows}`, definition),
 
-  saveWorkflowFile: (path, workflow) => request('POST', '/api/files/workflow/save', { path, workflow }),
+  saveWorkflowFile: (path, workflow, origin = 'manual') => request('POST', '/api/files/workflow/save', { path, workflow, origin }),
   portableSources: (workflow) => request('POST', '/api/portable/sources', { workflow }),
   portablePreview: (workflow) => request('POST', '/api/portable/share/preview', { workflow }),
   portableShare: (workflow, path, sources) => request('POST', '/api/portable/share/save', { workflow, path, sources }),
@@ -118,7 +118,12 @@ export const api = {
   workflows: () => request('GET', '/api/workflows'),
   workflow: (id) => request('GET', `/api/workflows/${enc(id)}`),
   demoWorkflow: () => request('GET', '/api/workflows/demo'),
-  saveWorkflow: (wf) => request('PUT', `/api/workflows/${enc(wf.id)}`, wf),
+  saveWorkflow: (wf, origin = 'manual') => request('PUT', `/api/workflows/${enc(wf.id)}?origem=${origin}`, wf),
+  versions: (id, current, path = null) => request('POST', `/api/workflows/${enc(id)}/versions/compare`, { current, path }),
+  version: (id, version, path = null) => request('GET', `/api/workflows/${enc(id)}/versions/${enc(version)}${path ? `?arquivo=${enc(path)}` : ''}`),
+  recordVersion: (id, workflow, origin, path = null) => request('POST', `/api/workflows/${enc(id)}/versions`, { workflow, origin, path }),
+  schemaImpact: (workflow, source, columns) => request('POST', '/api/schema/impact', { workflow, source, columns }),
+  schemaRename: (workflow, source, old, nw, onlyNode = false) => request('POST', '/api/schema/rename', { workflow, source, old, new: nw, only_node: onlyNode }),
   deleteWorkflow: (id) => request('DELETE', `/api/workflows/${enc(id)}`),
 
   // Agendamentos (spec 044)

@@ -82,8 +82,10 @@ def read_folder(
     *,
     limit: int | None = None,
     report: Callable[[str], None] | None = None,
+    seen: dict[str, list[str]] | None = None,
 ) -> tuple[pl.DataFrame, list[str]]:
-    """Empilha os arquivos. Devolve a tabela e os arquivos com colunas diferentes das do primeiro."""
+    """Empilha os arquivos. Devolve a tabela e os arquivos com colunas diferentes das do primeiro.
+    ``seen`` recebe as colunas de cada arquivo (spec 046: quais arquivos não têm uma coluna)."""
     from prodata.ingestion.readers import read_table  # evita ciclo na carga do pacote
 
     column = file_column.strip()
@@ -94,6 +96,8 @@ def read_folder(
         if report:
             report(f"{i}/{len(files)} arquivos")
         frame = read_table(path, options, n_rows=limit)
+        if seen is not None:
+            seen[path.name] = list(frame.columns)
         if not frames:
             first = frame.columns
         elif set(frame.columns) != set(first):
@@ -244,3 +248,32 @@ class FolderSources:
         except InvalidInputError as exc:  # padrão demais: a execução mostra o erro, a assinatura só registra
             return f"{source.digest()}#erro:{exc}"
         return f"{source.digest()}#{files_signature(files)}"
+
+
+def missing_columns(seen: dict[str, list[str]]) -> tuple[dict[str, list[str]], list[str]]:
+    """Por coluna da pasta, os arquivos que não a têm, e uma frase por coluna (spec 046, RF-4609).
+    O formato da pasta é o conjunto das colunas de todos os arquivos, não o do último arquivo."""
+    every = list(dict.fromkeys(c for columns in seen.values() for c in columns))
+    out: dict[str, list[str]] = {}
+    for column in every:
+        without = [name for name, columns in seen.items() if column not in columns]
+        if without:
+            out[column] = without
+    phrases = [
+        f"{len(files)} arquivo{'s' if len(files) > 1 else ''} sem a coluna '{column}' "
+        f"({', '.join(files[:3])}{'…' if len(files) > 3 else ''}): nesses arquivos ela fica vazia."
+        for column, files in out.items()
+    ]
+    return out, phrases
+
+
+def folder_warnings(
+    extra: dict[str, Any], odd: list[str], seen: dict[str, list[str]], first: str
+) -> dict[str, Any]:
+    """Arquivos sem uma coluna que os outros têm, coluna por coluna (spec 046, RF-4609)."""
+    if not odd:
+        return extra
+    missing, phrases = missing_columns(seen)
+    extra["folder_missing"] = missing
+    extra["warnings"] = phrases or [odd_warning(odd, first)]
+    return extra

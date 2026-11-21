@@ -10,6 +10,7 @@ import { els, nodeEls, state } from './canvas_state.js';
 import { nodeHeight, nodeWidth } from './canvas_geometry.js';
 import { hiddenNodes } from './canvas_collapse.js';
 import { loopProblems } from './loops.js';
+import { driftBadge, driftHit, schemaChange } from './schema_notice.js';
 import { MAX_ANIMATED_NEW, setFlowTarget } from './canvas_edges.js';
 
 const ANNOT_CHARS = 19; // o que cabe na caixa, em letras: não depende de a fonte já ter carregado
@@ -87,8 +88,9 @@ function buildNode(n, hidden) {
       isSelected(n.id) && 'selected',
       n.cache_point && 'cache-point',
       sourceProblem(n.id) && (sourceProblem(n.id).state === 'sample' ? 'source-sample' : 'source-missing'),
+      driftHit(n.id) && 'drift-hit',
       !store.inspect.via && store.inspect.nodeId === n.id && 'inspected'],
-    dataset: { id: n.id, category: spec?.category || 'prep' },
+    dataset: { id: n.id, category: spec?.category || 'prep', ...(driftHit(n.id) ? { drift: driftHit(n.id).join(', ') } : {}) },
     style: { transform: `translate(${n.x}px, ${n.y}px)`, width: `${nodeWidth(n)}px`, height: `${nodeHeight(n)}px` },
   },
   h('div', {
@@ -105,6 +107,7 @@ function buildNode(n, hidden) {
   res?.extra?.dq_failed ? h('span', { class: 'node-alert', title: 'Linhas que falharam nas regras: saem por [F]' },
     `${res.extra.dq_failed} falharam`) : null,
   missingBadge(n),
+  driftBadge(n),
   loopBadge(n),
   timingBadge(n.id),
   n.cache_point ? h('span', {
@@ -127,7 +130,8 @@ function nodeKey(n, hidden) {
     state.held.get(n.id)?.id, state.held.get(n.id) && store.selection.nodeId === state.held.get(n.id).id,
     store.inspect.via?.nodeId === n.id && store.inspect.via.port, sourceProblem(n.id)?.state || null, // fonte que falta ou amostra (spec 040)
     timingOf(n.id)?.text || null, timingOf(n.id)?.level || null, // tempo nas caixas (spec 041)
-    loopProblems().get(n.id) || null]); // erro de desenho do laço (spec 041)
+    loopProblems().get(n.id) || null, // erro de desenho do laço (spec 041)
+    Boolean(schemaChange(n.id)), driftHit(n.id)?.join(',') || null]); // formato da fonte mudou (spec 046)
 }
 
 /**

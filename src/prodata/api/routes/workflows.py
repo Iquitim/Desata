@@ -4,12 +4,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Response
 
-from prodata.api.deps import ServicesDep
+from prodata.api.deps import Services, ServicesDep
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.engine import graph
 from prodata.samples.apis import seed_example_apis
 from prodata.samples.pdfs import seed_example_pdfs
 from prodata.samples.workflows import demo_workflow
+from prodata.services.versions import Origin
 from prodata.services.workflows import WorkflowSummary
 
 router = APIRouter(prefix="/api/workflows", tags=["workflows"])
@@ -38,17 +39,29 @@ def get_workflow(workflow_id: WorkflowId, services: ServicesDep) -> Workflow:
 
 
 @router.put("/{workflow_id}")
-def save_workflow(workflow_id: WorkflowId, workflow: Workflow, services: ServicesDep) -> Workflow:
+def save_workflow(
+    workflow_id: WorkflowId, workflow: Workflow, services: ServicesDep, origem: Origin = "manual"
+) -> Workflow:
     if workflow.id != workflow_id:
         workflow = workflow.model_copy(update={"id": workflow_id})
     graph.topological_order(workflow)  # recusa ciclos antes de salvar
     saved = services.workflows.save(services.runner.snapshot(workflow))
     services.trust.saved(saved)
+    record_saved_version(services, saved, origem)
     return saved
+
+
+def record_saved_version(
+    services: Services, workflow: Workflow, origin: Origin, path: str | None = None
+) -> None:
+    """Cada Salvar guarda uma versão (spec 046, RF-4633); o modo protegido não guarda."""
+    if not services.trust.is_blocked(workflow.id):
+        services.versions.record(workflow, origin, path=path)
 
 
 @router.delete("/{workflow_id}", status_code=204)
 def delete_workflow(workflow_id: WorkflowId, services: ServicesDep) -> Response:
     services.workflows.delete(workflow_id)
     services.cache.clear_workflow(workflow_id)
+    services.versions.delete_all(workflow_id)  # excluir o fluxo leva junto o que se guardava dele
     return Response(status_code=204)

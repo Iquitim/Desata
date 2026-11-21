@@ -78,6 +78,18 @@ localmente.
   próxima execução, lista de agendamentos com executar agora, pausar, editar e o resultado da última execução, e
   aviso quando uma execução agendada falha. Roda sem janela, com a pessoa conectada, sem guardar a senha do Windows.
 - **Aviso ao terminar a execução**, com as cores da marca (desliga em Exibir).
+- **Fonte que muda de formato**: cada entrada lembra as colunas e os tipos (nunca os valores). Quando mudam, ganha o
+  selo "formato mudou", lista o que entrou, saiu e mudou de tipo, acende as caixas atingidas e oferece **Trocar
+  por…**, que troca a coluna em todas as caixas de uma vez (um Desfazer volta), com a sugestão do mesmo tipo.
+  Agendado ou pela linha de comando, uma coluna usada que sumiu para tudo antes de gravar qualquer arquivo. O Output
+  avisa (ou para, se pedido) quando o arquivo vai sair com outro formato.
+- **Versões anteriores** (Arquivo › Versões anteriores…): cada Salvar guarda uma versão (o automático, uma a cada
+  10 minutos), com prévia do canvas e Restaurar; até 30 por fluxo, só neste computador, cada arquivo com o seu histórico.
+- **Fio inteligente**: o fio gruda na entrada mais próxima, liga ao soltar em cima da caixa (com seletor quando há
+  várias entradas), mostra antes de soltar o que vai acontecer, ignora a faixa logo em volta das caixas e, no vazio,
+  abre a lista com as ferramentas sugeridas pelo que você costuma usar.
+- **Erros em português**, com as colunas parecidas (um clique troca), **Escolher outra coluna** e o texto técnico
+  recolhido em Detalhes técnicos.
 - **Constantes**: um valor com nome, escrito `[#nome]`, nas fórmulas, no Filter básico, no
   nome do arquivo do Output Data e nos parâmetros fixos de API. Do fluxo (vão no arquivo) ou
   compartilhadas (vista Dados). Mudar o valor refaz só as caixas que usam a constante.
@@ -317,6 +329,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [043](specs/043-testes-rapidos/spec.md) | Testes rápidos (afetados, sem os lentos) no dia a dia e a suíte completa em paralelo antes da release |
 | [044](specs/044-rank-agendador-aviso/spec.md) | Rank e médias móveis, Append Fields com a conta de linhas, agendador visual no Windows e aviso de fim de execução |
 | [045](specs/045-correcoes-092/spec.md) | Correções na 0.9.2: laço em etapa recolhida, salvar automático só em fluxo já salvo e o primeiro Salvar pedindo o nome |
+| [046](specs/046-confianca/spec.md) | Confiança: fonte que muda de formato, erros em português com conserto, versões anteriores, fio inteligente e pílula deslizante |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 
@@ -376,7 +389,9 @@ Documentação interativa em http://127.0.0.1:8765/docs.
 | POST | `/api/datasets/{nome}/preview` | Pré-visualizar com opções de leitura (`auto` é resolvido) |
 | DELETE | `/api/datasets/{nome}` | Excluir arquivo |
 | GET | `/api/workflows` · `/api/workflows/{id}` | Listar · obter fluxo |
-| PUT · DELETE | `/api/workflows/{id}` | Salvar · excluir fluxo |
+| PUT · DELETE | `/api/workflows/{id}` | Salvar (`origem`: `manual` ou `auto`, para as versões) · excluir fluxo |
+| GET · POST | `/api/workflows/{id}/versions[/{versão}]` · `/versions/compare` | Versões anteriores: listar, abrir, guardar e comparar com o fluxo aberto (`arquivo` para fluxo salvo em pasta) |
+| POST | `/api/schema/impact` · `/api/schema/rename` | Caixas que usam uma coluna · trocar a coluna em todas elas (spec 046) |
 | POST | `/api/execute` · `/execute/{fluxo}/cancel` | Executar (opcional `target_node_id`) · parar na próxima volta do laço |
 | GET | `/api/results/{wf}/{nó}/{porta}` | Página de resultados com perfil (`offset`, `limit`, `search`, `sort_col`, `filters` em JSON; `loop_end` e `turn` mostram uma volta do laço) |
 | GET | `/api/exports/{arquivo}` | Baixar arquivo gerado pelo Output Data |

@@ -6,8 +6,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from prodata.api.deps import ServicesDep
+from prodata.api.routes.workflows import record_saved_version
 from prodata.domain.workflow import Workflow
 from prodata.engine import graph
+from prodata.services.versions import Origin
 from prodata.services.workflows import load_from_file, save_to_file
 
 router = APIRouter(prefix="/api/files", tags=["arquivos"])
@@ -16,6 +18,7 @@ router = APIRouter(prefix="/api/files", tags=["arquivos"])
 class SaveFileRequest(BaseModel):
     path: str
     workflow: Workflow
+    origin: Origin = "manual"
 
 
 class OpenFileRequest(BaseModel):
@@ -33,6 +36,7 @@ def save_workflow_file(req: SaveFileRequest, services: ServicesDep) -> FileRespo
     workflow = services.runner.snapshot(req.workflow)
     path = save_to_file(workflow, req.path)
     services.trust.saved(workflow)
+    record_saved_version(services, workflow, req.origin, path=str(path))
     return FileResponse(path=str(path), workflow=workflow)
 
 

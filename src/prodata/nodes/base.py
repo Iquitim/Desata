@@ -16,13 +16,14 @@ from pathlib import Path
 from typing import Any, Literal
 
 import polars as pl
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.fields import FieldInfo
 
 from prodata.connectors.api_store import ApiStore
 from prodata.connectors.queries import QueryStore
 from prodata.connectors.store import ConnectionStore
 from prodata.errors import InvalidInputError
+from prodata.forms import ui
 from prodata.ingestion.datasets import DatasetStore
 
 CATEGORIES: list[dict[str, str]] = [
@@ -37,6 +38,22 @@ CATEGORIES: list[dict[str, str]] = [
 
 class ToolConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
+
+
+class SchemaPolicy(BaseModel):
+    """O que fazer quando a fonte muda de formato numa execução sem ninguém olhando (spec 046, RF-4607)."""
+
+    on_new_columns: Literal["seguir", "parar"] = Field(
+        "seguir",
+        title="Se aparecer coluna nova",
+        description=(
+            "Vale para execuções agendadas e pela linha de comando. Uma coluna usada no fluxo que sumiu "
+            "sempre para a execução antes de gravar qualquer saída."
+        ),
+        json_schema_extra=ui(
+            group="Avançado", labels={"seguir": "Seguir com o fluxo", "parar": "Parar a execução"}
+        ),
+    )
 
 
 @dataclass(frozen=True)

@@ -28,11 +28,11 @@ from prodata.engine import constants as constants_engine
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.forms import ui
 from prodata.ingestion.datasets import resolve_inside, sanitize_filename
-from prodata.ingestion.folders import odd_warning, read_folder, source_folder_id
+from prodata.ingestion.folders import folder_warnings, read_folder, source_folder_id
 from prodata.ingestion.options import ReadOptions
 from prodata.ingestion.readers import read_table
 from prodata.nodes import output_names
-from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
+from prodata.nodes.base import NodeContext, NodeOutput, Port, SchemaPolicy, ToolConfig, tool
 from prodata.nodes.excel_output import (
     MAX_SHEETS,
     _sheet_list,
@@ -45,7 +45,7 @@ from prodata.services.audit import log_export
 # ------------------------------------------------------------------ Input Data
 
 
-class InputDataConfig(ReadOptions, ToolConfig):
+class InputDataConfig(ReadOptions, SchemaPolicy, ToolConfig):
     dataset: str = Field(
         "",
         title="Fonte",
@@ -207,16 +207,13 @@ def _read_folder(ctx: NodeContext, folder_id: str, limit: int) -> NodeOutput:
     files = source.files()
     if not files:
         raise InvalidInputError(f"Nenhum arquivo em {source.folder} casa com '{source.pattern}'.")
-    table, odd = read_folder(files, source, source.file_column, limit=limit or None, report=ctx.report)
-    extra: dict[str, Any] = {
-        "source": source.name,
-        "source_read_at": _now(),
-        "source_linked": source.folder,
-        "folder_files": [p.name for p in files],
-    }
-    if odd:
-        extra["warnings"] = [odd_warning(odd, files[0].name)]
-    return NodeOutput(tables={"out": table}, extra=extra)
+    seen: dict[str, list[str]] = {}
+    table, odd = read_folder(
+        files, source, source.file_column, limit=limit or None, report=ctx.report, seen=seen
+    )
+    extra: dict[str, Any] = {"source": source.name, "source_read_at": _now(), "source_linked": source.folder}
+    extra["folder_files"] = [p.name for p in files]
+    return NodeOutput(tables={"out": table}, extra=folder_warnings(extra, odd, seen, files[0].name))
 
 
 def _read_pdf(ctx: NodeContext, ref: tuple[str, str], limit: int) -> NodeOutput:
@@ -556,6 +553,13 @@ class OutputDataConfig(ToolConfig):
             },
         ),
     )
+    # spec 046, RF-4608: quem consome a planilha (um relatório, outro fluxo) quebra quando o formato muda.
+    stop_on_schema_change: bool = Field(
+        False,
+        title="Parar se o formato da saída mudar",
+        description="Desligado: grava e avisa no resultado quando sai uma coluna a mais, a menos ou com outro tipo.",
+        json_schema_extra=ui(group="Avançado"),
+    )
 
 
 def export_path(exports_dir: Path, cfg: OutputDataConfig) -> Path:
@@ -724,7 +728,7 @@ def _write_one(
 # ------------------------------------------------------------------ Database Input
 
 
-class DatabaseInputConfig(ToolConfig):
+class DatabaseInputConfig(SchemaPolicy, ToolConfig):
     connection: str = Field("", title="Conexão", json_schema_extra=ui(widget="connection"))
     mode: Literal["table", "query"] = Field(
         "table", title="Ler", json_schema_extra=ui(labels={"table": "Uma tabela", "query": "Consulta SQL"})

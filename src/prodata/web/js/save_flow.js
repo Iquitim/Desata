@@ -42,19 +42,19 @@ function settle(sent) {
   emit('autosave');
 }
 
-async function write(path, silent) {
+async function write(path, silent, origin = silent ? 'auto' : 'manual') {
   const sent = JSON.stringify(store.workflow);
   saving = true;
   try {
     if (path) {
-      const res = await api.saveWorkflowFile(path, store.workflow);
+      const res = await api.saveWorkflowFile(path, store.workflow, origin);
       store.filePath = res.path;
       rememberRecent(res.path, store.workflow.name);
       emit('file');
       settle(sent);
       if (!silent) toast('Fluxo salvo', { kind: 'success', detail: res.path });
     } else {
-      const saved = await api.saveWorkflow(store.workflow);
+      const saved = await api.saveWorkflow(store.workflow, origin);
       settle(sent);
       if (!silent) toast('Fluxo salvo', { kind: 'success', detail: `Biblioteca do ${brand.nome} · ${saved.id}.prodata.json` });
     }
