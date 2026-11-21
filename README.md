@@ -300,7 +300,7 @@ São mais de 1.500 testes automáticos (`pytest`, em `tests/`), em camadas:
 | Segurança | Abertura protegida, conectores só leitura, senhas fora do disco e a API recusando outros sites e endereços | `test_trust.py`, `test_api_protection.py`, `test_connectors.py` |
 | Confiança (0.9.3) | Formato das fontes, troca de coluna, parada sem ninguém olhando, versões anteriores | `test_schema_drift.py`, `test_versions.py` |
 | Qualidade do código | Nenhum arquivo passa de 800 linhas, o JavaScript não tem importações circulares e o dashboard exportado não depende do programa (a complexidade das funções é limitada pelo ruff) | `test_code_quality.py` |
-| Interface e documentação | Cores e tamanhos de letra pela escala de tokens; Manual e `contexto-ia.md` em dia com o código | `test_theme.py`, `test_manual.py`, `test_ai_context.py` |
+| Interface e documentação | Cores e tamanhos de letra pela escala de tokens; Manual e `contexto-ia.md` em dia com o código; todos os prints do Manual e do guia da versão atual, feitos na mesma geração | `test_theme.py`, `test_manual.py`, `test_ai_context.py` |
 
 - **No dia a dia**, `scripts/testar.py` roda só os testes afetados pela mudança (pytest-testmon), sem os lentos, em
   paralelo: poucos segundos. Mudou algo em `src/prodata/web/`? Ele roda também os testes que leem a interface.
@@ -312,6 +312,7 @@ Antes de publicar uma versão, além da suíte completa:
 
 ```powershell
 uv run --with playwright python scripts/conferir_tela.py   # a tela no navegador: cliques, arrastos, diálogos, animações
+uv run --with playwright --with pillow python docs/guia/imagens/gerar_imagens.py   # todos os prints, nos dois temas
 uv run python packaging/build.py                           # instalador e portátil (--marca protege para a outra marca)
 uv run python scripts/conferir_exe.py                      # os executáveis gerados, como quem instalou o programa
 uv run --no-project --with pypdfium2 --with pillow python docs/guia/verificar_pdf.py docs/guia/Desata-Guia-do-Produto.pdf
@@ -323,7 +324,9 @@ uv run --no-project --with pypdfium2 --with pillow python docs/guia/verificar_pd
 - `conferir_exe.py` roda o `prodata-cli.exe` de cada marca: versão, biblioteca, o fluxo de exemplo inteiro (PDFs e
   laço), código de saída e a tarefa agendada gravando o histórico.
 - `verificar_pdf.py` procura texto cortado e páginas com problema nos guias; os prints dos guias saem de
-  `docs/guia/imagens/gerar_imagens.py`, também com servidor e dados temporários.
+  `docs/guia/imagens/gerar_imagens.py`, também com servidor e dados temporários. Só a geração completa (sem
+  `IMAGENS_SO`, os dois temas, sem erro na página) grava a versão em `prints.json`; o teste do Manual, o PDF e o build
+  recusam prints de outra versão, para o guia nunca juntar telas de versões diferentes.
 
 ### Spec-Driven Development
 

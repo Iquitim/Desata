@@ -104,3 +104,15 @@ def test_guide_cover_shows_the_current_version() -> None:
 
     guide = (Path(__file__).resolve().parents[1] / "docs/guia/guia.html").read_text(encoding="utf-8")
     assert f"Versão {__version__} ·" in guide
+
+
+def test_prints_are_all_from_the_current_version() -> None:
+    """Spec 046: os prints do Manual e do guia saem todos da mesma geração completa, desta versão. Subir a versão sem
+    refazer os prints quebra aqui, antes de o guia misturar telas de versões diferentes."""
+    from prodata import __version__
+    from prodata.brand import DEFAULT
+
+    manifest = Path(__file__).resolve().parents[1] / "src/prodata/web/manual/prints.json"
+    info = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else {}
+    hint = "Rode: uv run --with playwright --with pillow python docs/guia/imagens/gerar_imagens.py (sem IMAGENS_SO)"
+    assert info.get("versao") == __version__ and info.get("marca") == DEFAULT, f"{info} · {hint}"

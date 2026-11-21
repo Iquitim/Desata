@@ -11,6 +11,7 @@ Saídas em dist/: <nome curto>/ (pasta do app), <nome curto>-<versão>-portable.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -60,16 +61,29 @@ def write_version_info(ver: str, brand: Brand) -> None:
     )
 
 
+def check_prints(base: Path, brand_id: str) -> None:
+    """Spec 046: o Manual do pacote só leva prints desta versão e desta marca, feitos todos na mesma geração."""
+    manifest = base / "prints.json"
+    info = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else {}
+    if info.get("versao") != version() or info.get("marca") != brand_id:
+        sys.exit(
+            f"Os prints em {base} são da versão {info.get('versao', '?')}, marca {info.get('marca', '?')}; o build é da "
+            f"{version()}, marca {brand_id}. Rode a geração completa (docs/guia/imagens/gerar_imagens.py, sem IMAGENS_SO)."
+        )
+
+
 def manual_images(brand: Brand, app_dir: Path, ready: Path | None = None) -> None:
     """Marca que não é a padrão: os prints do Manual no repositório mostram a padrão, então são refeitos (spec 036).
 
     ``ready``: pasta com prints já feitos para esta marca (img/ e img-escuro/), sem refazer.
     """
     if brand.id == DEFAULT:
+        check_prints(ROOT / "src/prodata/web/manual", brand.id)
         return
     step(f"Prints do Manual com a marca {brand.id}")
     target = next(app_dir.rglob("web/manual"))
     if ready is not None:
+        check_prints(ready, brand.id)
         for theme in ("img", "img-escuro"):
             shutil.copytree(ready / theme, target / theme, dirs_exist_ok=True)
         return

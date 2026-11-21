@@ -45,11 +45,14 @@ Pg = Page
 done: list[str] = []
 errors: list[str] = []
 OUT = ROOT / "src/prodata/web/manual/img"
+NOTICE_SHOTS = {"aviso-fim", "agendamento-falhou"}  # prints cujo assunto é o aviso de fim (spec 044)
 
 
 def shot(target: Any, name: str, **kw: Any) -> None:
-    # Aviso de um passo anterior (ex.: "Imagem salva") não pode aparecer no print.
-    getattr(target, "page", target).evaluate("() => document.querySelectorAll('.toast').forEach((t) => t.remove())")
+    # Aviso de um passo anterior (ex.: "Imagem salva") não pode aparecer no print. O aviso de fim de execução (spec 044)
+    # também sai, menos nos prints que mostram o próprio aviso.
+    hide = ".toast" if name in NOTICE_SHOTS else ".toast, .run-notice"
+    getattr(target, "page", target).evaluate(f"() => document.querySelectorAll('{hide}').forEach((t) => t.remove())")
     target.screenshot(path=str(OUT / f"{name}.png"), **kw)
     done.append(name)
 
@@ -356,10 +359,12 @@ def part_tools(pg: Pg) -> None:
     panel_until(pg, "excel-sheets", ".sheet-port")
     pg.evaluate(f"() => window.__A.removeNodes(['{nid}'])")
 
-    nid = pg.evaluate("""() => { const n = window.__A.addNode('prep.multirow', 300, 1200, { recipe: 'diff', base: 'mrr_mensal', distance: 1, target: 'new', column: 'mrr_mensal_diferenca', expression: '[mrr_mensal] - [Row-1:mrr_mensal]', group_by: ['uf'], order_by: 'id_cliente', __label: 'Multi-Row Formula' });
+    nid = pg.evaluate("""() => { const n = window.__A.addNode('prep.multirow', 300, 1200, { recipe: 'diff', base: 'mrr_mensal', distance: 1, target: 'new', column: 'mrr_mensal_diferenca', expression: '[mrr_mensal] - [Row-1:mrr_mensal]', group_by: ['uf'], order_by: [{ column: 'id_cliente', descending: false }], __label: 'Multi-Row Formula' });
       window.__A.connect('n_clientes', 'out', n.id, 'in'); window.__S.select(n.id); window.__S.inspect(n.id); return n.id; }""")
     pg.wait_for_timeout(1200)
     panel_until(pg, "multirow", ".mr-formula")
+    pg.wait_for_selector("#leftPanel details.explainer .x-table", timeout=30000)  # o esquema pronto, não "Montando…"
+    pg.wait_for_timeout(400)
     shot(pg.locator("#leftPanel .explainer"), "explain-multirow")
     pg.set_viewport_size({"width": 1600, "height": 1000})
     pg.wait_for_timeout(300)
@@ -728,6 +733,20 @@ def main() -> None:
         generate(theme)
         print(f"{theme}: {len(set(done))} imagens")
     print("erros de página:", errors or "nenhum")
+    record_version(themes)
+
+
+def record_version(themes: list[str]) -> None:
+    """Spec 046: só a geração completa (todas as partes, os dois temas, sem erro na página) marca a versão dos prints.
+    O teste do Manual, o PDF e o build recusam prints de outra versão: o guia nunca mistura telas de versões diferentes."""
+    if os.environ.get("IMAGENS_SO") or errors or set(themes) != {"claro", "escuro"}:
+        print("prints.json não atualizado: só a geração completa, sem erros, marca a versão.")
+        return
+    base = Path(os.environ["IMAGENS_SAIDA"]) if os.environ.get("IMAGENS_SAIDA") else ROOT / "src/prodata/web/manual"
+    found = re.search(r'__version__ = "([^"]+)"', (ROOT / "src/prodata/__init__.py").read_text(encoding="utf-8"))
+    info = {"versao": found.group(1) if found else "?", "marca": os.environ.get("PRODATA_MARCA", "desata")}
+    (base / "prints.json").write_text(json.dumps(info, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"prints.json: versão {info['versao']}, marca {info['marca']}")
 
 
 if __name__ == "__main__":

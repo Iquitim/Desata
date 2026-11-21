@@ -97,7 +97,7 @@ confiança no fluxo**: não entender o erro, perder trabalho, descobrir tarde qu
 
 | ID | Requisito |
 |----|-----------|
-| RF-4661 | Guia e Manual com as novidades (aviso de mudança na fonte e troca de colunas, erros com conserto, versões anteriores, as três zonas do fio), com esquema visual e prints nos dois temas e nas duas marcas. README, versão 0.9.3, guias e instaladores nas duas marcas. |
+| RF-4661 | Guia e Manual com as novidades (aviso de mudança na fonte e troca de colunas, erros com conserto, versões anteriores, as três zonas do fio), com esquema visual e prints nos dois temas e nas duas marcas. README, versão 0.9.3, guias e instaladores nas duas marcas. **Todos os prints** (não só os novos) refeitos na versão, na mesma geração: o teste do Manual, o PDF e o build recusam prints de outra versão (encontrado depois da publicação: o guia misturava telas da 0.9.1, 0.9.2 e 0.9.3). |
 
 ## Fora do escopo
 
