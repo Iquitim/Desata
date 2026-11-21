@@ -37,7 +37,11 @@ def state(services: Services, workflow: Workflow) -> dict[str, Any]:
     if not protected:
         return {"protected": False, "summary": []}
     missing = {s["key"] for s in check_sources(workflow, services) if s["state"] != "ok"}
-    return {"protected": True, "summary": summary(workflow, _names(services), missing)}
+    return {
+        "protected": True,
+        "summary": summary(workflow, _names(services), missing),
+        "reason": services.trust.reason(workflow.id),  # espaço da equipe: por que não confere (spec 047)
+    }
 
 
 @router.post("/state")

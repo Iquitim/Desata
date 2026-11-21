@@ -12,6 +12,7 @@ Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046)
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -391,8 +392,8 @@ def equipe(pg: Page) -> None:
         pg.wait_for_selector("dialog[open] .team-space", timeout=10000)
         check("cria o espaço na pasta", (folder / "_equipe" / "espaco.json").is_file())
         check(
-            "o espaço aparece disponível",
-            "Disponível" in pg.locator("dialog[open] .team-space").first.inner_text(),
+            "o espaço aparece com o papel de quem criou",
+            "Administrador" in pg.locator("dialog[open] .team-space").first.inner_text(),
         )
         pg.keyboard.press("Escape")
 
@@ -416,8 +417,9 @@ def equipe(pg: Page) -> None:
             "mudou no espaço" in (folder / f"{wid}.prodata.json").read_text(encoding="utf-8"),
         )
         check(
-            "nada de amostra ou resultado na pasta",
-            {p.name for p in folder.iterdir()} == {"_equipe", f"{wid}.prodata.json"},
+            "na pasta, só o fluxo e a assinatura (nada de amostra ou resultado)",
+            {p.name for p in folder.iterdir()}
+            == {"_equipe", f"{wid}.prodata.json", f"{wid}.prodata.json.sig"},
         )
 
         pg.locator(".top-menu", has_text="Arquivo").click()
@@ -437,6 +439,43 @@ def equipe(pg: Page) -> None:
         check(
             "a aba do espaço volta ao reabrir",
             pg.locator(".wf-tab[title*='espaço Equipe de teste']").count() >= 1,
+        )
+
+        # Marco 2: membros e assinaturas (RF-4711..4718)
+        pg.locator(".top-menu", has_text="Arquivo").click()
+        pg.locator(".menu .menu-item", has_text="Espaços da equipe").click()
+        spaces = pg.locator("dialog[open][aria-label='Espaços da equipe']")
+        spaces.locator(".team-space .team-chip", has_text="Administrador").wait_for(timeout=10000)
+        check(
+            "quem cria o espaço é administrador",
+            spaces.locator(".team-chip", has_text="Administrador").count() == 1,
+        )
+        spaces.locator("button", has_text="Membros").click()
+        members = pg.locator("dialog[open][aria-label='Membros · Equipe de teste']")
+        members.locator(".team-member").first.wait_for(timeout=10000)
+        text = members.inner_text()
+        check(
+            "Membros mostra a Ana e avisa que só há um administrador",
+            "Ana Souza" in text and "Só há um administrador" in text,
+            text,
+        )
+        check("Membros explica como o espaço fica seguro", members.locator(".team-help").count() == 1)
+        pg.keyboard.press("Escape")
+        pg.keyboard.press("Escape")
+
+        path = folder / f"{wid}.prodata.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["name"] = "Adulterado por fora"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        pg.reload()
+        pg.wait_for_function("() => document.querySelectorAll('.wf-tab').length > 0", timeout=90000)
+        pg.locator(".wf-tab[title*='espaço Equipe de teste']").first.click()
+        banner = pg.locator(".trust-banner")
+        banner.wait_for(timeout=10000)
+        check(
+            "fluxo mudado fora do programa abre protegido, com o motivo",
+            "alterado fora do programa" in banner.inner_text(),
+            banner.inner_text(),
         )
     finally:
         shutil.rmtree(folder, ignore_errors=True)

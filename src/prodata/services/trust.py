@@ -42,6 +42,9 @@ class TrustRegistry:
         self._lock = threading.Lock()
         self._trusted: dict[str, None] = {}  # dict mantém a ordem: os mais antigos saem primeiro
         self._blocked: set[str] = set()
+        self._reasons: dict[
+            str, str
+        ] = {}  # motivo do bloqueio de um fluxo do espaço da equipe (só em memória)
         # Versão lida do disco por id: a tela completa a configuração com os padrões ao abrir, então o que ela
         # confirma não é idêntico ao arquivo. Confiar nas duas evita pedir confirmação de novo na próxima abertura.
         self._read: dict[str, str] = {}
@@ -129,6 +132,25 @@ class TrustRegistry:
                 return
             self._trusted[fingerprint(workflow)] = None
             self._save()
+
+    # ------------------------------------------------------------------ espaço da equipe (spec 047)
+
+    def space_flow(self, workflow: Workflow, reason: str | None) -> None:
+        """Fluxo aberto de um espaço da equipe: a assinatura decide. Confere → liberado; não confere → protegido,
+        com o motivo que a faixa mostra (RF-4715). A conferência manual de sempre continua possível."""
+        with self._lock:
+            if reason is None:
+                self._trusted[fingerprint(workflow)] = None
+                self._blocked.discard(workflow.id)
+                self._reasons.pop(workflow.id, None)
+            else:
+                self._blocked.add(workflow.id)
+                self._reasons[workflow.id] = reason
+            self._save()
+
+    def reason(self, workflow_id: str) -> str | None:
+        with self._lock:
+            return self._reasons.get(workflow_id) if workflow_id in self._blocked else None
 
 
 # ---------------------------------------------------------------- resumo do que o fluxo faz

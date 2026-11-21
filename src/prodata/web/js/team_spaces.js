@@ -8,11 +8,16 @@ import { chooseFolder } from './desktop.js';
 import { button, fmt, h } from './dom.js';
 import { icon } from './icons.js';
 import { openDialog, toast, toastError } from './ui.js';
+import { openMembersDialog, ROLE_NAMES } from './team_members.js';
 
 let state = { configurado: false, espacos: [] };
 export const teamState = () => state;
 export const teamConfigured = () => Boolean(state.configurado);
-export const usableSpaces = () => state.espacos.filter((s) => s.estado === 'ok' || s.estado === 'somente_leitura');
+
+const RANK = { leitor: 0, editor: 1, publicador: 2, administrador: 3 };
+export const canWrite = (s) => s.estado === 'ok' && !s.protegido && RANK[s.papel] >= RANK.editor;
+/** Espaços em que a pessoa é membro (lê): os que aparecem como aba da biblioteca. */
+export const usableSpaces = () => state.espacos.filter((s) => (s.estado === 'ok' || s.estado === 'somente_leitura') && s.papel);
 
 export async function refreshTeam() {
   try { state = await api.team(); } catch { /* sem a resposta, a tela fica como sem espaço */ }
@@ -51,10 +56,11 @@ export async function openSpacesDialog({ onChanged } = {}) {
       if (!nome) return;
     }
     try {
+      await saveName(); // antes: o pedido de entrada e a lista de membros levam o nome escolhido
       const space = await api.addSpace(acao, folder, nome);
-      await saveName();
-      toast(acao === 'criar' ? `Espaço "${space.nome}" criado` : `Você entrou em "${space.nome}"`, {
-        kind: 'success', detail: 'Ele aparece como uma aba em Abrir da biblioteca.',
+      toast(acao === 'criar' ? `Espaço "${space.nome}" criado` : space.papel ? `Você entrou em "${space.nome}"` : `Pedido enviado para "${space.nome}"`, {
+        kind: 'success',
+        detail: space.papel ? 'Ele aparece como uma aba em Abrir da biblioteca.' : 'Um administrador do espaço precisa aceitar e escolher o seu papel.',
       });
       await changed();
     } catch (err) {
@@ -63,13 +69,18 @@ export async function openSpacesDialog({ onChanged } = {}) {
   };
   const draw = () => {
     list.replaceChildren(...(state.espacos.length ? state.espacos.map((s) => {
-      const [tone, label] = STATE_LABEL[s.estado] || STATE_LABEL.invalido;
+      let [tone, label] = STATE_LABEL[s.estado] || STATE_LABEL.invalido;
+      let reason = s.motivo;
+      if (s.protegido) [tone, label, reason] = ['err', 'Protegido', `${s.protegido} Nada do espaço executa até um administrador conferir.`];
+      else if (s.papel) label = ROLE_NAMES[s.papel];
+      else if (s.pedido) [tone, label, reason] = ['warn', 'Pedido enviado', 'Aguardando um administrador aceitar e escolher o seu papel.'];
       return h('div', { class: 'team-space' },
         icon('folder', 16),
         h('div', { class: 'grow' }, h('strong', {}, s.nome),
           h('div', { class: 'wf-desc mono' }, s.caminho),
-          s.motivo ? h('div', { class: `team-reason ${tone}` }, s.motivo) : null),
+          reason ? h('div', { class: `team-reason ${tone}` }, reason) : null),
         h('span', { class: `team-chip ${tone}` }, label),
+        s.papel ? button({ label: 'Membros…', size: 'sm', variant: 'ghost', onClick: () => openMembersDialog(s, changed) }) : null,
         button({
           label: 'Sair', size: 'sm', variant: 'ghost', title: 'Sai do espaço neste computador. Nada é apagado da pasta.',
           onClick: async () => {
@@ -118,9 +129,9 @@ function askSpaceName() {
 
 /** Escolhe um espaço disponível para gravar (Salvar no espaço…, Mover para o espaço…). */
 export function chooseSpace(title) {
-  const spaces = state.espacos.filter((s) => s.estado === 'ok');
+  const spaces = state.espacos.filter(canWrite); // só onde o papel deixa salvar (Editor ou acima)
   if (!spaces.length) {
-    toast('Nenhum espaço disponível para gravar', { detail: 'Crie ou entre num espaço em Arquivo › Espaços da equipe…' });
+    toast('Nenhum espaço em que você possa salvar', { detail: 'Salvar num espaço é para Editor ou acima. Veja os seus espaços em Arquivo › Espaços da equipe…' });
     return Promise.resolve(null);
   }
   if (spaces.length === 1) return Promise.resolve(spaces[0]);
@@ -187,7 +198,7 @@ export function libraryTabs(libraryBody, { onOpen, onCopied }) {
 
 /** Botão "Mover para o espaço…" de um fluxo de Meus fluxos (só com algum espaço que aceita gravar). */
 export function moveButton(workflow, onMoved) {
-  if (!state.espacos.some((s) => s.estado === 'ok')) return null;
+  if (!state.espacos.some(canWrite)) return null;
   return button({
     icon: 'folder', title: 'Mover para o espaço da equipe…', size: 'sm', variant: 'ghost',
     onClick: async () => {

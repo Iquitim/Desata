@@ -166,12 +166,14 @@ def test_move_to_space_and_copy_back(tmp_path: Path) -> None:
     library = WorkflowRepository(tmp_path / "biblioteca")
     team = TeamService(Workspaces(tmp_path / "espacos.json", "desata", "Desata"),
                        IdentityStore(MemorySecretStore(), tmp_path / "equipe.json"), library)  # fmt: skip
-    space = team.workspaces.create(str(folder), "Equipe")
+    space = team.workspaces.get(team.create(str(folder), "Equipe")["id"])
     library.save(flow())
     team.move_from_library(space.id, "vendas")
     assert not library.exists("vendas") and [f.id for f in team.flows(space.id)] == ["vendas"]
     team.copy_to_library(space.id, "vendas", "wf_copia")
-    assert library.get("wf_copia").name == "Vendas (cópia)" and team.get(space.id, "vendas").name == "Vendas"
+    assert (
+        library.get("wf_copia").name == "Vendas (cópia)" and team.get(space.id, "vendas")[0].name == "Vendas"
+    )
 
 
 # ---------------------------------------------------------------- sem espaço, nada muda (RF-4702, CA-01)

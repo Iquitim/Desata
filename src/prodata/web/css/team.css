@@ -12,3 +12,10 @@
 .team-reason.err { color: var(--err); }
 .team-tabs { max-width: 100%; overflow-x: auto; }
 .team-tabs .segment { display: inline-flex; align-items: center; gap: 5px; }
+.team-member { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); }
+.team-member .grow { min-width: 0; }
+.team-member.request { border-style: dashed; border-color: var(--warn); }
+.team-member .select-sm { width: auto; min-width: 130px; }
+.team-help { margin-top: 6px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+.team-help summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
+.team-help ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: var(--fs-sm); color: var(--text-2); }

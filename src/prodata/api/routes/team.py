@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field
 from prodata.api.deps import ServicesDep
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.team.repository import SpaceFlow
-from prodata.team.workspaces import SPACE_ID, Space
+from prodata.team.signing import Role
+from prodata.team.workspaces import SPACE_ID
 
 router = APIRouter(prefix="/api/equipe", tags=["equipe"])
 SpaceId = Annotated[str, Path(pattern=SPACE_ID)]
@@ -43,10 +44,26 @@ def set_name(req: NameRequest, services: ServicesDep) -> dict[str, Any]:
     return {"usuario": me.usuario, "nome": me.nome, "tem_nome": True}
 
 
+class MembersRequest(BaseModel):
+    acao: Literal["aceitar", "recusar", "papel", "remover"]
+    usuario: str = Field(pattern=r"^[A-Za-z0-9._-]{1,64}$")
+    papel: Role = "leitor"
+
+
 @router.post("/espacos")
-def add_space(req: SpaceRequest, services: ServicesDep) -> Space:
-    workspaces = services.team.workspaces
-    return workspaces.create(req.caminho, req.nome) if req.acao == "criar" else workspaces.join(req.caminho)
+def add_space(req: SpaceRequest, services: ServicesDep) -> dict[str, Any]:
+    team = services.team
+    return team.create(req.caminho, req.nome) if req.acao == "criar" else team.join(req.caminho)
+
+
+@router.get("/espacos/{space_id}/membros")
+def list_members(space_id: SpaceId, services: ServicesDep) -> dict[str, Any]:
+    return services.team.members_view(space_id)
+
+
+@router.post("/espacos/{space_id}/membros")
+def change_members(space_id: SpaceId, req: MembersRequest, services: ServicesDep) -> dict[str, Any]:
+    return services.team.change_members(space_id, req.acao, req.usuario, req.papel)
 
 
 @router.delete("/espacos/{space_id}", status_code=204)
@@ -62,8 +79,9 @@ def list_flows(space_id: SpaceId, services: ServicesDep) -> list[SpaceFlow]:
 
 @router.get("/espacos/{space_id}/fluxos/{workflow_id}")
 def get_flow(space_id: SpaceId, workflow_id: WorkflowId, services: ServicesDep) -> Workflow:
-    workflow = services.team.get(space_id, workflow_id)
-    services.trust.opened(workflow)  # mudado fora do programa: abre protegido, como os da biblioteca
+    workflow, reason = services.team.get(space_id, workflow_id)
+    # a assinatura decide: confere → liberado; não confere → protegido, com o motivo (RF-4715)
+    services.trust.space_flow(workflow, reason)
     return workflow
 
 

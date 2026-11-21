@@ -21,6 +21,7 @@ from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.errors import InvalidInputError, NotFoundError
 
 SUFFIX = ".prodata.json"
+SIG = ".sig"  # assinatura ao lado do fluxo (spec 047)
 RETRIES = (
     8  # a sincronização (OneDrive, SharePoint) pode segurar o arquivo por alguns segundos enquanto envia
 )
@@ -100,9 +101,13 @@ class SpaceRepository:
                 f"O arquivo do fluxo no espaço está ilegível ({exc.__class__.__name__})."
             ) from exc
 
-    def save(self, workflow: Workflow) -> Workflow:
+    def save(self, workflow: Workflow, signature: str | None = None) -> Workflow:
+        """Grava o fluxo e, ao lado, a assinatura de quem salvou (``<id>.prodata.json.sig``, spec 047, RF-4714)."""
+        path = self._path(workflow.id)
         try:
-            atomic_write(self._path(workflow.id), _content(workflow))
+            atomic_write(path, _content(workflow))
+            if signature is not None:
+                atomic_write(path.with_name(f"{path.name}{SIG}"), signature)
         except PermissionError as exc:
             raise InvalidInputError(
                 "A pasta do espaço segurou o arquivo por tempo demais (a sincronização ainda está enviando?) ou não "
@@ -110,8 +115,17 @@ class SpaceRepository:
             ) from exc
         return workflow.model_copy(update={"samples": {}})
 
+    def signature(self, workflow_id: str) -> str | None:
+        """O texto da assinatura da versão de trabalho, ou None se não houver (alterado ou criado fora do programa)."""
+        path = self._path(workflow_id)
+        try:
+            return path.with_name(f"{path.name}{SIG}").read_text(encoding="utf-8")
+        except OSError:
+            return None
+
     def delete(self, workflow_id: str) -> None:
         path = self._path(workflow_id)
         if not path.is_file():
             raise NotFoundError("Esse fluxo não está mais no espaço.")
         path.unlink()
+        path.with_name(f"{path.name}{SIG}").unlink(missing_ok=True)

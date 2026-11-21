@@ -136,6 +136,8 @@ export const api = {
   saveSpaceFlow: (id, wf) => request('PUT', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wf.id)}`, wf),
   moveToSpace: (id, workflowId) => request('POST', `/api/equipe/espacos/${enc(id)}/mover`, { workflow_id: workflowId }),
   copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
+  spaceMembers: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/membros`),
+  changeMembers: (id, acao, usuario, papel = 'leitor') => request('POST', `/api/equipe/espacos/${enc(id)}/membros`, { acao, usuario, papel }),
 
   // Agendamentos (spec 044)
   schedules: () => request('GET', '/api/schedules'),

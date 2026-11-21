@@ -10,10 +10,10 @@
 
 ## Marco 2 — Papéis e assinaturas
 
-- [ ] T06 Assinatura e conferência de versões e da versão de trabalho, com motivo legível (RF-4714, RF-4715)
-- [ ] T07 Lista de membros assinada, contador de versão, pedidos de entrada, papéis (RF-4711..4713)
-- [ ] T08 Diálogo de membros: convidar, aceitar, mudar papel, aviso de um só administrador, ajuda das camadas (RF-4712, RF-4717, RF-4718)
-- [ ] T09 Espaço e fluxo protegidos quando algo não confere (RF-4713, RF-4715, CA-03, CA-04)
+- [x] T06 Assinatura e conferência de versões e da versão de trabalho, com motivo legível (RF-4714, RF-4715)
+- [x] T07 Lista de membros assinada, contador de versão, pedidos de entrada, papéis (RF-4711..4713)
+- [x] T08 Diálogo de membros: convidar, aceitar, mudar papel, aviso de um só administrador, ajuda das camadas (RF-4712, RF-4717, RF-4718)
+- [x] T09 Espaço e fluxo protegidos quando algo não confere (RF-4713, RF-4715, CA-03, CA-04)
 
 ## Marco 3 — Quem está editando e modo só leitura
 

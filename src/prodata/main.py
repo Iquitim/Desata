@@ -146,6 +146,7 @@ def build_services(settings: Settings) -> Services:
             Workspaces(settings.storage_dir / "espacos.json", marca().id, marca().nome),
             IdentityStore(secrets, settings.storage_dir / "equipe.json"),
             workflows,
+            settings.storage_dir / "equipe",
         ),
     )
 

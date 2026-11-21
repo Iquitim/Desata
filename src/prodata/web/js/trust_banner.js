@@ -90,8 +90,11 @@ function draw() {
     h('header', { class: 'trust-head' },
       h('span', { class: 'trust-mark' }, icon('shield', 18)),
       h('div', { class: 'grow' },
-        h('strong', {}, 'Este fluxo veio de fora: nada foi executado'),
-        h('p', {}, 'Confira o que ele lê, calcula e grava. Clique num item para ver a caixa. Você pode editar à vontade; executar só depois de confiar.')),
+        // Espaço da equipe (spec 047): a assinatura não conferiu, e a faixa diz por quê
+        h('strong', {}, store.trust.reason ? `${store.trust.reason} Nada foi executado.` : 'Este fluxo veio de fora: nada foi executado'),
+        h('p', {}, store.trust.reason
+          ? 'Confira o que ele lê, calcula e grava antes de confiar, ou peça a quem edita o espaço para restaurar a última versão salva pelo programa.'
+          : 'Confira o que ele lê, calcula e grava. Clique num item para ver a caixa. Você pode editar à vontade; executar só depois de confiar.')),
       button({ icon: 'eye', label: 'Só olhar', variant: 'ghost', onClick: () => { collapsed = true; draw(); } }),
       button({ icon: 'check', label: 'Confiar e executar', variant: 'primary', onClick: confirm })),
     groups.length
