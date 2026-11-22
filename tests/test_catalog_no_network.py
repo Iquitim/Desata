@@ -70,7 +70,7 @@ def _get_paths(routes: list[Any], prefix: str = "") -> set[str]:
             out |= _get_paths(list(included.routes), prefix)
         elif isinstance(route, Mount):
             out |= _get_paths(list(route.routes), prefix + route.path)
-        elif isinstance(route, APIRoute) and "GET" in route.methods and "{" not in route.path:
+        elif isinstance(route, APIRoute) and "GET" in (route.methods or set()) and "{" not in route.path:
             out.add(prefix + route.path)
     return out
 
