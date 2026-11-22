@@ -36,4 +36,4 @@
 ## Marco 7 — Conferências e publicação
 
 - [x] T16 conferir_tela (`equipe5`, `limpeza`) e simulação de sincronização com comentários e definições
-- [ ] T17 Guia e Manual, prints das duas marcas (geração completa), README, versão 0.9.5, instaladores, publicar (RF-4851)
+- [x] T17 Guia e Manual, prints das duas marcas (geração completa), README, versão 0.9.5, instaladores, publicar (RF-4851)
