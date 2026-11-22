@@ -8,7 +8,7 @@
 - [x] T04 Leitores Ipeadata, Tesouro Direto, Siconfi e Comex Stat (RF-4941)
 - [x] T04a Feriados: calculados, ANBIMA, tabela dos estados e capitais com as leis, fusão com as edições e conflito de revisão; dias úteis por local e calendário (RF-4944, RF-4946..4948)
 - [x] T05 `curated.py` com os destaques e o dicionário de colunas; `index.py` com o catálogo guardado por órgão, Atualizar o catálogo e busca sem acento (RF-4912, RF-4931..4934)
-- [ ] T06 Teste de nenhum acesso à rede fora de hora (RF-4983, CA-08)
+- [x] T06 Teste de nenhum acesso à rede fora de hora (RF-4983, CA-08)
 
 ## Marco 2 — Painel do catálogo
 
