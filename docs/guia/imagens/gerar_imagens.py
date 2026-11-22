@@ -35,6 +35,7 @@ from novas_091 import part_091 as new_091  # noqa: E402
 from novas_092 import part_092 as new_092  # noqa: E402
 from novas_093 import part_093 as new_093  # noqa: E402
 from novas_094 import part_094 as new_094  # noqa: E402
+from novas_095 import part_095 as new_095  # noqa: E402
 from organizar_dados import part_organize as organize  # noqa: E402
 from pasta_dados import part_folder_source as folder_source  # noqa: E402
 
@@ -604,9 +605,13 @@ def part_094(pg: Pg, tmp: Path) -> None:
     new_094(pg, tmp, shot)
 
 
+def part_095(pg: Pg, tmp: Path) -> None:
+    new_095(pg, tmp, shot)
+
+
 def PARTS(tmp):  # noqa: N802
     every = ((part_screen, ()), (part_cache_dashboard, ()), (part_sql, ()), (part_tools, ()), (part_quality_lists, ()), (part_data_trust, (tmp,)), (part_manual, ()))
-    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()), (part_092, ()), (part_093, ()), (part_094, (tmp,)))
+    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()), (part_092, ()), (part_093, ()), (part_094, (tmp,)), (part_095, (tmp,)))
     only = os.environ.get("IMAGENS_SO")
     return [e for e in every if not only or e[0].__name__ in only.split(",")]
 

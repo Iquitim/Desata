@@ -11,7 +11,7 @@ import threading
 
 import duckdb
 
-from prodata.engine.convert import DATE_FORMATS, DATETIME_FORMATS, FALSE_WORDS, TRUE_WORDS
+from prodata.engine.convert import BR_ONLY, DATE_FORMATS, DATETIME_FORMATS, FALSE_WORDS, TRUE_WORDS, US_ONLY
 from prodata.engine.formula import ALTERYX_FUNCTIONS
 
 
@@ -25,13 +25,16 @@ _FORMATS = ", ".join("'" + f + "'" for f in [*DATE_FORMATS, *DATETIME_FORMATS])
 PRODATA_MACROS: tuple[str, ...] = (
     r"pd_limpo(x) AS regexp_replace(CAST(x AS VARCHAR), '^\s+|\s+$', '', 'g')",
     r"pd_so_numero(x) AS regexp_replace(pd_limpo(x), '(?i)r\$|\s', '', 'g')",
-    r"""pd_numero_br(n) AS CASE
-      WHEN regexp_matches(n, ',\d*$') AND NOT regexp_matches(n, '\.\d{1,2}$') THEN replace(replace(n, '.', ''), ',', '.')
-      WHEN regexp_matches(n, '^-?\d{1,3}(\.\d{3}){2,}$') THEN replace(n, '.', '')
-      ELSE replace(n, ',', '')
-    END""",
+    # Padrão brasileiro: ponto é milhar, vírgula é decimal (o americano está logo abaixo).
+    r"pd_numero_br(n) AS replace(replace(n, '.', ''), ',', '.')",
     "pd_para_decimal(x) AS TRY_CAST(pd_numero_br(pd_so_numero(x)) AS DOUBLE)",
     "pd_para_inteiro(x) AS TRY_CAST(trunc(pd_para_decimal(x)) AS BIGINT)",
+    # Formato americano e as evidências de cada padrão (spec 048, RF-4836): o Select em "Automático" soma as
+    # evidências da coluna inteira (janela) e escolhe, como o convert do motor.
+    r"pd_numero_us(n) AS replace(n, ',', '')",
+    "pd_para_decimal_us(x) AS TRY_CAST(pd_numero_us(pd_so_numero(x)) AS DOUBLE)",
+    f"pd_evid_us(x) AS CASE WHEN regexp_matches(pd_so_numero(x), '{US_ONLY}') THEN 1 ELSE 0 END",
+    f"pd_evid_br(x) AS CASE WHEN regexp_matches(pd_so_numero(x), '{BR_ONLY}') THEN 1 ELSE 0 END",
     f"""pd_para_booleano(x) AS CASE
       WHEN lower(pd_limpo(x)) IN ({_words(TRUE_WORDS)}) THEN TRUE
       WHEN lower(pd_limpo(x)) IN ({_words(FALSE_WORDS)}) THEN FALSE

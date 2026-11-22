@@ -36,10 +36,24 @@ from prodata.nodes.prep import (
 )
 
 
-def cast_sql(expr: str, source: str, target: str) -> str:
+def _number_sql(expr: str, number_format: str) -> str:
+    """Texto para número no formato da coluna (spec 048, RF-4836). Automático: soma as evidências de cada padrão na
+    coluna inteira (janela), como o convert do motor; empate ou ambíguo fica brasileiro."""
+    if number_format == "us":
+        return f"pd_para_decimal_us({expr})"
+    if number_format == "br":
+        return f"pd_para_decimal({expr})"
+    return (f"CASE WHEN sum(pd_evid_us({expr})) OVER () > sum(pd_evid_br({expr})) OVER () "
+            f"THEN pd_para_decimal_us({expr}) ELSE pd_para_decimal({expr}) END")  # fmt: skip
+
+
+def cast_sql(expr: str, source: str, target: str, number_format: str = "auto") -> str:
     """Mesmas conversões de ``engine/convert.py``, em SQL."""
     if target == "String":
         return text_cast(expr, source)
+    if source == "String" and target in ("Float64", "Int64"):
+        number = _number_sql(expr, number_format)
+        return number if target == "Float64" else f"TRY_CAST(trunc({number}) AS BIGINT)"
     if source == "String":
         macro = {
             "Float64": "pd_para_decimal",
@@ -58,7 +72,10 @@ def cast_sql(expr: str, source: str, target: str) -> str:
 
 
 def select_items(
-    columns: list[tuple[str, str, str]], fields: list[SelectField], order: list[str]
+    columns: list[tuple[str, str, str]],
+    fields: list[SelectField],
+    order: list[str],
+    number_format: str = "auto",
 ) -> tuple[list[str], list[str]]:
     """Itens do SELECT para (nome de entrada, expressão, família do tipo). Devolve os itens e o que foi feito."""
     by_name = {f.name: f for f in fields}
@@ -74,7 +91,7 @@ def select_items(
         out = (rule.rename.strip() if rule else "") or name
         value = expr
         if rule is not None and rule.cast:
-            value = cast_sql(expr, kind, rule.cast)
+            value = cast_sql(expr, kind, rule.cast, number_format)
             casted += 1
         renamed += out != name
         # "l.id AS id" diz o mesmo que "l.id": o nome só aparece quando muda algo.
@@ -103,7 +120,7 @@ def _select_from(items: list[str], source: str) -> str:
 def select_sql(ctx: SqlContext, cfg: SelectConfig) -> dict[str, Fragment]:
     source = ctx.input()
     columns = [(c, q(c), source.kinds[c]) for c in source.columns]
-    items, what = select_items(columns, cfg.fields, cfg.order)
+    items, what = select_items(columns, cfg.fields, cfg.order, cfg.number_format)
     explain = ", ".join(what).capitalize() if what else "Mantém todas as colunas"
     return {"out": Fragment(_select_from(items, q(source.block)), explain)}
 

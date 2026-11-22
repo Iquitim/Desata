@@ -9,7 +9,7 @@ import polars as pl
 from pydantic import BaseModel, Field
 
 from prodata.engine import formula, multirow
-from prodata.engine.convert import convert
+from prodata.engine.convert import NumberFormat, convert
 from prodata.engine.dates import date_or_error, moment_or_error
 from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, Port, ToolConfig, tool
@@ -51,6 +51,15 @@ class SelectConfig(ToolConfig):
     # Ordem das colunas na saída (spec 018), editada arrastando as linhas da tabela acima.
     # Vazio = ordem de entrada; colunas que não estão na lista vão para o fim, na ordem de entrada.
     order: list[str] = Field(default_factory=list, title="Ordem", json_schema_extra=ui(widget="hidden"))
+    # Número em texto (spec 048, RF-4836): o formato é decidido pela coluna; o ambíguo ("1.200") fica brasileiro.
+    number_format: Literal["auto", "br", "us"] = Field(
+        "auto",
+        title="Números no texto",
+        description="Ao trocar texto por número. Automático reconhece dados de fora pela coluna; o que for ambíguo fica brasileiro.",
+        json_schema_extra=ui(
+            labels={"auto": "Automático", "br": "Brasileiro: 1.234,56", "us": "Americano: 1,234.56"}
+        ),
+    )
 
 
 @tool(
@@ -63,12 +72,12 @@ class SelectConfig(ToolConfig):
     annotate=lambda c: f"{sum(not f.keep for f in c.fields)} removida(s)" if c.fields else "Todas as colunas",
 )
 def select(ctx: NodeContext, cfg: SelectConfig) -> NodeOutput:
-    out, warnings = apply_select(ctx.input(), cfg.fields, cfg.order)
+    out, warnings = apply_select(ctx.input(), cfg.fields, cfg.order, cfg.number_format)
     return NodeOutput(tables={"out": out}, extra={"warnings": warnings} if warnings else {})
 
 
 def apply_select(
-    df: pl.DataFrame, fields: list[SelectField], order: list[str]
+    df: pl.DataFrame, fields: list[SelectField], order: list[str], number_format: NumberFormat = "auto"
 ) -> tuple[pl.DataFrame, list[str]]:
     """Manter, renomear, converter e ordenar colunas. Usado pelo Select e pelo Join (spec 019)."""
     if not fields and not order:
@@ -86,8 +95,14 @@ def apply_select(
         if rule is not None and rule.cast:
             # Conversão tolerante (spec 018): entende padrão brasileiro, datas em texto e do Excel,
             # e avisa o que não converteu em vez de perder em silêncio.
-            result = convert(series, _POLARS_TYPES[rule.cast])
+            result = convert(series, _POLARS_TYPES[rule.cast], number_format)
             series = result.series
+            if (
+                number_format == "auto" and result.number_format == "us"
+            ):  # o automático reconheceu dado de fora
+                warnings.append(
+                    f"[{col}] lido no formato americano (1,234.56), como a maioria dos valores da coluna."
+                )
             if result.failed:
                 warnings.append(
                     f"[{col}] → {_TYPE_LABELS[rule.cast]}: {result.failed} valor(es) não converteram e ficaram vazios "

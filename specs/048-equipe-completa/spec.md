@@ -83,6 +83,7 @@ ou API da equipe vai para a pasta sem senha, token ou chave; cada pessoa digita 
 | RF-4833 | **Mesma linguagem do "tipo mudou".** O número como texto por causa de "N/D" usa o mesmo cartão, os mesmos exemplos e a mesma inserção do aviso de mudança na fonte (spec 046), para a pessoa reconhecer o padrão. |
 | RF-4834 | **Sem barulho.** Aparecem no máximo três recomendações por caixa, as que atingem mais linhas, com **Ver todas**. **Ignorar nesta coluna** guarda a escolha no fluxo (vale para quem abrir depois). No canvas, só um ponto discreto na caixa indica que há recomendação; nenhum aviso abre sozinho. |
 | RF-4835 | A recomendação vale para o que a caixa entrega, então uma correção já feita depois dela não é sugerida de novo (a caixa seguinte já resolve). |
+| RF-4836 | **Número em texto: brasileiro por padrão, estrangeiro reconhecido.** Na conversão de texto em número (Select com troca de tipo, recomendações de limpeza, aviso de "tipo mudou" e a tradução para SQL), o formato é decidido **pela coluna inteira**: valores que só existem no padrão americano ("1,234.56", "3.75", "1,234,567") contam como americano; os que só existem no brasileiro ("1.234,56", "12,5", "1.234.567") contam como brasileiro; vence o que tiver mais. Coluna ambígua (só "1.200") ou empatada fica no **padrão brasileiro**: "1.200" é mil e duzentos. O Select ganha **Números no texto**: Automático (o padrão), Brasileiro ou Americano. Quando o automático lê uma coluna no formato americano, a caixa avisa. A tradução para SQL decide do mesmo jeito, pela coluna. |
 
 ### Benchmark
 

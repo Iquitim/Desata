@@ -52,8 +52,14 @@ localmente.
   cópias de conflito da sincronização viradas versões, versão oficial assinada por um Publicador e agendamentos que
   rodam só a oficial, visíveis para o time, com Assumir. Cada versão e a lista de membros são assinadas (Ed25519, chave
   no cofre do Windows): fluxo mexido fora do programa não executa, e papel não se forja editando arquivo. Mudanças
-  sensíveis de um colega (arquivos, banco, APIs, SQL) pedem conferência só do que mudou. Quem usa só no próprio
-  computador não vê nada disso.
+  sensíveis de um colega (arquivos, banco, APIs, SQL) pedem conferência só do que mudou. Constantes, conexões,
+  consultas e APIs da equipe (sem senha: cada pessoa digita a sua uma vez, no próprio cofre), comentários nas caixas
+  com Responder e Resolver, e Juntar as duas caixa por caixa quando duas pessoas salvam o mesmo fluxo. Quem usa só no
+  próprio computador não vê nada disso.
+- **Recomendações de limpeza**: o Perfil de uma caixa aponta espaço sobrando, número (brasileiro ou estrangeiro, reconhecido
+  pela coluna) ou data guardados como texto
+  (com os valores que impedem, como "N/D"), maiúsculas diferentes, texto vazio e linhas repetidas; Corrigir mostra o
+  antes e depois e insere a ferramenta certa já configurada, com Desfazer. Nada é corrigido sozinho.
 - **Laços**: o Loop cria o Início e o Fim do loop, e as caixas entre eles repetem para cada valor de uma coluna,
   para cada número ou data de uma faixa, ou enquanto uma condição valer. `[#valor]`, `[#volta]` e `[#total]` nas
   fórmulas e no nome do arquivo; saída empilhada, acumulada ou só a última volta; limite de voltas, Parar, resultado
@@ -298,7 +304,7 @@ Para hooks locais: `uvx pre-commit install`.
 
 ### Testes
 
-São mais de 1.600 testes automáticos (`pytest`, em `tests/`), em camadas:
+São mais de 1.650 testes automáticos (`pytest`, em `tests/`), em camadas:
 
 | Camada | O que garante | Onde |
 |---|---|---|
@@ -308,6 +314,7 @@ São mais de 1.600 testes automáticos (`pytest`, em `tests/`), em camadas:
 | Segurança | Abertura protegida, conectores só leitura, senhas fora do disco e a API recusando outros sites e endereços | `test_trust.py`, `test_api_protection.py`, `test_connectors.py` |
 | Confiança (0.9.3) | Formato das fontes, troca de coluna, parada sem ninguém olhando, versões anteriores | `test_schema_drift.py`, `test_versions.py` |
 | Equipe (0.9.4) | Assinaturas e papéis (inclusive as tentativas de burlar), marcas de edição, versões com autor, conflito, cópias de conflito, envio adiado, versão oficial e agendamentos do time, com um simulador de sincronização | `test_team_*.py`, `test_sync_sim.py` |
+| Equipe e limpeza (0.9.5) | Definições da equipe sem segredo e assinadas, comentários como eventos assinados, juntar caixa por caixa, recomendações de limpeza e o benchmark | `test_team_definitions.py`, `test_team_comments.py`, `test_team_merge.py`, `test_cleaning.py`, `test_benchmark.py` |
 | Qualidade do código | Nenhum arquivo passa de 800 linhas, o JavaScript não tem importações circulares e o dashboard exportado não depende do programa (a complexidade das funções é limitada pelo ruff) | `test_code_quality.py` |
 | Interface e documentação | Cores e tamanhos de letra pela escala de tokens; Manual e `contexto-ia.md` em dia com o código; todos os prints do Manual e do guia da versão atual, feitos na mesma geração | `test_theme.py`, `test_manual.py`, `test_ai_context.py` |
 
@@ -399,6 +406,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [045](specs/045-correcoes-092/spec.md) | Correções na 0.9.2: laço em etapa recolhida, salvar automático só em fluxo já salvo e o primeiro Salvar pedindo o nome |
 | [046](specs/046-confianca/spec.md) | Confiança: fonte que muda de formato, erros em português com conserto, versões anteriores, fio inteligente e pílula deslizante |
 | [047](specs/047-espaco-da-equipe/spec.md) | Espaço da equipe: pasta compartilhada com papéis e assinaturas, quem está editando, versões com autor, conflito, versão oficial e agendamentos do time |
+| [048](specs/048-equipe-completa/spec.md) | Equipe completa e dados mais limpos: definições da equipe, comentários, juntar caixa por caixa, recomendações de limpeza e benchmark |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 

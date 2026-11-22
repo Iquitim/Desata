@@ -41,7 +41,12 @@ def test_xlsb_is_read_like_excel() -> None:
     ("values", "target", "expected"),
     [
         ([" 12 ", "7", None], pl.Int64, [12, 7, None]),
-        (["1.234,56", "12,5", "R$ 1.500,00", "3.5"], pl.Float64, [1234.56, 12.5, 1500.0, 3.5]),
+        # sempre o padrão brasileiro: ponto é milhar ("1.200" é mil e duzentos), vírgula é decimal (spec 048)
+        (
+            ["1.234,56", "12,5", "R$ 1.500,00", "1.200", "1.234.567"],
+            pl.Float64,
+            [1234.56, 12.5, 1500.0, 1200.0, 1234567.0],
+        ),
         (["sim", "NÃO", "1", "false"], pl.Boolean, [True, False, True, False]),
         (["29/10/2026", "2026-10-30"], pl.Date, [date(2026, 10, 29), date(2026, 10, 30)]),
         ([45229, None], pl.Date, [date(2023, 10, 30), None]),  # número de série do Excel

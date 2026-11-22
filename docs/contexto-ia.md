@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.9.4. Este arquivo é gerado a partir do código.
+Versão do programa: 0.9.5. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -434,6 +434,7 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
   - `rename` (""): Rename
   - `cast` (""): Cast. Opções: ``, `Int64`, `Float64`, `String`, `Boolean`, `Date`
 - `order` ([]): Ordem
+- `number_format` ("auto"): Números no texto. Opções: `auto`, `br`, `us`. Ao trocar texto por número. Automático reconhece dados de fora pela coluna; o que for ambíguo fica brasileiro
 
 #### `prep.filter`: Filter
 

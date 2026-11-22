@@ -73,7 +73,7 @@ def _as_type(name: str, text: pl.Series) -> dict[str, Any] | None:
         ]
         examples += [{"antes": _quoted(b), "depois": "vazio"} for b in blockers]
         return {"tipo": kind, "coluna": name, "linhas": int(filled.len()),
-                "titulo": f"{name} parece {word}, mas está como texto{suffix}",
+                "titulo": f"{name} parece {word}{' (formato americano, 1,234.56)' if result.number_format == 'us' else ''}, mas está como texto{suffix}",
                 "detalhe": f"Como texto, {name} não soma, não compara como {word} e ordena errado.",
                 "exemplos": examples,
                 "correcao": {"tool": "prep.select", "port": "out",

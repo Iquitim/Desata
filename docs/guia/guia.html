@@ -206,7 +206,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.9.4 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.9.5 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -865,6 +865,20 @@
       <p>Arquivo aberto no Excel na hora de gravar, função que não existe numa fórmula ou erro de sintaxe na caixa SQL também ganham uma frase clara. O texto original do motor continua disponível, recolhido, em <strong>Detalhes técnicos</strong>.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/erro-coluna.png" alt="Erro de coluna inexistente com a coluna parecida e o conserto"></div><figcaption>A parecida vira botão: um clique troca.</figcaption></figure>
+  </div>
+  <h3>Recomendações de limpeza</h3>
+  <div class="side">
+    <div>
+      <p>Depois de executar, o <strong>Perfil</strong> de uma caixa mostra o que vale limpar nos dados que ela entrega, em uma linha cada, com a contagem e exemplos de antes e depois:</p>
+      <ul>
+        <li><strong>Espaço no começo ou no fim</strong>: "SP " não casa com "SP" num Join ou num filtro.</li>
+        <li><strong>Número ou data guardados como texto</strong>, com os valores que impedem, como "N/D". O formato do número é decidido pela coluna: "1.234,56" é brasileiro, "1,234.56" ou "3.75" é americano; quando não dá para saber, vale o brasileiro ("1.200" vira 1200). No <em>Select</em>, <strong>Números no texto</strong> força Brasileiro ou Americano.</li>
+        <li><strong>O mesmo valor com maiúsculas diferentes</strong> ("SP" e "sp"), que viram grupos diferentes.</li>
+        <li><strong>Texto vazio misturado com vazio de verdade</strong> e <strong>linhas repetidas</strong> por inteiro.</li>
+      </ul>
+      <p><strong>Corrigir</strong> mostra o que muda e insere logo depois da caixa a ferramenta que resolve, já configurada (<em>Data Cleansing</em>, <em>Select</em> com troca de tipo ou <em>Unique</em>), com o resto do fluxo ligado nela. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz. <strong>Ignorar</strong> fica gravado no fluxo, para quem abrir depois. Nada é corrigido sozinho: nas caixas de entrada, só um ponto discreto avisa que há o que limpar.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/limpeza-perfil.png" alt="Recomendações de limpeza no Perfil da caixa"></div><figcaption>Número guardado como texto por causa de um "N/D", e "SP" escrito de dois jeitos.</figcaption></figure>
   </div>
 </section>
 <!-- ================================================================ 6. RESULTADOS -->
@@ -1695,15 +1709,50 @@
     <div>
       <p>Se outra pessoa salvou depois que você abriu o fluxo, o Salvar <strong>não sobrescreve</strong>. A sua versão fica guardada, com o seu nome, e o aviso oferece:</p>
       <ul>
-        <li><strong>Ver as duas</strong>: abre as versões anteriores, com o autor de cada uma.</li>
+        <li><strong>Juntar as duas</strong>: traz o que cada um fez e só pergunta onde vocês dois mexeram na mesma caixa (abaixo).</li>
         <li><strong>Abrir a do colega</strong>: troca o que está aberto pela versão dele.</li>
-        <li><strong>Ficar com a minha</strong>: a sua passa a ser a do espaço; a dele continua nas versões.</li>
+        <li><strong>Ficar com a minha</strong>: a sua passa a ser a do espaço; a dele continua nas versões. <strong>Ver as duas versões</strong>, no texto do aviso, abre as versões anteriores, com o autor de cada uma.</li>
       </ul>
       <p>Quando o OneDrive, o SharePoint ou o Syncthing criam uma <em>cópia de conflito</em> (o nome do arquivo com o nome do computador), o {{produto}} a transforma em versão do fluxo, em vez de deixar um fluxo solto na biblioteca. Se a sincronização segurar o arquivo, o Salvar espera alguns segundos e, se preciso, guarda neste computador e envia depois.</p>
     </div>
     <div class="stack-figs">
       <figure><div class="frame"><img src="../../src/prodata/web/manual/img/equipe-conflito.png" alt="Aviso de que outra pessoa salvou o fluxo"></div><figcaption>Nada sobrescrito: escolha qual versão fica.</figcaption></figure>
       <figure><div class="frame"><img src="../../src/prodata/web/manual/img/equipe-versoes.png" alt="Versões anteriores com o autor de cada uma"></div><figcaption>As versões do espaço, com quem salvou cada uma.</figcaption></figure>
+    </div>
+  </div>
+
+  <h3>Juntar as duas, caixa por caixa</h3>
+  <div class="side">
+    <div>
+      <p>O {{produto}} compara as duas versões com a versão de onde as duas partiram. O que só um de vocês mudou entra sozinho: caixa nova, caixa excluída, configuração mudada, fio novo ou removido. O resumo diz quanto veio de cada um.</p>
+      <p>Quando os dois mexeram na mesma caixa (ou um mudou e o outro excluiu), a janela mostra as duas configurações em palavras, lado a lado, e você escolhe <strong>A minha</strong> ou <strong>A do colega</strong>, com a prévia do resultado. <strong>Aplicar</strong> entra como mudança não salva: confira e salve; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz. Em <strong>Versões anteriores</strong>, <strong>Juntar com a que está aberta</strong> faz o mesmo com uma versão de outra pessoa.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/equipe-juntar.png" alt="Juntar as duas: o que entrou sozinho e a caixa que precisa de escolha"></div><figcaption>Uma mudança entrou sozinha; a caixa SQL, que os dois mudaram, pede escolha.</figcaption></figure>
+  </div>
+
+  <h3>Comentários nas caixas</h3>
+  <div class="side">
+    <div>
+      <p>Clique com o botão direito numa caixa de um fluxo do espaço e escolha <strong>Comentar</strong>. Qualquer membro comenta, até o Leitor: revisar é ler e perguntar. A caixa ganha um selo com os comentários abertos, e a conversa abre ao lado do canvas, com <strong>Responder</strong> e <strong>Resolver</strong>.</p>
+      <p>O botão <strong>Comentários</strong>, sobre o canvas, reúne a conversa de todas as caixas e marca o que chegou desde a última vez ("2 novos"). Comentar não muda o fluxo: não cria versão nem conflito.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/equipe-comentarios.png" alt="Conversa de uma caixa ao lado do canvas"></div><figcaption>A pergunta do Bruno e a resposta da Ana, na própria caixa.</figcaption></figure>
+  </div>
+
+  <h3>Constantes, conexões, consultas e APIs da equipe</h3>
+  <div class="side">
+    <div>
+      <p>Numa fonte da vista Dados, <strong>Compartilhar com a equipe…</strong> leva uma cópia para o espaço. Ela aparece para todos na pasta <strong>Da equipe</strong>, e os fluxos do espaço passam a encontrá-la sem cada um cadastrar de novo. A consulta leva junto a conexão que usa.</p>
+      <ul>
+        <li><strong>A senha não vai junto.</strong> Na primeira vez que um fluxo usa uma conexão ou API da equipe, o {{produto}} pede a <em>sua</em> senha, uma vez, e guarda no cofre do Windows deste computador.</li>
+        <li>Num fluxo do espaço vale a definição da equipe; nos outros fluxos, a deste computador.</li>
+        <li>Quando um colega troca o servidor de uma conexão, o endereço de uma API ou o SQL de uma consulta, quem usa confere a mudança antes de executar, como qualquer parte sensível.</li>
+        <li>Para editar, use <strong>Trazer para este computador</strong>, mude a cópia daqui e use <strong>Atualizar na equipe…</strong>.</li>
+      </ul>
+    </div>
+    <div class="stack-figs">
+      <figure><div class="frame"><img src="../../src/prodata/web/manual/img/equipe-definicoes.png" alt="Pasta Da equipe na vista Dados, com uma conexão"></div><figcaption>A conexão da equipe: quem salvou, se confere e os campos, sem senha.</figcaption></figure>
+      <figure><div class="frame"><img src="../../src/prodata/web/manual/img/equipe-senha.png" alt="Pedido da senha para a conexão da equipe"></div><figcaption>A senha é de cada pessoa e fica só no computador dela.</figcaption></figure>
     </div>
   </div>
 
@@ -1752,8 +1801,8 @@
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.4-setup.exe</code> (258 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.4-portable.zip</code> (345 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.5-setup.exe</code> (258 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.5-portable.zip</code> (345 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
