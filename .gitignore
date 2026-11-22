@@ -34,3 +34,4 @@ _guia_marca.html
 
 # Base do pytest-testmon (rodada rápida dos testes, spec 043)
 .testmondata*
+scripts/sincronizacao/pastas/

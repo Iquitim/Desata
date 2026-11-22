@@ -1,0 +1,53 @@
+# Simulação de pasta sincronizada para o espaço da equipe (spec 047, T20).
+#
+# - syncthing-ana e syncthing-bruno: dois "computadores" que sincronizam a mesma pasta, com atraso e conflitos de
+#   verdade (é o comportamento de OneDrive/SharePoint que mais importa: cada um grava na sua cópia local).
+# - samba: uma pasta de rede (\\servidor\espaco), para quem quiser montar de uma máquina Linux, WSL ou VM.
+#
+# Uso: veja LEIAME.md. Nada aqui guarda senha real: o usuário do Samba é só para o teste.
+name: desata-sincronizacao
+
+services:
+  syncthing-ana:
+    image: syncthing/syncthing:1.29.7
+    hostname: noteana
+    environment:
+      STGUIAPIKEY: teste-ana            # chave da API local, só para o script configurar o pareamento
+      STGUIADDRESS: 0.0.0.0:8384
+      PUID: "1000"
+      PGID: "1000"
+    ports:
+      - "127.0.0.1:8384:8384"
+    volumes:
+      - ./pastas/ana:/var/syncthing/espaco
+      - ana-config:/var/syncthing
+
+  syncthing-bruno:
+    image: syncthing/syncthing:1.29.7
+    hostname: notebruno
+    environment:
+      STGUIAPIKEY: teste-bruno
+      STGUIADDRESS: 0.0.0.0:8384
+      PUID: "1000"
+      PGID: "1000"
+    ports:
+      - "127.0.0.1:8385:8384"
+    volumes:
+      - ./pastas/bruno:/var/syncthing/espaco
+      - bruno-config:/var/syncthing
+
+  samba:
+    image: dockurr/samba:4.21
+    profiles: ["samba"]                 # só sobe com: docker compose --profile samba up -d
+    environment:
+      NAME: espaco
+      USER: equipe
+      PASS: somente-teste
+    ports:
+      - "127.0.0.1:1445:445"            # a 445 do Windows já está em uso; monte pela 1445 (veja LEIAME.md)
+    volumes:
+      - ./pastas/samba:/storage
+
+volumes:
+  ana-config:
+  bruno-config:

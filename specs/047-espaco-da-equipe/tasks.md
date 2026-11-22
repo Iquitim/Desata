@@ -36,5 +36,5 @@
 
 ## Marco 6 — Conferências e publicação
 
-- [ ] T20 conferir_tela.py com dois servidores (Ana e Bruno); Docker com Syncthing e Samba; roteiro manual OneDrive/SharePoint (CA-02..CA-09)
+- [x] T20 conferir_tela.py com dois servidores (Ana e Bruno); Docker com Syncthing e Samba; roteiro manual OneDrive/SharePoint (CA-02..CA-09)
 - [ ] T21 Capítulo Trabalhar em equipe no guia e no Manual, prints das duas marcas (todos, geração completa), README, versão 0.9.4, instaladores, publicar (RF-4771)
