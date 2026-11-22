@@ -10,6 +10,7 @@
 - [x] T04b Leitor de OData do Banco Central pelo `$metadata`: entidades, funções com parâmetros tipados, paginação, período (RF-4937, CA-11)
 - [x] T04c Portais CKAN verificados: lista fixa com os hosts dos arquivos, sonda, catálogo por portal com grupos e temas no índice, classificação dos recursos (legível, grande, só link) (RF-4936, RF-4939, RF-4940)
 - [x] T04d Leitura de arquivos dos portais: detecção da vista Dados, ZIP conferido, limite de 200 MB, formato aceito e conferência das colunas a cada execução (RF-4938, RF-4940, CA-12)
+- [x] T04e Correção da vista Dados: zeros à esquerda e códigos longos preservados na leitura de CSV, conferidos no arquivo inteiro, aviso na caixa e paridade com o SQL (RF-4995..4997, CA-13)
 - [x] T05 `curated.py` com os destaques e o dicionário de colunas; `index.py` com o catálogo guardado por órgão, Atualizar o catálogo e busca sem acento (RF-4912, RF-4931..4934)
 - [x] T06 Teste de nenhum acesso à rede fora de hora (RF-4983, CA-08)
 

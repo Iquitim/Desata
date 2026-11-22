@@ -349,6 +349,11 @@ CSV_CASES = {
     "datas_iso": ("id,data,mes\n1,2026-05-01,2026-05\n2,2026-06-15,2026-06\n", {}),
     "datas_br": ("id;data\n1;29/10/2026\n2;31/12/2025\n", {}),
     "zeros_a_esquerda": ("cod,v\n007,1\n010,2\n", {}),
+    "cnpj_e_cep": ("cnpj,cep,v\n33000167000101,01310100,1\n60746948000112,20040002,2\n", {}),
+    "zero_so_no_fim": (
+        "cod,v\n" + "".join(f"{i},{i}\n" for i in range(10, 60)) + "0007,1\n",
+        {"infer_schema_rows": 10},
+    ),
     "mistura": ("a,b\n1,x\nabc,y\n", {}),
     "t_e_f": ("a,b\ntrue,T\nfalse,F\n", {}),
     "vazios": ("a,b\n1,\n,x\n", {}),

@@ -159,6 +159,19 @@ uma versão nova do programa.
 | RF-4982 | **Limites.** Respostas de metadados e de séries têm tamanho máximo; o ZIP é conferido antes de descompactar (caminhos dentro da pasta, tamanho descompactado máximo, nomes trocados pelos fixos); o download grava só na pasta escolhida. |
 | RF-4983 | **Sem rede fora de hora.** Sem catálogo aberto e sem fluxo executando fonte do catálogo, nenhum acesso à rede. Um teste automatizado garante que abrir o programa, a vista Dados e um fluxo sem fonte pública não faz nenhuma requisição externa. |
 
+### Correção: zeros à esquerda na leitura de CSV (vista Dados)
+
+Achado durante a T04d e incluído na 0.9.6 a pedido do usuário ("é uma correção mega importante"): o leitor de CSV
+decide os tipos pelas primeiras linhas e transformava "0012" em 12, sem aviso. Em dados de empresa e de governo isso
+estraga justamente os identificadores (CNPJ, CEP, código de cliente, matrícula), e depois de lido não há como
+recuperar o zero.
+
+| ID | Requisito |
+|----|-----------|
+| RF-4995 | **Identificador fica texto, com os zeros.** Toda coluna que a amostra diz ser inteira é lida como texto e conferida **no arquivo inteiro** (não só nas linhas da amostra): se algum valor tem zero à esquerda ou 12 dígitos ou mais, a coluna fica texto; senão, vira inteiro como sempre foi. Vale para o Input Data, a prévia da vista Dados e a pasta de arquivos (que junta texto e inteiro como texto, sem perder nada). Números com decimal, datas e o resto da leitura não mudam. |
+| RF-4996 | **A caixa diz.** O Input Data mostra o aviso "Lida(s) como texto para manter os zeros à esquerda e os códigos longos: codigo (ex.: 0012)", com um exemplo real. Num fluxo que já existia, uma fórmula ou junção que contava com a coluna numérica passa a acusar o tipo, e o aviso na caixa de origem explica por quê. |
+| RF-4997 | **O SQL acompanha.** O código SQL gerado (spec 020/041) lê os tipos da leitura do motor e força no DuckDB os que divergem: a coluna protegida sai como VARCHAR também no SQL (testes de paridade com CNPJ, CEP e zero só depois da amostra). |
+
 ### Documentação
 
 | ID | Requisito |
@@ -258,6 +271,9 @@ ANTT (não respondeu em 45 s), Bahia, Rio de Janeiro e Natal (sem conexão), Par
   coluna, a execução para com "saiu a coluna X; entrou a coluna Y" e **Aceitar o novo formato** volta a executar.
   Um arquivo acima de 200 MB vai pelo download com pasta; um PDF e um arquivo em site fora da lista aparecem só
   com **Abrir no navegador** e o motivo; nenhum pedido sai para o site fora da lista.
+- CA-13: Um CSV da pessoa com "0012" na linha 20.001 (depois da amostra) e um CNPJ que começa com zero chega ao
+  fluxo com "0012" e o CNPJ inteiro, como texto, com o aviso na caixa; uma coluna de inteiros comuns continua
+  inteira; o SQL gerado lê as mesmas colunas como texto.
 - CA-07: O dashboard e o HTML exportado de um fluxo com IPCA e Selic trazem a citação das duas fontes com a data.
 - CA-08: Abrir o programa, a vista Dados e executar um fluxo sem fonte pública não faz nenhuma requisição externa
   (teste automatizado); o fluxo salvo com a caixa Dados públicos não contém URL montada nem dados.

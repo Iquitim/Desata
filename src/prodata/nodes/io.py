@@ -30,7 +30,7 @@ from prodata.forms import ui
 from prodata.ingestion.datasets import resolve_inside, sanitize_filename
 from prodata.ingestion.folders import folder_warnings, read_folder, source_folder_id
 from prodata.ingestion.options import ReadOptions
-from prodata.ingestion.readers import read_table
+from prodata.ingestion.readers import read_table_noted
 from prodata.nodes import output_names
 from prodata.nodes.base import NodeContext, NodeOutput, Port, SchemaPolicy, ToolConfig, tool
 from prodata.nodes.excel_output import (
@@ -190,7 +190,7 @@ def _read_source(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
         return NodeOutput(tables={"out": df}, extra={"source": query.name, "source_read_at": _now()})
     path = ctx.datasets.resolve(cfg.dataset)
     info = ctx.datasets.info_of(cfg.dataset)
-    df = read_table(path, cfg, n_rows=cfg.limit or None)
+    df, notes = read_table_noted(path, cfg, n_rows=cfg.limit or None)
     # Quando o arquivo foi modificado e se é vinculado: o Configurar mostra de quando são os dados (spec 017).
     extra = {
         "source_modified": info.modified_at.isoformat() if info.modified_at else None,
@@ -198,6 +198,8 @@ def _read_source(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
     }
     if info.linked_path:
         extra["source_linked"] = info.linked_path
+    if notes:  # colunas protegidas como texto (zeros à esquerda, spec 049)
+        extra["warnings"] = notes
     return NodeOutput(tables={"out": df}, extra=extra)
 
 

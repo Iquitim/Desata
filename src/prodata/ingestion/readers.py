@@ -40,13 +40,23 @@ def resolve_options(path: Path, options: ReadOptions) -> ReadOptions:
 
 
 def read_table(path: Path, options: ReadOptions, n_rows: int | None = None) -> pl.DataFrame:
+    return read_table_noted(path, options, n_rows)[0]
+
+
+def read_table_noted(
+    path: Path, options: ReadOptions, n_rows: int | None = None
+) -> tuple[pl.DataFrame, list[str]]:
+    """Como ``read_table``, e as notas da leitura para a caixa mostrar (colunas protegidas como texto)."""
     opts = resolve_options(path, options)
-    reader = _READERS[opts.format]
+    notes: list[str] = []
     try:
-        df = reader(path, opts, n_rows)
+        if opts.format == "csv":
+            df = _read_csv(path, opts, n_rows, notes)
+        else:
+            df = _READERS[opts.format](path, opts, n_rows)
     except (pl.exceptions.PolarsError, fastexcel.FastExcelError, OSError, ValueError) as exc:
         raise InvalidInputError(f"Falha ao ler '{path.name}' como {opts.format}: {exc}") from exc
-    return _skip_columns(df, opts)
+    return _skip_columns(df, opts), notes
 
 
 def _skip_columns(df: pl.DataFrame, opts: ReadOptions) -> pl.DataFrame:
@@ -110,19 +120,68 @@ def _csv_kwargs(opts: ReadOptions) -> dict[str, Any]:
     }
 
 
-def _read_csv(path: Path, opts: ReadOptions, n_rows: int | None) -> pl.DataFrame:
+# Identificador: só dígitos, com zero à esquerda ou com 12 dígitos ou mais (CNPJ, CEP, código do IBGE, matrícula).
+IDENTIFIER_DIGITS = 12
+_LEADING_ZERO = r"^\s*-?0\d"
+
+
+def identifier_example(text: pl.Series) -> str | None:
+    """Um valor que mostra por que a coluna é identificador (zero à esquerda ou dígitos demais), ou None."""
+    filled = text.str.strip_chars().drop_nulls()
+    filled = filled.filter(filled != "")
+    if filled.is_empty() or not filled.str.contains(r"^-?\d+$").all():
+        return None
+    hit = filled.filter(filled.str.contains(_LEADING_ZERO) | (filled.str.len_chars() >= IDENTIFIER_DIGITS))
+    return str(hit[0]) if hit.len() else None
+
+
+def _read_csv(
+    path: Path, opts: ReadOptions, n_rows: int | None, notes: list[str] | None = None
+) -> pl.DataFrame:
+    """Lê o CSV preservando os zeros à esquerda (spec 049, RF-4995).
+
+    O leitor decide os tipos pelas primeiras linhas e transformaria "0012" em 12. Toda coluna que a amostra diz ser
+    inteira é lida como texto e conferida **no arquivo inteiro**: com um valor de zero à esquerda ou com 12 dígitos
+    ou mais, fica texto (e a nota diz qual); senão, vira inteiro como sempre foi.
+    """
     if opts.decimal == "," and opts.delimiter == ",":
         raise InvalidInputError("Decimal com vírgula exige um delimitador diferente de vírgula.")
     kwargs = _csv_kwargs(opts)
     if opts.encoding == "utf-8":
-        return pl.read_csv(path, n_rows=n_rows, **kwargs)
+        source: Path | bytes = path
+    else:
+        # Polars lê apenas UTF-8: decodifica e reencoda em memória.
+        raw = detect.read_sample(path, PREVIEW_BYTES) if n_rows is not None else path.read_bytes()
+        if n_rows is not None and len(raw) == PREVIEW_BYTES:
+            raw = raw[: raw.rfind(b"\n") + 1]
+        source = raw.decode(opts.encoding, errors="replace").encode("utf-8")
 
-    # Polars lê apenas UTF-8: decodifica e reencoda em memória.
-    raw = detect.read_sample(path, PREVIEW_BYTES) if n_rows is not None else path.read_bytes()
-    if n_rows is not None and len(raw) == PREVIEW_BYTES:
-        raw = raw[: raw.rfind(b"\n") + 1]
-    text = raw.decode(opts.encoding, errors="replace")
-    return pl.read_csv(io.BytesIO(text.encode("utf-8")), n_rows=n_rows, **kwargs)
+    def read(**extra: Any) -> pl.DataFrame:
+        data = io.BytesIO(source) if isinstance(source, bytes) else source
+        return pl.read_csv(data, **kwargs, **extra)
+
+    sample_rows = opts.infer_schema_rows or None
+    if n_rows is not None:
+        sample_rows = min(n_rows, sample_rows) if sample_rows else n_rows
+    integers = [c for c, t in read(n_rows=sample_rows).schema.items() if t.is_integer()]
+    if not integers:
+        return read(n_rows=n_rows)
+    df = read(n_rows=n_rows, schema_overrides=dict.fromkeys(integers, pl.String))
+    protected: list[str] = []
+    casts = []
+    for name in integers:
+        example = identifier_example(df[name])
+        if example is not None:
+            protected.append(f"{name} (ex.: {example})")
+        else:
+            casts.append(pl.col(name).str.strip_chars().cast(pl.Int64, strict=False))
+    if casts:
+        df = df.with_columns(casts)
+    if protected and notes is not None:
+        notes.append(
+            f"Lida(s) como texto para manter os zeros à esquerda e os códigos longos: {', '.join(protected)}."
+        )
+    return df
 
 
 def _load_sheet(path: Path, opts: ReadOptions, n_rows: int | None) -> fastexcel.ExcelSheet:
