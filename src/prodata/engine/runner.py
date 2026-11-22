@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import logging
@@ -137,6 +138,16 @@ class WorkflowRunner:
         self._progress: dict[str, dict[str, Any]] = {}
         # Assinatura de cada caixa na última execução: diz se o resultado guardado vale para o fluxo atual (spec 020).
         self._ran: dict[str, dict[str, str]] = {}
+
+    def with_stores(self, **stores: Any) -> WorkflowRunner:
+        """O mesmo executor (cache, andamento e assinaturas compartilhados) com outras lojas de conexões, consultas,
+        APIs e constantes: um fluxo do espaço da equipe usa as definições da equipe (spec 048, RF-4803)."""
+        allowed = {"connections", "queries", "apis", "constants"}
+        if set(stores) - allowed:
+            raise ValueError(f"Lojas desconhecidas: {sorted(set(stores) - allowed)}")
+        clone = copy.copy(self)
+        clone.__dict__.update(stores)
+        return clone
 
     def run(
         self,

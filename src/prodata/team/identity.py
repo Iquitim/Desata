@@ -98,6 +98,11 @@ class IdentityStore:
         usuario = windows_user()
         return Identity(usuario=usuario, nome=self._read().get("nome") or usuario, chave_publica=_b64(public))
 
+    @property
+    def secrets(self) -> SecretStore:
+        """O cofre deste computador (o segredo de cada pessoa para as definições da equipe, spec 048)."""
+        return self._secrets
+
     def sign(self, data: bytes) -> str:
         with self._lock:
             return _b64(self._private().sign(data))

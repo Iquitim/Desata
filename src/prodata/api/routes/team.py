@@ -6,11 +6,14 @@ import secrets
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Path, Query, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from prodata.api.deps import Services, ServicesDep
 from prodata.domain.workflow import ID_PATTERN, Workflow
+from prodata.errors import InvalidInputError, NotFoundError
+from prodata.team.definitions import KINDS, key_of
 from prodata.team.repository import SpaceFlow
+from prodata.team.runtime import runner_for, used_sources
 from prodata.team.signing import Role
 from prodata.team.versions import SpaceVersionInfo
 from prodata.team.workspaces import SPACE_ID
@@ -109,7 +112,7 @@ def save_flow(space_id: SpaceId, workflow_id: WorkflowId, workflow: Workflow, se
     versões ficam guardadas (RF-4761). ``adiado``: a sincronização segurou o arquivo e o envio ficou para depois."""
     workflow = workflow.model_copy(update={"id": workflow_id})
     res = services.team.save(
-        space_id, services.runner.snapshot(workflow), base=base, force=forcar, origin=origem
+        space_id, runner_for(services, space_id).snapshot(workflow), base=base, force=forcar, origin=origem
     )
     services.trust.saved(res["fluxo"])
     return res
@@ -185,3 +188,89 @@ def publish_official(
 def team_schedules(space_id: SpaceId, services: ServicesDep) -> dict[str, Any]:
     """Os agendamentos dos fluxos do espaço, de todos os computadores (RF-4753)."""
     return services.team.team_schedules(space_id)
+
+
+# ---------------------------------------------------------------- definições da equipe (spec 048)
+
+DefKindPath = Annotated[Literal["constantes", "conexoes", "consultas", "apis"], Path()]
+DefKey = Annotated[str, Path(pattern=r"^[A-Za-z0-9_-]{1,64}$")]
+
+
+class ShareRequest(BaseModel):
+    tipo: Literal["constantes", "conexoes", "consultas", "apis"]
+    id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
+
+
+class SecretRequest(BaseModel):
+    valores: dict[str, str] = Field(default_factory=dict, max_length=20)
+
+
+class MissingRequest(BaseModel):
+    workflow: Workflow
+
+
+def _local(services: Services, kind: str, key: str) -> BaseModel:
+    if kind == "constantes":
+        found = services.constants.all().get(key)
+        if found is None:
+            raise NotFoundError(f"Constante não encontrada: {key}")
+        return found
+    store: Any = {"conexoes": services.connections, "consultas": services.queries, "apis": services.apis}[
+        kind
+    ]
+    item: BaseModel = store.get(key)
+    return item
+
+
+@router.get("/espacos/{space_id}/definicoes")
+def list_definitions(space_id: SpaceId, services: ServicesDep) -> dict[str, Any]:
+    """As constantes, conexões, consultas e APIs da equipe (RF-4801), sem segredo nenhum."""
+    return services.team.definitions(space_id)
+
+
+@router.post("/espacos/{space_id}/definicoes/compartilhar")
+def share_definition(space_id: SpaceId, req: ShareRequest, services: ServicesDep) -> dict[str, Any]:
+    """Compartilhar com a equipe (RF-4802): vai uma cópia sem segredo; a consulta leva junto a conexão dela."""
+    item = _local(services, req.tipo, req.id)
+    if req.tipo == "consultas":
+        connection = str(getattr(item, "connection", ""))
+        services.team.save_definition(space_id, "conexoes", _local(services, "conexoes", connection))
+    services.team.save_definition(space_id, req.tipo, item)
+    return services.team.definitions(space_id)
+
+
+@router.put("/espacos/{space_id}/definicoes/{kind}/{key}")
+def save_definition(space_id: SpaceId, kind: DefKindPath, key: DefKey, body: dict[str, Any],
+                    services: ServicesDep) -> dict[str, Any]:  # fmt: skip
+    """Cria ou edita uma definição no espaço (Editor ou acima), assinada por quem salvou."""
+    try:
+        item = KINDS[kind].model_validate(body)
+    except ValidationError as exc:
+        raise InvalidInputError(f"Definição inválida: {exc.errors()[0].get('msg', '')}") from exc
+    if key_of(kind, item) != key:
+        raise InvalidInputError("O identificador não corresponde ao endereço.")
+    services.team.save_definition(space_id, kind, item)
+    return services.team.definitions(space_id)
+
+
+@router.delete("/espacos/{space_id}/definicoes/{kind}/{key}")
+def delete_definition(
+    space_id: SpaceId, kind: DefKindPath, key: DefKey, services: ServicesDep
+) -> dict[str, Any]:
+    services.team.delete_definition(space_id, kind, key)
+    return services.team.definitions(space_id)
+
+
+@router.post("/espacos/{space_id}/definicoes/{kind}/{key}/segredo", status_code=204)
+def set_secret(space_id: SpaceId, kind: DefKindPath, key: DefKey, req: SecretRequest,
+               services: ServicesDep) -> Response:  # fmt: skip
+    """A minha senha (ou token) para uma conexão ou API da equipe: fica só no cofre deste computador (RF-4804)."""
+    services.team.set_secret(space_id, kind, key, req.valores)
+    return Response(status_code=204)
+
+
+@router.post("/espacos/{space_id}/segredos-faltando")
+def missing_secrets(space_id: SpaceId, req: MissingRequest, services: ServicesDep) -> list[dict[str, Any]]:
+    """As conexões e APIs da equipe que o fluxo usa e para as quais falta o meu segredo: a tela pede antes de executar."""
+    connections, apis = used_sources(req.workflow, runner_for(services, space_id).queries)
+    return services.team.missing_secrets(space_id, connections, apis)

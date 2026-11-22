@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Path, Query, Response
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, TypeAdapter, ValidationError
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from prodata.api.deps import ServicesDep
 from prodata.domain.execution import ExecutionReport
@@ -14,6 +14,7 @@ from prodata.engine.loop_run import namespace
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.ingestion.datasets import resolve_inside
 from prodata.nodes.io import OutputDataConfig, export_path
+from prodata.team.runtime import runner_for
 
 router = APIRouter(prefix="/api", tags=["execução"])
 
@@ -23,13 +24,16 @@ class ExecuteRequest(BaseModel):
     target_node_id: str | None = None
     # Execução automática (ao abrir o fluxo): exportações em "Perguntar" com arquivo existente esperam.
     hold_exports: bool = False
+    # Fluxo de um espaço da equipe (spec 048): usa as constantes, conexões, consultas e APIs da equipe.
+    espaco: str | None = Field(None, pattern=r"^[a-f0-9]{16}$")
 
 
 @router.post("/execute")
 def execute(req: ExecuteRequest, services: ServicesDep) -> ExecutionReport:
     """Executa o fluxo inteiro ou apenas até ``target_node_id`` (o nó e seus ancestrais)."""
     services.trust.check_runnable(req.workflow.id)
-    return services.runner.run(req.workflow, req.target_node_id, hold_exports=req.hold_exports)
+    runner = runner_for(services, req.espaco)
+    return runner.run(req.workflow, req.target_node_id, hold_exports=req.hold_exports)
 
 
 @router.get("/execute/{workflow_id}/progress")

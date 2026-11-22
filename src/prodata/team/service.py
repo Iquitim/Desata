@@ -10,15 +10,19 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
+from prodata.connectors.api_model import SavedApi
+from prodata.connectors.models import Connection
 from prodata.domain.workflow import Workflow
 from prodata.errors import ConflictError, InvalidInputError, NotFoundError
 from prodata.services.workflows import WorkflowRepository
+from prodata.team.definitions import KINDS, TeamDefinitions, content_of
 from prodata.team.identity import Identity, IdentityStore
 from prodata.team.local_state import LocalState
 from prodata.team.locks import LockStore
 from prodata.team.members import MembersStore
+from prodata.team.overlay import SpaceDefinitions, missing_secrets, secret_key
 from prodata.team.repository import HeldFileError, SpaceFlow, SpaceRepository
 from prodata.team.schedules import TeamSchedule, TeamSchedules
 from prodata.team.signing import (
@@ -32,7 +36,13 @@ from prodata.team.signing import (
     sign_flow,
     sign_members,
 )
-from prodata.team.trust_diff import changed_parts, sensitive_parts
+from prodata.team.trust_diff import (
+    changed_parts,
+    definition_prints,
+    flow_only,
+    sensitive_parts,
+    with_definitions,
+)
 from prodata.team.versions import SpaceOrigin, SpaceVersionInfo, SpaceVersions, content_sha
 from prodata.team.workspaces import CONTROL, Space, Workspaces
 
@@ -283,7 +293,7 @@ class TeamService:
         if not adiado:
             self._record(space_id, clean, origin, sig)
         local.set_seen(clean.id, sig.sha256)
-        local.set_trusted(clean.id, sensitive_parts(clean))  # o que eu mesmo mudei não pede conferência
+        local.set_trusted(clean.id, self._parts(space_id, clean))  # o que eu mesmo mudei não pede conferência
         return {"fluxo": clean, "sha256": sig.sha256, "adiado": adiado}
 
     def flush_pending(self, space_id: str) -> list[str]:
@@ -377,19 +387,30 @@ class TeamService:
         check: list[str] = []
         motive = None
         if reason is None:
-            parts = sensitive_parts(workflow)
+            parts = self._parts(space_id, workflow)
             before = local.trusted(workflow.id)
-            check = (
-                changed_parts(before, parts) if before is not None and author and not author["minha"] else []
-            )
+            if before is not None:
+                check = changed_parts(before, parts)
+                by_flow = set(changed_parts(flow_only(before), flow_only(parts)))
+                if author and author["minha"]:  # o que eu mudei no fluxo não pede; definição do colega, sim
+                    by_flow, check = set(), [n for n in check if n not in by_flow]
             if check:
-                who = author["nome"] if author else "Outra pessoa"
                 n = len(check)
                 what = "uma parte sensível" if n == 1 else f"{n} partes sensíveis"
-                motive = f"{who} mudou {what} desde a última vez que você conferiu."
+                if by_flow:
+                    who = author["nome"] if author else "Outra pessoa"
+                    motive = f"{who} mudou {what} desde a última vez que você conferiu."
+                else:  # RF-4806: o fluxo é o mesmo, mas uma definição da equipe que ele usa mudou
+                    motive = f"Uma definição da equipe que este fluxo usa mudou ({what}) desde a última vez que você conferiu."
             else:
                 local.set_trusted(workflow.id, parts)
         return {"sha256": sha, "autor": author, "atualizado": updated, "conferir": check, "motivo": motive}
+
+    def _parts(self, space_id: str, workflow: Workflow) -> dict[str, str]:
+        """As partes sensíveis do fluxo e das definições da equipe que ele lê (spec 048, RF-4806)."""
+        return with_definitions(
+            sensitive_parts(workflow), definition_prints(workflow, self.space_definitions(space_id))
+        )
 
     def accept_sensitive(self, space_id: str, workflow_id: str) -> None:
         """A pessoa conferiu e confiou: as partes sensíveis da versão do espaço passam a ser a referência."""
@@ -397,7 +418,7 @@ class TeamService:
             workflow = SpaceRepository(self.workspaces.root(space_id)).get(workflow_id)
         except InvalidInputError, NotFoundError:
             return
-        self._local(space_id).set_trusted(workflow_id, sensitive_parts(workflow))
+        self._local(space_id).set_trusted(workflow_id, self._parts(space_id, workflow))
 
     def latest(self, space_id: str, workflow_id: str) -> dict[str, Any] | None:
         """A versão de trabalho de agora, para o Recarregar (RF-4733)."""
@@ -554,6 +575,82 @@ class TeamService:
     def mark_substituted(self, space_id: str, schedule_id: str, new_id: str, machine: str) -> None:
         self._require(space_id, "publicador")
         self._schedules(space_id).substitute(schedule_id, new_id, self.identity, machine)
+
+    # ------------------------------------------------------------------ definições da equipe (spec 048)
+
+    def _definitions(self, space_id: str) -> TeamDefinitions:
+        return TeamDefinitions(self.workspaces.root(space_id), space_id)
+
+    def definitions(self, space_id: str) -> dict[str, Any]:
+        """As constantes, conexões, consultas e APIs do espaço, com a situação de cada uma (RF-4801, RF-4805). O
+        conteúdo vai só das que conferem, e sempre sem segredo."""
+        _, _, members = self._require(space_id, "leitor")
+        out: dict[str, Any] = {"papel": self.my_role(members)}
+        secrets = self.identity.secrets
+        for kind in KINDS:
+            items = []
+            for info, item in self._definitions(space_id).list(kind, members):
+                row: dict[str, Any] = info.model_dump(mode="json")
+                row["conteudo"] = content_of(kind, item) if item is not None else None
+                if kind == "conexoes" and isinstance(item, Connection) and item.kind != "odbc":
+                    row["tem_segredo"] = bool(secrets.get(secret_key(space_id, kind, info.id)))
+                elif kind == "apis" and isinstance(item, SavedApi):
+                    slots = item.secret_slots()
+                    row["tem_segredo"] = all(
+                        secrets.get(secret_key(space_id, kind, info.id, s)) for s in slots
+                    )
+                items.append(row)
+            out[kind] = items
+        return out
+
+    def save_definition(self, space_id: str, kind: str, item: BaseModel) -> None:
+        """Grava (ou atualiza) uma definição no espaço, assinada por mim. Nunca leva segredo (princípio IV)."""
+        self._require(space_id, "editor")
+        self._definitions(space_id).save(kind, item, self.identity)
+
+    def delete_definition(self, space_id: str, kind: str, key: str) -> None:
+        self._require(space_id, "editor")
+        self._definitions(space_id).delete(kind, key)
+        for k in [secret_key(space_id, kind, key)]:
+            self.identity.secrets.delete(k)
+
+    def space_definitions(self, space_id: str) -> SpaceDefinitions | None:
+        """As definições que um fluxo do espaço pode usar; None se não sou membro ou o espaço não está acessível."""
+        try:
+            _, _, members = self._require(space_id, "leitor")
+        except InvalidInputError, NotFoundError:
+            return None
+        return SpaceDefinitions(self._definitions(space_id), members)
+
+    def set_secret(self, space_id: str, kind: str, key: str, values: dict[str, str]) -> None:
+        """Guarda no cofre deste computador o meu segredo para uma conexão ou API da equipe (RF-4804)."""
+        _, _, members = self._require(space_id, "leitor")
+        item, reason = self._definitions(space_id).check(kind, key, members)
+        if item is None:
+            raise InvalidInputError(f"Essa definição não pode ser usada: {reason}")
+        secrets = self.identity.secrets
+        if kind == "conexoes":
+            if "senha" not in values:
+                raise InvalidInputError("Informe a senha.")
+            if values["senha"]:
+                secrets.set(secret_key(space_id, kind, key), values["senha"])
+            else:
+                secrets.delete(secret_key(space_id, kind, key))
+            return
+        if kind != "apis" or not isinstance(item, SavedApi):
+            raise InvalidInputError("Só conexões e APIs têm segredo.")
+        slots = item.secret_slots()
+        for slot, value in values.items():
+            if slot not in slots:
+                raise InvalidInputError(f"Esta API não tem o segredo {slot}.")
+            if value:
+                secrets.set(secret_key(space_id, kind, key, slot), value)
+            else:
+                secrets.delete(secret_key(space_id, kind, key, slot))
+
+    def missing_secrets(self, space_id: str, connections: list[str], apis: list[str]) -> list[dict[str, Any]]:
+        defs = self.space_definitions(space_id)
+        return missing_secrets(defs, self.identity.secrets, connections, apis) if defs else []
 
     # ------------------------------------------------------------------ membros (administradores)
 

@@ -116,7 +116,7 @@ def check_members(new: Members, accepted: Members | None, espaco: str) -> str | 
 
 # ---------------------------------------------------------------- versões dos fluxos
 
-Kind = Literal["versao", "oficial"]
+Kind = Literal["versao", "oficial", "definicao"]
 
 
 class Signature(BaseModel):
@@ -170,4 +170,40 @@ def check_flow(signature: Signature | None, espaco: str, workflow: Workflow, mem
     if RANK[author.papel] < RANK[need]:
         what = "publicar a versão oficial" if kind == "oficial" else "editar"
         return f"Salvo por {author.nome}, que não tem permissão para {what} ({ROLE_NAMES[author.papel]})."
+    return None
+
+
+# ---------------------------------------------------------------- definições da equipe (spec 048)
+
+
+def document_content(data: dict[str, Any]) -> bytes:
+    return _canonical(data)
+
+
+def sign_document(identity: IdentityStore, espaco: str, path: str, data: dict[str, Any]) -> Signature:
+    """Assina uma definição compartilhada (``path``: ``conexoes/vendas``), no mesmo formato da versão de um fluxo."""
+    me: Identity = identity.current()
+    content = document_content(data)
+    return Signature(tipo="definicao", espaco=espaco, fluxo=path, autor=me.usuario, nome=me.nome,
+                     chave_publica=me.chave_publica, sha256=hashlib.sha256(content).hexdigest(),
+                     assinatura=identity.sign(flow_payload(espaco, path, "definicao", content)))  # fmt: skip
+
+
+def check_document(signature: Signature | None, espaco: str, path: str, data: dict[str, Any],
+                   members: Members | None) -> str | None:  # fmt: skip
+    """Motivo para não usar a definição, ou None se confere: assinada por um Editor da lista vigente (RF-4805)."""
+    if members is None:
+        return "A lista de membros do espaço não confere."
+    if signature is None:
+        return "Foi alterada fora do programa: não tem assinatura de quem salvou."
+    content = document_content(data)
+    if (signature.tipo != "definicao" or signature.espaco != espaco or signature.fluxo != path
+            or hashlib.sha256(content).hexdigest() != signature.sha256
+            or not verify(signature.chave_publica, flow_payload(espaco, path, "definicao", content), signature.assinatura)):  # fmt: skip
+        return f"Foi alterada fora do programa depois de salva por {signature.nome or signature.autor}."
+    author = members.member(signature.autor, signature.chave_publica)
+    if author is None:
+        return f"Salva por {signature.nome or signature.autor}, que não é membro do espaço."
+    if RANK[author.papel] < RANK["editor"]:
+        return f"Salva por {author.nome}, que não tem permissão para editar ({ROLE_NAMES[author.papel]})."
     return None

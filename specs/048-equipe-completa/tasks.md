@@ -2,10 +2,10 @@
 
 ## Marco 1 — Definições da equipe, motor
 
-- [ ] T01 Assinatura de documentos (`sign_document`, `check_document`) e `TeamDefinitions` (guardar, listar, conferir, excluir) sem segredos (RF-4802, RF-4805)
-- [ ] T02 Lojas embrulhadas (`Overlay`) e contexto de espaço em todos os caminhos de execução, inclusive o agendamento (RF-4803, RF-4807)
-- [ ] T03 Segredo por pessoa no cofre e erro `needs_secret` (RF-4804)
-- [ ] T04 Conferência por diferença com as partes sensíveis das definições (RF-4806)
+- [x] T01 Assinatura de documentos (`sign_document`, `check_document`) e `TeamDefinitions` (guardar, listar, conferir, excluir) sem segredos (RF-4802, RF-4805)
+- [x] T02 Lojas embrulhadas (`Overlay`) e contexto de espaço em todos os caminhos de execução, inclusive o agendamento (RF-4803, RF-4807)
+- [x] T03 Segredo por pessoa no cofre e erro `needs_secret` (RF-4804)
+- [x] T04 Conferência por diferença com as partes sensíveis das definições (RF-4806)
 
 ## Marco 2 — Definições da equipe, tela
 

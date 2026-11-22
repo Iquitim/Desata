@@ -22,6 +22,7 @@ from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.errors import InvalidInputError, NotFoundError, ProdataError
 from prodata.scheduling.service import SPACE_TARGET
 from prodata.services.workflows import SUFFIX, load_from_file
+from prodata.team.runtime import runner_for
 
 OK, FAILED, REFUSED = 0, 1, 2
 _STATUS = {
@@ -179,7 +180,8 @@ def run(args: argparse.Namespace) -> int:
             )
             return REFUSED
         print(f"{marca().nome} {__version__} · {workflow.name} ({len(workflow.nodes)} caixas)")
-        report = services.runner.run(workflow, args.ate, unattended=True)
+        runner = runner_for(services, space.group(1) if space else None)  # definições da equipe (spec 048)
+        report = runner.run(workflow, args.ate, unattended=True)
     except ProdataError as exc:
         print(f"Erro: {exc.message}", file=sys.stderr)
         _record(args, started, "refused", name, exc.message)
