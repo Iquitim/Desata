@@ -140,7 +140,7 @@ uma versão nova do programa.
 
 | ID | Requisito |
 |----|-----------|
-| RF-4981 | **Só endereços oficiais, só leitura.** O programa acessa apenas uma lista fixa de endereços dos órgãos, embutida no código, por HTTPS e só com GET/HEAD. Redirecionamento para fora da lista é recusado. Nada é enviado além da própria consulta (código da série, período, localidade). |
+| RF-4981 | **Só endereços oficiais, só leitura.** O programa acessa apenas uma lista fixa de endereços dos órgãos, embutida no código, por HTTPS e só com métodos de leitura: GET, HEAD e, para listar a pasta do CNPJ, PROPFIND (WebDAV). Redirecionamento para fora da lista é recusado. Nada é enviado além da própria consulta (código da série, período, localidade). |
 | RF-4982 | **Limites.** Respostas de metadados e de séries têm tamanho máximo; o ZIP é conferido antes de descompactar (caminhos dentro da pasta, tamanho descompactado máximo, nomes trocados pelos fixos); o download grava só na pasta escolhida. |
 | RF-4983 | **Sem rede fora de hora.** Sem catálogo aberto e sem fluxo executando fonte do catálogo, nenhum acesso à rede. Um teste automatizado garante que abrir o programa, a vista Dados e um fluxo sem fonte pública não faz nenhuma requisição externa. |
 
@@ -149,6 +149,23 @@ uma versão nova do programa.
 | ID | Requisito |
 |----|-----------|
 | RF-4991 | Guia e Manual com o capítulo **Dados públicos do Brasil** (navegar, situação, detalhe, adicionar, receitas, junção com municípios, CNPJ passo a passo, citação, sem internet), prints das duas marcas, README e `contexto-ia.md` com a caixa Dados públicos. O capítulo Escopo e limitações diz o que fica de fora (abaixo). |
+
+## Verificação dos endereços (T01, 2026-11-22)
+
+Todos os endereços foram chamados de verdade por `scripts/conferir_catalogo.py`. Todos os destaques passaram; nenhum
+pede conta, token ou chave.
+
+| Serviço | Catálogo | Dados | Observações |
+|---|---|---|---|
+| BCB SGS | portal de dados abertos (CKAN): 4.261 conjuntos, 3.579 com `codigo_sgs`, com periodicidade, unidade, início e fim, licença ODbL | `api.bcb.gov.br/dados/serie/bcdata.sgs.{código}/dados` | Sem período: erro 406 com a regra dos 10 anos. A Selic meta (432) traz datas futuras (a meta vale até a próxima reunião do Copom): por padrão a caixa corta em hoje, com a opção de incluir. |
+| BCB Olinda | `Moedas` (PTAX) | PTAX por moeda e período; Expectativas (Focus) | Focus levou 3,3 s na primeira chamada: a sonda usa uma consulta pequena da PTAX. O Olinda recusa (400) o espaço escrito como "+": a consulta OData vai com `%20`. |
+| IBGE | `/api/v3/agregados`: 70 pesquisas, 9.348 tabelas (1,9 MB); `metadados` com periodicidade (início e fim), níveis territoriais e variáveis; `periodos` com a data de modificação | variáveis por período e localidade; localidades v1 | IPCA é a tabela 1737 (número-índice: variável 2266); população estimada 6579; desocupação 4099; PIB dos municípios 5938. |
+| Ipeadata | `/api/odata4/Metadados` por HTTPS: 4.141 séries (7,9 MB), com fonte, periodicidade, unidade, última atualização (`SERATUALIZACAO`) e situação | `ValoresSerie(SERCODIGO='…')` | — |
+| Tesouro | portal Tesouro Transparente (CKAN), com data de atualização e tamanho | CSV de preços e taxas do Tesouro Direto (14,7 MB) | ODbL. |
+| Siconfi | — | `apidatalake.tesouro.gov.br/ords/siconfi/tt/…` (entes, relatórios) | Paginação por `items`/`hasMore`. |
+| Comex Stat | `general/dates/updated` (último mês publicado) | API pública de consultas | — |
+| Receita (CNPJ) | Nextcloud oficial `arquivos.receitafederal.gov.br`, link público de compartilhamento, listagem WebDAV (PROPFIND) com tamanho e data de cada arquivo; meses de 2023-05 a 2026-11 | ZIPs por parte; o mês 2026-11 tem 37 arquivos e 7,87 GB | Aceita Range (206): o download retoma. O endereço antigo `dadosabertos.rfb.gov.br` não responde mais. Existem dois links públicos para a mesma pasta: um é o principal, o outro o alternativo. |
+| ANBIMA | — | planilha de feriados nacionais (`.xls`), de 2001 a 2099 | Lida pelo `fastexcel`, que o programa já usa; linhas vazias e notas no fim são descartadas. |
 
 ## Como fica na tela
 

@@ -1,0 +1,125 @@
+{
+ "@odata.context": "https://was-p.bcnet.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata$metadata#ExpectativaMercadoMensais",
+ "value": [
+  {
+   "Indicador": "IPCA",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.3292,
+   "Mediana": 0.32,
+   "DesvioPadrao": 0.0855,
+   "Minimo": 0.1762,
+   "Maximo": 0.6085,
+   "numeroRespondentes": 23,
+   "baseCalculo": 1
+  },
+  {
+   "Indicador": "IPCA",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.3292,
+   "Mediana": 0.32,
+   "DesvioPadrao": 0.0855,
+   "Minimo": 0.1762,
+   "Maximo": 0.6085,
+   "numeroRespondentes": 23,
+   "baseCalculo": 0
+  },
+  {
+   "Indicador": "IPCA Livres",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.3562,
+   "Mediana": 0.355,
+   "DesvioPadrao": 0.079,
+   "Minimo": 0.25,
+   "Maximo": 0.5,
+   "numeroRespondentes": 16,
+   "baseCalculo": 1
+  },
+  {
+   "Indicador": "IPCA Livres",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.3562,
+   "Mediana": 0.355,
+   "DesvioPadrao": 0.079,
+   "Minimo": 0.25,
+   "Maximo": 0.5,
+   "numeroRespondentes": 16,
+   "baseCalculo": 0
+  },
+  {
+   "Indicador": "IPCA Serviços",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.4166,
+   "Mediana": 0.39,
+   "DesvioPadrao": 0.1374,
+   "Minimo": 0.25,
+   "Maximo": 0.7583,
+   "numeroRespondentes": 16,
+   "baseCalculo": 1
+  },
+  {
+   "Indicador": "IPCA Serviços",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.4166,
+   "Mediana": 0.39,
+   "DesvioPadrao": 0.1374,
+   "Minimo": 0.25,
+   "Maximo": 0.7583,
+   "numeroRespondentes": 16,
+   "baseCalculo": 0
+  },
+  {
+   "Indicador": "IPCA Bens industrializados",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.142,
+   "Mediana": 0.13,
+   "DesvioPadrao": 0.1708,
+   "Minimo": -0.18,
+   "Maximo": 0.45,
+   "numeroRespondentes": 15,
+   "baseCalculo": 1
+  },
+  {
+   "Indicador": "IPCA Bens industrializados",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.142,
+   "Mediana": 0.13,
+   "DesvioPadrao": 0.1708,
+   "Minimo": -0.18,
+   "Maximo": 0.45,
+   "numeroRespondentes": 15,
+   "baseCalculo": 0
+  },
+  {
+   "Indicador": "IPCA Alimentação no domicílio",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.6186,
+   "Mediana": 0.558,
+   "DesvioPadrao": 0.2236,
+   "Minimo": 0.3,
+   "Maximo": 1.0815,
+   "numeroRespondentes": 14,
+   "baseCalculo": 1
+  },
+  {
+   "Indicador": "IPCA Alimentação no domicílio",
+   "Data": "2026-11-13",
+   "DataReferencia": "11/2028",
+   "Media": 0.6186,
+   "Mediana": 0.558,
+   "DesvioPadrao": 0.2236,
+   "Minimo": 0.3,
+   "Maximo": 1.0815,
+   "numeroRespondentes": 14,
+   "baseCalculo": 0
+  }
+ ]
+}

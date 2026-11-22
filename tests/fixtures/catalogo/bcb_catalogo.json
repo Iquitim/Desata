@@ -1,0 +1,24 @@
+{
+ "success": true,
+ "result": {
+  "count": 1,
+  "results": [
+   {
+    "name": "432-taxa-de-juros---meta-selic-definida-pelo-copom",
+    "title": "Taxa de juros - Meta Selic definida pelo Copom",
+    "notes": "---\r\n```A partir de 26 de março de 2025, para consultas que retornam informações nos formatos JSON e CSV de séries históricas diárias, o volume de dados retornados será limitado, tornando-se obrigatório o uso de filtros para a recuperação das informações. \r\nConsultas por período de datas serão limitadas a 10 anos, retornando erro caso não satisfaça essa condição. \r\nPara mais detalhes, consulte as informações dos recursos que retornam os formatos JSON e CSV.\r\n``` \r\n--- \r\n\r\nConceito: Taxa de juros que representa a meta, definida pelo Copom, para a taxa Selic. Divulgação em % a.a.\r\n\r\n* Tipo da série: __Série temporal diária__\r\n\r\n* Unidade de medida: __Percentual ao ano__\r\n\r\n* Tempestividade: __Não se aplica__\r\n\r\n* Fonte: __Comitê de Política Monetária__\r\n\r\n* Base de dados de origem: __SGS - Sistema Gerenciador de Séries Temporais__\r\n\r\nTemas: \r\n\r\n    - Estatísticas monetárias\r\n        - Política monetária\r\n            - Taxa SELIC\r\n\r\n\r\n\r\n\r\n",
+    "codigo_sgs": "432",
+    "periodicidade": "Diária",
+    "unidade_medida": "Percentual ao ano",
+    "inicio_periodo": "1999-03-05",
+    "fim_periodo": "None",
+    "metadata_modified": "2026-09-08T20:24:16.527027",
+    "license_title": "Open Data Commons Open Database License (ODbL)",
+    "url": "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=432",
+    "organization": {
+     "title": "BCB/Demab"
+    }
+   }
+  ]
+ }
+}

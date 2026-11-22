@@ -1,0 +1,26 @@
+{
+ "success": true,
+ "result": {
+  "name": "taxas-dos-titulos-ofertados-pelo-tesouro-direto",
+  "title": "Taxas dos Títulos Ofertados pelo Tesouro Direto",
+  "notes": "As taxas e preços dos títulos ofertados pelo Tesouro Direto refletem o mercado secundário de títulos públicos federais. Dessa forma, o investidor pessoa física pode ter acesso aos títulos públicos por meio do Tesouro Direto e saber quais são as taxas e preços de compra e venda praticados em cada dia. ",
+  "metadata_modified": "2026-11-20T10:23:14.494557",
+  "license_title": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+  "resources": [
+   {
+    "name": "Metadados",
+    "url": "https://www.tesourotransparente.gov.br/ckan/dataset/df56aa42-484a-4a59-8184-7676580c81e3/resource/1a8eb2e3-4902-4a38-a1eb-6410f23d90de/download/taxa.pdf",
+    "last_modified": null,
+    "size": "242344",
+    "format": "PDF"
+   },
+   {
+    "name": "Taxas dos Títulos Ofertados pelo Tesouro Direto",
+    "url": "https://www.tesourotransparente.gov.br/ckan/dataset/df56aa42-484a-4a59-8184-7676580c81e3/resource/796d2059-14e9-44e3-80c9-2d9e30b405c1/download/precotaxatesourodireto.csv",
+    "last_modified": "2026-11-20T10:23:14.451334",
+    "size": "14709452",
+    "format": "CSV"
+   }
+  ]
+ }
+}

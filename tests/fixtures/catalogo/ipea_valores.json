@@ -1,0 +1,173 @@
+{
+ "@odata.context": "http://www.ipeadata.gov.br/api/odata4/$metadata#Collection(Ipeadata.OData4.Models.Valor)",
+ "value": [
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-01-01T00:00:00-02:00",
+   "VALVALOR": 1.46,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-02-01T00:00:00-02:00",
+   "VALVALOR": 1.15,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-03-01T00:00:00-03:00",
+   "VALVALOR": 1.16,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-04-01T00:00:00-03:00",
+   "VALVALOR": 1.21,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-05-01T00:00:00-03:00",
+   "VALVALOR": 1.24,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-06-01T00:00:00-03:00",
+   "VALVALOR": 1.51,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-07-01T00:00:00-03:00",
+   "VALVALOR": 1.62,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-08-01T00:00:00-03:00",
+   "VALVALOR": 1.0,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-09-01T00:00:00-03:00",
+   "VALVALOR": 1.38,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-10-01T00:00:00-03:00",
+   "VALVALOR": 1.12,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-11-01T00:00:00-03:00",
+   "VALVALOR": 1.46,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1974-12-01T00:00:00-02:00",
+   "VALVALOR": 1.73,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-01-01T00:00:00-02:00",
+   "VALVALOR": 1.79,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-02-01T00:00:00-02:00",
+   "VALVALOR": 1.6,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-03-01T00:00:00-03:00",
+   "VALVALOR": 1.03,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-04-01T00:00:00-03:00",
+   "VALVALOR": 1.19,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-05-01T00:00:00-03:00",
+   "VALVALOR": 1.46,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-06-01T00:00:00-03:00",
+   "VALVALOR": 1.76,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-07-01T00:00:00-03:00",
+   "VALVALOR": 1.65,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-08-01T00:00:00-03:00",
+   "VALVALOR": 1.6,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-09-01T00:00:00-03:00",
+   "VALVALOR": 1.57,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-10-01T00:00:00-03:00",
+   "VALVALOR": 1.95,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-11-01T00:00:00-03:00",
+   "VALVALOR": 2.35,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  },
+  {
+   "SERCODIGO": "BM12_TJOVER12",
+   "VALDATA": "1975-12-01T00:00:00-02:00",
+   "VALVALOR": 1.99,
+   "NIVNOME": "",
+   "TERCODIGO": ""
+  }
+ ]
+}

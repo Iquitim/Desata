@@ -1,0 +1,88 @@
+{
+ "success": true,
+ "result": {
+  "count": 3579,
+  "results": [
+   {
+    "name": "29033-comprometimento-de-renda-das-familias-com-juros-da-divida-com-o-sistema-financeiro-nacional--",
+    "title": "Comprometimento de renda das famílias com juros da dívida com o Sistema Financeiro Nacional - Com ajuste sazonal (RNDBF)",
+    "notes": "Conceito: <P>Comprometimento de renda - Relação entre o valor correspondente aos pagamentos esperados para o serviço da dívida com o Sistema Financeiro Nacional e a renda mensal das famílias, em média móvel trimestral, ajustado sazonalmente.</P> <P>Endividamento - Relação entre o valor atual das dívidas das famílias com o Sistema Financeiro Nacional e a renda das famílias acumulada nos últimos doze meses.</P>\r\n\r\n* Tipo da série: __Série temporal mensal__\r\n\r\n* Unidade de medida: __Percentual__\r\n\r\n* Tempestividade: __<P>Até oito semanas após o mês de referência. O calendário de divulgação dos dados mensais encontra-se no endereço eletrônico <A href&#x3D;&quot;https://www.bcb.gov.br/estatisticas/notas_calendario&quot;>https://www.bcb.gov.br/estatisticas/notas_calendario</A></P>__\r\n\r\n* Fonte: __Banco Central do Brasil - Departamento de Estatísticas__\r\n\r\nTemas: \r\n\r\n    - Indicadores de crédito\r\n        - Endividamento das famílias\r\n\r\n\r\n\r\n\r\n",
+    "codigo_sgs": "29033",
+    "periodicidade": "Mensal",
+    "unidade_medida": "Percentual",
+    "inicio_periodo": "01-03-2005",
+    "fim_periodo": "",
+    "metadata_modified": "2026-09-08T20:47:27.718529",
+    "license_title": "Open Data Commons Open Database License (ODbL)",
+    "url": "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=29033",
+    "organization": {
+     "title": "BCB/Dstat"
+    }
+   },
+   {
+    "name": "29034-comprometimento-de-renda-das-familias-com-o-servico-da-divida-com-o-sistema-financeiro-nacion",
+    "title": "Comprometimento de renda das famílias com o serviço da dívida com o Sistema Financeiro Nacional - Com ajuste sazonal (RNDBF)",
+    "notes": "Conceito: <P>Comprometimento de renda - Relação entre o valor correspondente aos pagamentos esperados para o serviço da dívida com o Sistema Financeiro Nacional e a renda mensal das famílias, em média móvel trimestral, ajustado sazonalmente.</P> <P>Endividamento - Relação entre o valor atual das dívidas das famílias com o Sistema Financeiro Nacional e a renda das famílias acumulada nos últimos doze meses.</P>\r\n\r\n* Tipo da série: __Série temporal mensal__\r\n\r\n* Unidade de medida: __Percentual__\r\n\r\n* Tempestividade: __<P>Até oito semanas após o mês de referência. O calendário de divulgação dos dados mensais encontra-se no endereço eletrônico <A href&#x3D;&quot;https://www.bcb.gov.br/estatisticas/notas_calendario&quot;>https://www.bcb.gov.br/estatisticas/notas_calendario</A></P>__\r\n\r\n* Fonte: __Banco Central do Brasil - Departamento de Estatísticas__\r\n\r\nTemas: \r\n\r\n    - Indicadores de crédito\r\n        - Endividamento das famílias\r\n\r\n\r\n\r\n\r\n",
+    "codigo_sgs": "29034",
+    "periodicidade": "Mensal",
+    "unidade_medida": "Percentual",
+    "inicio_periodo": "01-03-2005",
+    "fim_periodo": "",
+    "metadata_modified": "2026-09-08T20:47:26.982639",
+    "license_title": "Open Data Commons Open Database License (ODbL)",
+    "url": "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=29034",
+    "organization": {
+     "title": "BCB/Dstat"
+    }
+   },
+   {
+    "name": "29035-comprometimento-de-renda-das-familias-com-o-servico-da-divida-com-o-sistema-financeiro-nacion",
+    "title": "Comprometimento de renda das famílias com o serviço da dívida com o Sistema Financeiro Nacional exceto crédito habitacional - Com ajuste sazonal (RNDBF)",
+    "notes": "Conceito: <P>Comprometimento de renda - Relação entre o valor correspondente aos pagamentos esperados para o serviço da dívida com o Sistema Financeiro Nacional e a renda mensal das famílias, em média móvel trimestral, ajustado sazonalmente.</P> <P>Endividamento - Relação entre o valor atual das dívidas das famílias com o Sistema Financeiro Nacional e a renda das famílias acumulada nos últimos doze meses.</P>\r\n\r\n* Tipo da série: __Série temporal mensal__\r\n\r\n* Unidade de medida: __Percentual__\r\n\r\n* Tempestividade: __<P>Até oito semanas após o mês de referência. O calendário de divulgação dos dados mensais encontra-se no endereço eletrônico <A href&#x3D;&quot;https://www.bcb.gov.br/estatisticas/notas_calendario&quot;>https://www.bcb.gov.br/estatisticas/notas_calendario</A></P>__\r\n\r\n* Fonte: __Banco Central do Brasil - Departamento de Estatísticas__\r\n\r\nTemas: \r\n\r\n    - Indicadores de crédito\r\n        - Endividamento das famílias\r\n\r\n\r\n\r\n\r\n",
+    "codigo_sgs": "29035",
+    "periodicidade": "Mensal",
+    "unidade_medida": "Percentual",
+    "inicio_periodo": "01-03-2005",
+    "fim_periodo": "",
+    "metadata_modified": "2026-09-08T20:47:26.528812",
+    "license_title": "Open Data Commons Open Database License (ODbL)",
+    "url": "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=29035",
+    "organization": {
+     "title": "BCB/Dstat"
+    }
+   },
+   {
+    "name": "29036-comprometimento-de-renda-das-familias-com-amortizacao-da-divida-com-o-sistema-financeiro-naci",
+    "title": "Comprometimento de renda das famílias com amortização da dívida com o Sistema Financeiro Nacional - Com ajuste sazonal (RNDBF)",
+    "notes": "Conceito: <P>Comprometimento de renda - Relação entre o valor correspondente aos pagamentos esperados para o serviço da dívida com o Sistema Financeiro Nacional e a renda mensal das famílias, em média móvel trimestral, ajustado sazonalmente.</P> <P>Endividamento - Relação entre o valor atual das dívidas das famílias com o Sistema Financeiro Nacional e a renda das famílias acumulada nos últimos doze meses.</P>\r\n\r\n* Tipo da série: __Série temporal mensal__\r\n\r\n* Unidade de medida: __Percentual__\r\n\r\n* Tempestividade: __<P>Até oito semanas após o mês de referência. O calendário de divulgação dos dados mensais encontra-se no endereço eletrônico <A href&#x3D;&quot;https://www.bcb.gov.br/estatisticas/notas_calendario&quot;>https://www.bcb.gov.br/estatisticas/notas_calendario</A></P>__\r\n\r\n* Fonte: __Banco Central do Brasil - Departamento de Estatísticas__\r\n\r\nTemas: \r\n\r\n    - Indicadores de crédito\r\n        - Endividamento das famílias\r\n\r\n\r\n\r\n\r\n",
+    "codigo_sgs": "29036",
+    "periodicidade": "Mensal",
+    "unidade_medida": "Percentual",
+    "inicio_periodo": "01-03-2005",
+    "fim_periodo": "",
+    "metadata_modified": "2026-09-08T20:47:26.210897",
+    "license_title": "Open Data Commons Open Database License (ODbL)",
+    "url": "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=29036",
+    "organization": {
+     "title": "BCB/Dstat"
+    }
+   },
+   {
+    "name": "29037-endividamento-das-familias-com-o-sistema-financeiro-nacional-em-relacao-a-renda-acumulada-dos",
+    "title": "Endividamento das famílias com o Sistema Financeiro Nacional em relação à renda acumulada dos últimos doze meses (RNDBF)",
+    "notes": "Conceito: <P>Comprometimento de renda - Relação entre o valor correspondente aos pagamentos esperados para o serviço da dívida com o Sistema Financeiro Nacional e a renda mensal das famílias, em média móvel trimestral, ajustado sazonalmente.</P> <P>Endividamento - Relação entre o valor atual das dívidas das famílias com o Sistema Financeiro Nacional e a renda das famílias acumulada nos últimos doze meses.</P>\r\n\r\n* Tipo da série: __Série temporal mensal__\r\n\r\n* Unidade de medida: __Percentual__\r\n\r\n* Tempestividade: __<P>Até oito semanas após o mês de referência. O calendário de divulgação dos dados mensais encontra-se no endereço eletrônico <A href&#x3D;&quot;https://www.bcb.gov.br/estatisticas/notas_calendario&quot;>https://www.bcb.gov.br/estatisticas/notas_calendario</A></P>__\r\n\r\n* Fonte: __Banco Central do Brasil - Departamento de Estatísticas__\r\n\r\nTemas: \r\n\r\n    - Indicadores de crédito\r\n        - Endividamento das famílias\r\n\r\n\r\n\r\n\r\n",
+    "codigo_sgs": "29037",
+    "periodicidade": "Mensal",
+    "unidade_medida": "Percentual",
+    "inicio_periodo": "01-01-2005",
+    "fim_periodo": "",
+    "metadata_modified": "2026-09-08T20:47:25.907728",
+    "license_title": "Open Data Commons Open Database License (ODbL)",
+    "url": "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=29037",
+    "organization": {
+     "title": "BCB/Dstat"
+    }
+   }
+  ]
+ }
+}

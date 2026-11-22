@@ -1,0 +1,74 @@
+[
+ {
+  "id": "D5",
+  "nome": "Áreas Urbanizadas do Brasil",
+  "agregados": [
+   {
+    "id": "10763",
+    "nome": "Áreas urbanizadas, Outros equipamentos Urbanos, Vazios intraurbanos, Loteamentos Vazios e Subcategorias de Feições Urbanizadas"
+   },
+   {
+    "id": "8418",
+    "nome": "Áreas urbanizadas, Loteamentos vazios, Área total mapeada e Subcategorias"
+   }
+  ]
+ },
+ {
+  "id": "EO",
+  "nome": "Avaliação dos dados sobre a Biodiversidade Brasileira ",
+  "agregados": [
+   {
+    "id": "10510",
+    "nome": "Índice de conhecimento da biodiversidade"
+   },
+   {
+    "id": "10511",
+    "nome": "Quantidade de registros total e nível 1, por grupos taxonômicos"
+   },
+   {
+    "id": "10512",
+    "nome": "Categorias de cobertura de dados e indicadores componentes, por grupos taxonômicos"
+   }
+  ]
+ },
+ {
+  "id": "XF",
+  "nome": "Estimativas de População",
+  "agregados": [
+   {
+    "id": "6579",
+    "nome": "População residente estimada"
+   }
+  ]
+ },
+ {
+  "id": "IA",
+  "nome": "Índice Nacional de Preços ao Consumidor Amplo",
+  "agregados": [
+   {
+    "id": "1737",
+    "nome": "IPCA - Série histórica com número-índice, variação mensal e variações acumuladas em 3 meses, em 6 meses, no ano e em 12 meses (a partir de dezembro/1979)"
+   }
+  ]
+ },
+ {
+  "id": "DD",
+  "nome": "Pesquisa Nacional por Amostra de Domicílios Contínua trimestral",
+  "agregados": [
+   {
+    "id": "4099",
+    "nome": "Taxas de desocupação e de subutilização da força de trabalho, na semana de referência, das pessoas de 14 anos ou mais de idade"
+   }
+  ]
+ },
+ {
+  "id": "IO",
+  "nome": "Produto Interno Bruto dos Municípios",
+  "agregados": [
+   {
+    "id": "5938",
+    "nome": "Produto interno bruto a preços correntes, impostos, líquidos de subsídios, sobre produtos a preços correntes e valor adicionado bruto a preços correntes total e por atividade econômica, e respectivas participações - Referência 2010"
+   }
+  ]
+ }
+]

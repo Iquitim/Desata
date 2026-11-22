@@ -1,0 +1,132 @@
+{
+ "items": [
+  {
+   "cod_ibge": 2515500,
+   "ente": "Serra Branca",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 14131,
+   "cnpj": "08874695000142"
+  },
+  {
+   "cod_ibge": 2515609,
+   "ente": "Serra da Raiz",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 3156,
+   "cnpj": "08789737000147"
+  },
+  {
+   "cod_ibge": 2515708,
+   "ente": "Serra Grande",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 3056,
+   "cnpj": "08891830000168"
+  },
+  {
+   "cod_ibge": 2515807,
+   "ente": "Serra Redonda",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 6975,
+   "cnpj": "08868937000195"
+  },
+  {
+   "cod_ibge": 2515906,
+   "ente": "Serraria",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 4754,
+   "cnpj": "08790172000118"
+  },
+  {
+   "cod_ibge": 2515930,
+   "ente": "Sertãozinho",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 5332,
+   "cnpj": "01612771000100"
+  },
+  {
+   "cod_ibge": 2515971,
+   "ente": "Sobrado",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 8646,
+   "cnpj": "01612553000168"
+  },
+  {
+   "cod_ibge": 2516003,
+   "ente": "Solânea",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 27748,
+   "cnpj": "08787236000121"
+  },
+  {
+   "cod_ibge": 2516102,
+   "ente": "Soledade",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 14409,
+   "cnpj": "08919425000100"
+  },
+  {
+   "cod_ibge": 2516151,
+   "ente": "Sossêgo",
+   "capital": "0  ",
+   "regiao": "NE",
+   "uf": "PB",
+   "esfera": "M",
+   "exercicio": 2026,
+   "populacao": 3476,
+   "cnpj": "01613663000144"
+  }
+ ],
+ "hasMore": false,
+ "limit": 6000,
+ "offset": 0,
+ "count": 5598,
+ "links": [
+  {
+   "rel": "self",
+   "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/entes"
+  },
+  {
+   "rel": "describedby",
+   "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/metadata-catalog/tt/item"
+  },
+  {
+   "rel": "first",
+   "href": "https://host-5hrds-scan.prosubnet.vcndados.oraclevcn.com/ords/cdwhprd/siconfi/tt/entes"
+  }
+ ]
+}
