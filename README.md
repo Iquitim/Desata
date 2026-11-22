@@ -46,6 +46,14 @@ localmente.
   prévia mascarada. Onde a fonte não existe, o fluxo roda com a amostra, marcada em laranja na caixa e na vista Dados.
   Fonte que é arquivo vinculado ganha aviso para quem compartilha e para quem recebe (o caminho nunca vai no arquivo).
   Caminhos, senhas e conexões nunca vão no arquivo.
+- **Espaço da equipe** (opcional): uma pasta da rede, do OneDrive ou do SharePoint vira o lugar dos fluxos do time,
+  sem servidor e sem conta nova. Papéis (Leitor, Editor, Publicador, Administrador), quem está editando e modo só
+  leitura, versões com o autor, "Atualizado por" com Recarregar, conflito sem sobrescrever (as duas versões ficam),
+  cópias de conflito da sincronização viradas versões, versão oficial assinada por um Publicador e agendamentos que
+  rodam só a oficial, visíveis para o time, com Assumir. Cada versão e a lista de membros são assinadas (Ed25519, chave
+  no cofre do Windows): fluxo mexido fora do programa não executa, e papel não se forja editando arquivo. Mudanças
+  sensíveis de um colega (arquivos, banco, APIs, SQL) pedem conferência só do que mudou. Quem usa só no próprio
+  computador não vê nada disso.
 - **Laços**: o Loop cria o Início e o Fim do loop, e as caixas entre eles repetem para cada valor de uma coluna,
   para cada número ou data de uma faixa, ou enquanto uma condição valer. `[#valor]`, `[#volta]` e `[#total]` nas
   fórmulas e no nome do arquivo; saída empilhada, acumulada ou só a última volta; limite de voltas, Parar, resultado
@@ -290,7 +298,7 @@ Para hooks locais: `uvx pre-commit install`.
 
 ### Testes
 
-São mais de 1.500 testes automáticos (`pytest`, em `tests/`), em camadas:
+São mais de 1.600 testes automáticos (`pytest`, em `tests/`), em camadas:
 
 | Camada | O que garante | Onde |
 |---|---|---|
@@ -299,6 +307,7 @@ São mais de 1.500 testes automáticos (`pytest`, em `tests/`), em camadas:
 | API | Rotas, validação e erros em português | `test_api*.py`, `test_errors_pt.py` |
 | Segurança | Abertura protegida, conectores só leitura, senhas fora do disco e a API recusando outros sites e endereços | `test_trust.py`, `test_api_protection.py`, `test_connectors.py` |
 | Confiança (0.9.3) | Formato das fontes, troca de coluna, parada sem ninguém olhando, versões anteriores | `test_schema_drift.py`, `test_versions.py` |
+| Equipe (0.9.4) | Assinaturas e papéis (inclusive as tentativas de burlar), marcas de edição, versões com autor, conflito, cópias de conflito, envio adiado, versão oficial e agendamentos do time, com um simulador de sincronização | `test_team_*.py`, `test_sync_sim.py` |
 | Qualidade do código | Nenhum arquivo passa de 800 linhas, o JavaScript não tem importações circulares e o dashboard exportado não depende do programa (a complexidade das funções é limitada pelo ruff) | `test_code_quality.py` |
 | Interface e documentação | Cores e tamanhos de letra pela escala de tokens; Manual e `contexto-ia.md` em dia com o código; todos os prints do Manual e do guia da versão atual, feitos na mesma geração | `test_theme.py`, `test_manual.py`, `test_ai_context.py` |
 
@@ -320,7 +329,10 @@ uv run --no-project --with pypdfium2 --with pillow python docs/guia/verificar_pd
 
 - `conferir_tela.py` sobe o próprio servidor com uma pasta de dados temporária e confere de ponta a ponta o primeiro
   Salvar, as versões anteriores, o fio inteligente, a fonte que muda de formato, os erros e a pílula deslizante (também
-  com "reduzir movimento"). Falha se a página tiver erro de JavaScript.
+  com "reduzir movimento"), e o espaço da equipe com duas pessoas (dois servidores, a mesma pasta). Falha se a página
+  tiver erro de JavaScript.
+- `scripts/sincronizacao/simular.py` (com o Docker aberto) leva Ana e Bruno por uma pasta sincronizada de verdade
+  (dois Syncthing), com conflito; o `LEIAME.md` da pasta traz o Samba e o roteiro manual para OneDrive e SharePoint.
 - `conferir_exe.py` roda o `prodata-cli.exe` de cada marca: versão, biblioteca, o fluxo de exemplo inteiro (PDFs e
   laço), código de saída e a tarefa agendada gravando o histórico.
 - `verificar_pdf.py` procura texto cortado e páginas com problema nos guias; os prints dos guias saem de
@@ -386,6 +398,7 @@ O projeto segue SDD no formato do [GitHub Spec Kit](https://github.com/github/sp
 | [044](specs/044-rank-agendador-aviso/spec.md) | Rank e médias móveis, Append Fields com a conta de linhas, agendador visual no Windows e aviso de fim de execução |
 | [045](specs/045-correcoes-092/spec.md) | Correções na 0.9.2: laço em etapa recolhida, salvar automático só em fluxo já salvo e o primeiro Salvar pedindo o nome |
 | [046](specs/046-confianca/spec.md) | Confiança: fonte que muda de formato, erros em português com conserto, versões anteriores, fio inteligente e pílula deslizante |
+| [047](specs/047-espaco-da-equipe/spec.md) | Espaço da equipe: pasta compartilhada com papéis e assinaturas, quem está editando, versões com autor, conflito, versão oficial e agendamentos do time |
 
 Para adicionar uma ferramenta, veja [docs/nova-ferramenta.md](docs/nova-ferramenta.md).
 
@@ -523,7 +536,8 @@ Os nomes `PRODATA_*` são identificadores técnicos e valem para qualquer marca.
 
 ## Limitações conhecidas
 
-- Aplicação local e de usuário único: não há autenticação.
+- Aplicação local: não há login. No espaço da equipe, quem é quem vem das assinaturas, e as permissões da pasta (rede,
+  OneDrive, SharePoint) continuam sendo a primeira barreira: quem pode gravar na pasta pode apagar arquivos dela.
 - Cada arquivo de entrada é lido inteiro pelo Polars, e a pasta de arquivos aceita até 500 arquivos.
   Os resultados intermediários grandes vão para o disco, mas o arquivo lido precisa caber na memória.
 - O leitor de PDF lê a camada de texto: PDF escaneado (só imagem) aparece como Não suportado, porque

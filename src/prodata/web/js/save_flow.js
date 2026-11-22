@@ -91,7 +91,7 @@ const SPACE_ORIGINS = new Set(['manual', 'auto', 'restore']);
 function conflictDialog(message) {
   const { close } = openDialog({
     title: 'Outra pessoa salvou este fluxo',
-    size: 'sm',
+    size: 'md',
     body: h('div', { class: 'form' },
       h('p', { class: 'dialog-text' }, message),
       h('p', { class: 'field-help' }, 'A sua versão está guardada em Versões anteriores, com o seu nome. Escolha qual fica como a versão do espaço; a outra continua guardada.')),

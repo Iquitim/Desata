@@ -4,7 +4,8 @@
     uv run python scripts/conferir_exe.py Desata PRO.DATA
 
 Para cada marca: versão, biblioteca, o fluxo de exemplo inteiro (com a etapa de PDFs e o laço), o código de saída de um
-fluxo inexistente e o executável da tarefa agendada gravando o histórico. Usa uma pasta de dados temporária: não mexe
+fluxo inexistente, a versão oficial de um espaço da equipe (assinatura conferida no executável) e o executável da
+tarefa agendada gravando o histórico. Usa uma pasta de dados temporária: não mexe
 na biblioteca de ninguém. Sai com 1 se alguma conferência falhar.
 """
 
@@ -32,6 +33,32 @@ class Checks:
     def __call__(self, name: str, ok: bool, detail: object = "") -> None:
         self.failed += not ok
         print(("OK    " if ok else "FALHA ") + name + ("" if ok else f"  {detail}"))
+
+
+BRAND_IDS = {"Desata": "desata", "PRO.DATA": "protege", "Neutro": "neutra"}
+
+
+def team_official(data: Path, brand: str) -> str:
+    """Spec 047: um espaço com versão oficial assinada, montado pelo código-fonte na pasta de dados do executável.
+    O executável confere a assinatura (Ed25519, da biblioteca cryptography) ao rodar ``espaco:<id>/<fluxo>``."""
+    from prodata.connectors.secrets import MemorySecretStore
+    from prodata.domain.workflow import Workflow
+    from prodata.services.workflows import WorkflowRepository
+    from prodata.team.identity import IdentityStore
+    from prodata.team.service import TeamService
+    from prodata.team.workspaces import Workspaces
+
+    folder = data / "espaco_da_equipe"
+    folder.mkdir()
+    team = TeamService(Workspaces(data / "espacos.json", BRAND_IDS.get(brand, brand.lower()), brand),
+                       IdentityStore(MemorySecretStore(), data / "equipe.json"), WorkflowRepository(data / "fonte"),
+                       data / "equipe")  # fmt: skip
+    space = team.create(str(folder), "Conferência")["id"]
+    flow = Workflow.model_validate({"id": "oficial", "name": "Fluxo oficial", "edges": [], "nodes": [
+        {"id": "t", "type": "io.text_input", "config": {"table": {"columns": ["a"], "rows": [["1"]]}}}]})  # fmt: skip
+    team.save(space, flow)
+    team.publish(space, "oficial")
+    return space
 
 
 def conferir(brand: str, check: Checks) -> None:
@@ -80,6 +107,23 @@ def conferir(brand: str, check: Checks) -> None:
     check("PDFs de exemplo no pacote", len(list((DIST / brand).rglob("arrecadacao_*.pdf"))) >= 3)
     code, out, err = run(exe, "run", "nao_existe")
     check("fluxo inexistente sai com 2", code == 2 and "não encontrado" in err, (code, err[-200:]))
+    space = team_official(data, brand)
+    code, out, err = run(exe, "run", f"espaco:{space}/oficial")
+    check(
+        "espaço da equipe: roda a versão oficial assinada",
+        code == 0 and "Concluído" in out,
+        (code, out[-300:], err[-400:]),
+    )
+    official = next((data / "espaco_da_equipe" / "_equipe" / "oficiais").glob("oficial.prodata.json"))
+    official.write_text(
+        official.read_text(encoding="utf-8").replace("Fluxo oficial", "Adulterado"), encoding="utf-8"
+    )
+    code, out, err = run(exe, "run", f"espaco:{space}/oficial")
+    check(
+        "espaço da equipe: oficial adulterada não roda",
+        code == 2 and "não confere" in err,
+        (code, err[-300:]),
+    )
     task = exe.with_name(
         "prodata-tarefa.exe"
     )  # spec 044: a tarefa agendada roda sem console e grava o histórico

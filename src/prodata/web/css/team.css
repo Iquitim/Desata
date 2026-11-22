@@ -1,7 +1,7 @@
 /* Espaço da equipe (spec 047): diálogo dos espaços e abas da biblioteca. */
 .team-spaces { display: grid; gap: 6px; }
-.team-space { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); }
-.team-space .grow { min-width: 0; }
+.team-space { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); }
+.team-space .grow { min-width: 0; flex: 1 1 auto; }  /* caminho longo não empurra os botões para fora (grid da lista) */
 .team-space .wf-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .team-chip { flex: none; padding: 1px 8px; border-radius: 999px; font-size: var(--fs-2xs); font-weight: 700; }
 .team-chip.ok { color: var(--ok); background: var(--ok-weak); }

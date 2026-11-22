@@ -44,7 +44,7 @@ def test_manual_is_generated_from_the_guide() -> None:
 
 
 def test_every_chapter_has_a_title_and_text(manual: dict[str, Any]) -> None:
-    assert len(manual["chapters"]) == 25
+    assert len(manual["chapters"]) == 26  # 25 numerados (com Trabalhar em equipe, spec 047) e a abertura
     for chapter in manual["chapters"]:
         assert chapter["title"] and chapter["html"] and chapter["sections"], chapter["id"]
 

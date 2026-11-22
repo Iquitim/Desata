@@ -63,7 +63,7 @@ export async function openMembersDialog(space, onChanged) {
         button({ label: 'Aceitar', size: 'sm', variant: 'primary', onClick: () => act('aceitar', p.usuario, papel) }),
         button({ label: 'Recusar', size: 'sm', variant: 'ghost', onClick: () => act('recusar', p.usuario) }));
     });
-    body.replaceChildren(
+    body.replaceChildren(...[
       view.protegido ? h('div', { class: 'banner banner-error' }, icon('alert', 15), h('div', { class: 'banner-body' }, view.protegido)) : null,
       admin && view.um_administrador ? h('div', { class: 'banner banner-warn' }, icon('alert', 15), h('div', { class: 'banner-body' },
         'Só há um administrador. Promova mais alguém: sem administrador, ninguém consegue mudar os papéis do espaço.')) : null,
@@ -72,7 +72,7 @@ export async function openMembersDialog(space, onChanged) {
       h('div', { class: 'panel-subtitle' }, `Membros (${people.length})`),
       ...people,
       admin ? null : h('p', { class: 'field-help' }, 'Só um administrador muda os membros e os papéis.'),
-      layersHelp());
+      layersHelp()].filter(Boolean)); // null vira o texto "null" no replaceChildren
   };
 
   try {

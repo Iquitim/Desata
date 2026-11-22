@@ -168,14 +168,22 @@ function drawBar() {
   const ro = store.readonly;
   const news = newsBar();
   if (!ro && !news) { bar.hidden = true; bar.replaceChildren(); return; }
-  if (!ro) { bar.hidden = false; bar.replaceChildren(news); return; }
+  if (!ro) { bar.hidden = false; bar.replaceChildren(news); placeBar(); return; }
   bar.hidden = false;
   const canTry = !ro.papel; // papel de Leitor ou pasta sem escrita: o botão não ajudaria
   bar.replaceChildren(h('div', { class: 'readonly-bar', role: 'status' },
     icon('eye', 15),
     h('div', { class: 'grow' }, h('strong', {}, 'Aberto só para ver'), h('span', {}, ` · ${ro.motivo}`)),
     canTry ? button({ icon: 'edit', label: ro.editando ? 'Editar mesmo assim' : 'Editar', size: 'sm', variant: ro.editando ? 'ghost' : 'primary',
-      onClick: () => startEditing(Boolean(ro.editando)) }) : null), news);
+      onClick: () => startEditing(Boolean(ro.editando)) }) : null), ...(news ? [news] : []));
+  placeBar();
+}
+
+/** As faixas da equipe ficam logo abaixo da faixa de confiança, quando ela aparece (as duas no topo do canvas). */
+function placeBar() {
+  const trust = document.querySelector('.trust-host');
+  const below = trust && !trust.hidden ? trust.offsetHeight + 8 : 0;
+  bar.style.top = below ? `${10 + below}px` : '';
 }
 
 /** Versão de trabalho do espaço diferente da que está aberta, salva por outra pessoa: oferece Recarregar. */
@@ -240,6 +248,8 @@ async function tick() {
 export function initTeamEditing(root) {
   bar = h('div', { class: 'readonly-host', hidden: true });
   root.append(bar);
+  const trust = document.querySelector('.trust-host');
+  if (trust && window.ResizeObserver) new ResizeObserver(() => { if (!bar.hidden) placeBar(); }).observe(trust);
   on('readonly', drawBar);
   on('workflow:loaded', drawBar);
   on('tabs', reconcile);
