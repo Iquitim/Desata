@@ -85,7 +85,9 @@ def writable(root: Path, user: str = "teste") -> bool:
         return False
     try:
         probe.unlink()
-    except OSError as exc:  # gravou; se a sincronização segurar o arquivo de teste agora, ele sai na próxima vez
+    except (
+        OSError
+    ) as exc:  # gravou; se a sincronização segurar o arquivo de teste agora, ele sai na próxima vez
         log.debug("Arquivo de teste de escrita ficou para trás: %s (%s)", probe.name, exc)
     return True
 

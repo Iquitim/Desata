@@ -21,6 +21,7 @@ import {
   API_PREFIX, apiOf, FOLDER_PREFIX, JIRA_PREFIX, PDF_PREFIX, mutate, node, nodeResult, on, QUERY_PREFIX, queryOf, select, selectedIds, selectMany, sourceLabel, store, toolOf, upstreamColumns,
 } from './store.js';
 import { showMenu, toast, toastError } from './ui.js';
+import { commentItems } from './team_comments.js';
 import { schemaNotice } from './schema_notice.js';
 import { errorDetails } from './error_panel.js';
 
@@ -473,6 +474,7 @@ function nodePanel(n) {
         { label: 'Duplicar', icon: 'copy', shortcut: 'Ctrl+D', onSelect: () => duplicateNode(n.id) },
         { label: n.disabled ? 'Habilitar' : 'Desabilitar', icon: 'power', onSelect: () => toggleDisabled(n.id) },
         ...cacheActions(n),
+        ...commentItems(n.id), // espaço da equipe (spec 048)
         'separator',
         { label: 'Excluir', icon: 'trash', danger: true, shortcut: 'Del', onSelect: () => removeNodes([n.id]) },
       ]);

@@ -32,11 +32,11 @@ class LocalState:
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
         except OSError, ValueError:
-            return {"vistos": {}, "confianca": {}}
+            return {"vistos": {}, "confianca": {}, "comentarios": {}}
         if not isinstance(data, dict):
-            return {"vistos": {}, "confianca": {}}
+            return {"vistos": {}, "confianca": {}, "comentarios": {}}
         out: dict[str, dict[str, Any]] = {}
-        for section in ("vistos", "confianca"):
+        for section in ("vistos", "confianca", "comentarios"):
             value = data.get(section)
             out[section] = value if isinstance(value, dict) else {}
         return out
@@ -65,6 +65,14 @@ class LocalState:
 
     def set_trusted(self, workflow_id: str, parts: dict[str, str]) -> None:
         self._put("confianca", workflow_id, parts)
+
+    def comments_seen(self, workflow_id: str) -> str | None:
+        """Quando esta pessoa viu a conversa do fluxo pela última vez (spec 048, RF-4814)."""
+        value = self._load()["comentarios"].get(workflow_id)
+        return value if isinstance(value, str) else None
+
+    def set_comments_seen(self, workflow_id: str, when: str) -> None:
+        self._put("comentarios", workflow_id, when)
 
     # ------------------------------------------------------------------ envio adiado (RF-4763)
 

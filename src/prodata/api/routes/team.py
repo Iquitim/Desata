@@ -306,3 +306,30 @@ def bring_definition(
         exists = item.name in services.constants.all()
         services.constants.save(item, previous=item.name if exists else None)
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- comentários nas caixas (spec 048)
+
+
+class CommentRequest(BaseModel):
+    tipo: Literal["comentario", "resposta", "editar", "resolver", "reabrir", "apagar"]
+    texto: str = Field("", max_length=2000)
+    alvo: str = Field("", max_length=120)
+    caixa: str = Field("", max_length=64)
+    rotulo: str = Field("", max_length=120)
+
+
+@router.get("/espacos/{space_id}/fluxos/{workflow_id}/comentarios")
+def list_comments(
+    space_id: SpaceId, workflow_id: WorkflowId, services: ServicesDep, visto: bool = False
+) -> dict[str, Any]:
+    """A conversa do fluxo. ``visto``: a pessoa abriu a conversa, o que chegou até agora deixa de ser novo."""
+    return services.team.comments(space_id, workflow_id, mark_seen=visto)
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/comentarios")
+def add_comment(
+    space_id: SpaceId, workflow_id: WorkflowId, req: CommentRequest, services: ServicesDep
+) -> dict[str, Any]:
+    return services.team.comment(space_id, workflow_id, req.tipo, texto=req.texto, alvo=req.alvo, caixa=req.caixa,
+                                 rotulo=req.rotulo)  # fmt: skip

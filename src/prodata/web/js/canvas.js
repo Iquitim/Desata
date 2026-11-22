@@ -32,6 +32,7 @@ import {
   toggleSelected,
 } from './store.js';
 import { closeMenu, showMenu, toast } from './ui.js';
+import { commentItems } from './team_comments.js';
 import { els, nodeEls, state, toWorld, view } from './canvas_state.js';
 import { NODE_MIN_H, NODE_W, nodeHeight, portPoint } from './canvas_geometry.js';
 import { canSplice, edgeNear, edgeThroughRect, highlightEdge } from './canvas_hit.js';
@@ -73,12 +74,12 @@ function applyView() {
   emit('zoom', view.zoom);
 }
 
-/** Traz a caixa para o meio do canvas, sem mudar o zoom. */
-export function revealNode(id) {
+/** Traz a caixa para o meio do canvas, sem mudar o zoom. `reserve`: largura coberta à direita (um painel), fora da conta. */
+export function revealNode(id, { reserve = 0 } = {}) {
   const n = node(id);
   if (!n) return;
   const r = els.viewport.getBoundingClientRect();
-  view.x = r.width / 2 - (n.x + NODE_W / 2) * view.zoom;
+  view.x = (r.width - reserve) / 2 - (n.x + NODE_W / 2) * view.zoom;
   view.y = r.height / 2 - (n.y + nodeHeight(n) / 2) * view.zoom;
   applyView();
 }
@@ -175,7 +176,7 @@ export function setCanvasTool(next) {
 
 function onPointerDown(e) {
   // A barra flutuante fica dentro do canvas: sem isto o pan capturaria o ponteiro e o clique não chegaria aos botões.
-  if (e.button === 2 || e.target.closest('.canvas-toolbar, .trust-host, .readonly-host')) return;
+  if (e.button === 2 || e.target.closest('.canvas-toolbar, .trust-host, .readonly-host, .cm-host, .cm-chip-host')) return;
   closeMenu();
   const target = e.target;
   const world = toWorld(e.clientX, e.clientY);
@@ -467,7 +468,7 @@ function onPointerUp(e) {
 }
 
 function onWheel(e) {
-  if (e.target.closest('.trust-host, .readonly-host')) return; // a lista da faixa rola sozinha, sem mexer no zoom
+  if (e.target.closest('.trust-host, .readonly-host, .cm-host, .cm-chip-host')) return; // a lista da faixa rola sozinha, sem mexer no zoom
   e.preventDefault();
   if (e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX)) {
     zoomBy(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX, e.clientY);
@@ -489,7 +490,7 @@ function renameNodeInInspector(id) {
 
 function onContextMenu(e) {
   e.preventDefault();
-  if (e.target.closest('.canvas-toolbar, .trust-host, .readonly-host')) return;
+  if (e.target.closest('.canvas-toolbar, .trust-host, .readonly-host, .cm-host, .cm-chip-host')) return;
   const world = toWorld(e.clientX, e.clientY);
   const pasteItem = (label = 'Colar aqui') => ({
     label, icon: 'clipboard', shortcut: 'Ctrl+V', disabled: !hasClipboard(), onSelect: () => paste(world),
@@ -526,6 +527,7 @@ function onContextMenu(e) {
       { label: 'Duplicar', icon: 'copy', shortcut: 'Ctrl+D', onSelect: () => duplicateNode(id) },
       'separator',
       { label: 'Renomear', icon: 'edit', onSelect: () => renameNodeInInspector(id) },
+      ...commentItems(id), // espaço da equipe (spec 048)
       { label: n.disabled ? 'Habilitar' : 'Desabilitar', icon: 'power', onSelect: () => toggleDisabled(id) },
       'separator',
       { label: 'Excluir', icon: 'trash', danger: true, shortcut: 'Del', onSelect: () => removeNodes([id]) },
@@ -632,7 +634,7 @@ export function initCanvas(root, opts = {}) {
   root.addEventListener('dragleave', () => highlightEdge(null));
   root.addEventListener('drop', onDrop);
   root.addEventListener('dblclick', (e) => {
-    if (!e.target.closest('.node, .container-box, .canvas-toolbar, .trust-host, .readonly-host')) openQuickAdd(e.clientX, e.clientY, { to: toWorld(e.clientX, e.clientY) });
+    if (!e.target.closest('.node, .container-box, .canvas-toolbar, .trust-host, .readonly-host, .cm-host, .cm-chip-host')) openQuickAdd(e.clientX, e.clientY, { to: toWorld(e.clientX, e.clientY) });
   });
 
   on('workflow:loaded', (payload) => {
@@ -656,6 +658,8 @@ export function initCanvas(root, opts = {}) {
   on('sources', () => render()); // fonte que falta neste computador (spec 040)
   on('timing', () => render()); // tempo nas caixas (spec 041)
   on('wires', () => render()); // fios organizados ou curvos (spec 041)
+  on('comments', () => render()); // selo dos comentários nas caixas (spec 048)
+  on('reveal:node', ({ id, reserve }) => revealNode(id, { reserve })); // a caixa fica à vista ao lado de um painel
 
   root.classList.toggle('tool-select', tool === 'select');
   const saved = storage('prodata.view', null);

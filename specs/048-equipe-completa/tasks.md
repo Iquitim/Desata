@@ -15,9 +15,9 @@
 
 ## Marco 3 — Comentários
 
-- [ ] T08 Eventos assinados e dobra da conversa (RF-4815)
-- [ ] T09 Comentar, selo na caixa, conversa, Responder e Resolver (RF-4811, RF-4812, RF-4816)
-- [ ] T10 Painel Comentários e "N novos" (RF-4813, RF-4814)
+- [x] T08 Eventos assinados e dobra da conversa (RF-4815)
+- [x] T09 Comentar, selo na caixa, conversa, Responder e Resolver (RF-4811, RF-4812, RF-4816)
+- [x] T10 Painel Comentários e "N novos" (RF-4813, RF-4814)
 
 ## Marco 4 — Juntar caixa por caixa
 

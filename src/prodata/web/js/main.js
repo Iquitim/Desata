@@ -46,6 +46,7 @@ import { showRunNotice } from './run_notice.js';
 import { offerRemoveSchedules, watchScheduleFailures } from './schedules_list.js';
 import { startPills } from './segmented_pill.js';
 import { libraryTabs, moveButton, refreshTeam } from './team_spaces.js';
+import { initTeamComments } from './team_comments.js';
 import { ensureSecrets } from './team_definitions.js';
 import { initTeamEditing, openSpaceFlow } from './team_editing.js';
 
@@ -689,6 +690,7 @@ async function boot() {
   buildStatusbar();
   initTrustBanner($('#canvas'), { confirmed: () => run() });
   initTeamEditing($('#canvas')); // espaço da equipe (spec 047): faixa "Aberto só para ver"
+  initTeamComments($('#canvas')); // comentários nas caixas (spec 048)
   watchScheduleFailures(); // execução agendada que falhou: avisa ao abrir e enquanto aberto (spec 044)
   on('workflow:loaded', () => { resetTrustBanner(); refreshTrust(); });
   initCanvas($('#canvas'), { runTo: (id) => run(id), run: () => run(), refreshCache, viewSql: (id) => setView('sql', { sqlNode: id }) });

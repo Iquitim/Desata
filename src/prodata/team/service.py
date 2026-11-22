@@ -17,6 +17,7 @@ from prodata.connectors.models import Connection
 from prodata.domain.workflow import Workflow
 from prodata.errors import ConflictError, InvalidInputError, NotFoundError
 from prodata.services.workflows import WorkflowRepository
+from prodata.team.comments import CommentEvent, CommentStore, check_event, fold, new_since, view
 from prodata.team.definitions import KINDS, TeamDefinitions, content_of
 from prodata.team.identity import Identity, IdentityStore
 from prodata.team.local_state import LocalState
@@ -653,6 +654,35 @@ class TeamService:
     def missing_secrets(self, space_id: str, connections: list[str], apis: list[str]) -> list[dict[str, Any]]:
         defs = self.space_definitions(space_id)
         return missing_secrets(defs, self.identity.secrets, connections, apis) if defs else []
+
+    # ------------------------------------------------------------------ comentários nas caixas (spec 048)
+
+    def comments(self, space_id: str, workflow_id: str, *, mark_seen: bool = False) -> dict[str, Any]:
+        """A conversa do fluxo (RF-4812, RF-4813) e quantos comentários chegaram desde a última vez (RF-4814)."""
+        _, _, members = self._require(space_id, "leitor")
+        me = self.identity.current().usuario
+        store = CommentStore(self.workspaces.root(space_id), space_id)
+        events = store.events(workflow_id, members)
+        local = self._local(space_id)
+        fresh = new_since(events, local.comments_seen(workflow_id), me)
+        if mark_seen and events:
+            local.set_comments_seen(workflow_id, events[-1].quando.isoformat())
+        return {**view(fold(events, members, me), fresh), "papel": self.my_role(members)}
+
+    def comment(self, space_id: str, workflow_id: str, tipo: str, *, texto: str = "", alvo: str = "",
+                caixa: str = "", rotulo: str = "") -> dict[str, Any]:  # fmt: skip
+        """Comentar, responder, editar, resolver, reabrir ou apagar (qualquer membro comenta, até o Leitor)."""
+        space, _, members = self._require(space_id, "leitor")
+        if space.estado != "ok":
+            raise InvalidInputError(space.motivo or "O espaço está só para leitura.")
+        check_event(tipo, texto, alvo, caixa)
+        store = CommentStore(self.workspaces.root(space_id), space_id)
+        if tipo != "comentario" and alvo not in {e.id for e in store.events(workflow_id, members)}:
+            raise NotFoundError("Esse comentário não existe mais.")
+        event = CommentEvent(tipo=tipo, espaco=space_id, fluxo=workflow_id, alvo=alvo, caixa=caixa,
+                             rotulo=rotulo[:120], texto=texto.strip())  # fmt: skip
+        store.add(event, self.identity)
+        return self.comments(space_id, workflow_id, mark_seen=True)
 
     # ------------------------------------------------------------------ membros (administradores)
 

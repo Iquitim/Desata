@@ -875,6 +875,55 @@ def equipe5(pg: Page) -> None:
             bool(rows) and rows[0].get("x") == 100,
             rows[:1],
         )
+
+        # Comentários nas caixas (spec 048, marco 3)
+        versions_before = len(list((folder / "_equipe" / "versoes").glob("fluxo_meta/*.json")))
+        bruno.locator("#viewSwitch .segment[data-view=designer]").click()
+        bruno.locator(".node[data-id='f'] .node-card").click(button="right")
+        bruno.locator(".menu .menu-item", has_text="Comentar").click()
+        panel = bruno.locator(".cm-panel")
+        panel.wait_for(timeout=10000)
+        panel.locator("textarea").fill("Por que multiplica pela meta?")
+        panel.locator("button", has_text="Enviar").click()
+        bruno.wait_for_timeout(1500)
+        toasts = bruno.locator(".toast").all_inner_texts()
+        check("enviar o comentário não dá erro", not any("Não foi possível" in t for t in toasts), toasts)
+        bruno.locator(".node[data-id='f'] .node-comments").wait_for(timeout=10000)
+        check(
+            "comentar põe o selo na caixa",
+            bruno.locator(".node[data-id='f'] .node-comments").inner_text().strip() == "1",
+        )
+        check(
+            "comentar não cria versão do fluxo",
+            len(list((folder / "_equipe" / "versoes").glob("fluxo_meta/*.json"))) == versions_before,
+        )
+        pg.locator("#viewSwitch .segment[data-view=designer]").click()
+        open_space_flow(pg, "Time 6", "Fluxo da meta")
+        conflict = pg.locator("dialog[open][aria-label='Este fluxo está sendo editado']")
+        conflict.wait_for(timeout=10000)
+        conflict.locator("button", has_text="Abrir só para ver").click()
+        chip = pg.locator(".cm-chip")
+        chip.wait_for(timeout=15000)
+        check("a Ana vê o comentário novo", "1 novo" in chip.inner_text(), chip.inner_text())
+        chip.click()
+        thread = pg.locator(".cm-panel .cm-thread").first
+        thread.wait_for(timeout=10000)
+        check(
+            "a conversa mostra quem comentou",
+            "Bruno Lima" in thread.inner_text() and "meta" in thread.inner_text(),
+        )
+        thread.locator("button", has_text="Responder").click()
+        thread.locator("textarea").fill("É a meta do trimestre, da equipe.")
+        thread.locator("button", has_text="Enviar").click()
+        pg.locator(".cm-panel .cm-msg.reply").wait_for(timeout=10000)
+        pg.locator(".cm-panel .cm-thread").first.locator("button", has_text="Resolver").click()
+        pg.locator(".cm-panel .cm-done").wait_for(timeout=10000)
+        check("resolvido sai do selo da caixa", pg.locator(".node[data-id='f'] .node-comments").count() == 0)
+    except Exception:
+        bruno.screenshot(
+            path=str(Path(tempfile.gettempdir()) / "conferir-equipe5-bruno.png")
+        )  # a outra pessoa
+        raise
     finally:
         ctx2.close()
         shutil.rmtree(folder, ignore_errors=True)

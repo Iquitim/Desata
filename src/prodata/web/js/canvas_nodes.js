@@ -12,6 +12,7 @@ import { hiddenNodes } from './canvas_collapse.js';
 import { loopProblems } from './loops.js';
 import { driftBadge, driftHit, schemaChange } from './schema_notice.js';
 import { MAX_ANIMATED_NEW, setFlowTarget } from './canvas_edges.js';
+import { commentCount, openComments } from './team_comments.js';
 
 const ANNOT_CHARS = 19; // o que cabe na caixa, em letras: não depende de a fonte já ter carregado
 const ANNOT_TAIL = 8;
@@ -110,6 +111,7 @@ function buildNode(n, hidden) {
   driftBadge(n),
   loopBadge(n),
   timingBadge(n.id),
+  commentBadge(n),
   n.cache_point ? h('span', {
     class: 'node-cache', title: res?.extra?.frozen_at
       ? `Ponto de cache · resultado guardado em ${new Date(res.extra.frozen_at).toLocaleString('pt-BR')}`
@@ -131,7 +133,8 @@ function nodeKey(n, hidden) {
     store.inspect.via?.nodeId === n.id && store.inspect.via.port, sourceProblem(n.id)?.state || null, // fonte que falta ou amostra (spec 040)
     timingOf(n.id)?.text || null, timingOf(n.id)?.level || null, // tempo nas caixas (spec 041)
     loopProblems().get(n.id) || null, // erro de desenho do laço (spec 041)
-    Boolean(schemaChange(n.id)), driftHit(n.id)?.join(',') || null]); // formato da fonte mudou (spec 046)
+    Boolean(schemaChange(n.id)), driftHit(n.id)?.join(',') || null, // formato da fonte mudou (spec 046)
+    commentCount(n.id)]); // comentários abertos (spec 048)
 }
 
 /**
@@ -205,4 +208,16 @@ function missingBadge(n) {
     class: ['node-missing', sample && 'sample'],
     title: sample ? `Lendo a amostra que veio no fluxo: ${s.label} não está neste computador.` : `${s.label} não está neste computador. Veja Dados → Faltam neste computador.`,
   }, icon(sample ? 'database' : 'alert', 11), sample ? 'amostra' : 'fonte ausente');
+}
+
+/** Comentários abertos na caixa (spec 048, RF-4812): o selo abre a conversa. Só num fluxo do espaço da equipe. */
+function commentBadge(n) {
+  const count = commentCount(n.id);
+  if (!count) return null;
+  return h('button', {
+    type: 'button', class: 'node-comments', title: `${count} ${count === 1 ? 'comentário aberto' : 'comentários abertos'}: clique para ver a conversa`,
+    'aria-label': `Comentários de ${n.label || n.id}`,
+    onclick: (ev) => { ev.stopPropagation(); openComments(n.id); },
+    onpointerdown: (ev) => ev.stopPropagation(),
+  }, icon('chat', 11), String(count));
 }
