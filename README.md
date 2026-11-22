@@ -507,9 +507,28 @@ a organização da vista Dados em `storage/organizacao.json`, as constantes comp
 
 ## Desempenho
 
-Decisões medidas (detalhes nos comentários do código). Os números vêm de medições pontuais na máquina de
-desenvolvimento, feitas na época de cada decisão, e servem de ordem de grandeza: ainda não há um script no
-repositório que os reproduza.
+Os números do motor saem de `scripts/benchmark.py`, que gera dados com semente fixa e executa fluxos típicos pelo
+mesmo motor do CLI (mediana de três repetições, cada uma sem resultado guardado):
+
+```powershell
+uv run --with psutil python scripts/benchmark.py              # 100 mil, 1 milhão e 5 milhões de linhas
+uv run --with psutil python scripts/benchmark.py --comparar resultado-anterior.json   # aponta mudanças acima de 20%
+```
+
+Na máquina de desenvolvimento (Windows 11, AMD de 16 núcleos, 62 GB de memória, Polars 2.1), em 22/11/2026, com o arquivo
+recém-gerado (já no cache do Windows):
+
+| Fluxo | 1 milhão de linhas | 5 milhões de linhas | Memória a mais (5 milhões) |
+|---|---:|---:|---:|
+| Ler CSV | 0,11 s | 0,18 s | 115 MB |
+| Filter | 0,14 s | 0,27 s | 478 MB |
+| Join | 0,14 s | 0,31 s | 609 MB |
+| Summarize | 0,13 s | 0,26 s | 275 MB |
+| Sort | 0,14 s | 0,30 s | 575 MB |
+| Fechamento inteiro (Filter, Formula, Join, Summarize e Output em CSV) | 0,19 s | 0,39 s | 715 MB |
+| Abrir o servidor do programa até responder | 1,6 s | | |
+
+Outras decisões foram medidas pontualmente, na época de cada uma (detalhes nos comentários do código):
 
 - Bibliotecas pesadas carregam sob demanda: scikit-learn só ao treinar e
   connectorx só ao consultar um banco; o scikit-learn é pré-carregado em segundo

@@ -158,7 +158,7 @@ def recommend(df: pl.DataFrame, ignored: set[str] | None = None) -> list[dict[st
 
 
 def _shown(value: Any, cast: str) -> str:
-    """O valor convertido como a pessoa vai ver: inteiro sem ",0", decimal com vírgula, data dd /mm/aaaa."""
+    """O valor convertido como a pessoa vai ver: inteiro sem ",0", decimal com vírgula, data dd/mm/aaaa."""
     if value is None:
         return "vazio"
     if cast == "Int64" and isinstance(value, float):

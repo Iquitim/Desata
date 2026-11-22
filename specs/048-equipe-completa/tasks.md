@@ -31,7 +31,7 @@
 
 ## Marco 6 — Benchmark
 
-- [ ] T15 `scripts/benchmark.py` com `--comparar` e `--rapido`; números no README (RF-4841..4843)
+- [x] T15 `scripts/benchmark.py` com `--comparar` e `--rapido`; números no README (RF-4841..4843)
 
 ## Marco 7 — Conferências e publicação
 
