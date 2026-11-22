@@ -1,0 +1,125 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "Saldos das contas do BCB, utilizadas para o registro das suas operações, nas posições de final de mês.\n\nAs informações disponibilizadas referem-se aos períodos iniciados em janeiro de 2020. A partir da Lei Complementar nº 179, de 24 de fevereiro de 2021, o resultado do BCB deixou de ser apurado semestralmente e passou a ser apurado anualmente e abrange o período de 1º de janeiro a 31 de dezembro.\n\nAs demonstrações financeiras do BCB aprovadas pela Diretoria Colegiada, inclusive com as posições anteriores a 2020, estão disponíveis no site do BCB: https://www.bcb.gov.br/acessoinformacao/balanceteslai",
+    "version" : "v1",
+    "title" : "Saldos contábeis mensais do Banco Central do Brasil"
+  },
+  "host" : "olinda.bcb.gov.br",
+  "basePath" : "/olinda/servico/Saldos_BCB/versao/v1/odata",
+  "schemes" : [ "https" ],
+  "produces" : [ "application/json;odata.metadata=minimal", "application/xml", "text/csv", "text/plain", "text/html" ],
+  "paths" : {
+    "/Saldos_Mensais_BCB(Data_base=@Data_base,Data_fim=@Data_fim)" : {
+      "get" : {
+        "summary" : "Saldos contábeis mensais do BCB",
+        "description" : "Extração de saldos da base de dados do sistema contábil do Banco Central do Brasil",
+        "operationId" : "Saldos_Mensais_BCB",
+        "parameters" : [ {
+          "name" : "@Data_base",
+          "in" : "query",
+          "description" : "Data Inicial",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@Data_fim",
+          "in" : "query",
+          "description" : "Data Final",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        }, {
+          "name" : "$top",
+          "in" : "query",
+          "description" : "Número máximo (maior que zero) de entidades que serão retornadas",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoSaldo"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "TipoSaldo" : {
+      "properties" : {
+        "Data" : {
+          "type" : "string",
+          "format" : "date",
+          "description" : "Posições contábeis de final de mês",
+          "title" : "Data"
+        },
+        "Conta" : {
+          "type" : "string",
+          "description" : "Código identificador da conta no Plano de Contas do BCB",
+          "title" : "Conta"
+        },
+        "Conta_Nome" : {
+          "type" : "string",
+          "description" : "Descrição da conta",
+          "title" : "Nome da Conta"
+        },
+        "Valor_Ajustado" : {
+          "type" : "number",
+          "description" : "Valor contábil na data. Os valores negativos referem-se a saldos devedores.",
+          "title" : "Saldo"
+        },
+        "Origem" : {
+          "type" : "string",
+          "description" : "Apuração de Resultado - Os valores marcados como 'a' referem-se à posição das contas, nas datas de balanço, antes da apuração do resultado. Os valores marcados como 'd' referem-se às posições das contas fora das datas de balanço e, nas datas de balanço, às posições após a apuração do resultado.",
+          "title" : "Apuração de Resultado"
+        }
+      },
+      "description" : ""
+    },
+    "RespostaTipoSaldo" : {
+      "properties" : {
+        "@odata.context" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TipoSaldo"
+          }
+        }
+      }
+    }
+  }
+}

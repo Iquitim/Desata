@@ -450,7 +450,70 @@ def checks(month: str) -> list[Check]:
             },
         ),
         *probes(),
+        Check(
+            "odata",
+            "odata_ptax_metadata",
+            f"{OLINDA}/PTAX/versao/v1/odata/$metadata",
+            _ok_xml,
+            _whole,
+            ".xml",
+        ),
+        Check("odata", "odata_ptax_swagger", f"{OLINDA}/PTAX/versao/v1/swagger", _ok_any_json, _whole),
+        Check(
+            "odata",
+            "odata_saldos_metadata",
+            f"{OLINDA}/Saldos_BCB/versao/v1/odata/$metadata",
+            _ok_xml,
+            _whole,
+            ".xml",
+        ),
+        Check(
+            "odata", "odata_saldos_swagger", f"{OLINDA}/Saldos_BCB/versao/v1/swagger", _ok_any_json, _whole
+        ),
     ]
+
+
+OLINDA = "https://olinda.bcb.gov.br/olinda/servico"
+
+
+def _ok_xml(r: httpx.Response) -> str:
+    from prodata.catalog.model import safe_xml
+
+    safe_xml(r.content)
+    return f"XML válido, {len(r.content)} bytes"
+
+
+def conferir_parametros_odata() -> int:
+    """Cada parâmetro conferido de odata_params.json continua trazendo as datas pedidas (RF-4937)."""
+    from datetime import date
+
+    from prodata.catalog.http import CatalogClient
+    from prodata.catalog.readers import odata
+
+    period = (date(2025, 1, 1), date(2025, 6, 30))
+    examples = {"moeda": "USD"}
+    failures = 0
+    services: dict[str, odata.Service] = {}
+    with CatalogClient(timeout=60) as client:
+        for key in odata.verified_params():
+            servico, consulta = key.split("/", 1)
+            start = time.perf_counter()
+            try:
+                if servico not in services:
+                    versao = "v2" if servico in ("BcBase", "taxaJuros") else "v1"
+                    services[servico] = odata.describe(client, servico, versao)
+                entry = services[servico].entry(consulta)
+                values = odata.param_values(entry, *period, examples)
+                result = odata.read(client, services[servico], consulta, values, limit=50_000)
+                if not result.frame.height:
+                    raise ValueError(f"nenhuma linha com {values}")
+                print(
+                    f"ok    odata    {key[:44]:44} {time.perf_counter() - start:5.1f}s  {result.frame.height} linhas"
+                )
+            except Exception as exc:
+                failures += 1
+                print(f"FALHA odata    {key[:44]:44} {type(exc).__name__}: {exc}")
+    return failures
 
 
 def _ok_probe(r: httpx.Response) -> str:
@@ -519,6 +582,8 @@ def main() -> int:
                 print(
                     f"FALHA {c.service:8} {c.name:22} {time.perf_counter() - start:5.1f}s  {type(exc).__name__}: {exc}"
                 )
+    if not args.servicos or "odata" in args.servicos:
+        failures += conferir_parametros_odata()
     print(f"\n{failures} falha(s)" if failures else "\ntudo no ar")
     return 1 if failures else 0
 

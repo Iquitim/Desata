@@ -1,0 +1,25 @@
+{
+ "revisado_em": "2026-11-22",
+ "nota": "Parâmetros das consultas OData do Banco Central conferidos um a um: para cada formato, um período já publicado foi pedido e as datas devolvidas foram comparadas com as pedidas. Consulta com parâmetro que não está aqui aparece como 'parâmetros não conferidos', com a prévia obrigatória.",
+ "consultas": {
+  "PTAX/CotacaoDolarDia": {"dataCotacao": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "PTAX/CotacaoDolarPeriodo": {"dataInicial": {"formato": "MM-DD-AAAA", "papel": "inicio"}, "dataFinalCotacao": {"formato": "MM-DD-AAAA", "papel": "fim"}},
+  "PTAX/CotacaoMoedaDia": {"moeda": {"opcoes": "Moedas.simbolo", "exemplo": "USD"}, "dataCotacao": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "PTAX/CotacaoMoedaPeriodo": {"moeda": {"opcoes": "Moedas.simbolo", "exemplo": "USD"}, "dataInicial": {"formato": "MM-DD-AAAA", "papel": "inicio"}, "dataFinalCotacao": {"formato": "MM-DD-AAAA", "papel": "fim"}},
+  "BcBase/EntidadesSupervisionadas": {"dataBase": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "BcBase/Cooperativas": {"dataBase": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "taxaJuros/TaxasJurosDiariaPorInicioPeriodo": {"InicioPeriodo": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "selic_clientes/QuantidadePorTipoCliente": {"Data": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "selic_contas/QuantidadePorTipoConta": {"Data": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "selic_operacoes/OperacoesEmUmaData": {"Data": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "selic_participantes/QuantidadePorTipoParticipante": {"Data": {"formato": "MM-DD-AAAA", "papel": "dia"}},
+  "Processos_Autorizacao/ProcessosAutorizacaoFuncionamentoEmAberto": {"dataBase": {"formato": "AAAA-MM", "papel": "mes"}},
+  "Pix_DadosAbertos/EstatisticasTransacoesPix": {"Database": {"formato": "AAAAMM", "papel": "a_partir_do_mes"}},
+  "Pix_DadosAbertos/CnaePorteRecebedor": {"Database": {"formato": "AAAAMM", "papel": "a_partir_do_mes"}},
+  "Pix_DadosAbertos/EstatisticasFraudesPix": {"Database": {"formato": "AAAAMM", "papel": "a_partir_do_mes"}},
+  "Pix_DadosAbertos/TransacoesPixPorMunicipio": {"DataBase": {"formato": "AAAAMM", "papel": "a_partir_do_mes"}},
+  "Pix_DadosAbertos/ChavesPix": {"Data": {"formato": "AAAA-MM-DD", "papel": "a_partir_de"}},
+  "Saldos_BCB/Saldos_Mensais_BCB": {"Data_base": {"formato": "AAAA-MM-DD", "papel": "inicio", "ajuste": "fim_do_mes"}, "Data_fim": {"formato": "AAAA-MM-DD", "papel": "fim", "ajuste": "fim_do_mes"}},
+  "PANORAMA_DE_CONSORCIOS/Metricas": {"DataBase": {"formato": "AAAAMM", "papel": "mes"}}
+ }
+}

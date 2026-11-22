@@ -1,0 +1,591 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "Dólar comercial (venda e compra) - cotações diárias e Taxas de Câmbio - todos os boletins diários",
+    "version" : "v1",
+    "title" : "Dólar comercial (venda e compra) - cotações diárias e Taxas de Câmbio - todos os boletins diários"
+  },
+  "host" : "olinda.bcb.gov.br",
+  "basePath" : "/olinda/servico/PTAX/versao/v1/odata",
+  "schemes" : [ "https" ],
+  "produces" : [ "application/json;odata.metadata=minimal", "application/xml", "text/csv", "text/plain", "text/html" ],
+  "paths" : {
+    "/Moedas" : {
+      "get" : {
+        "summary" : "Moedas",
+        "description" : "Retorna a lista de moedas que podem ser usadas como parâmetros para este conjunto de dados.",
+        "operationId" : "Moedas",
+        "parameters" : [ {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        }, {
+          "name" : "$top",
+          "in" : "query",
+          "description" : "Número máximo (maior que zero) de entidades que serão retornadas",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoMoeda"
+            }
+          }
+        }
+      }
+    },
+    "/CotacaoDolarDia(dataCotacao=@dataCotacao)" : {
+      "get" : {
+        "summary" : "Cotação do Dólar em uma determinada data",
+        "description" : "Retorna a Cotação de Compra e a Cotação de Venda da moeda Dólar contra a unidade monetária corrente para a data informada.",
+        "operationId" : "CotacaoDolarDia",
+        "parameters" : [ {
+          "name" : "@dataCotacao",
+          "in" : "query",
+          "description" : "Data da cotação",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        }, {
+          "name" : "$top",
+          "in" : "query",
+          "description" : "Número máximo (maior que zero) de entidades que serão retornadas",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoCotacaoDolar"
+            }
+          }
+        }
+      }
+    },
+    "/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)" : {
+      "get" : {
+        "summary" : "Cotação do Dólar por período",
+        "description" : "Retorna a Cotação de Compra e a Cotação de Venda da moeda Dólar contra a unidade monetária corrente para o período informado.",
+        "operationId" : "CotacaoDolarPeriodo",
+        "parameters" : [ {
+          "name" : "@dataInicial",
+          "in" : "query",
+          "description" : "Data inicial",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataFinalCotacao",
+          "in" : "query",
+          "description" : "Data final",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        }, {
+          "name" : "$top",
+          "in" : "query",
+          "description" : "Número máximo (maior que zero) de entidades que serão retornadas",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoCotacaoDolar"
+            }
+          }
+        }
+      }
+    },
+    "/CotacaoMoedaDia(moeda=@moeda,dataCotacao=@dataCotacao)" : {
+      "get" : {
+        "summary" : "Boletim - Paridade e Cotação de moeda por data",
+        "description" : "Retorna os boletins diários com a Paridade de Compra e a Paridade de Venda, a Cotação de Compra e a Cotação de Venda para a data da moeda consultada. São cinco boletins para cada data, um de abertura, três intermediários e um de fechamento.",
+        "operationId" : "CotacaoMoedaDia",
+        "parameters" : [ {
+          "name" : "@moeda",
+          "in" : "query",
+          "description" : "Moeda",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataCotacao",
+          "in" : "query",
+          "description" : "Data da cotação",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        }, {
+          "name" : "$top",
+          "in" : "query",
+          "description" : "Número máximo (maior que zero) de entidades que serão retornadas",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoCotacaoMoeda"
+            }
+          }
+        }
+      }
+    },
+    "/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)" : {
+      "get" : {
+        "summary" : "Boletim - Paridade e Cotação de moeda por período",
+        "description" : "Retorna os boletins diários com a Paridade de Compra e a Paridade de Venda, a Cotação de Compra e a Cotação de Venda para um período da moeda consultada. São cinco boletins para cada data, um de abertura, três intermediários e um de fechamento.",
+        "operationId" : "CotacaoMoedaPeriodo",
+        "parameters" : [ {
+          "name" : "@moeda",
+          "in" : "query",
+          "description" : "Moeda",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataInicial",
+          "in" : "query",
+          "description" : "Data inicial",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataFinalCotacao",
+          "in" : "query",
+          "description" : "Data final",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        }, {
+          "name" : "$top",
+          "in" : "query",
+          "description" : "Número máximo (maior que zero) de entidades que serão retornadas",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoCotacaoMoeda"
+            }
+          }
+        }
+      }
+    },
+    "/CotacaoMoedaAberturaOuIntermediario(codigoMoeda=@codigoMoeda,dataCotacao=@dataCotacao)" : {
+      "get" : {
+        "operationId" : "CotacaoMoedaAberturaOuIntermediario",
+        "parameters" : [ {
+          "name" : "@codigoMoeda",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataCotacao",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoCotacaoDolarAberturaOuIntermediario"
+            }
+          }
+        }
+      }
+    },
+    "/CotacaoMoedaPeriodoFechamento(codigoMoeda=@codigoMoeda,dataInicialCotacao=@dataInicialCotacao,dataFinalCotacao=@dataFinalCotacao)" : {
+      "get" : {
+        "operationId" : "CotacaoMoedaPeriodoFechamento",
+        "parameters" : [ {
+          "name" : "@codigoMoeda",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataInicialCotacao",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "@dataFinalCotacao",
+          "in" : "query",
+          "required" : true,
+          "type" : "string",
+          "pattern" : "'([^']|'')*'"
+        }, {
+          "name" : "$format",
+          "in" : "query",
+          "description" : "Tipo de conteúdo que será retornado",
+          "required" : false,
+          "type" : "string",
+          "enum" : [ "json", "xml", "text/csv", "text/plain", "text/html" ]
+        }, {
+          "name" : "$orderby",
+          "in" : "query",
+          "description" : "Propriedades para ordenação das entidades. e.g. Nome asc, Idade desc",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$filter",
+          "in" : "query",
+          "description" : "Filtro de seleção de entidades. e.g. Nome eq 'João'",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "$skip",
+          "in" : "query",
+          "description" : "Índice (maior ou igual a zero) da primeira entidade que será retornada",
+          "required" : false,
+          "type" : "integer",
+          "minimum" : 0,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/RespostaTipoCotacaoDolarAberturaOuIntermediario"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "TipoMoeda" : {
+      "properties" : {
+        "simbolo" : {
+          "type" : "string",
+          "description" : "Símbolo de três letras da moeda.",
+          "title" : "Símbolo"
+        },
+        "nomeFormatado" : {
+          "type" : "string",
+          "description" : "Nome da moeda.",
+          "title" : "Nome da moeda"
+        },
+        "tipoMoeda" : {
+          "type" : "string",
+          "description" : "Tipo da moeda. As moedas podem ser do tipo A ou B.",
+          "title" : "Tipo da moeda"
+        }
+      },
+      "description" : "Tipo usado no conjunto de moedas."
+    },
+    "RespostaTipoMoeda" : {
+      "properties" : {
+        "@odata.context" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TipoMoeda"
+          }
+        }
+      }
+    },
+    "TipoCotacaoDolar" : {
+      "properties" : {
+        "cotacaoCompra" : {
+          "type" : "number",
+          "description" : "Cotação de compra do dólar contra a unidade monetária corrente: unidade monetária corrente/dólar americano.",
+          "title" : "Cotação de compra"
+        },
+        "cotacaoVenda" : {
+          "type" : "number",
+          "description" : "Cotação de venda do dólar contra a unidade monetária corrente: unidade monetária corrente/dólar americano.",
+          "title" : "Cotação de venda"
+        },
+        "dataHoraCotacao" : {
+          "type" : "string",
+          "description" : "Data, hora e minuto das cotações de compra e venda.",
+          "title" : "Data e hora da cotação"
+        }
+      },
+      "description" : "Tipo usado nas funções de cotação do dólar por período ou por dia"
+    },
+    "RespostaTipoCotacaoDolar" : {
+      "properties" : {
+        "@odata.context" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TipoCotacaoDolar"
+          }
+        }
+      }
+    },
+    "TipoCotacaoMoeda" : {
+      "properties" : {
+        "paridadeCompra" : {
+          "type" : "number",
+          "description" : "Paridade de compra da moeda consultada contra o dólar: Moedas tipo A: USD/[moeda]. Moedas tipo B: [moeda]/USD.",
+          "title" : "Paridade de compra"
+        },
+        "paridadeVenda" : {
+          "type" : "number",
+          "description" : "Paridade de venda da moeda consultada contra o dólar: Moedas tipo A: USD/[moeda]. Moedas tipo B: [moeda]/USD.",
+          "title" : "Paridade de venda"
+        },
+        "cotacaoCompra" : {
+          "type" : "number",
+          "description" : "Cotação de compra da moeda consultada contra a unidade monetária corrente: unidade monetária corrente/[moeda].",
+          "title" : "Cotação de compra"
+        },
+        "cotacaoVenda" : {
+          "type" : "number",
+          "description" : "Cotação de venda da moeda consultada contra a unidade monetária corrente: unidade monetária corrente/[moeda].",
+          "title" : "Cotação de venda"
+        },
+        "dataHoraCotacao" : {
+          "type" : "string",
+          "description" : "Data, hora e minuto das paridades e cotações.",
+          "title" : "Data e hora da cotação"
+        },
+        "tipoBoletim" : {
+          "type" : "string",
+          "description" : "Tipo das paridades e cotações para aquela data e hora. Podem ser dos tipos: Abertura, Intermediário, Fechamento Interbancário ou Fechamento.",
+          "title" : "Tipo do boletim"
+        }
+      },
+      "description" : "Tipo usado nas funções de cotação de moeda por período ou por dia"
+    },
+    "RespostaTipoCotacaoMoeda" : {
+      "properties" : {
+        "@odata.context" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TipoCotacaoMoeda"
+          }
+        }
+      }
+    },
+    "TipoCotacaoDolarAberturaOuIntermediario" : {
+      "properties" : {
+        "cotacaoCompra" : {
+          "type" : "number",
+          "description" : "Cotação de compra da moeda consultada contra a unidade monetária corrente: unidade monetária corrente/[moeda].",
+          "title" : "Cotação de compra"
+        },
+        "cotacaoVenda" : {
+          "type" : "number",
+          "description" : "Cotação de venda da moeda consultada contra a unidade monetária corrente: unidade monetária corrente/[moeda].",
+          "title" : "Cotação de venda"
+        },
+        "dataHoraCotacao" : {
+          "type" : "string",
+          "description" : "Data, hora e minuto das paridades e cotações.",
+          "title" : "Data e hora da cotação"
+        },
+        "tipoBoletim" : {
+          "type" : "string",
+          "description" : "Tipo das paridades e cotações para aquela data e hora. Podem ser dos tipos: Abertura, Intermediário, Fechamento Interbancário ou Fechamento.",
+          "title" : "Tipo do boletim"
+        }
+      },
+      "description" : "Tipo usado nas funções de cotação de moeda por período ou por dia"
+    },
+    "RespostaTipoCotacaoDolarAberturaOuIntermediario" : {
+      "properties" : {
+        "@odata.context" : {
+          "type" : "string"
+        },
+        "value" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TipoCotacaoDolarAberturaOuIntermediario"
+          }
+        }
+      }
+    }
+  }
+}

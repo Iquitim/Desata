@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Literal
@@ -67,6 +68,18 @@ class ReadResult:
     # O que o órgão disse sobre o que veio (unidade, nome da variável), para o Perfil e a citação.
     info: dict[str, str] = field(default_factory=dict)
     read_at: datetime = field(default_factory=datetime.now)
+
+
+def safe_xml(body: bytes) -> ET.Element:
+    """XML vindo de um órgão, sem DTD nem entidades (bloqueia a "bomba de bilhões de risos" e entidades externas).
+
+    O ``$metadata`` do OData e a listagem WebDAV do CNPJ nunca precisam de DTD: qualquer ``<!DOCTYPE``/``<!ENTITY``
+    é recusado antes de interpretar. O tamanho já vem limitado pelo cliente do catálogo.
+    """
+    head = body[:4096].upper()
+    if b"<!DOCTYPE" in head or b"<!ENTITY" in body.upper():
+        raise ValueError("XML com DTD ou entidades: recusado por segurança.")
+    return ET.fromstring(body)  # noqa: S314  (sem DTD nem entidades, conferido acima)
 
 
 class SourceNotFoundError(Exception):
