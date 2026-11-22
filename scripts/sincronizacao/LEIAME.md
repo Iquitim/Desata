@@ -23,8 +23,9 @@ servidores do programa (Ana na porta 8796, Bruno na 8797) e confere:
 
 1. Ana cria o espaço e salva um fluxo; a pasta chega ao Bruno;
 2. Bruno pede para entrar; Ana aceita como Editor; a lista assinada chega e o Bruno vira Editor;
-3. com o Syncthing do Bruno pausado, os dois salvam o mesmo fluxo; ao retomar, a cópia de conflito
-   (`*.sync-conflict-*`) vira versão nos dois computadores, e nenhuma das duas versões se perde.
+. com a sincronização atrasada, os dois comentam ao mesmo tempo: os comentários chegam aos dois lados e não
+   aparece cópia de conflito (cada comentário é um arquivo próprio); a constante que a Ana compartilha chega ao
+   Bruno, assinada por ela.
 
 Com `--manter`, a interface de cada Syncthing fica em http://127.0.0.1:8384 (Ana) e http://127.0.0.1:8385 (Bruno).
 Para limpar depois: `docker compose down -v` nesta pasta.

@@ -182,6 +182,57 @@ def scenario() -> None:
         names |= {v["name"] for v in history}
     check("nenhum dos dois perde a versão (as duas estão em Versões)", {"da Ana", "do Bruno"} <= names, names)
 
+    # Spec 048: comentários das duas pessoas ao mesmo tempo e uma definição compartilhada que chega ao outro lado
+    sync_api("bruno", "POST", "/rest/system/pause")
+    url = f"/api/equipe/espacos/{sid}/fluxos/fechamento/comentarios"
+    app(
+        "ana",
+        "POST",
+        url,
+        {"tipo": "comentario", "caixa": "n1", "rotulo": "Select", "texto": "Comentário da Ana"},
+    )
+    app(
+        "bruno",
+        "POST",
+        url,
+        {"tipo": "comentario", "caixa": "n1", "rotulo": "Select", "texto": "Comentário do Bruno"},
+    )
+    app(
+        "ana",
+        "PUT",
+        f"/api/equipe/espacos/{sid}/definicoes/constantes/meta",
+        {"name": "meta", "type": "number", "value": "100"},
+    )
+    sync_api("bruno", "POST", "/rest/system/resume")
+    texts = lambda who: {c["texto"] for c in app(who, "GET", url)["conversas"]}  # noqa: E731
+    both = {"Comentário da Ana", "Comentário do Bruno"}
+    if wait(
+        "os comentários das duas pessoas chegam aos dois lados",
+        lambda: texts("ana") >= both and texts("bruno") >= both,
+        timeout=120,
+    ):
+        check("comentários ao mesmo tempo chegam aos dois lados", True)
+    folder_copies = [
+        p for d in (ana_dir, bruno_dir) for p in (d / "_equipe" / "comentarios").rglob("*sync-conflict*")
+    ]
+    check("comentar ao mesmo tempo não cria cópia de conflito", not folder_copies, folder_copies)
+
+    def meta() -> list[dict[str, Any]]:
+        return [
+            d
+            for d in app("bruno", "GET", f"/api/equipe/espacos/{sid}/definicoes")["constantes"]
+            if d["id"] == "meta"
+        ]
+
+    if wait(
+        "a constante da equipe chega ao Bruno", lambda: bool(meta()) and meta()[0]["confere"], timeout=120
+    ):
+        check(
+            "a constante da equipe chega ao Bruno, assinada pela Ana",
+            meta()[0]["autor_nome"] == "Ana Souza",
+            meta(),
+        )
+
 
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
