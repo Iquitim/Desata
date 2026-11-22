@@ -594,8 +594,10 @@ class TeamService:
                 row["conteudo"] = content_of(kind, item) if item is not None else None
                 if kind == "conexoes" and isinstance(item, Connection) and item.kind != "odbc":
                     row["tem_segredo"] = bool(secrets.get(secret_key(space_id, kind, info.id)))
+                    row["campos"] = ["senha"]
                 elif kind == "apis" and isinstance(item, SavedApi):
                     slots = item.secret_slots()
+                    row["campos"] = slots
                     row["tem_segredo"] = all(
                         secrets.get(secret_key(space_id, kind, info.id, s)) for s in slots
                     )

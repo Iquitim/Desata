@@ -7,7 +7,7 @@ Sobe o próprio servidor, com uma pasta de dados temporária (nada vai para a bi
 janela e confere o comportamento de ponta a ponta: o que os testes do motor não enxergam (cliques, arrastos, diálogos,
 animações). Sai com 1 se alguma conferência falhar ou se a página tiver erro de JavaScript.
 
-Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2, equipe3 e equipe4 (spec 047,
+Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2, equipe3, equipe4 e equipe5 (specs 047 e 048,
 duas pessoas: sobe um segundo servidor).
 """
 
@@ -774,6 +774,112 @@ def equipe4(pg: Page) -> None:
         shutil.rmtree(folder, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- spec 048: definições da equipe (marco 2)
+
+FETCH = "async (url) => (await fetch(url)).json()"
+META_FLOW = {"id": "fluxo_meta", "name": "Fluxo da meta", "edges": [{"id": "e", "source": "t", "target": "f"}],
+             "nodes": [{"id": "t", "type": "io.text_input", "x": 160, "y": 160,
+                        "config": {"table": {"columns": ["v"], "rows": [[2]]}}},
+                       {"id": "f", "type": "prep.formula", "x": 460, "y": 160, "config": {"formulas": [
+                           {"target": "new", "column": "x", "type": "Auto", "expression": "[v] * [#meta]"}]}}]}  # fmt: skip
+
+
+def equipe5(pg: Page) -> None:
+    folder = Path(tempfile.mkdtemp(prefix="conferir-espaco5-"))
+    ctx2 = pg.context.browser.new_context(viewport={"width": 1500, "height": 950})  # type: ignore[union-attr]
+    bruno = ctx2.new_page()
+    try:
+        pg.evaluate(POST, ["/api/equipe/identidade", {"nome": "Ana Souza"}])
+        sid = pg.evaluate(
+            POST, ["/api/equipe/espacos", {"acao": "criar", "caminho": str(folder), "nome": "Time 6"}]
+        )["id"]
+        pg.evaluate(POST, ["/api/constants", {"constant": {"name": "meta", "type": "number", "value": "50"}}])
+        conn = {
+            "id": "erp",
+            "name": "ERP",
+            "kind": "postgres",
+            "host": "srv-erp",
+            "database": "erp",
+            "user": "ana",
+        }
+        pg.evaluate(PUT, ["/api/connections/erp", {"connection": conn, "password": "senha-da-ana"}])
+        pg.reload()
+        ready(pg)
+        pg.locator("#viewSwitch .segment[data-view=data]").click()
+        pg.locator(".dv-list").get_by_text("meta", exact=True).first.click()
+        pg.locator(".dv-head-actions button", has_text="Compartilhar com a equipe").click()
+        pick = pg.locator("dialog[open]", has_text="Compartilhar com a equipe")
+        if pick.count():
+            pick.locator(".wf-item", has_text="Time 6").locator(".wf-main").click()
+        pg.locator(".toast", has_text="Compartilhada com a equipe").first.wait_for(timeout=10000)
+        check(
+            "Compartilhar com a equipe leva a constante para o espaço",
+            (folder / "_equipe" / "definicoes" / "constantes" / "meta.json").is_file(),
+        )
+        pg.evaluate(
+            POST, [f"/api/equipe/espacos/{sid}/definicoes/compartilhar", {"tipo": "conexoes", "id": "erp"}]
+        )
+        text = "".join(p.read_text(encoding="utf-8") for p in (folder / "_equipe").rglob("*") if p.is_file())
+        check("a senha não vai para a pasta da equipe", "senha-da-ana" not in text)
+        pg.evaluate(PUT, [f"/api/equipe/espacos/{sid}/fluxos/fluxo_meta", META_FLOW])
+
+        ready(bruno, URL_BRUNO)
+        bruno.evaluate(POST, ["/api/equipe/identidade", {"nome": "Bruno Lima"}])
+        bruno.evaluate(POST, ["/api/equipe/espacos", {"acao": "entrar", "caminho": str(folder)}])
+        pg.evaluate(
+            POST,
+            [
+                f"/api/equipe/espacos/{sid}/membros",
+                {"acao": "aceitar", "usuario": "bruno", "papel": "editor"},
+            ],
+        )
+        bruno.reload()
+        ready(bruno, URL_BRUNO)
+        bruno.locator("#viewSwitch .segment[data-view=data]").click()
+        section = bruno.locator(".team-defs-space", has_text="Da equipe · Time 6")
+        section.wait_for(timeout=15000)
+        check(
+            "a vista Dados do Bruno mostra o que é da equipe",
+            "meta" in section.inner_text() and "ERP" in section.inner_text(),
+            section.inner_text(),
+        )
+        check(
+            "a conexão pede a senha do Bruno",
+            section.locator(".team-def-item", has_text="ERP")
+            .locator(".team-chip", has_text="Sua senha")
+            .count()
+            == 1,
+        )
+        section.locator(".team-def-item", has_text="ERP").click()
+        bruno.locator(".dv-head-actions button", has_text="Digitar a minha senha").click()
+        dialog = bruno.locator("dialog[open]", has_text="Sua senha")
+        dialog.locator("input[type=password]").fill("senha-do-bruno")
+        dialog.locator("button", has_text="Guardar").click()
+        bruno.locator(".dv-head-actions button", has_text="Trocar a minha senha").wait_for(timeout=10000)
+        check(
+            "a senha do Bruno fica no computador dele",
+            "senha-do-bruno"
+            not in "".join(
+                p.read_text(encoding="utf-8") for p in (folder / "_equipe").rglob("*") if p.is_file()
+            ),
+        )
+
+        open_space_flow(bruno, "Time 6", "Fluxo da meta")
+        bruno.wait_for_function(
+            "() => window.__S.store.workflow?.id === 'fluxo_meta' && !window.__S.store.running", timeout=20000
+        )
+        bruno.wait_for_timeout(800)
+        rows = bruno.evaluate(FETCH, "/api/results/fluxo_meta/f/out").get("rows", [])
+        check(
+            "o fluxo do espaço usa a constante da equipe (sem cadastro no Bruno)",
+            bool(rows) and rows[0].get("x") == 100,
+            rows[:1],
+        )
+    finally:
+        ctx2.close()
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -799,6 +905,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "equipe2": equipe2,
     "equipe3": equipe3,
     "equipe4": equipe4,
+    "equipe5": equipe5,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
@@ -845,7 +952,7 @@ def main() -> int:
         # Duas pessoas (spec 047): o Bruno tem o próprio servidor, pasta de dados e usuário.
         second = (
             start_server(Path(folder) / "dados-bruno", PORT_BRUNO, "bruno")
-            if {"equipe2", "equipe3"} & set(chosen)
+            if {"equipe2", "equipe3", "equipe5"} & set(chosen)
             else None
         )
         try:

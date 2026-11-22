@@ -8,6 +8,7 @@ fica na pasta de dados (``espacos.json``); sem nenhum espaço, nada disto toca a
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import secrets
@@ -20,6 +21,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from prodata.errors import InvalidInputError, NotFoundError
 
+log = logging.getLogger(__name__)
 CONTROL = "_equipe"
 MANIFEST = "espaco.json"
 FORMAT = 1
@@ -73,12 +75,18 @@ def read_manifest(root: Path) -> Manifest:
 
 def writable(root: Path, user: str = "teste") -> bool:
     """A pasta deixa gravar? Tenta criar e apagar um arquivo de teste na pasta de controle (RF-4716)."""
-    probe = root / CONTROL / f".escrita-{re.sub(r'[^A-Za-z0-9._-]', '_', user)}.tmp"
+    # Um nome por tentativa: dois pedidos ao mesmo tempo não podem apagar o arquivo de teste um do outro (o segundo
+    # acharia que a pasta não deixa gravar).
+    name = re.sub(r"[^A-Za-z0-9._-]", "_", user)
+    probe = root / CONTROL / f".escrita-{name}-{os.getpid()}-{secrets.token_hex(4)}.tmp"
     try:
         probe.write_text("ok", encoding="utf-8")
-        probe.unlink()
     except OSError:
         return False
+    try:
+        probe.unlink()
+    except OSError as exc:  # gravou; se a sincronização segurar o arquivo de teste agora, ele sai na próxima vez
+        log.debug("Arquivo de teste de escrita ficou para trás: %s (%s)", probe.name, exc)
     return True
 
 

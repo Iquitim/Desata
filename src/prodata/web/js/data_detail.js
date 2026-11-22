@@ -20,6 +20,7 @@ import { button, fmt, h } from './dom.js';
 import { columnQuality, stat } from './data_stats.js';
 import { icon } from './icons.js';
 import { brand } from './brand.js';
+import { shareButton } from './team_definitions.js';
 
 const TONES = { ok: 'check', warn: 'alert', err: 'alert', info: 'link' };
 
@@ -186,7 +187,7 @@ export function sourceDetail(source, ctx) {
           h('span', { class: ['dv-chip', `tone-${source.state.tone}`] }, icon(TONES[source.state.tone], 12), source.state.label),
           h('button', { type: 'button', class: ['dv-chip', 'dv-chip-use', !uses.length && 'none'], onclick: () => ctx.setTab('usage') }, usageText(source)),
           orgChips(source))),
-      h('div', { class: 'dv-head-actions' }, actionsFor(source, ctx))),
+      h('div', { class: 'dv-head-actions' }, actionsFor(source, ctx), shareButton(source, ctx.refresh))),
     aboutBlock(source),
     h('nav', { class: 'dv-tabs', role: 'tablist', 'aria-label': 'Seções da fonte' }, tabs.map(([k, label]) => h('button', {
       type: 'button', role: 'tab', class: 'dv-tab', 'aria-selected': String(k === tab), dataset: { tab: k },

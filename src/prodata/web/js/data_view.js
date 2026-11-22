@@ -17,6 +17,7 @@ import { button, h } from './dom.js';
 import { icon } from './icons.js';
 import { forgetSources } from './organization.js';
 import { initPortable, missingSection } from './portable.js';
+import { refreshTeamDefinitions, teamDetail, teamSection } from './team_definitions.js';
 import { on, store } from './store.js';
 import { confirmDialog, showMenu, toast, toastError } from './ui.js';
 
@@ -29,7 +30,7 @@ const fileInput = h('input', { type: 'file', multiple: true, hidden: true,
 const sourceByKey = (key) => allSources().find((s) => s.key === key) || null;
 
 async function afterChange() {
-  await Promise.all([refreshDatasets(), refreshQueries(), refreshApis(), refreshJira(), refreshConnections(), refreshConstants(), refreshFolderSources(), refreshPdfSources(), refreshUsage()]).catch(() => {});
+  await Promise.all([refreshDatasets(), refreshQueries(), refreshApis(), refreshJira(), refreshConnections(), refreshConstants(), refreshFolderSources(), refreshPdfSources(), refreshUsage(), refreshTeamDefinitions()]).catch(() => {});
   renderDataView();
 }
 
@@ -83,7 +84,9 @@ function listPane() {
     h('div', { class: 'dv-list-head' },
       h('div', {}, h('h1', {}, 'Seus dados'), h('p', {}, 'Valem para todos os fluxos deste computador')),
       button({ icon: 'plus', label: 'Adicionar', variant: 'primary', onClick: addMenu })),
-    missingSection(), search, list.el, fileInput);
+    missingSection(), search, list.el,
+    // espaço da equipe (spec 048): as definições compartilhadas, numa pasta por espaço
+    teamSection({ selectedKey: ui.key, onOpen: (key) => { ui.key = key; ui.creating = null; renderDataView(); } }), fileInput);
 }
 
 /** Primeira vez, ou nenhuma fonte escolhida: explica os tipos de fonte e leva a cada um (RF-2809). */
@@ -188,7 +191,8 @@ async function removeSource(source, action) {
 
 export function renderDataView() {
   if (!root || store.view !== 'data') return;
-  const selected = ui.key ? sourceByKey(ui.key) : null;
+  const team = ui.key?.startsWith('team:') ? ui.key : null;
+  const selected = ui.key && !team ? sourceByKey(ui.key) : null;
   const ctx = {
     tab: ui.tab,
     rename: ui.rename,
@@ -203,7 +207,9 @@ export function renderDataView() {
     openFlow: (workflowId, nodeId) => handlers.openFlow(workflowId, nodeId),
     showDesigner: () => handlers.showDesigner(),
   };
-  const main = ui.creating ? creatingPane() : selected ? sourceDetail(selected, ctx) : welcome();
+  const main = ui.creating ? creatingPane()
+    : team ? teamDetail(team, { refresh: afterChange, close: () => { ui.key = null; renderDataView(); } })
+      : selected ? sourceDetail(selected, ctx) : welcome();
   ui.rename = false;
   ui.pdfDoc = null;
   root.replaceChildren(listPane(), h('main', { class: 'dv-main' }, main));
@@ -235,6 +241,6 @@ export function initDataView(el, opts) {
 /** Ao entrar na vista: dados de uso frescos, porque outro fluxo pode ter sido salvo. */
 export async function showDataView() {
   renderDataView();
-  await refreshUsage();
+  await Promise.all([refreshUsage(), refreshTeamDefinitions()]);
   renderDataView();
 }

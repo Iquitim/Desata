@@ -46,6 +46,7 @@ import { showRunNotice } from './run_notice.js';
 import { offerRemoveSchedules, watchScheduleFailures } from './schedules_list.js';
 import { startPills } from './segmented_pill.js';
 import { libraryTabs, moveButton, refreshTeam } from './team_spaces.js';
+import { ensureSecrets } from './team_definitions.js';
 import { initTeamEditing, openSpaceFlow } from './team_editing.js';
 
 const LAST_WORKFLOW = 'prodata.lastWorkflow'; // versões anteriores (antes das abas)
@@ -88,6 +89,8 @@ async function run(targetNodeId = null, { auto = false } = {}) {
       return;
     }
     if (!workflow) return; // cancelou: nada executa
+    // espaço da equipe (spec 048): as senhas que faltam para as conexões e APIs da equipe, de uma vez, antes
+    if (store.space && !(await ensureSecrets(store.space.id, workflow))) return;
   }
   store.running = true;
   store.progress = null;
@@ -95,7 +98,7 @@ async function run(targetNodeId = null, { auto = false } = {}) {
   showProgress({ order: [], done: {}, running: null });
   const stop = watchProgress(workflow.id);
   try {
-    const report = await api.execute(workflow, targetNodeId, auto);
+    const report = await api.execute(workflow, targetNodeId, auto, store.space?.id || null);
     setExecution(report, Object.keys(report.node_results));
     const errors = Object.values(report.node_results).filter((r) => r.status === 'error').length;
     // Aviso de fim (spec 044): só na execução pedida pela pessoa; com ele desligado, o erro continua avisando.

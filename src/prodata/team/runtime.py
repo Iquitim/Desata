@@ -54,3 +54,18 @@ def used_sources(workflow: Workflow, queries: Any) -> tuple[list[str], list[str]
         elif node.type == "io.database_input" and cfg.get("connection"):
             connections.append(str(cfg["connection"]))
     return connections, apis
+
+
+class SpaceView:
+    """Os serviços como um fluxo do espaço os vê: as lojas da equipe no lugar das deste computador; o resto igual."""
+
+    def __init__(self, services: Services, runner: WorkflowRunner) -> None:
+        self._services = services
+        self.runner = runner
+        self.queries = runner.queries
+        self.apis = runner.apis
+        self.connections = runner.connections
+        self.constants = runner.constants
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._services, name)

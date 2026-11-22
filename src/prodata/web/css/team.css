@@ -33,3 +33,21 @@
 .readonly-host[hidden] { display: none; }
 .news-bar { border-color: var(--border-strong, var(--border)); }
 .news-bar .icon { color: var(--text-2); }
+/* Definições da equipe na vista Dados (spec 048, RF-4801) */
+.team-defs { display: grid; gap: 10px; padding: 8px 0 4px; border-top: 1px solid var(--border); margin-top: 8px; }
+.team-defs-head { display: flex; align-items: center; gap: 6px; padding: 2px 6px; font-size: var(--fs-sm); color: var(--text-2); }
+.team-defs-head strong { color: var(--text); }
+.team-defs-head .muted { margin-left: auto; }
+.team-def-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border: 0; border-radius: var(--radius);
+  background: transparent; color: var(--text); text-align: left; cursor: pointer; font: inherit; font-size: var(--fs-sm); }
+.team-def-item:hover { background: var(--surface-2); }
+.team-def-item.selected { background: var(--accent-weak); }
+.team-def-icon { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: var(--kind);
+  background: color-mix(in srgb, var(--kind) 14%, transparent); flex: none; }
+.team-def-name { flex: 1; min-width: 0; }
+.team-defs-empty { padding: 0 8px; margin: 0; }
+.team-def-card { display: grid; gap: 8px; }
+.team-def-field { display: grid; grid-template-columns: 120px 1fr; gap: 8px; font-size: var(--fs-sm); }
+.team-def-sql { margin: 0; padding: 10px; border-radius: var(--radius); background: var(--surface-2); white-space: pre-wrap; font-size: var(--fs-sm); }
+.team-secret { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; display: grid; gap: 8px; margin: 0; }
+.team-secret legend { padding: 0 4px; font-size: var(--fs-sm); }

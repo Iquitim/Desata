@@ -9,6 +9,10 @@ from fastapi import APIRouter, Path, Query, Response
 from pydantic import BaseModel, Field, ValidationError
 
 from prodata.api.deps import Services, ServicesDep
+from prodata.connectors.api_model import SavedApi
+from prodata.connectors.models import Connection
+from prodata.connectors.queries import SavedQuery
+from prodata.domain.constants import Constant
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.team.definitions import KINDS, key_of
@@ -274,3 +278,31 @@ def missing_secrets(space_id: SpaceId, req: MissingRequest, services: ServicesDe
     """As conexões e APIs da equipe que o fluxo usa e para as quais falta o meu segredo: a tela pede antes de executar."""
     connections, apis = used_sources(req.workflow, runner_for(services, space_id).queries)
     return services.team.missing_secrets(space_id, connections, apis)
+
+
+@router.post("/espacos/{space_id}/definicoes/{kind}/{key}/trazer")
+def bring_definition(
+    space_id: SpaceId, kind: DefKindPath, key: DefKey, services: ServicesDep
+) -> dict[str, bool]:
+    """Trazer para este computador: uma cópia da definição da equipe na vista Dados daqui, para editar e depois
+    atualizar na equipe. Segredo não vem (cada pessoa tem o seu)."""
+    defs = services.team.space_definitions(space_id)
+    item = defs.get(kind, key) if defs else None
+    if defs is None or item is None:
+        raise InvalidInputError(
+            "Essa definição da equipe não pode ser usada agora (não confere ou não está no espaço)."
+        )
+    if isinstance(item, SavedQuery):
+        here = {c.id for c in services.connections.list()}
+        team_conn = defs.get("conexoes", item.connection)
+        if item.connection not in here and isinstance(team_conn, Connection):
+            services.connections.save(team_conn)
+        services.queries.save(item)
+    elif isinstance(item, Connection):
+        services.connections.save(item)
+    elif isinstance(item, SavedApi):
+        services.apis.save(item)
+    elif isinstance(item, Constant):
+        exists = item.name in services.constants.all()
+        services.constants.save(item, previous=item.name if exists else None)
+    return {"ok": True}

@@ -20,18 +20,28 @@ from prodata.nodes.textual import guess_personal, mask_frame
 from prodata.services.audit import log_export
 from prodata.services.portable import check_sources
 from prodata.services.workflows import save_to_file
+from prodata.team.runtime import SpaceView, runner_for
 
 router = APIRouter(prefix="/api/portable", tags=["fluxo portátil"])
 
 
 class CheckRequest(BaseModel):
     workflow: Workflow
+    espaco: str | None = Field(None, pattern=r"^[a-f0-9]{16}$")  # fluxo do espaço: vale a equipe (spec 048)
 
 
 @router.post("/sources")
 def sources(req: CheckRequest, services: ServicesDep) -> dict[str, Any]:
     """Cada fonte do fluxo e se ela está neste computador, falta ou será lida da amostra (RF-4010)."""
-    found = check_sources(req.workflow, services)
+    if req.espaco and (defs := services.team.space_definitions(req.espaco)) is not None:
+        found = check_sources(req.workflow, SpaceView(services, runner_for(services, req.espaco)))
+        team_keys = {f"query:sql:{k}" for k in defs.definitions.keys("consultas")}
+        team_keys |= {f"api:api:{k}" for k in defs.definitions.keys("apis")}
+        team_keys |= {f"connection:{k}" for k in defs.definitions.keys("conexoes")}
+        for item in found:  # RF-4807: o que veio da equipe aparece como "Da equipe"
+            item["equipe"] = item["state"] == "ok" and f"{item['kind']}:{item['key']}" in team_keys
+    else:
+        found = check_sources(req.workflow, services)
     return {"sources": found, "missing": sum(1 for s in found if s["state"] == "missing")}
 
 

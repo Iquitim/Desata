@@ -17,7 +17,7 @@ export const portable = { sources: [] };
 export const checkSources = debounce(async () => {
   if (!store.workflow) return;
   try {
-    const res = await api.portableSources(store.workflow);
+    const res = await api.portableSources(store.workflow, store.space?.id || null);
     portable.sources = res.sources;
   } catch {
     portable.sources = [];

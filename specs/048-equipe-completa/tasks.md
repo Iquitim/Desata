@@ -9,9 +9,9 @@
 
 ## Marco 2 — Definições da equipe, tela
 
-- [ ] T05 Pasta "Da equipe" na vista Dados, criar e editar no espaço, aviso de definição diferente (RF-4801, RF-4803)
-- [ ] T06 Compartilhar com a equipe… e Faltam neste computador resolvido pela equipe (RF-4802, RF-4807)
-- [ ] T07 Pedido de senha e Trocar a minha senha (RF-4804); garantia do opcional na vista Dados (RF-4808, CA-01)
+- [x] T05 Pasta "Da equipe" na vista Dados, criar e editar no espaço, aviso de definição diferente (RF-4801, RF-4803)
+- [x] T06 Compartilhar com a equipe… e Faltam neste computador resolvido pela equipe (RF-4802, RF-4807)
+- [x] T07 Pedido de senha e Trocar a minha senha (RF-4804); garantia do opcional na vista Dados (RF-4808, CA-01)
 
 ## Marco 3 — Comentários
 

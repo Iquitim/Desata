@@ -107,7 +107,7 @@ export const api = {
   previewQuery: (definition, rows = 100) => request('POST', `/api/queries/preview?rows=${rows}`, definition),
 
   saveWorkflowFile: (path, workflow, origin = 'manual') => request('POST', '/api/files/workflow/save', { path, workflow, origin }),
-  portableSources: (workflow) => request('POST', '/api/portable/sources', { workflow }),
+  portableSources: (workflow, espaco = null) => request('POST', '/api/portable/sources', { workflow, espaco }),
   portablePreview: (workflow) => request('POST', '/api/portable/share/preview', { workflow }),
   portableShare: (workflow, path, sources) => request('POST', '/api/portable/share/save', { workflow, path, sources }),
   portableMaskPreview: (workflow, key, mask) => request('POST', '/api/portable/share/mask-preview', { workflow, key, mask }),
@@ -143,6 +143,12 @@ export const api = {
   publishOfficial: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/oficial`),
   teamSchedules: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/agendamentos`),
   assumeSchedule: (spaceId, scheduleId) => request('POST', '/api/schedules/assumir', { space_id: spaceId, schedule_id: scheduleId }),
+  teamDefinitions: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/definicoes`),
+  shareDefinition: (id, tipo, key) => request('POST', `/api/equipe/espacos/${enc(id)}/definicoes/compartilhar`, { tipo, id: key }),
+  deleteDefinition: (id, tipo, key) => request('DELETE', `/api/equipe/espacos/${enc(id)}/definicoes/${tipo}/${enc(key)}`),
+  bringDefinition: (id, tipo, key) => request('POST', `/api/equipe/espacos/${enc(id)}/definicoes/${tipo}/${enc(key)}/trazer`),
+  setDefinitionSecret: (id, tipo, key, valores) => request('POST', `/api/equipe/espacos/${enc(id)}/definicoes/${tipo}/${enc(key)}/segredo`, { valores }),
+  missingSecrets: (id, workflow) => request('POST', `/api/equipe/espacos/${enc(id)}/segredos-faltando`, { workflow }),
   moveToSpace: (id, workflowId) => request('POST', `/api/equipe/espacos/${enc(id)}/mover`, { workflow_id: workflowId }),
   copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
   spaceMembers: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/membros`),
@@ -247,8 +253,9 @@ export const api = {
   },
   progress: (workflowId) => request('GET', `/api/execute/${encodeURIComponent(workflowId)}/progress`),
   cancelRun: (workflowId) => request('POST', `/api/execute/${encodeURIComponent(workflowId)}/cancel`),
-  execute: (workflow, targetNodeId = null, holdExports = false) =>
-    request('POST', '/api/execute', { workflow, target_node_id: targetNodeId, hold_exports: holdExports }),
+  // espaco (spec 048): fluxo do espaço da equipe, que usa as constantes, conexões, consultas e APIs da equipe
+  execute: (workflow, targetNodeId = null, holdExports = false, espaco = null) =>
+    request('POST', '/api/execute', { workflow, target_node_id: targetNodeId, hold_exports: holdExports, espaco }),
   pendingExports: (workflow, targetNodeId = null) =>
     request('POST', '/api/exports/pending', { workflow, target_node_id: targetNodeId }),
   columnValues: (wfId, nodeId, anchor, column, limit = 500, search = '') =>

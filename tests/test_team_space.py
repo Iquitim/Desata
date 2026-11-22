@@ -200,3 +200,15 @@ def test_api_create_space_and_save_a_flow(client: TestClient, tmp_path: Path) ->
     listed = client.get(f"/api/equipe/espacos/{space['id']}/fluxos").json()
     assert [f["id"] for f in listed] == ["vendas"]
     assert client.get(f"/api/equipe/espacos/{space['id']}/fluxos/..%2F..%2Fx").status_code in (404, 422)
+
+
+def test_write_probe_is_safe_with_parallel_requests(tmp_path: Path) -> None:
+    """Pedidos ao mesmo tempo não podem apagar o arquivo de teste um do outro e achar que a pasta é só leitura."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from prodata.team.workspaces import CONTROL, writable
+
+    (tmp_path / CONTROL).mkdir()
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: writable(tmp_path, "ana"), range(64)))
+    assert all(results) and not list((tmp_path / CONTROL).glob(".escrita-*"))
