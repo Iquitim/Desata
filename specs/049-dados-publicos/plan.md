@@ -46,7 +46,9 @@ src/prodata/catalog/
   curated.py      os destaques: nome simples, ícone, palavras-chave, dicionário, escolhas e o leitor que usam
   readers/        um módulo por órgão: bcb_sgs, bcb_olinda, ibge, ipea, tesouro, siconfi, comex, receita
                   cada um com catalog() (lê o catálogo do órgão), meta(id) e read(id, escolhas) -> DataFrame
-  calendar.py     feriados nacionais (fixos e móveis pela Páscoa) e dias úteis, sem rede
+  calendar.py     feriados nacionais (fixos e móveis pela Páscoa) e dias úteis por local, sem rede
+  holidays/       base_estados_capitais.json (feriado, abrangência, lei, vigência; "revisado em") e a fusão das
+                  quatro origens com as edições da pessoa
   index.py        índice guardado: catálogo por órgão com a data da leitura, busca sem acento
   health.py       conferência por serviço, situação, "desde", motivo, histórico de 30 dias
   cache.py        última leitura por consulta (Parquet), com a data e a impressão digital da consulta
@@ -91,6 +93,21 @@ src/prodata/catalog/
 - Histórico: por serviço, por dia, o pior resultado do dia; 30 dias.
 - Dados novos (RF-4935): o catálogo traz a última atualização da fonte; a vista Dados compara com a data da última
   leitura guardada das fontes usadas.
+
+## Feriados editáveis
+
+- Cada feriado do programa tem um identificador estável (`<abrangência>/<slug>`, por exemplo `SP/revolucao-1932`) e
+  uma impressão do conteúdo. As edições da pessoa ficam em `catalogo/feriados_meus.json`, como operações sobre a
+  base: `incluir`, `corrigir` (id + campos + impressão do original no momento da edição) e `nao_vale_mais` (id +
+  data). Nada da tabela embutida é alterado.
+- Fusão: calculados + ANBIMA + programa, aplicando as edições por id. Se a impressão atual do feriado do programa
+  difere da guardada na edição, a linha ganha a marca "O programa também mudou" (RF-4947) até a pessoa escolher.
+  Inclusão do programa com a mesma data e abrangência de uma inclusão da pessoa não duplica.
+- Regras de data: fixa (dia/mês), móvel (deslocamento da Páscoa), única (data); vigência inicial e final.
+- Na equipe, a lista de edições vira uma definição do tipo `feriados` em `_equipe/definicoes/feriados/<id>.json`,
+  assinada, pelo mesmo caminho da spec 048 (`TeamDefinitions` e `Overlay`).
+- Testes: Páscoa 2000–2050; fusão com cada operação; conflito de revisão; restaurar; dias úteis por UF e município;
+  a tabela embutida conferida nos testes contra uma biblioteca de feriados (só como verificação).
 
 ## Download do CNPJ
 

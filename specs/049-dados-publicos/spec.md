@@ -90,9 +90,24 @@ Premissas:
 
 | ID | Requisito |
 |----|-----------|
-| RF-4941 | **Destaques da 0.9.6**, por categoria (a lista final é a que passar na verificação de endereços, T01): **Economia e juros**: Selic meta e Selic diária, CDI, expectativas do mercado (Focus). **Preços e inflação**: IPCA, INPC, IGP-M (com a variação mensal e o índice acumulado). **Câmbio**: PTAX de compra e venda do dólar e das principais moedas, por dia. **Território**: regiões, estados e municípios do IBGE (com códigos, nomes, UF e região). **População e trabalho**: população estimada por município, taxa de desocupação (PNAD Contínua), PIB dos municípios. **Empresas (CNPJ)**: cadastro de empresas, estabelecimentos e sócios da Receita (RF-4951). **Calendário**: feriados nacionais e dias úteis, calculados no próprio programa, sem internet. **Contas públicas**: preços e taxas do Tesouro Direto; receitas e despesas de estados e municípios (Siconfi). **Comércio exterior**: exportações e importações por produto, país e UF (Comex Stat). E **Ipeadata**: qualquer série, pela busca. |
+| RF-4941 | **Destaques da 0.9.6**, por categoria (a lista final é a que passar na verificação de endereços, T01): **Economia e juros**: Selic meta e Selic diária, CDI, expectativas do mercado (Focus). **Preços e inflação**: IPCA, INPC, IGP-M (com a variação mensal e o índice acumulado). **Câmbio**: PTAX de compra e venda do dólar e das principais moedas, por dia. **Território**: regiões, estados e municípios do IBGE (com códigos, nomes, UF e região). **População e trabalho**: população estimada por município, taxa de desocupação (PNAD Contínua), PIB dos municípios. **Empresas (CNPJ)**: cadastro de empresas, estabelecimentos e sócios da Receita (RF-4951). **Calendário**: feriados (nacionais, estaduais, das capitais e bancários) e dias úteis por local (RF-4944..4948). **Contas públicas**: preços e taxas do Tesouro Direto; receitas e despesas de estados e municípios (Siconfi). **Comércio exterior**: exportações e importações por produto, país e UF (Comex Stat). E **Ipeadata**: qualquer série, pela busca. |
 | RF-4942 | **Formato pronto para usar.** Toda fonte entrega uma tabela larga e tipada: data como data (o primeiro dia do mês para série mensal, com a coluna `periodo` em texto "2026-10" junto), valores como número, códigos do IBGE como texto de 7 dígitos (municípios) ou 2 dígitos (UF). Sem colunas aninhadas nem JSON. |
 | RF-4943 | **As regras escondidas ficam por conta do programa.** O período longo do SGS é dividido em consultas de até 10 anos e juntado; consultas grandes do IBGE são divididas por localidade; a paginação de cada órgão é seguida; valores marcados pelo órgão como sem dado ("..", "-", "X") viram vazio, com a contagem no aviso da caixa. |
+
+### Feriados e dias úteis
+
+Não existe base oficial consultável de feriados estaduais e municipais: cada um está numa lei estadual ou municipal
+(até 4 feriados religiosos por município, Lei 9.093/1995). Por isso a base de feriados combina o que se calcula, o
+que se lê da fonte, o que vem no programa e o que a pessoa mantém, e **a pessoa sempre pode corrigir**, sem esperar
+uma versão nova do programa.
+
+| ID | Requisito |
+|----|-----------|
+| RF-4944 | **Uma base, quatro origens.** A fonte **Feriados** entrega `data`, `nome`, `tipo` (nacional, estadual, municipal, bancário, ponto facultativo), `abrangencia` (Brasil, UF ou código do município), `lei` e `origem`. Origens: **calculado** (nacionais fixos e móveis pela Páscoa, sem internet); **ANBIMA** (feriados bancários, lidos da fonte como as outras fontes do catálogo); **do programa** (tabela embutida com os feriados dos 27 estados e das capitais, cada um com a lei e o início da vigência, e a data da última revisão); **meus** (RF-4945). |
+| RF-4945 | **Editar a base.** **Editar feriados…**, no detalhe da fonte e na caixa, abre a tabela do local escolhido. A pessoa **inclui** um feriado (municipal, recesso da empresa, ponte), **corrige** um do programa (data, nome, tipo) ou marca **Não vale mais** (com a data a partir da qual deixou de valer). Feriado fixo vale todo ano; móvel é dado como "N dias depois da Páscoa"; também aceita data única. Nada do programa é apagado: a edição fica por cima e **Restaurar o do programa** desfaz. |
+| RF-4946 | **De onde veio cada linha.** A tabela e a caixa mostram a origem de cada feriado ("do programa, revisado em 11/2026"; "editado por você em 03/02/2027"; "ANBIMA, lido hoje") e o cartão diz o que a base cobre: "nacionais, bancários, estaduais e capitais completos; outros municípios: os que você cadastrar". |
+| RF-4947 | **A sua edição vence a atualização.** Quando uma versão nova do programa traz a tabela revisada, as edições da pessoa continuam valendo. Se o programa mudou um feriado que a pessoa também editou, a tabela marca **O programa também mudou este feriado** com as duas versões lado a lado e **Manter o meu** / **Usar o do programa**. Feriado novo do programa entra sozinho, a menos que a pessoa já tenha um igual (mesma data e abrangência). |
+| RF-4948 | **Dias úteis por local e na equipe.** A caixa Feriados e a fonte **Dias úteis** escolhem o local (Brasil, UF ou município) e o calendário (civil ou bancário) e juntam tudo o que vale ali, já com as edições. As edições ficam neste computador; num espaço da equipe, **Compartilhar com a equipe** leva a lista de edições como as definições da spec 048 (assinada, sem segredo), e os fluxos do espaço usam o calendário da equipe. |
 
 ### Arquivos grandes: CNPJ
 
@@ -173,6 +188,10 @@ Premissas:
   fonte de pasta pronta e as colunas com nome.
 - CA-06: "Corrigir valores pelo IPCA" sobre uma tabela de vendas mensais dá o mesmo valor que o cálculo à mão com
   o índice do mês; "Juntar com municípios do IBGE" casa "Sao Paulo/SP", "355030" e "3550308" com o mesmo município.
+- CA-10: Dias úteis de Campinas em 2027 descontam os nacionais, o 9 de julho e os municipais cadastrados; marcar
+  um feriado do programa como "Não vale mais" e incluir um recesso muda o resultado na hora; com uma tabela do
+  programa revisada que muda o mesmo feriado, a edição continua valendo e aparece "O programa também mudou este
+  feriado".
 - CA-07: O dashboard e o HTML exportado de um fluxo com IPCA e Selic trazem a citação das duas fontes com a data.
 - CA-08: Abrir o programa, a vista Dados e executar um fluxo sem fonte pública não faz nenhuma requisição externa
   (teste automatizado); o fluxo salvo com a caixa Dados públicos não contém URL montada nem dados.
