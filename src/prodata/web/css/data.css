@@ -224,3 +224,21 @@
 .cell-foot-value.null { color: var(--text-3); font-style: italic; }
 .cell-foot-keys { flex: none; color: var(--text-3); white-space: nowrap; }
 .dash-table td { cursor: default; }
+/* Recomendações de limpeza (spec 048, RF-4831..4834) */
+.cl-card { display: grid; gap: 8px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
+.cl-card[hidden] { display: none; }
+.cl-head { display: flex; align-items: center; gap: 6px; }
+.cl-head .icon { color: var(--accent); }
+.cl-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cl-item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding-top: 8px; border-top: 1px solid var(--border); }
+.cl-item:first-child { border-top: 0; padding-top: 0; }
+.cl-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--accent-weak); color: var(--accent); }
+.cl-text { min-width: 0; display: grid; gap: 2px; }
+.cl-text p { margin: 0; }
+.cl-examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.cl-example { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; border-radius: 4px; background: var(--surface-2); font-size: var(--fs-xs); }
+.cl-arrow { color: var(--text-2); }
+.cl-actions { display: flex; gap: 4px; }
+.node-cleaning { position: absolute; bottom: -8px; right: 22px; display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0;
+  border: 1px solid var(--accent); border-radius: 50%; background: var(--surface); color: var(--accent); cursor: pointer; z-index: 2; }
+.node-cleaning:hover { background: var(--accent-weak); }

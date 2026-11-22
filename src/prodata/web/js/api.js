@@ -153,6 +153,7 @@ export const api = {
   addComment: (id, wid, body) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/comentarios`, body),
   mergePreview: (id, wid, body) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/juntar`, body),
   mergeApply: (id, wid, body) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/juntar/aplicar`, body),
+  cleaningRecommend: (workflow, nodeId, anchor = 'out') => request('POST', '/api/cleaning/recommend', { workflow, node_id: nodeId, anchor }),
   moveToSpace: (id, workflowId) => request('POST', `/api/equipe/espacos/${enc(id)}/mover`, { workflow_id: workflowId }),
   copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
   spaceMembers: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/membros`),

@@ -5,7 +5,7 @@ import { h } from './dom.js';
 import { icon } from './icons.js';
 import { sourceProblem } from './portable_state.js';
 import { timingBadge, timingOf } from './node_timing.js';
-import { isSelected, nodeResult, store, toolOf, visibleInputs, visibleOutputs } from './store.js';
+import { emit, inspect, isSelected, nodeResult, select, store, toolOf, visibleInputs, visibleOutputs } from './store.js';
 import { els, nodeEls, state } from './canvas_state.js';
 import { nodeHeight, nodeWidth } from './canvas_geometry.js';
 import { hiddenNodes } from './canvas_collapse.js';
@@ -13,6 +13,7 @@ import { loopProblems } from './loops.js';
 import { driftBadge, driftHit, schemaChange } from './schema_notice.js';
 import { MAX_ANIMATED_NEW, setFlowTarget } from './canvas_edges.js';
 import { commentCount, openComments } from './team_comments.js';
+import { cleaningCount } from './cleaning_ui.js';
 
 const ANNOT_CHARS = 19; // o que cabe na caixa, em letras: não depende de a fonte já ter carregado
 const ANNOT_TAIL = 8;
@@ -112,6 +113,7 @@ function buildNode(n, hidden) {
   loopBadge(n),
   timingBadge(n.id),
   commentBadge(n),
+  cleaningBadge(n),
   n.cache_point ? h('span', {
     class: 'node-cache', title: res?.extra?.frozen_at
       ? `Ponto de cache · resultado guardado em ${new Date(res.extra.frozen_at).toLocaleString('pt-BR')}`
@@ -134,7 +136,7 @@ function nodeKey(n, hidden) {
     timingOf(n.id)?.text || null, timingOf(n.id)?.level || null, // tempo nas caixas (spec 041)
     loopProblems().get(n.id) || null, // erro de desenho do laço (spec 041)
     Boolean(schemaChange(n.id)), driftHit(n.id)?.join(',') || null, // formato da fonte mudou (spec 046)
-    commentCount(n.id)]); // comentários abertos (spec 048)
+    commentCount(n.id), cleaningCount(n.id)]); // comentários abertos e recomendações de limpeza (spec 048)
 }
 
 /**
@@ -220,4 +222,16 @@ function commentBadge(n) {
     onclick: (ev) => { ev.stopPropagation(); openComments(n.id); },
     onpointerdown: (ev) => ev.stopPropagation(),
   }, icon('chat', 11), String(count));
+}
+
+/** Ponto discreto de recomendação de limpeza (spec 048, RF-4834): só nas caixas de entrada; abre o Perfil. */
+function cleaningBadge(n) {
+  const count = cleaningCount(n.id);
+  if (!count) return null;
+  return h('button', {
+    type: 'button', class: 'node-cleaning', title: `${count} ${count === 1 ? 'coisa para limpar' : 'coisas para limpar'} nos dados desta caixa: veja no Perfil`,
+    'aria-label': `Recomendações de limpeza de ${n.label || n.id}`,
+    onclick: (ev) => { ev.stopPropagation(); select(n.id); inspect(n.id); emit('show:profile'); },
+    onpointerdown: (ev) => ev.stopPropagation(),
+  }, icon('sparkles', 10));
 }

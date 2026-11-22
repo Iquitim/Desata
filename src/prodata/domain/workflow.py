@@ -73,6 +73,9 @@ class Workflow(BaseModel):
     samples: dict[str, SourceSample] = Field(default_factory=dict)
     # Formato lembrado das fontes e saídas (spec 046), por id da caixa. Ausente em fluxos antigos.
     schemas: dict[str, RememberedSchema] = Field(default_factory=dict)
+    # Recomendações de limpeza ignoradas (spec 048, RF-4834): caixa → chaves "tipo:coluna". Vazio fica fora do
+    # arquivo, para não mudar a impressão de confiança, a assinatura nem a base dos fluxos que já existem.
+    ignored_cleaning: dict[str, list[str]] = Field(default_factory=dict, exclude_if=lambda v: not v)
 
     @model_validator(mode="after")
     def _check_references(self) -> Workflow:

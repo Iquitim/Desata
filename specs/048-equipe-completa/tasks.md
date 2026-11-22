@@ -26,8 +26,8 @@
 
 ## Marco 5 — Recomendações de limpeza
 
-- [ ] T13 `recommend` e as correções configuradas (RF-4831, RF-4835)
-- [ ] T14 Cartão no Perfil, Corrigir com antes e depois, Ignorar, ponto na caixa (RF-4832..4834)
+- [x] T13 `recommend` e as correções configuradas (RF-4831, RF-4835)
+- [x] T14 Cartão no Perfil, Corrigir com antes e depois, Ignorar, ponto na caixa (RF-4832..4834)
 
 ## Marco 6 — Benchmark
 

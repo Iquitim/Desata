@@ -1,6 +1,7 @@
 from prodata.api.routes import (
     apis,
     catalog,
+    cleaning,
     connections,
     constants,
     dashboard,
@@ -26,6 +27,7 @@ from prodata.api.routes import (
 
 routers = [
     catalog.router,
+    cleaning.router,
     datasets.router,
     folders.router,
     pdfs.router,

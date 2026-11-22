@@ -1020,6 +1020,59 @@ def equipe6(pg: Page) -> None:
         shutil.rmtree(folder, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- spec 048: recomendações de limpeza (marco 5)
+
+
+def limpeza(pg: Page) -> None:
+    new_flow(pg)
+    node_id = pg.evaluate("""() => window.__A.addNode('io.text_input', 200, 200, { table: { columns: ['uf', 'valor'],
+      rows: [['SP', '10'], ['sp', 'N/D'], ['RJ', '30'], ['MG', '40'], ['RJ', '50']] } }).id""")
+    run(pg)
+    dot = pg.locator(f".node[data-id='{node_id}'] .node-cleaning")
+    dot.wait_for(timeout=15000)
+    check("a caixa de entrada ganha o ponto de limpeza", dot.count() == 1)
+    dot.click()
+    card = pg.locator(".cl-card")
+    card.wait_for(timeout=15000)
+    text = card.inner_text()
+    check(
+        "o Perfil mostra as recomendações",
+        "parece número" in text and "N/D" in text and "maiúsculas" in text,
+        text[:300],
+    )
+    before = pg.evaluate("() => window.__S.store.workflow.nodes.length")
+    card.locator(".cl-item", has_text="parece número").locator("button", has_text="Corrigir").click()
+    confirm = pg.locator("dialog[open]", has_text="Inserir")
+    confirm.wait_for(timeout=10000)
+    check(
+        "Corrigir mostra antes o que muda",
+        "N/D" in confirm.inner_text() and "→" in confirm.inner_text(),
+        confirm.inner_text()[:200],
+    )
+    confirm.locator("button", has_text="Inserir").click()
+    pg.wait_for_function(f"() => window.__S.store.workflow.nodes.length === {before + 1}", timeout=10000)
+    added = pg.evaluate("() => window.__S.store.workflow.nodes.at(-1)")
+    check(
+        "insere o Select com a troca de tipo, ligado depois da caixa",
+        added["type"] == "prep.select"
+        and added["config"]["fields"][0]["cast"] in ("Int64", "Float64")
+        and pg.evaluate(
+            f"() => window.__S.store.workflow.edges.some((e) => e.source === '{node_id}' && e.target === '{added['id']}')"
+        ),
+        added,
+    )
+    pg.keyboard.press("Control+z")
+    check(
+        "Desfazer tira a caixa inserida",
+        pg.evaluate("() => window.__S.store.workflow.nodes.length") == before,
+    )
+    dot.click()
+    card.wait_for(timeout=15000)
+    card.locator(".cl-item", has_text="maiúsculas").locator("button", has_text="Ignorar").click()
+    ignored = pg.evaluate(f"() => window.__S.store.workflow.ignored_cleaning?.['{node_id}'] || []")
+    check("Ignorar fica gravado no fluxo", ignored == ["caixa:uf"], ignored)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1047,6 +1100,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "equipe4": equipe4,
     "equipe5": equipe5,
     "equipe6": equipe6,
+    "limpeza": limpeza,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

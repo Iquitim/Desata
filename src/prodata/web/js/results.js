@@ -12,6 +12,7 @@ import { inspect, node, nodeResult, on, select, store, toolOf, visibleOutputs } 
 import { tableSkeleton } from './skeleton.js';
 import { clearWidths, enableColumnResize, summaryButton, watchSummary } from './table_tools.js';
 import { enableCellFocus } from './cell_focus.js';
+import { cleaningCard } from './cleaning_ui.js';
 import { typeLabel, typeName } from './types.js';
 import { showMenu, toast } from './ui.js';
 
@@ -156,6 +157,8 @@ export function initResults(root) {
     els.body);
 
   on('inspect', () => { state.offset = 0; state.sortCol = null; state.turn = null; load(); });
+  // o ponto de limpeza na caixa (spec 048) abre o Perfil dela, onde estão as recomendações
+  on('show:profile', () => { state.tab = 'profile'; persist('prodata.results.tab', 'profile'); draw(); });
   on('execution', () => load());
   on('numbers', () => draw()); // separador decimal (spec 038)
   on('workflow:loaded', () => { state.data = null; draw(); });
@@ -405,7 +408,8 @@ function profileView() {
     ? h('div', { class: 'profile-note' }, icon('filter', 13),
       `Perfil das ${fmt.int(state.data.filtered_count)} linhas filtradas (de ${fmt.int(state.data.row_count)}).`)
     : null;
-  return h('div', {}, note, h('div', { class: 'profile-grid' }, state.data.profile.columns.map((c) => {
+  // recomendações de limpeza (spec 048): o cartão aparece no alto quando a resposta chega
+  return h('div', {}, note, cleaningCard(), h('div', { class: 'profile-grid' }, state.data.profile.columns.map((c) => {
     const s = c.stats || {};
     const numeric = s.mean !== undefined;
     const facts = numeric
