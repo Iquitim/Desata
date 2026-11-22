@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import httpx
@@ -52,6 +52,32 @@ def fake_ibge(request: httpx.Request) -> httpx.Response:
 
 def _catalog_offline(request: httpx.Request) -> httpx.Response:
     raise httpx.ConnectError("sem rede nos testes", request=request)
+
+
+CATALOG_FIXTURES = Path(__file__).parent / "fixtures" / "catalogo"
+
+
+def catalog_fixture(name: str) -> bytes:
+    """Uma resposta de verdade, reduzida, gravada por scripts/conferir_catalogo.py --gravar."""
+    return (CATALOG_FIXTURES / name).read_bytes()
+
+
+@pytest.fixture
+def catalog_server(monkeypatch: pytest.MonkeyPatch) -> Callable[..., list[httpx.Request]]:
+    """Instala um órgão simulado para o catálogo: ``catalog_server(handler)`` devolve os pedidos recebidos."""
+
+    def install(handler: Callable[[httpx.Request], httpx.Response]) -> list[httpx.Request]:
+        seen: list[httpx.Request] = []
+
+        def record(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return handler(request)
+
+        monkeypatch.setattr(catalog_http, "_transport", httpx.MockTransport(record))
+        monkeypatch.setattr(catalog_http, "RETRY_WAIT", 0.0)
+        return seen
+
+    return install
 
 
 @pytest.fixture(autouse=True)
