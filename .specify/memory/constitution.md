@@ -4,7 +4,7 @@ Princípios não negociáveis do projeto. Toda spec, plano e PR deve ser compat�
 com eles; quando um princípio precisar mudar, altere este arquivo primeiro, em PR
 separado, com justificativa.
 
-Versão: 1.8.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-22 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047; definições compartilhadas da equipe — spec 048; acesso à internet só pelo catálogo de dados públicos — spec 049)
+Versão: 1.8.1 · Ratificada: 2026-10-28 · Emendada: 2026-11-22 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047; definições compartilhadas da equipe — spec 048; acesso à internet só pelo catálogo de dados públicos — spec 049)
 
 ## I. Spec antes do código (SDD)
 
@@ -61,7 +61,8 @@ exceto widgets especializados reutilizáveis.
   própria, e só nestes momentos: com o catálogo aberto (conferir se cada órgão está no ar e ler os metadados),
   quando a pessoa pede **Atualizar o catálogo** e quando um fluxo executa uma fonte do catálogo. Só lê, por
   HTTPS, de uma lista fixa de endereços oficiais embutida no programa; nunca envia dados das fontes, dos
-  fluxos ou da pessoa, nem usa conta, token ou chave. Arquivos grandes baixados do catálogo vão para uma pasta
+  fluxos ou da pessoa, nem usa conta, token ou chave da pessoa (o identificador público de um link de
+  compartilhamento oficial, igual para todos e publicado pelo órgão, não é credencial e pode ficar no código). Arquivos grandes baixados do catálogo vão para uma pasta
   escolhida explicitamente pela pessoa (caminho absoluto, já existente, nomes fixos e saneados), nunca para a
   pasta de um espaço da equipe. Sem catálogo aberto e sem fonte do catálogo, o programa não acessa a rede.
 - Uploads têm lista de extensões permitidas e tamanho máximo.
