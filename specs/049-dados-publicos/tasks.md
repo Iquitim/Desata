@@ -3,7 +3,7 @@
 ## Marco 1 — Endereços e leitores
 
 - [x] T01 `scripts/conferir_catalogo.py`: verificar de verdade cada endereço do plano, gravar respostas reduzidas em `tests/fixtures/catalogo/`, fechar a lista de destaques (RF-4941) e registrar na spec o que saiu
-- [ ] T02 `catalog/hosts.py` e `catalog/http.py`: lista fixa, só GET/HEAD por HTTPS, limites, redirecionamento dentro da lista (RF-4981, RF-4982)
+- [x] T02 `catalog/hosts.py` e `catalog/http.py`: lista fixa, só GET/HEAD por HTTPS, limites, redirecionamento dentro da lista (RF-4981, RF-4982)
 - [ ] T03 Leitores BCB (SGS com janelas de 10 anos, Olinda: PTAX e Focus) e IBGE (agregados v3 e localidades) (RF-4942, RF-4943)
 - [ ] T04 Leitores Ipeadata, Tesouro Direto, Siconfi e Comex Stat (RF-4941)
 - [ ] T04a Feriados: calculados, ANBIMA, tabela dos estados e capitais com as leis, fusão com as edições e conflito de revisão; dias úteis por local e calendário (RF-4944, RF-4946..4948)

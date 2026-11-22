@@ -381,7 +381,31 @@ def checks(month: str) -> list[Check]:
             _whole,
             suffix=".xls",
         ),
+        *probes(),
     ]
+
+
+def _ok_probe(r: httpx.Response) -> str:
+    return f"HTTP {r.status_code}, {len(r.content)} bytes"
+
+
+def probes() -> list[Check]:
+    """As sondas da conferência de situação (RF-4921), tal como estão em prodata.catalog.hosts."""
+    from prodata.catalog import hosts
+
+    out = []
+    for s in hosts.SERVICES.values():
+        if s.id == "receita":
+            dav: dict[str, Any] = {"auth": (hosts.CNPJ_LINKS[0][0], ""), "headers": {"Depth": "1"}}
+            out.append(
+                Check(
+                    "sondas", f"sonda_{s.id}", s.probe, _ok_probe, method="PROPFIND", content=PROPFIND, **dav
+                )
+            )
+        else:
+            out.append(Check("sondas", f"sonda_{s.id}", s.probe, _ok_probe, method=s.probe_method))
+        out.append(Check("sondas", f"pagina_{s.id}", s.page, _ok_probe))
+    return out
 
 
 def main() -> int:
