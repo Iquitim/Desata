@@ -14,6 +14,7 @@ from prodata.api.routes import (
     organization,
     pdfs,
     portable,
+    public_data,
     queries,
     schedules,
     schema,
@@ -50,4 +51,5 @@ routers = [
     versions.router,
     schema.router,
     team.router,
+    public_data.router,
 ]

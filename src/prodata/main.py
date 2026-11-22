@@ -23,6 +23,7 @@ from prodata.api.errors import install_error_handlers
 from prodata.api.routes import routers
 from prodata.brand import css as brand_css
 from prodata.brand import marca
+from prodata.catalog.service import CatalogService
 from prodata.config import Settings
 from prodata.connectors import ConnectionStore, KeyringSecretStore, MemorySecretStore, SecretStore
 from prodata.connectors.api_store import ApiStore
@@ -150,6 +151,7 @@ def build_services(settings: Settings) -> Services:
         ),
         versions=VersionStore(settings.storage_dir / "versoes"),
         team=team,
+        catalog=CatalogService(settings.storage_dir / "catalogo"),
     )
 
 

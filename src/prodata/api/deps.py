@@ -7,6 +7,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
+from prodata.catalog.service import CatalogService
 from prodata.config import Settings
 from prodata.connectors import ConnectionStore
 from prodata.connectors.api_store import ApiStore
@@ -43,6 +44,7 @@ class Services:
     schedules: SchedulingService
     versions: VersionStore
     team: TeamService
+    catalog: CatalogService
 
 
 def get_services(request: Request) -> Services:

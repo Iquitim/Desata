@@ -9,6 +9,7 @@ import { refreshConstants } from './constants.js';
 import { constantEditor } from './constants_ui.js';
 import { folderEditor, refreshFolderSources } from './folder_sources.js';
 import { pdfSourceForm, refreshPdfSources } from './pdf_sources.js';
+import { openPublicData } from './public_data.js';
 import { sourceDetail } from './data_detail.js';
 import { markOpened, organizedList } from './data_folders.js';
 import { allSources, KINDS, refreshUsage, usesOf } from './data_sources.js';
@@ -54,6 +55,8 @@ function addMenu(e) {
     { label: 'Vincular arquivo (lido onde está)', icon: 'link', onSelect: () => linkFile().then(afterChange) },
     { label: 'Pasta de arquivos (vários de uma vez)', icon: 'directory', onSelect: () => newSource('folder') },
     { label: 'PDF (extrair campos e tabelas)', icon: 'file-plus', onSelect: () => newSource('pdf') },
+    'separator',
+    { label: 'Dados públicos do Brasil', icon: 'landmark', onSelect: () => openPublicData() },
     'separator',
     { label: 'Nova conexão com banco', icon: 'database', onSelect: () => newSource('conn') },
     { label: 'Nova consulta de banco', icon: 'server', disabled: !store.connections.length, onSelect: () => newSource('query') },

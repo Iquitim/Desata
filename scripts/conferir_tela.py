@@ -1073,6 +1073,73 @@ def limpeza(pg: Page) -> None:
     check("Ignorar fica gravado no fluxo", ignored == ["caixa:uf"], ignored)
 
 
+# ---------------------------------------------------------------- spec 049: dados públicos do Brasil
+
+
+def _print(pg: Page, name: str) -> None:
+    shot = Path(tempfile.gettempdir()) / f"conferir-catalogo-{name}.png"
+    pg.screenshot(path=str(shot))
+    print(f"      print: {shot}")
+
+
+def catalogo(pg: Page) -> None:
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.locator(".dv-list-head button", has_text="Adicionar").click()
+    pg.locator(".menu .menu-item", has_text="Dados públicos do Brasil").click()
+    dlg = pg.locator("dialog.pd-dialog[open]")
+    dlg.wait_for(timeout=15000)
+    dlg.locator(".pd-card").first.wait_for(timeout=20000)
+    menu = dlg.locator(".pd-menu").inner_text()
+    check(
+        "o menu tem destaques, categorias e portais",
+        all(
+            t in menu
+            for t in ("Destaques", "Economia e juros", "Território", "Empresas (CNPJ)", "ANEEL", "Recife")
+        ),
+        menu[:300],
+    )
+    check(
+        "os destaques aparecem como cartões com o selo Pronto",
+        "Pronto" in dlg.locator(".pd-card").first.inner_text(),
+    )
+    _print(pg, "abertura")
+    dlg.locator(".pd-search input").fill("municipios")
+    pg.wait_for_timeout(900)
+    first = dlg.locator(".pd-card h3").first.inner_text()
+    check("a busca sem acento acha Municípios do Brasil primeiro", first == "Municípios do Brasil", first)
+    dlg.locator(".pd-search input").fill("")
+    dlg.locator(".pd-menu-item", has_text="Território").click()
+    pg.wait_for_timeout(700)
+    check(
+        "a categoria Território mostra 3 fontes",
+        dlg.locator(".pd-card").count() == 3,
+        dlg.locator(".pd-card").count(),
+    )
+    dlg.locator(".pd-card").first.click()
+    check("o detalhe abre ao lado", dlg.locator(".pd-detail h2").inner_text() != "")
+    star = dlg.locator(".pd-card").first.locator(".pd-star")
+    star.click()
+    pg.wait_for_timeout(400)
+    dlg.locator(".pd-menu-item", has_text="Favoritos").click()
+    pg.wait_for_timeout(700)
+    check("a estrela leva a fonte para Favoritos", dlg.locator(".pd-card").count() == 1)
+    # O catálogo dos órgãos é lido direto da fonte, em segundo plano, ao abrir pela primeira vez (RF-4933).
+    for _ in range(240):  # evaluate espera a promessa; wait_for_function trataria a promessa como "pronto"
+        if not pg.evaluate(
+            "() => fetch('/api/catalogo/atualizar').then((r) => r.json()).then((s) => s.rodando)"
+        ):
+            break
+        pg.wait_for_timeout(1000)
+    pg.wait_for_timeout(1500)
+    dlg.locator(".pd-menu-item", has_text="ANEEL").click()
+    dlg.locator(".pd-card").first.wait_for(timeout=20000)
+    check(
+        "o portal da ANEEL lista conjuntos com Leitura automática",
+        "Leitura automática" in dlg.locator(".pd-card").first.inner_text(),
+    )
+    _print(pg, "portal")
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1101,6 +1168,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "equipe5": equipe5,
     "equipe6": equipe6,
     "limpeza": limpeza,
+    "catalogo": catalogo,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

@@ -46,6 +46,17 @@ const enc = encodeURIComponent;
 export const api = {
   catalog: () => request('GET', '/api/catalog'),
 
+  // Catálogo de dados públicos do Brasil (spec 049).
+  publicOverview: () => request('GET', '/api/catalogo'),
+  publicSearch: (params = {}) => {
+    const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== null && v !== undefined && v !== ''));
+    return request('GET', `/api/catalogo/busca?${query}`);
+  },
+  publicRefresh: (orgaos = null) => request('POST', '/api/catalogo/atualizar', { orgaos }),
+  publicRefreshStatus: () => request('GET', '/api/catalogo/atualizar'),
+  publicFavorite: (id) => request('POST', `/api/catalogo/favoritos/${id.split('/').map(enc).join('/')}`),
+  publicRecent: (id) => request('POST', `/api/catalogo/recentes/${id.split('/').map(enc).join('/')}`),
+
   datasets: () => request('GET', '/api/datasets'),
   previewDataset: (name, options = {}, rows = 100) =>
     request('POST', `/api/datasets/${enc(name)}/preview?rows=${rows}`, options),

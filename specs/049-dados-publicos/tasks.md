@@ -16,7 +16,7 @@
 
 ## Marco 2 — Painel do catálogo
 
-- [ ] T07 Rotas do catálogo; painel com menu de categorias e Portais, ícones, contagens, cartões com o selo Pronto ou Leitura automática, e busca (RF-4901..4904, RF-4936, RF-4939)
+- [x] T07 Rotas do catálogo; painel com menu de categorias e Portais, ícones, contagens, cartões com o selo Pronto ou Leitura automática, e busca (RF-4901..4904, RF-4936, RF-4939)
 - [ ] T08 Detalhe da fonte: informações, colunas, prévia (obrigatória na leitura automática, com troca de separador, codificação e cabeçalho), escolhas e parâmetros do OData, Avançado, Abrir no navegador, Adicionar ao fluxo e à vista Dados (RF-4911..4915, RF-4937, RF-4938, RF-4940)
 - [ ] T09 Favoritos e recentes (RF-4905)
 - [ ] T09a Editar feriados…: incluir, corrigir, Não vale mais, Restaurar, origem de cada linha, Manter o meu / Usar o do programa; Compartilhar com a equipe (RF-4945..4948, CA-10)
