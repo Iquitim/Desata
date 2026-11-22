@@ -1,0 +1,360 @@
+{
+ "help": "https://dados.cvm.gov.br/api/3/action/help_show?name=package_search",
+ "success": true,
+ "result": {
+  "count": 54,
+  "facets": {},
+  "results": [
+   {
+    "author": "SPS - Superintendência de Processos Sancionadores",
+    "author_email": "sps@cvm.gov.br",
+    "creator_user_id": "261103b0-101a-4806-9068-142ac9aa3872",
+    "id": "35fe05b1-923c-4838-9176-ea8daf5b3446",
+    "isopen": true,
+    "license_id": "odc-odbl",
+    "license_title": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+    "license_url": "http://www.opendefinition.org/licenses/odc-odbl",
+    "maintainer": "Suporte a Sistemas CVM",
+    "maintainer_email": "suporteexterno@cvm.gov.br",
+    "metadata_created": "2025-05-07T14:41:46.633584",
+    "metadata_modified": "2026-11-21T11:00:40.162005",
+    "name": "processo-sancionador",
+    "notes": "Processos Administrativos Sancionadores (PAS) derivam de uma investigação realizada por meio de processo administrativo de caráter investigatório. São elaborados em uma das áreas técnicas da CVM, caso tenham sido encontrados indícios de autoria e materialidade, relativa a alguma irregularidade ocorrida no âmbito do mercado de capitais resultando em acusação.\r\n\r\nConsulta na Central de Sistemas da CVM: https://sistemas.cvm.gov.br/?PAS\r\n\r\n***\r\n\r\nO conjunto de dados disponibiliza as informações básicas dos Processos Administrativos Sancionadores registrados no Sistema Sancionador Integrado (SSI) e que já tenham alcançado a fase 'Citação e envio de defesas'.\r\n\r\n***\r\n\r\nO conjunto de dados é atualizado diariamente.\r\n\r\n***",
+    "num_resources": 2,
+    "num_tags": 1,
+    "organization": {
+     "id": "10dcc34a-03c1-4f9e-a509-45c822fdda5d",
+     "name": "cvm",
+     "title": "CVM",
+     "type": "organization",
+     "description": "",
+     "image_url": "https://conteudo.cvm.gov.br/export/sites/cvm/galeria/imagem/logo_cvm.png",
+     "created": "2017-02-14T12:24:31.149360",
+     "is_organization": true,
+     "approval_status": "approved",
+     "state": "active"
+    },
+    "owner_org": "10dcc34a-03c1-4f9e-a509-45c822fdda5d",
+    "private": false,
+    "state": "active",
+    "title": "Processos Sancionadores",
+    "type": "dataset",
+    "url": "https://dados.cvm.gov.br/dataset/processo-sancionador",
+    "version": "",
+    "extras": [
+     {
+      "key": "Base de Dados",
+      "value": "Processos e Documentos Administrativos"
+     },
+     {
+      "key": "Periodicidade de atualização",
+      "value": "Diária"
+     },
+     {
+      "key": "VCGE",
+      "value": "http://vocab.e.gov.br/2011/03/vcge#mercado-capitais"
+     }
+    ],
+    "groups": [
+     {
+      "description": "",
+      "display_name": "Atividade Sancionadora",
+      "id": "fca7a11d-c7c4-4994-b715-59534e5aabbc",
+      "image_display_url": "",
+      "name": "atividade-sancionadora",
+      "title": "Atividade Sancionadora"
+     }
+    ],
+    "resources": [
+     {
+      "cache_last_updated": null,
+      "cache_url": null,
+      "created": "2025-05-07T14:57:56.226299",
+      "description": "Descrição das colunas e dados",
+      "format": "ZIP",
+      "hash": "",
+      "id": "80521169-1b89-4f24-8b99-809929714346",
+      "last_modified": null,
+      "metadata_modified": "2025-05-07T14:57:56.213445",
+      "mimetype": "application/zip",
+      "mimetype_inner": null,
+      "name": "Dicionário de Dados",
+      "package_id": "35fe05b1-923c-4838-9176-ea8daf5b3446",
+      "position": 0,
+      "resource_type": null,
+      "size": null,
+      "state": "active",
+      "url": "https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/META/meta_processo_sancionador.zip",
+      "url_type": ""
+     },
+     {
+      "cache_last_updated": null,
+      "cache_url": null,
+      "created": "2025-05-07T14:58:01.513693",
+      "description": "Dados básicos de Processos Administrativos Sancionadores (PAS)",
+      "format": "ZIP",
+      "hash": "",
+      "id": "30624fd7-053f-461c-ab17-62b8d562bb1c",
+      "last_modified": "2026-11-21T08:00:39.885177",
+      "metadata_modified": "2026-11-21T11:00:40.166185",
+      "mimetype": "application/zip",
+      "mimetype_inner": null,
+      "name": "Processos Administrativos Sancionadores",
+      "package_id": "35fe05b1-923c-4838-9176-ea8daf5b3446",
+      "position": 1,
+      "resource_type": null,
+      "size": null,
+      "state": "active",
+      "url": "https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip",
+      "url_type": null
+     }
+    ],
+    "tags": [
+     {
+      "display_name": "Processos e Documentos Administrativos",
+      "id": "7e5de7e2-df15-453e-a9d0-d14af007627d",
+      "name": "Processos e Documentos Administrativos",
+      "state": "active",
+      "vocabulary_id": null
+     }
+    ],
+    "relationships_as_subject": [],
+    "relationships_as_object": []
+   },
+   {
+    "author": "SSE - Superintendência de Supervisão de Securitização",
+    "author_email": "sse@cvm.gov.br",
+    "creator_user_id": "8cf30dc4-a5a2-4783-a3bc-d0c323441754",
+    "id": "322ed5e0-bb50-4e02-a9a3-1407c8bfb5e9",
+    "isopen": true,
+    "license_id": "odc-odbl",
+    "license_title": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+    "license_url": "http://www.opendefinition.org/licenses/odc-odbl",
+    "maintainer": "Suporte a Sistemas CVM",
+    "maintainer_email": "suporteexterno@cvm.gov.br",
+    "metadata_created": "2021-06-02T00:49:39.514715",
+    "metadata_modified": "2026-11-21T11:00:39.693947",
+    "name": "crowdfunding-cad",
+    "notes": "Dados cadastrais de Plataformas de Crowdfunding.\r\n\r\n***\r\n\r\nO conjunto de dados disponibiliza as informações cadastrais referentes ao __último dia útil__.\r\n\r\n***",
+    "num_resources": 2,
+    "num_tags": 1,
+    "organization": {
+     "id": "10dcc34a-03c1-4f9e-a509-45c822fdda5d",
+     "name": "cvm",
+     "title": "CVM",
+     "type": "organization",
+     "description": "",
+     "image_url": "https://conteudo.cvm.gov.br/export/sites/cvm/galeria/imagem/logo_cvm.png",
+     "created": "2017-02-14T12:24:31.149360",
+     "is_organization": true,
+     "approval_status": "approved",
+     "state": "active"
+    },
+    "owner_org": "10dcc34a-03c1-4f9e-a509-45c822fdda5d",
+    "private": false,
+    "state": "active",
+    "title": "Plataformas de Crowdfunding: Informação Cadastral",
+    "type": "dataset",
+    "url": "https://dados.cvm.gov.br/dataset/crowdfunding-cad",
+    "version": "",
+    "extras": [
+     {
+      "key": "Base de Dados",
+      "value": "Cadastro de Regulados"
+     },
+     {
+      "key": "Periodicidade de atualização",
+      "value": "Diária"
+     },
+     {
+      "key": "VCGE",
+      "value": "http://vocab.e.gov.br/2011/03/vcge#mercado-capitais"
+     }
+    ],
+    "groups": [
+     {
+      "description": "",
+      "display_name": "Plataformas de Crowdfunding",
+      "id": "611699d1-3e3d-4263-b449-50c870d77f04",
+      "image_display_url": "",
+      "name": "plataformas-de-crowdfunding",
+      "title": "Plataformas de Crowdfunding"
+     }
+    ],
+    "resources": [
+     {
+      "cache_last_updated": null,
+      "cache_url": null,
+      "created": "2021-06-02T00:52:23.657760",
+      "description": "Descrição das colunas e dados",
+      "format": "ZIP",
+      "hash": "",
+      "id": "b91f1c81-6c20-4a23-959e-0dd0e46a1e1a",
+      "last_modified": null,
+      "metadata_modified": "2022-09-15T18:22:28.651692",
+      "mimetype": null,
+      "mimetype_inner": null,
+      "name": "Dicionário de Dados",
+      "package_id": "322ed5e0-bb50-4e02-a9a3-1407c8bfb5e9",
+      "position": 0,
+      "resource_type": null,
+      "size": null,
+      "state": "active",
+      "url": "https://dados.cvm.gov.br/dados/CROWDFUNDING/CAD/META/meta_cad_crowdfunding.zip",
+      "url_type": null
+     },
+     {
+      "cache_last_updated": null,
+      "cache_url": null,
+      "created": "2021-06-02T00:52:36.178242",
+      "description": "Dados cadastrais de Plataformas de Crowdfunding",
+      "format": "ZIP",
+      "hash": "",
+      "id": "b0de8d42-4fe6-4ee1-b7e2-1a462e6fba7e",
+      "last_modified": "2026-11-21T08:00:39.619566",
+      "metadata_modified": "2026-11-21T11:00:39.697552",
+      "mimetype": "application/zip",
+      "mimetype_inner": null,
+      "name": "Plataformas de Crowdfunding",
+      "package_id": "322ed5e0-bb50-4e02-a9a3-1407c8bfb5e9",
+      "position": 1,
+      "resource_type": null,
+      "size": null,
+      "state": "active",
+      "url": "https://dados.cvm.gov.br/dados/CROWDFUNDING/CAD/DADOS/cad_crowdfunding.zip",
+      "url_type": null
+     }
+    ],
+    "tags": [
+     {
+      "display_name": "Cadastro de Regulados",
+      "id": "27f65104-8f35-4353-8487-bbf44c2ca84c",
+      "name": "Cadastro de Regulados",
+      "state": "active",
+      "vocabulary_id": null
+     }
+    ],
+    "relationships_as_subject": [],
+    "relationships_as_object": []
+   },
+   {
+    "author": "SSE - Superintendência de Supervisão de Securitização",
+    "author_email": "sse@cvm.gov.br",
+    "creator_user_id": "8cf30dc4-a5a2-4783-a3bc-d0c323441754",
+    "id": "facefd4b-aa95-430e-9df8-ecdd5e79bb84",
+    "isopen": true,
+    "license_id": "odc-odbl",
+    "license_title": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+    "license_url": "http://www.opendefinition.org/licenses/odc-odbl",
+    "maintainer": "Suporte a Sistemas CVM",
+    "maintainer_email": "suporteexterno@cvm.gov.br",
+    "metadata_created": "2021-03-09T02:02:37.484210",
+    "metadata_modified": "2026-11-21T11:00:39.398426",
+    "name": "agente_fiduc-cad",
+    "notes": "Dados cadastrais de Agentes Fiduciários.\r\n\r\n***\r\n\r\nO conjunto de dados disponibiliza as informações cadastrais referentes ao __último dia útil__.\r\n\r\n***\r\n",
+    "num_resources": 2,
+    "num_tags": 1,
+    "organization": {
+     "id": "10dcc34a-03c1-4f9e-a509-45c822fdda5d",
+     "name": "cvm",
+     "title": "CVM",
+     "type": "organization",
+     "description": "",
+     "image_url": "https://conteudo.cvm.gov.br/export/sites/cvm/galeria/imagem/logo_cvm.png",
+     "created": "2017-02-14T12:24:31.149360",
+     "is_organization": true,
+     "approval_status": "approved",
+     "state": "active"
+    },
+    "owner_org": "10dcc34a-03c1-4f9e-a509-45c822fdda5d",
+    "private": false,
+    "state": "active",
+    "title": "Agentes Fiduciários: Informação Cadastral",
+    "type": "dataset",
+    "url": "https://dados.cvm.gov.br/dataset/agente_fiduc-cad",
+    "version": "",
+    "extras": [
+     {
+      "key": "Base de Dados",
+      "value": "Cadastro de Regulados"
+     },
+     {
+      "key": "Periodicidade de atualização ",
+      "value": "Diária"
+     },
+     {
+      "key": "VCGE",
+      "value": "http://vocab.e.gov.br/2011/03/vcge#mercado-capitais"
+     }
+    ],
+    "groups": [
+     {
+      "description": "",
+      "display_name": "Agentes Fiduciários",
+      "id": "20b4bb2d-d814-4cb7-b6c9-1824249e1989",
+      "image_display_url": "",
+      "name": "agentes-fiduciarios",
+      "title": "Agentes Fiduciários"
+     }
+    ],
+    "resources": [
+     {
+      "cache_last_updated": null,
+      "cache_url": null,
+      "created": "2021-03-09T02:06:11.026707",
+      "description": "Descrição das colunas e dados",
+      "format": "ZIP",
+      "hash": "",
+      "id": "5e6b058c-54d9-434a-912c-4f71c76bfe98",
+      "last_modified": null,
+      "metadata_modified": "2022-09-15T18:20:06.815100",
+      "mimetype": null,
+      "mimetype_inner": null,
+      "name": "Dicionário de Dados",
+      "package_id": "facefd4b-aa95-430e-9df8-ecdd5e79bb84",
+      "position": 0,
+      "resource_type": null,
+      "size": null,
+      "state": "active",
+      "url": "https://dados.cvm.gov.br/dados/AGENTE_FIDUC/CAD/META/meta_cad_agente_fiduc.zip",
+      "url_type": null
+     },
+     {
+      "cache_last_updated": null,
+      "cache_url": null,
+      "created": "2021-03-09T02:06:22.988619",
+      "description": "Dados cadastrais de Agentes Fiduciários",
+      "format": "ZIP",
+      "hash": "",
+      "id": "834ce882-9bbf-46d7-beff-f846b38ecb1d",
+      "last_modified": "2026-11-21T08:00:39.326914",
+      "metadata_modified": "2026-11-21T11:00:39.402433",
+      "mimetype": "application/zip",
+      "mimetype_inner": null,
+      "name": "Agentes Fiduciários",
+      "package_id": "facefd4b-aa95-430e-9df8-ecdd5e79bb84",
+      "position": 1,
+      "resource_type": null,
+      "size": null,
+      "state": "active",
+      "url": "https://dados.cvm.gov.br/dados/AGENTE_FIDUC/CAD/DADOS/cad_agente_fiduc.zip",
+      "url_type": null
+     }
+    ],
+    "tags": [
+     {
+      "display_name": "Cadastro de Regulados",
+      "id": "27f65104-8f35-4353-8487-bbf44c2ca84c",
+      "name": "Cadastro de Regulados",
+      "state": "active",
+      "vocabulary_id": null
+     }
+    ],
+    "relationships_as_subject": [],
+    "relationships_as_object": []
+   }
+  ],
+  "sort": "score desc, metadata_modified desc",
+  "search_facets": {}
+ }
+}

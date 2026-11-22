@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
+from prodata.catalog.portals import PORTALS
+
 
 @dataclass(frozen=True)
 class Service:
@@ -26,6 +28,8 @@ class Service:
     # Os únicos caminhos em que o órgão só aceita a consulta por POST (o corpo é a própria consulta, montada pelo
     # programa). Hoje, só a consulta geral do Comex Stat (decisão de 2026-11-22, RF-4981).
     post_paths: tuple[str, ...] = ()
+    # Como o serviço aparece nas mensagens; sem isso, "o site do <curto>".
+    site: str = ""
 
 
 # Link público de compartilhamento da pasta do CNPJ no Nextcloud oficial da Receita: igual para todos e publicado
@@ -120,6 +124,23 @@ SERVICES: dict[str, Service] = {
         ),
     )
 }
+
+# Portais de dados abertos (RF-4936): o do Banco Central e o do Tesouro já são serviços acima; os outros entram
+# aqui, cada um com o host do portal e os dos arquivos. A sonda é a menor consulta do CKAN.
+PORTAL_SERVICE: dict[str, str] = {"bcb_portal": "bcb_dados", "tesouro_portal": "tesouro"}
+for _portal in PORTALS:
+    if _portal.id in PORTAL_SERVICE:
+        continue
+    PORTAL_SERVICE[_portal.id] = _portal.id
+    SERVICES[_portal.id] = Service(
+        _portal.id,
+        _portal.orgao,
+        _portal.nome,
+        (_portal.host, *_portal.arquivos),
+        _portal.pagina,
+        f"{_portal.api}/package_search?rows=0",
+        site=_portal.site,
+    )
 
 ALLOWED_HOSTS: frozenset[str] = frozenset(h for s in SERVICES.values() for h in s.hosts)
 

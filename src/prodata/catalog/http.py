@@ -91,7 +91,9 @@ def basic_header(auth: tuple[str, str]) -> str:
 
 def _site(url: str) -> str:
     service = hosts.service_of(url)
-    return f"o site do {service.short}" if service else hosts.host_of(url)
+    if service is None:
+        return hosts.host_of(url)
+    return service.site or f"o site do {service.short}"
 
 
 def _cap(text: str) -> str:

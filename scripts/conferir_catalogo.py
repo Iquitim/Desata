@@ -516,6 +516,44 @@ def conferir_parametros_odata() -> int:
     return failures
 
 
+def conferir_portais(gravar: bool) -> int:
+    """Os portais verificados respondem e os indisponíveis são testados de novo (RF-4936)."""
+    from prodata.catalog.http import CatalogClient
+    from prodata.catalog.portals import PORTALS, UNAVAILABLE
+    from prodata.catalog.readers import ckan
+
+    failures = 0
+    with CatalogClient(timeout=120) as client:
+        for p in PORTALS:
+            start = time.perf_counter()
+            try:
+                rows = ckan.catalog(client, p.id)
+                print(f"ok    portais  {p.id:22} {time.perf_counter() - start:5.1f}s  {len(rows)} conjuntos")
+            except Exception as exc:
+                failures += 1
+                print(f"FALHA portais  {p.id:22} {type(exc).__name__}: {exc}")
+    if gravar:
+        with httpx.Client(timeout=60, headers={"User-Agent": "prodata-catalogo"}) as raw:
+            search = raw.get(
+                "https://dados.cvm.gov.br/api/3/action/package_search", params={"rows": 3}
+            ).json()
+            (FIXTURES / "ckan_cvm_busca.json").write_bytes(_json(search))
+            name = search["result"]["results"][0]["name"]
+            show = raw.get("https://dados.cvm.gov.br/api/3/action/package_show", params={"id": name}).json()
+            (FIXTURES / "ckan_cvm_conjunto.json").write_bytes(_json(show))
+            print(f"gravado: ckan_cvm_busca.json e ckan_cvm_conjunto.json ({name})")
+    with httpx.Client(timeout=20, follow_redirects=False, headers={"User-Agent": "prodata-catalogo"}) as raw:
+        for base, why in UNAVAILABLE.items():
+            try:
+                r = raw.get(f"{base}/api/3/action/package_search", params={"rows": 0})
+                ok = r.headers.get("content-type", "").startswith("application/json")
+                state = "VOLTOU: verificar e incluir" if ok else f"ainda indisponível (HTTP {r.status_code})"
+            except Exception as exc:
+                state = f"ainda indisponível ({type(exc).__name__})"
+            print(f"info  portais  {base[8:40]:32} {state} — antes: {why}")
+    return failures
+
+
 def _ok_probe(r: httpx.Response) -> str:
     return f"HTTP {r.status_code}, {len(r.content)} bytes"
 
@@ -584,6 +622,8 @@ def main() -> int:
                 )
     if not args.servicos or "odata" in args.servicos:
         failures += conferir_parametros_odata()
+    if not args.servicos or "portais" in args.servicos:
+        failures += conferir_portais(args.gravar)
     print(f"\n{failures} falha(s)" if failures else "\ntudo no ar")
     return 1 if failures else 0
 

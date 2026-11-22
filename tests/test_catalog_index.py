@@ -29,6 +29,10 @@ def _orgaos(request: httpx.Request, *, fail: str | None = None) -> httpx.Respons
         return httpx.Response(200, content=catalog_fixture("ibge_catalogo.json"))
     if host == "www.ipeadata.gov.br":
         return httpx.Response(200, content=catalog_fixture("ipea_catalogo.json"))
+    if request.url.path.endswith("/api/3/action/package_search"):
+        return httpx.Response(
+            200, content=catalog_fixture("ckan_cvm_busca.json")
+        )  # qualquer portal (RF-4936)
     return httpx.Response(404)
 
 

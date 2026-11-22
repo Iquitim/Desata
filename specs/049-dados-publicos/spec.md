@@ -90,8 +90,8 @@ Premissas:
 
 Os portais oficiais que usam o mesmo sistema (CKAN) e respondem sem conta nem token entram no catálogo. Conferidos
 em 2026-11-22: Banco Central (682 conjuntos além das séries do SGS, quase todos serviços OData do Olinda), Tesouro
-Transparente (91), ANEEL (72), CVM (54), IBAMA (79), TSE (190), governos do RS (416), PE (47), MG (105), GO (451) e
-ES (512), e prefeituras de São Paulo (564), Recife (223), Fortaleza (640) e Porto Alegre (62).
+Transparente (91), ANEEL (72), CVM (54), IBAMA (79), TSE (190), governos do RS (416), PE (47), MG (105), GO (451),
+ES (512) e SC (111), e prefeituras de São Paulo (564), Recife (223), Fortaleza (640) e Porto Alegre (62).
 
 | ID | Requisito |
 |----|-----------|
@@ -197,13 +197,14 @@ Portais CKAN, conferidos em 2026-11-22 (`package_search` sem token):
 | Governo de MG | 105 | `dados.mg.gov.br` | — |
 | Governo de GO | 451 | `dadosabertos.go.gov.br` | — |
 | Governo do ES | 512 | `dados.es.gov.br` | Alguns arquivos em outros sites do estado: só link. |
+| Governo de SC | 111 | `dados.sc.gov.br` | Voltou a responder na segunda verificação, mas corta respostas acima de ~130 KB: lista em páginas de 5 conjuntos; página cortada é lida um conjunto por vez, e o que não vem é contado no aviso do portal (1 conjunto em 2026-11-22). Muitos arquivos em PDF ou por http: só link. |
 | Prefeitura de São Paulo | 564 | `dados.prefeitura.sp.gov.br` | CSV, XLSX e ODS (ODS: só link). |
 | Prefeitura do Recife | 223 | `dados.recife.pe.gov.br` | — |
 | Prefeitura de Fortaleza | 640 | `dados.fortaleza.ce.gov.br` | Alguns recursos com endereço inválido: aparecem como indisponíveis. |
 | Prefeitura de Porto Alegre | 62 | `dadosabertos.poa.br` | — |
 
-Verificados e **não disponíveis** agora (ficam no script de conferência, que volta a testar): ANTT (não respondeu em
-45 s), Santa Catarina (erro de protocolo), Bahia, Rio de Janeiro e Natal (sem conexão), Paraná, Curitiba e Saúde
+Verificados e **não disponíveis** agora (ficam no script de conferência, que volta a testar e avisa quando um volta):
+ANTT (não respondeu em 45 s), Bahia, Rio de Janeiro e Natal (sem conexão), Paraná, Curitiba e Saúde
 (sem a API do CKAN aberta), Paraíba (recursos sem endereço), dados.gov.br (pede token: segunda camada).
 
 ## Como fica na tela

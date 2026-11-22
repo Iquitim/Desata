@@ -21,9 +21,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from prodata.catalog import curated
+from prodata.catalog import curated, hosts, portals
 from prodata.catalog.http import CatalogClient, CatalogError
-from prodata.catalog.readers import bcb_sgs, ibge, ipea
+from prodata.catalog.readers import bcb_sgs, ckan, ibge, ipea
 
 STALE_AFTER = timedelta(days=7)
 MAX_RESULTS = 100
@@ -34,7 +34,8 @@ class Agency:
     id: str
     nome: str
     servico: str
-    read: Callable[[CatalogClient], list[dict[str, Any]]]
+    # Devolve as entradas, ou as entradas e avisos ("2 conjuntos não puderam ser lidos").
+    read: Callable[[CatalogClient], list[dict[str, Any]] | tuple[list[dict[str, Any]], list[str]]]
 
 
 def _bcb(client: CatalogClient) -> list[dict[str, Any]]:
@@ -85,10 +86,16 @@ def _ipea(client: CatalogClient) -> list[dict[str, Any]]:
     ]
 
 
+def _portal_reader(portal_id: str) -> Callable[[CatalogClient], tuple[list[dict[str, Any]], list[str]]]:
+    return lambda client: ckan.catalog_with_warnings(client, portal_id)
+
+
 AGENCIES: tuple[Agency, ...] = (
     Agency("bcb", "Banco Central do Brasil", "bcb_dados", _bcb),
     Agency("ibge", "IBGE", "ibge", _ibge),
     Agency("ipea", "Ipeadata", "ipea", _ipea),
+    # Portais de dados abertos (RF-4936): cada um é um "órgão" do catálogo guardado, com o próprio arquivo.
+    *(Agency(p.id, p.nome, hosts.PORTAL_SERVICE[p.id], _portal_reader(p.id)) for p in portals.PORTALS),
 )
 AGENCY_BY_ID = {a.id: a for a in AGENCIES}
 # Órgão de cada serviço, para o filtro "por órgão" da busca.
@@ -109,6 +116,7 @@ class AgencyState:
     quantidade: int = 0
     erro: str = ""
     erro_em: datetime | None = None
+    aviso: str = ""
 
 
 @dataclass
@@ -160,6 +168,7 @@ class CatalogStore:
                 quantidade=int(item.get("quantidade", 0)),
                 erro=str(item.get("erro", "")),
                 erro_em=_when(item.get("erro_em")),
+                aviso=str(item.get("aviso", "")),
             )
         return out
 
@@ -183,6 +192,7 @@ class CatalogStore:
                 "quantidade": v.quantidade,
                 "erro": v.erro,
                 "erro_em": v.erro_em.isoformat() if v.erro_em else None,
+                "aviso": v.aviso,
             }
             for k, v in states.items()
         }
@@ -204,7 +214,8 @@ class CatalogStore:
             if progress:
                 progress(agency_id, "lendo")
             try:
-                rows = agency.read(client)
+                got = agency.read(client)
+                rows, notes = got if isinstance(got, tuple) else (got, [])
                 if not rows:
                     raise CatalogError(f"O catálogo do {agency.nome} veio vazio.", "resposta")
             except CatalogError as exc:
@@ -215,7 +226,7 @@ class CatalogStore:
                     self._file(agency_id), gzip.compress(json.dumps(payload, ensure_ascii=False).encode())
                 )
                 self._cache[agency_id] = rows
-                states[agency_id] = AgencyState(lido_em=now(), quantidade=len(rows))
+                states[agency_id] = AgencyState(lido_em=now(), quantidade=len(rows), aviso=" ".join(notes))
             report.por_orgao[agency_id] = states[agency_id]
             if progress:
                 progress(agency_id, "erro" if states[agency_id].erro else f"{states[agency_id].quantidade}")
@@ -258,7 +269,10 @@ class CatalogStore:
                     entry = {**raw, "orgao": agency_id, "destaque": False}
                     if not _filters(entry, None, periodicity):
                         continue
-                    rank = _rank(entry, terms, entry.get("grupo", ""))
+                    extra = " ".join(
+                        [entry.get("grupo", ""), *entry.get("grupos", []), *entry.get("temas", [])]
+                    )
+                    rank = _rank(entry, terms, extra)
                     if rank is not None:
                         results.append(((1, rank, normalize(entry["nome"])), entry))
                         seen.add(raw["id"])

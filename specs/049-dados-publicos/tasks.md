@@ -8,7 +8,7 @@
 - [x] T04 Leitores Ipeadata, Tesouro Direto, Siconfi e Comex Stat (RF-4941)
 - [x] T04a Feriados: calculados, ANBIMA, tabela dos estados e capitais com as leis, fusão com as edições e conflito de revisão; dias úteis por local e calendário (RF-4944, RF-4946..4948)
 - [x] T04b Leitor de OData do Banco Central pelo `$metadata`: entidades, funções com parâmetros tipados, paginação, período (RF-4937, CA-11)
-- [ ] T04c Portais CKAN verificados: lista fixa com os hosts dos arquivos, sonda, catálogo por portal com grupos e temas no índice, classificação dos recursos (legível, grande, só link) (RF-4936, RF-4939, RF-4940)
+- [x] T04c Portais CKAN verificados: lista fixa com os hosts dos arquivos, sonda, catálogo por portal com grupos e temas no índice, classificação dos recursos (legível, grande, só link) (RF-4936, RF-4939, RF-4940)
 - [ ] T04d Leitura de arquivos dos portais: detecção da vista Dados, ZIP conferido, limite de 200 MB, formato aceito e conferência das colunas a cada execução (RF-4938, RF-4940, CA-12)
 - [x] T05 `curated.py` com os destaques e o dicionário de colunas; `index.py` com o catálogo guardado por órgão, Atualizar o catálogo e busca sem acento (RF-4912, RF-4931..4934)
 - [x] T06 Teste de nenhum acesso à rede fora de hora (RF-4983, CA-08)
