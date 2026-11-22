@@ -1843,13 +1843,18 @@
         <li>Laços, canvas organizado, seletor de fontes, dica editável e tempo nas caixas</li>
         <li>Salvar automático, paletas prontas e personalizada, linha de referência, escala log, fontes, fundo no dashboard e saída U do Join</li>
         <li>Rank, médias móveis, agendador visual e aviso ao terminar</li>
+        <li>Espaço da equipe numa pasta da rede, do OneDrive ou do SharePoint, sem servidor: papéis (Leitor, Editor, Publicador, Administrador) e tudo assinado, quem está editando, versões com autor e conflito sem perda, com Juntar as duas caixa por caixa</li>
+        <li>Versão oficial publicada por um Publicador, agendamentos que rodam só a oficial e ficam visíveis para o time, com Assumir</li>
+        <li>Constantes, conexões, consultas e APIs da equipe (sem senha: cada pessoa digita a sua) e comentários nas caixas</li>
+        <li>Recomendações de limpeza no Perfil, com Corrigir; número em texto brasileiro ou estrangeiro, reconhecido pela coluna</li>
         <li>Aplicativo de desktop para Windows, que funciona offline (exceto as fontes em rede que você cadastrar)</li>
       </ul>
     </div>
     <div>
       <h3>Fora do escopo</h3>
       <ul class="scope-out">
-        <li>Uso em equipe com login e permissões (é um app individual)</li>
+        <li>Servidor ou nuvem próprios, login central e edição ao mesmo tempo em tempo real (a equipe trabalha numa pasta compartilhada, com assinaturas)</li>
+        <li>Menções e avisos fora do programa (e-mail, Teams) nos comentários</li>
         <li>Agendar com ninguém conectado ao Windows (exigiria guardar a senha do Windows)</li>
         <li>Comandos que gravam ou alteram dados na caixa SQL: ela aceita só uma consulta SELECT</li>
         <li>Gravar dados de volta no banco ou publicar no lake (o {{produto}} gera o código; quem publica é o time de dados)</li>
@@ -1870,6 +1875,7 @@
     <tr><td class="tool">Modelos de ML</td><td>O modelo fica neste computador, não no arquivo do fluxo. Para outra pessoa usar o mesmo, exporte o arquivo .modelo e ela importa no Model Input; sem isso, ela treina o próprio modelo.</td></tr>
     <tr><td class="tool">ODBC</td><td>Conferido só com um driver local de teste. Em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado conhecido.</td></tr>
     <tr><td class="tool">SQL para o Fabric</td><td>Spark SQL e T-SQL são convertidos do DuckDB e não foram conferidos num Fabric de verdade. Leitura de arquivos e funções próprias do {{produto}} precisam ser reescritas.</td></tr>
+    <tr><td class="tool">Espaço da equipe</td><td>Quem impede gravar é a permissão da pasta (rede, OneDrive, SharePoint): as assinaturas detectam e recusam o que foi mexido por fora, mas quem pode gravar na pasta pode apagar arquivos. A marca de quem está editando é um aviso, não uma trava, e a sincronização pode atrasar; nada se perde, porque as duas versões ficam guardadas.</td></tr>
     <tr><td class="tool">Subfluxos</td><td>Até 3 entradas e 3 saídas, sem parâmetros. O fluxo de origem precisa estar na biblioteca do computador que executa.</td></tr>
     <tr><td class="tool">Excel em modelo</td><td>Gráficos, imagens e tabelas dinâmicas do modelo nem sempre são preservados. O programa avisa quando o modelo tem algum.</td></tr>
     <tr><td class="tool">Aviso do Windows</td><td>O instalador ainda não é assinado digitalmente; por isso o SmartScreen mostra "Editor desconhecido" na primeira execução.</td></tr>
