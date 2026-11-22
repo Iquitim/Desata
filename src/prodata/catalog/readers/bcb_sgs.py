@@ -61,7 +61,20 @@ def read_series(client: CatalogClient, code: int, start: date, end: date) -> Rea
     return ReadResult(frame, urls)
 
 
+def last_value(client: CatalogClient, code: int) -> tuple[date, float | None]:
+    """O dado mais recente da série: dá o "último dado em" mesmo das séries que o portal não lista (433, 188...)."""
+    answer = client.get(f"{DATA_URL.format(code=code)}/ultimos/1", params={"formato": "json"})
+    if not answer.body.lstrip().startswith(b"["):
+        raise SourceNotFoundError(f"A série {code} não existe no SGS do Banco Central.")
+    rows = answer.json()
+    if not rows:
+        raise SourceNotFoundError(f"A série {code} não tem valores no SGS.")
+    return datetime.strptime(rows[-1]["data"], "%d/%m/%Y").date(), to_number(rows[-1].get("valor"))
+
+
 # ------------------------------------------------------------------ catálogo e metadados
+# O portal de dados abertos não lista todas as séries do SGS (faltam 433, 188, 189 e 12, por exemplo, conferido
+# em 2026-11-22): os destaques levam os próprios metadados, e a busca aceita "ler direto" pelo código.
 
 
 def _text(value: Any) -> str:
@@ -97,7 +110,8 @@ def _entry(p: dict[str, Any]) -> dict[str, Any]:
 
 
 def meta(client: CatalogClient, code: int) -> dict[str, Any]:
-    answer = client.get(CKAN_SEARCH, params={"q": f"codigo_sgs:{code}", "rows": 5})
+    # Filtro exato (fq): a busca livre (q) por "codigo_sgs:12" também traz 120, 1200...
+    answer = client.get(CKAN_SEARCH, params={"fq": f"codigo_sgs:{code}", "rows": 5})
     for p in answer.json().get("result", {}).get("results", []):
         if str(p.get("codigo_sgs") or "").strip() == str(code):
             return _entry(p)
