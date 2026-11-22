@@ -7,13 +7,16 @@
 - [x] T03 Leitores BCB (SGS com janelas de 10 anos, Olinda: PTAX e Focus) e IBGE (agregados v3 e localidades) (RF-4942, RF-4943)
 - [x] T04 Leitores Ipeadata, Tesouro Direto, Siconfi e Comex Stat (RF-4941)
 - [x] T04a Feriados: calculados, ANBIMA, tabela dos estados e capitais com as leis, fusão com as edições e conflito de revisão; dias úteis por local e calendário (RF-4944, RF-4946..4948)
+- [ ] T04b Leitor de OData do Banco Central pelo `$metadata`: entidades, funções com parâmetros tipados, paginação, período (RF-4937, CA-11)
+- [ ] T04c Portais CKAN verificados: lista fixa com os hosts dos arquivos, sonda, catálogo por portal com grupos e temas no índice, classificação dos recursos (legível, grande, só link) (RF-4936, RF-4939, RF-4940)
+- [ ] T04d Leitura de arquivos dos portais: detecção da vista Dados, ZIP conferido, limite de 200 MB, formato aceito e conferência das colunas a cada execução (RF-4938, RF-4940, CA-12)
 - [x] T05 `curated.py` com os destaques e o dicionário de colunas; `index.py` com o catálogo guardado por órgão, Atualizar o catálogo e busca sem acento (RF-4912, RF-4931..4934)
 - [x] T06 Teste de nenhum acesso à rede fora de hora (RF-4983, CA-08)
 
 ## Marco 2 — Painel do catálogo
 
-- [ ] T07 Rotas do catálogo; painel com menu de categorias, ícones, contagens, cartões e busca (RF-4901..4904)
-- [ ] T08 Detalhe da fonte: informações, colunas, prévia, escolhas, Avançado, Adicionar ao fluxo e à vista Dados (RF-4911..4915)
+- [ ] T07 Rotas do catálogo; painel com menu de categorias e Portais, ícones, contagens, cartões com o selo Pronto ou Leitura automática, e busca (RF-4901..4904, RF-4936, RF-4939)
+- [ ] T08 Detalhe da fonte: informações, colunas, prévia (obrigatória na leitura automática, com troca de separador, codificação e cabeçalho), escolhas e parâmetros do OData, Avançado, Abrir no navegador, Adicionar ao fluxo e à vista Dados (RF-4911..4915, RF-4937, RF-4938, RF-4940)
 - [ ] T09 Favoritos e recentes (RF-4905)
 - [ ] T09a Editar feriados…: incluir, corrigir, Não vale mais, Restaurar, origem de cada linha, Manter o meu / Usar o do programa; Compartilhar com a equipe (RF-4945..4948, CA-10)
 
@@ -24,7 +27,7 @@
 
 ## Marco 4 — Fonte do catálogo no fluxo
 
-- [ ] T12 Ferramenta `public_data`: configuração, execução, período relativo, leitura guardada e Exigir dados atuais (RF-4925, RF-4971, RF-4973, CA-01)
+- [ ] T12 Ferramenta `public_data`: configuração, execução, período relativo, leitura guardada e Exigir dados atuais; formato aceito dos arquivos de portal e Aceitar o novo formato (RF-4925, RF-4938, RF-4971, RF-4973, CA-01, CA-12)
 - [ ] T13 Pasta Dados públicos na vista Dados; aviso Dados novos na vista e na caixa (RF-4935)
 - [ ] T14 Metadados de fonte no resultado; dicionário no Perfil; citação no dashboard e no HTML exportado (RF-4912, RF-4963, CA-07)
 

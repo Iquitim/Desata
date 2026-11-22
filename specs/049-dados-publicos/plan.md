@@ -69,6 +69,21 @@ src/prodata/catalog/
   catalogo/downloads/<id>.json         estado dos downloads (pasta escolhida, partes, bytes) para retomar
   ```
 
+## Portais de dados abertos (RF-4936..4940)
+
+- `catalog/portals.py`: a lista fixa de portais verificados (id, órgão, endereço do CKAN, hosts dos arquivos,
+  esfera federal/estadual/municipal). Cada portal vira um serviço em `hosts.SERVICES` (sonda: `package_search?rows=0`)
+  e os hosts dos arquivos entram em `ALLOWED_HOSTS`. Nada vindo de um portal acrescenta endereço: um recurso apontando
+  para fora da lista vira só link.
+- `readers/ckan.py`: catálogo do portal (`package_search` paginado, com grupos e temas), detalhe do conjunto
+  (`package_show`) e a classificação de cada recurso: legível (formato e host ok), grande (download), só link (motivo).
+- `readers/odata.py`: leitor de OData do Olinda pelo `$metadata` (entidades, funções com parâmetros e tipos),
+  paginação `$top`/`$skip`, filtro de período quando há coluna de data.
+- `readers/files.py`: leitura de arquivo de portal reaproveitando a detecção da vista Dados (separador, codificação,
+  cabeçalho, número brasileiro); ZIP conferido (caminhos, tamanho descompactado, só CSV/XLSX/Parquet dentro);
+  limite de 200 MB lido direto. O **formato aceito** (colunas e tipos da prévia, opções de leitura) vai na
+  configuração da caixa; a execução compara e, se mudou, falha com a diferença em palavras (RF-4938).
+
 ## A caixa Dados públicos
 
 - Ferramenta de entrada `public_data`, declarativa (princípio III): `{"fonte": "bcb.sgs/432", "escolhas":

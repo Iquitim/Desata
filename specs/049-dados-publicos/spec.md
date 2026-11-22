@@ -81,10 +81,25 @@ Premissas:
 | ID | Requisito |
 |----|-----------|
 | RF-4931 | **Destaques escolhidos.** O programa traz uma lista de fontes curadas (RF-4941), com nome simples, resumo, ícone, dicionário de colunas e escolhas prontas. A lista diz **como ler** cada fonte; os metadados que mudam (período, última atualização, colunas novas) vêm sempre da fonte. |
-| RF-4932 | **Catálogo completo dos órgãos.** Além dos destaques, a busca alcança os catálogos inteiros que os órgãos publicam: as séries do SGS listadas no portal de dados abertos do Banco Central (3.579), as tabelas da API de agregados do IBGE (9.348) e as séries do Ipeadata (4.141). Uma fonte do catálogo completo tem o mesmo detalhe (com o que o órgão informa) e entra no fluxo do mesmo jeito. O portal do Banco Central não lista todas as séries do SGS (faltam o IPCA 433, o INPC 188, o IGP-M 189 e o CDI 12, conferido em 2026-11-22): um código que não está em catálogo nenhum aparece como **Série N do SGS (ler direto)**, conferida ao abrir. Os conjuntos genéricos dos portais CKAN (além do Tesouro Direto) ficam fora desta versão: cada um tem um formato, e um leitor genérico seria pouco confiável. |
+| RF-4932 | **Catálogo completo dos órgãos.** Além dos destaques, a busca alcança os catálogos inteiros que os órgãos publicam: as séries do SGS listadas no portal de dados abertos do Banco Central (3.579), as tabelas da API de agregados do IBGE (9.348), as séries do Ipeadata (4.141) e os conjuntos dos portais de dados abertos (RF-4936). Uma fonte do catálogo completo tem o mesmo detalhe (com o que o órgão informa) e entra no fluxo do mesmo jeito. O portal do Banco Central não lista todas as séries do SGS (faltam o IPCA 433, o INPC 188, o IGP-M 189 e o CDI 12, conferido em 2026-11-22): um código que não está em catálogo nenhum aparece como **Série N do SGS (ler direto)**, conferida ao abrir. |
 | RF-4933 | **Atualizar o catálogo**, sem depender de nós. O botão lê de novo os catálogos de cada órgão, direto da fonte, e mostra o progresso por órgão ("IBGE: 3.412 tabelas · Ipeadata: lendo…"). O programa também atualiza sozinho, em segundo plano, ao abrir o catálogo quando a última leitura tem mais de 7 dias. O jeito de ler cada órgão fica no programa, com endereços alternativos quando o órgão tem; um órgão que falha mantém o catálogo anterior dele, marcado com a data, e os outros seguem atualizados. |
 | RF-4934 | **Catálogo guardado.** O último catálogo lido fica na pasta de dados deste computador. O catálogo abre e a busca funciona sem internet, com a faixa "catálogo lido em 15/11/2026; sem conexão para conferir agora". |
 | RF-4935 | **Dados novos disponíveis.** Quando a última atualização informada pelo órgão é mais nova que a última leitura de uma fonte usada num fluxo, a fonte na vista Dados e a caixa no canvas ganham o aviso discreto **Dados novos** ("o IBGE publicou o IPCA de outubro em 10/11"). A informação vem da conferência do catálogo (RF-4921), sem acesso extra. |
+
+### Portais de dados abertos
+
+Os portais oficiais que usam o mesmo sistema (CKAN) e respondem sem conta nem token entram no catálogo. Conferidos
+em 2026-11-22: Banco Central (682 conjuntos além das séries do SGS, quase todos serviços OData do Olinda), Tesouro
+Transparente (91), ANEEL (72), CVM (54), IBAMA (79), TSE (190), governos do RS (416), PE (47), MG (105), GO (451) e
+ES (512), e prefeituras de São Paulo (564), Recife (223), Fortaleza (640) e Porto Alegre (62).
+
+| ID | Requisito |
+|----|-----------|
+| RF-4936 | **Navegar por portal.** O menu ganha **Portais**, com cada portal, o órgão, a quantidade de conjuntos e o selo de situação. Dentro do portal, os grupos e temas que o próprio portal publica viram filtros, e a busca do topo vale ali também. Um portal só entra no programa depois de verificado (resposta sem token, endereços dos arquivos conhecidos); cada um tem os seus endereços na lista fixa (RF-4981). |
+| RF-4937 | **OData do Banco Central.** Os conjuntos do Banco Central servidos pelo Olinda são lidos por um leitor de OData que usa a descrição do próprio serviço (`$metadata`): colunas e tipos vêm de lá, a paginação é seguida e, quando o serviço pede parâmetros (moeda, datas, indicador), o detalhe mostra os campos já com o tipo certo, com valores de exemplo. |
+| RF-4938 | **Arquivos dos portais, com prévia e conferência.** CSV, XLSX, Parquet, JSON em forma de tabela e ZIP com CSV são lidos pela mesma leitura da vista Dados (separador, codificação, cabeçalho e números no padrão brasileiro detectados). Antes de adicionar, a **prévia é obrigatória**: a pessoa vê as colunas e as primeiras linhas como ficaram e pode trocar separador, codificação e linha do cabeçalho. O formato aceito fica gravado na caixa; a cada execução, se o órgão mudar as colunas do arquivo, a caixa **não lê errado em silêncio**: para, mostra o que mudou ("saiu a coluna valor_pago; entrou valor_liquidado") e oferece **Aceitar o novo formato**. |
+| RF-4939 | **Pronto ou Leitura automática.** O cartão e o detalhe dizem de que tipo é a fonte: **Pronto** (destaque conferido um a um, com dicionário de colunas) ou **Leitura automática: confira a prévia** (conjunto de portal ou OData). A leitura automática traz a descrição e as colunas que o portal informa, quando informa. |
+| RF-4940 | **Tamanho, formato e endereço.** O tamanho vem do portal ou de um HEAD antes de ler. Até 200 MB, o arquivo é lido direto (com a leitura guardada de RF-4925). Acima disso, ou sem tamanho conhecido e passando do limite durante a leitura, vai pelo download com pasta escolhida (RF-4952..4954), com a fonte de pasta pronta no fim. ZIP é conferido antes de abrir (caminhos dentro da pasta, tamanho descompactado máximo). PDF, página HTML, formato que o programa não lê ou arquivo num endereço fora da lista aparecem com **Abrir no navegador** e o motivo ("arquivo PDF: o programa não lê tabelas de PDF de portais"; "arquivo em outro site, fora da lista oficial"). |
 
 ### Fontes de partida
 
@@ -167,6 +182,30 @@ pede conta, token ou chave.
 | Receita (CNPJ) | Nextcloud oficial `arquivos.receitafederal.gov.br`, link público de compartilhamento, listagem WebDAV (PROPFIND) com tamanho e data de cada arquivo; meses de 2023-05 a 2026-11 | ZIPs por parte; o mês 2026-11 tem 37 arquivos e 7,87 GB | Aceita Range (206): o download retoma. O endereço antigo `dadosabertos.rfb.gov.br` não responde mais. Existem dois links públicos para a mesma pasta: um é o principal, o outro o alternativo. |
 | ANBIMA | — | planilha de feriados nacionais (`.xls`), de 2001 a 2099 | Lida pelo `fastexcel`, que o programa já usa; linhas vazias e notas no fim são descartadas. |
 
+Portais CKAN, conferidos em 2026-11-22 (`package_search` sem token):
+
+| Portal | Conjuntos | Onde ficam os arquivos | Observações |
+|---|---|---|---|
+| Banco Central | 682 (sem as séries SGS) | `olinda.bcb.gov.br` (OData) | Formato uniforme: leitor de OData (RF-4937). |
+| Tesouro Transparente | 91 | `www.tesourotransparente.gov.br` | CSV e XLSX; mediana de 2 MB, 19 arquivos acima de 200 MB. |
+| ANEEL | 72 | `dadosabertos.aneel.gov.br` | Lento (até 22 s para 200 conjuntos): a sonda usa `rows=0`. Tem Parquet. |
+| CVM | 54 | `dados.cvm.gov.br` | Quase tudo em ZIP com CSV. |
+| IBAMA | 79 | `dadosabertos.ibama.gov.br` e o armazenamento oficial do IBAMA em `stibamadadosabertosprd.blob.core.windows.net` | O endereço do armazenamento entra na lista exato, por ser onde o portal oficial publica ~65% dos arquivos. |
+| TSE | 190 | `cdn.tse.jus.br` | Muitos ZIPs grandes (download com pasta). |
+| Governo do RS | 416 | `dados.rs.gov.br`, `data.rs.gov.br` | Lento (20 s para 200 conjuntos). Alguns arquivos 7z: só link. |
+| Governo de PE | 47 | `dados.pe.gov.br` | Poucos conjuntos com milhares de arquivos cada. |
+| Governo de MG | 105 | `dados.mg.gov.br` | — |
+| Governo de GO | 451 | `dadosabertos.go.gov.br` | — |
+| Governo do ES | 512 | `dados.es.gov.br` | Alguns arquivos em outros sites do estado: só link. |
+| Prefeitura de São Paulo | 564 | `dados.prefeitura.sp.gov.br` | CSV, XLSX e ODS (ODS: só link). |
+| Prefeitura do Recife | 223 | `dados.recife.pe.gov.br` | — |
+| Prefeitura de Fortaleza | 640 | `dados.fortaleza.ce.gov.br` | Alguns recursos com endereço inválido: aparecem como indisponíveis. |
+| Prefeitura de Porto Alegre | 62 | `dadosabertos.poa.br` | — |
+
+Verificados e **não disponíveis** agora (ficam no script de conferência, que volta a testar): ANTT (não respondeu em
+45 s), Santa Catarina (erro de protocolo), Bahia, Rio de Janeiro e Natal (sem conexão), Paraná, Curitiba e Saúde
+(sem a API do CKAN aberta), Paraíba (recursos sem endereço), dados.gov.br (pede token: segunda camada).
+
 ## Como fica na tela
 
 ```
@@ -210,6 +249,13 @@ pede conta, token ou chave.
   um feriado do programa como "Não vale mais" e incluir um recesso muda o resultado na hora; com uma tabela do
   programa revisada que muda o mesmo feriado, a edição continua valendo e aparece "O programa também mudou este
   feriado".
+- CA-11: Um conjunto do Banco Central servido por OData com parâmetros (por exemplo, uma cotação por período) mostra
+  os campos com o tipo vindo do `$metadata`, lê com paginação e entra no fluxo; um serviço sem parâmetros entra
+  direto.
+- CA-12: Um CSV de portal em Latin-1 com `;` e vírgula decimal aparece certo na prévia; depois que o órgão troca uma
+  coluna, a execução para com "saiu a coluna X; entrou a coluna Y" e **Aceitar o novo formato** volta a executar.
+  Um arquivo acima de 200 MB vai pelo download com pasta; um PDF e um arquivo em site fora da lista aparecem só
+  com **Abrir no navegador** e o motivo; nenhum pedido sai para o site fora da lista.
 - CA-07: O dashboard e o HTML exportado de um fluxo com IPCA e Selic trazem a citação das duas fontes com a data.
 - CA-08: Abrir o programa, a vista Dados e executar um fluxo sem fonte pública não faz nenhuma requisição externa
   (teste automatizado); o fluxo salvo com a caixa Dados públicos não contém URL montada nem dados.
