@@ -1,0 +1,154 @@
+{
+ "revisado_em": "2026-11-22",
+ "fontes": {
+  "TJ": "calendário de 2026 do tribunal de justiça do estado, com a norma que ele cita (levantamento dos 27 TJs feito em 07/10/2026)",
+  "holidays": "biblioteca holidays 0.109 (vacanza/holidays), que cita a legislação de cada estado"
+ },
+ "nota": "Não existe base oficial única de feriados estaduais e municipais. 'confirmar' marca o feriado que só uma das fontes traz ou em que elas divergem. A pessoa pode corrigir qualquer linha em Editar feriados.",
+ "feriados": [
+  {"id": "AC/dia-do-catolico", "nome": "Dia do Católico", "tipo": "estadual", "abrangencia": "AC", "regra": {"fixo": "01-20"}, "desde": 2017, "lei": "Lei estadual 3.137/2016", "fonte": "TJ", "confirmar": true, "nota": "O Acre transfere alguns feriados por decreto (Lei 2.126/2009); em 2026 o TJAC passou para 22/01."},
+  {"id": "AC/dia-do-evangelico", "nome": "Dia do Evangélico", "tipo": "estadual", "abrangencia": "AC", "regra": {"fixo": "01-23"}, "desde": 2005, "lei": "Lei estadual 1.538/2004", "fonte": "TJ, holidays"},
+  {"id": "AC/dia-da-mulher", "nome": "Dia Internacional da Mulher", "tipo": "estadual", "abrangencia": "AC", "regra": {"fixo": "03-08"}, "desde": 2002, "lei": "Lei estadual 1.411/2001", "fonte": "TJ, holidays"},
+  {"id": "AC/aniversario-do-estado", "nome": "Aniversário do Acre", "tipo": "estadual", "abrangencia": "AC", "regra": {"fixo": "06-15"}, "lei": "Lei estadual 14/1964", "fonte": "TJ, holidays"},
+  {"id": "AC/dia-da-amazonia", "nome": "Dia da Amazônia", "tipo": "estadual", "abrangencia": "AC", "regra": {"fixo": "09-05"}, "desde": 2004, "lei": "Lei estadual 1.411/2001", "fonte": "TJ, holidays"},
+  {"id": "AC/tratado-de-petropolis", "nome": "Assinatura do Tratado de Petrópolis", "tipo": "estadual", "abrangencia": "AC", "regra": {"fixo": "11-17"}, "lei": "Lei estadual 57/1965", "fonte": "TJ, holidays", "nota": "Pode ser transferido por decreto (Lei 2.126/2009)."},
+
+  {"id": "AL/sao-joao", "nome": "São João", "tipo": "estadual", "abrangencia": "AL", "regra": {"fixo": "06-24"}, "lei": "Lei estadual 5.508/1993", "fonte": "TJ, holidays"},
+  {"id": "AL/sao-pedro", "nome": "São Pedro", "tipo": "estadual", "abrangencia": "AL", "regra": {"fixo": "06-29"}, "lei": "Lei estadual 5.509/1993", "fonte": "TJ, holidays"},
+  {"id": "AL/emancipacao-politica", "nome": "Emancipação Política de Alagoas", "tipo": "estadual", "abrangencia": "AL", "regra": {"fixo": "09-16"}, "lei": "", "fonte": "TJ, holidays"},
+  {"id": "AL/dia-do-evangelico", "nome": "Dia do Evangélico", "tipo": "estadual", "abrangencia": "AL", "regra": {"fixo": "11-30"}, "desde": 2013, "lei": "", "fonte": "TJ, holidays", "confirmar": true, "nota": "O TJAL diz que consta de decretos municipais."},
+
+  {"id": "AM/elevacao-a-provincia", "nome": "Elevação do Amazonas à categoria de província", "tipo": "estadual", "abrangencia": "AM", "regra": {"fixo": "09-05"}, "lei": "Lei estadual 25/1977", "fonte": "TJ, holidays"},
+
+  {"id": "AP/sao-jose", "nome": "São José, padroeiro do Amapá", "tipo": "estadual", "abrangencia": "AP", "regra": {"fixo": "03-19"}, "desde": 2003, "lei": "Lei estadual 667/2002", "fonte": "TJ, holidays"},
+  {"id": "AP/cabralzinho", "nome": "Dia de Cabralzinho", "tipo": "estadual", "abrangencia": "AP", "regra": {"fixo": "05-15"}, "desde": 2017, "lei": "Lei estadual 2.213/2017", "fonte": "TJ", "confirmar": true},
+  {"id": "AP/sao-tiago", "nome": "São Tiago", "tipo": "estadual", "abrangencia": "AP", "regra": {"fixo": "07-25"}, "desde": 2012, "lei": "", "fonte": "holidays", "confirmar": true},
+  {"id": "AP/criacao-do-territorio", "nome": "Criação do Território Federal do Amapá", "tipo": "estadual", "abrangencia": "AP", "regra": {"fixo": "09-13"}, "lei": "Constituição do Estado, art. 355", "fonte": "TJ, holidays"},
+
+  {"id": "BA/independencia-da-bahia", "nome": "Independência da Bahia", "tipo": "estadual", "abrangencia": "BA", "regra": {"fixo": "07-02"}, "lei": "Constituição do Estado, art. 6º, § 3º", "fonte": "TJ, holidays"},
+
+  {"id": "CE/sao-jose", "nome": "São José", "tipo": "estadual", "abrangencia": "CE", "regra": {"fixo": "03-19"}, "lei": "", "fonte": "holidays", "confirmar": true},
+  {"id": "CE/data-magna", "nome": "Data Magna do Ceará (abolição da escravidão)", "tipo": "estadual", "abrangencia": "CE", "regra": {"fixo": "03-25"}, "lei": "Emenda à Constituição estadual 73/2011", "fonte": "TJ, holidays"},
+
+  {"id": "DF/fundacao-de-brasilia", "nome": "Fundação de Brasília", "tipo": "estadual", "abrangencia": "DF", "regra": {"fixo": "04-21"}, "lei": "", "fonte": "holidays", "nota": "Coincide com Tiradentes."},
+  {"id": "DF/dia-do-evangelico", "nome": "Dia do Evangélico", "tipo": "estadual", "abrangencia": "DF", "regra": {"fixo": "11-30"}, "lei": "Lei distrital 963/1995", "fonte": "TJ, holidays", "nota": "Não vale para órgãos federais."},
+
+  {"id": "ES/nossa-senhora-da-penha", "nome": "Nossa Senhora da Penha", "tipo": "estadual", "abrangencia": "ES", "regra": {"pascoa": 8}, "desde": 2020, "lei": "Lei estadual 11.010/2019", "fonte": "TJ, holidays"},
+
+  {"id": "MA/adesao-a-independencia", "nome": "Adesão do Maranhão à Independência do Brasil", "tipo": "estadual", "abrangencia": "MA", "regra": {"fixo": "07-28"}, "lei": "Lei estadual 2.457/1964", "fonte": "TJ, holidays"},
+
+  {"id": "MG/data-magna", "nome": "Data Magna de Minas Gerais (Tiradentes)", "tipo": "estadual", "abrangencia": "MG", "regra": {"fixo": "04-21"}, "lei": "", "fonte": "TJ, holidays", "nota": "Coincide com Tiradentes."},
+
+  {"id": "MS/criacao-do-estado", "nome": "Criação do Estado de Mato Grosso do Sul", "tipo": "estadual", "abrangencia": "MS", "regra": {"fixo": "10-11"}, "lei": "", "fonte": "TJ, holidays"},
+
+  {"id": "PA/adesao-a-independencia", "nome": "Adesão do Grão-Pará à Independência do Brasil", "tipo": "estadual", "abrangencia": "PA", "regra": {"fixo": "08-15"}, "lei": "Lei estadual 5.999/1996", "fonte": "TJ, holidays"},
+
+  {"id": "PB/fundacao-do-estado", "nome": "Fundação do Estado da Paraíba", "tipo": "estadual", "abrangencia": "PB", "regra": {"fixo": "08-05"}, "lei": "Lei estadual 10.601/2015", "fonte": "TJ, holidays"},
+
+  {"id": "PE/revolucao-de-1817", "nome": "Data Magna de Pernambuco (Revolução de 1817)", "tipo": "estadual", "abrangencia": "PE", "regra": {"fixo": "03-06"}, "desde": 2018, "lei": "Lei estadual 16.059/2017", "fonte": "TJ, holidays"},
+  {"id": "PE/revolucao-de-1817-domingo", "nome": "Data Magna de Pernambuco (Revolução de 1817)", "tipo": "estadual", "abrangencia": "PE", "regra": {"fixo": "03-01"}, "ajuste": "domingo_seguinte", "desde": 2008, "ate": 2017, "lei": "Lei estadual 13.386/2007", "fonte": "holidays", "nota": "Até 2017, o primeiro domingo de março."},
+  {"id": "PE/sao-joao", "nome": "São João", "tipo": "estadual", "abrangencia": "PE", "regra": {"fixo": "06-24"}, "lei": "", "fonte": "TJ", "confirmar": true, "nota": "O TJPE lista sem citar a norma."},
+
+  {"id": "PI/dia-do-piaui", "nome": "Dia do Piauí", "tipo": "estadual", "abrangencia": "PI", "regra": {"fixo": "10-19"}, "lei": "Lei estadual 176/1937", "fonte": "TJ, holidays"},
+
+  {"id": "PR/nossa-senhora-do-rocio", "nome": "Nossa Senhora do Rocio", "tipo": "estadual", "abrangencia": "PR", "regra": {"fixo": "11-15"}, "desde": 2014, "lei": "Lei estadual 18.397/2014", "fonte": "holidays", "nota": "Coincide com a Proclamação da República."},
+  {"id": "PR/emancipacao-do-parana", "nome": "Emancipação Política do Paraná", "tipo": "estadual", "abrangencia": "PR", "regra": {"fixo": "12-19"}, "ate": 2013, "lei": "Extinto pela Lei estadual 18.384/2014", "fonte": "holidays"},
+
+  {"id": "RJ/sao-jorge", "nome": "Dia de São Jorge", "tipo": "estadual", "abrangencia": "RJ", "regra": {"fixo": "04-23"}, "desde": 2008, "lei": "Lei estadual 5.198/2008", "fonte": "TJ, holidays"},
+  {"id": "RJ/carnaval", "nome": "Carnaval (terça-feira)", "tipo": "estadual", "abrangencia": "RJ", "regra": {"pascoa": -47}, "desde": 2009, "lei": "Lei estadual 5.243/2008", "fonte": "holidays"},
+
+  {"id": "RN/dia-do-rio-grande-do-norte", "nome": "Dia do Rio Grande do Norte", "tipo": "estadual", "abrangencia": "RN", "regra": {"fixo": "08-07"}, "desde": 2000, "lei": "", "fonte": "holidays", "confirmar": true},
+  {"id": "RN/martires-de-cunhau-e-uruacu", "nome": "Mártires de Cunhaú e Uruaçu", "tipo": "estadual", "abrangencia": "RN", "regra": {"fixo": "10-03"}, "desde": 2007, "lei": "Lei estadual 8.913/2006", "fonte": "TJ, holidays"},
+
+  {"id": "RO/criacao-do-estado", "nome": "Criação do Estado de Rondônia", "tipo": "estadual", "abrangencia": "RO", "regra": {"fixo": "01-04"}, "lei": "Lei estadual 2.291/2010", "fonte": "TJ, holidays"},
+  {"id": "RO/dia-do-evangelico", "nome": "Dia do Evangélico", "tipo": "estadual", "abrangencia": "RO", "regra": {"fixo": "06-18"}, "desde": 2002, "lei": "", "fonte": "holidays", "confirmar": true},
+
+  {"id": "RR/criacao-do-estado", "nome": "Data Magna de Roraima (criação do Estado)", "tipo": "estadual", "abrangencia": "RR", "regra": {"fixo": "10-05"}, "lei": "Constituição do Estado, art. 9º", "fonte": "TJ, holidays"},
+
+  {"id": "RS/revolucao-farroupilha", "nome": "Revolução Farroupilha (Dia do Gaúcho)", "tipo": "estadual", "abrangencia": "RS", "regra": {"fixo": "09-20"}, "lei": "Constituição do Estado, art. 6º, parágrafo único", "fonte": "TJ, holidays"},
+
+  {"id": "SC/dia-do-estado", "nome": "Dia do Estado de Santa Catarina", "tipo": "estadual", "abrangencia": "SC", "regra": {"fixo": "08-11"}, "ajuste": "domingo_seguinte", "desde": 2005, "lei": "Lei estadual 18.531/2022", "fonte": "TJ, holidays", "nota": "Comemorado no domingo seguinte a 11/08."},
+  {"id": "SC/santa-catarina-de-alexandria", "nome": "Dia de Santa Catarina de Alexandria", "tipo": "estadual", "abrangencia": "SC", "regra": {"fixo": "11-25"}, "ajuste": "domingo_seguinte", "lei": "Lei estadual 18.531/2022", "fonte": "TJ, holidays", "nota": "Comemorado no domingo seguinte a 25/11."},
+
+  {"id": "SE/emancipacao-politica", "nome": "Emancipação Política de Sergipe", "tipo": "estadual", "abrangencia": "SE", "regra": {"fixo": "07-08"}, "lei": "", "fonte": "TJ, holidays"},
+
+  {"id": "SP/revolucao-constitucionalista", "nome": "Revolução Constitucionalista de 1932", "tipo": "estadual", "abrangencia": "SP", "regra": {"fixo": "07-09"}, "desde": 1997, "lei": "Lei estadual 9.497/1997", "fonte": "TJ, holidays"},
+
+  {"id": "TO/autonomia", "nome": "Dia da Autonomia do Tocantins", "tipo": "estadual", "abrangencia": "TO", "regra": {"fixo": "03-18"}, "desde": 1998, "lei": "", "fonte": "holidays", "confirmar": true},
+  {"id": "TO/senhor-do-bonfim", "nome": "Senhor do Bonfim", "tipo": "estadual", "abrangencia": "TO", "regra": {"fixo": "08-15"}, "desde": 2025, "lei": "Lei estadual 4.509/2024", "fonte": "TJ", "confirmar": true},
+  {"id": "TO/nossa-senhora-da-natividade", "nome": "Nossa Senhora da Natividade, padroeira do Tocantins", "tipo": "estadual", "abrangencia": "TO", "regra": {"fixo": "09-08"}, "lei": "Lei estadual 627/1993", "fonte": "TJ, holidays"},
+  {"id": "TO/criacao-do-estado", "nome": "Criação do Estado do Tocantins", "tipo": "estadual", "abrangencia": "TO", "regra": {"fixo": "10-05"}, "lei": "Lei estadual 98/1989", "fonte": "TJ, holidays"},
+
+  {"id": "1200401/aniversario", "nome": "Aniversário de Rio Branco", "tipo": "municipal", "abrangencia": "1200401", "regra": {"fixo": "12-28"}, "lei": "Lei municipal 330/1981", "fonte": "TJ"},
+
+  {"id": "2704302/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "2704302", "regra": {"pascoa": 60}, "lei": "Decreto municipal 10.234/2025", "fonte": "TJ"},
+  {"id": "2704302/floriano-peixoto", "nome": "Marechal Floriano Peixoto", "tipo": "municipal", "abrangencia": "2704302", "regra": {"fixo": "06-29"}, "lei": "Decreto municipal 10.234/2025", "fonte": "TJ"},
+  {"id": "2704302/nossa-senhora-dos-prazeres", "nome": "Nossa Senhora dos Prazeres, padroeira de Maceió", "tipo": "municipal", "abrangencia": "2704302", "regra": {"fixo": "08-27"}, "lei": "Lei municipal 1.391/1967", "fonte": "TJ"},
+  {"id": "2704302/nossa-senhora-da-conceicao", "nome": "Nossa Senhora da Conceição", "tipo": "municipal", "abrangencia": "2704302", "regra": {"fixo": "12-08"}, "lei": "Decreto municipal 10.234/2025", "fonte": "TJ"},
+
+  {"id": "1600303/aniversario", "nome": "Aniversário de Macapá", "tipo": "municipal", "abrangencia": "1600303", "regra": {"fixo": "02-04"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "1302603/aniversario", "nome": "Aniversário de Manaus", "tipo": "municipal", "abrangencia": "1302603", "regra": {"fixo": "10-24"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "2927408/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "2927408", "regra": {"pascoa": 60}, "lei": "", "fonte": "TJ"},
+  {"id": "2927408/sao-joao", "nome": "São João", "tipo": "municipal", "abrangencia": "2927408", "regra": {"fixo": "06-24"}, "lei": "", "fonte": "TJ"},
+  {"id": "2927408/conceicao-da-praia", "nome": "Nossa Senhora da Conceição da Praia", "tipo": "municipal", "abrangencia": "2927408", "regra": {"fixo": "12-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "2304400/nossa-senhora-da-assuncao", "nome": "Nossa Senhora da Assunção, padroeira de Fortaleza", "tipo": "municipal", "abrangencia": "2304400", "regra": {"fixo": "08-15"}, "desde": 2004, "lei": "", "fonte": "holidays", "confirmar": true, "nota": "A biblioteca holidays atribui ao estado do Ceará; o TJCE não lista feriado só da capital em dia útil em 2026 (15/08 cai num sábado)."},
+
+  {"id": "3205309/colonizacao-do-solo", "nome": "Colonização do Solo Espírito-Santense", "tipo": "municipal", "abrangencia": "3205309", "regra": {"fixo": "05-23"}, "lei": "", "fonte": "TJ"},
+  {"id": "3205309/nossa-senhora-da-vitoria", "nome": "Nossa Senhora da Vitória", "tipo": "municipal", "abrangencia": "3205309", "regra": {"fixo": "09-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "5208707/nossa-senhora-auxiliadora", "nome": "Nossa Senhora Auxiliadora", "tipo": "municipal", "abrangencia": "5208707", "regra": {"fixo": "05-24"}, "lei": "", "fonte": "TJ"},
+  {"id": "5208707/aniversario", "nome": "Aniversário de Goiânia", "tipo": "municipal", "abrangencia": "5208707", "regra": {"fixo": "10-24"}, "lei": "", "fonte": "TJ, holidays", "nota": "A biblioteca holidays atribui ao estado de Goiás; o TJGO lista como da capital."},
+
+  {"id": "2111300/sao-pedro", "nome": "São Pedro", "tipo": "municipal", "abrangencia": "2111300", "regra": {"fixo": "06-29"}, "lei": "", "fonte": "TJ"},
+  {"id": "2111300/fundacao", "nome": "Fundação de São Luís", "tipo": "municipal", "abrangencia": "2111300", "regra": {"fixo": "09-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "5103403/aniversario", "nome": "Aniversário de Cuiabá", "tipo": "municipal", "abrangencia": "5103403", "regra": {"fixo": "04-08"}, "lei": "", "fonte": "TJ"},
+  {"id": "5103403/imaculada-conceicao", "nome": "Imaculada Conceição", "tipo": "municipal", "abrangencia": "5103403", "regra": {"fixo": "12-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "5002704/aniversario", "nome": "Aniversário de Campo Grande", "tipo": "municipal", "abrangencia": "5002704", "regra": {"fixo": "08-26"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "3106200/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "3106200", "regra": {"pascoa": 60}, "lei": "", "fonte": "TJ"},
+  {"id": "3106200/assuncao", "nome": "Assunção de Nossa Senhora", "tipo": "municipal", "abrangencia": "3106200", "regra": {"fixo": "08-15"}, "lei": "", "fonte": "TJ"},
+  {"id": "3106200/nossa-senhora-da-conceicao", "nome": "Nossa Senhora da Conceição", "tipo": "municipal", "abrangencia": "3106200", "regra": {"fixo": "12-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "1501402/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "1501402", "regra": {"pascoa": 60}, "lei": "Lei municipal 6.306/1967", "fonte": "TJ"},
+
+  {"id": "2611606/nossa-senhora-do-carmo", "nome": "Nossa Senhora do Carmo, padroeira do Recife", "tipo": "municipal", "abrangencia": "2611606", "regra": {"fixo": "07-16"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "2211001/aniversario", "nome": "Aniversário de Teresina", "tipo": "municipal", "abrangencia": "2211001", "regra": {"fixo": "08-16"}, "lei": "Lei municipal 2.275/1994", "fonte": "TJ"},
+  {"id": "2211001/nossa-senhora-da-conceicao", "nome": "Nossa Senhora da Conceição", "tipo": "municipal", "abrangencia": "2211001", "regra": {"fixo": "12-08"}, "lei": "Lei municipal 2.275/1994", "fonte": "TJ"},
+
+  {"id": "4106902/nossa-senhora-da-luz", "nome": "Nossa Senhora da Luz dos Pinhais, padroeira de Curitiba", "tipo": "municipal", "abrangencia": "4106902", "regra": {"fixo": "09-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "3304557/sao-sebastiao", "nome": "São Sebastião, padroeiro do Rio de Janeiro", "tipo": "municipal", "abrangencia": "3304557", "regra": {"fixo": "01-20"}, "lei": "Lei Orgânica do Município, art. 26", "fonte": "TJ"},
+
+  {"id": "2408102/santos-reis", "nome": "Santos Reis", "tipo": "municipal", "abrangencia": "2408102", "regra": {"fixo": "01-06"}, "lei": "Decreto municipal 13.643/2025", "fonte": "TJ"},
+  {"id": "2408102/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "2408102", "regra": {"pascoa": 60}, "lei": "Decreto municipal 13.643/2025", "fonte": "TJ"},
+  {"id": "2408102/nossa-senhora-da-apresentacao", "nome": "Nossa Senhora da Apresentação, padroeira de Natal", "tipo": "municipal", "abrangencia": "2408102", "regra": {"fixo": "11-21"}, "lei": "Decreto municipal 13.643/2025", "fonte": "TJ"},
+
+  {"id": "1100205/instalacao-do-municipio", "nome": "Instalação do Município de Porto Velho", "tipo": "municipal", "abrangencia": "1100205", "regra": {"fixo": "01-24"}, "lei": "Lei municipal 190/1980", "fonte": "TJ"},
+  {"id": "1100205/nossa-senhora-auxiliadora", "nome": "Nossa Senhora Auxiliadora", "tipo": "municipal", "abrangencia": "1100205", "regra": {"fixo": "05-24"}, "lei": "Lei municipal 190/1980", "fonte": "TJ"},
+  {"id": "1100205/criacao-do-municipio", "nome": "Criação do Município de Porto Velho", "tipo": "municipal", "abrangencia": "1100205", "regra": {"fixo": "10-02"}, "lei": "Lei municipal 190/1980", "fonte": "TJ"},
+
+  {"id": "1400100/sao-sebastiao", "nome": "São Sebastião", "tipo": "municipal", "abrangencia": "1400100", "regra": {"fixo": "01-20"}, "lei": "", "fonte": "TJ"},
+  {"id": "1400100/sao-pedro", "nome": "São Pedro", "tipo": "municipal", "abrangencia": "1400100", "regra": {"fixo": "06-29"}, "lei": "", "fonte": "TJ"},
+  {"id": "1400100/aniversario", "nome": "Aniversário de Boa Vista", "tipo": "municipal", "abrangencia": "1400100", "regra": {"fixo": "07-09"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "4314902/nossa-senhora-dos-navegantes", "nome": "Nossa Senhora dos Navegantes", "tipo": "municipal", "abrangencia": "4314902", "regra": {"fixo": "02-02"}, "lei": "", "fonte": "TJ"},
+  {"id": "4314902/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "4314902", "regra": {"pascoa": 60}, "lei": "", "fonte": "TJ"},
+
+  {"id": "4205407/aniversario", "nome": "Aniversário de Florianópolis", "tipo": "municipal", "abrangencia": "4205407", "regra": {"fixo": "03-23"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "2800308/aniversario", "nome": "Aniversário de Aracaju", "tipo": "municipal", "abrangencia": "2800308", "regra": {"fixo": "03-17"}, "lei": "", "fonte": "TJ"},
+  {"id": "2800308/nossa-senhora-da-conceicao", "nome": "Nossa Senhora da Conceição", "tipo": "municipal", "abrangencia": "2800308", "regra": {"fixo": "12-08"}, "lei": "", "fonte": "TJ"},
+
+  {"id": "3550308/aniversario", "nome": "Aniversário da Cidade de São Paulo", "tipo": "municipal", "abrangencia": "3550308", "regra": {"fixo": "01-25"}, "desde": 1968, "lei": "Lei municipal 7.008/1967", "fonte": "TJ, holidays"},
+  {"id": "3550308/corpus-christi", "nome": "Corpus Christi", "tipo": "municipal", "abrangencia": "3550308", "regra": {"pascoa": 60}, "desde": 1968, "lei": "Lei municipal 7.008/1967", "fonte": "holidays"},
+
+  {"id": "1721000/sao-jose", "nome": "São José, padroeiro de Palmas", "tipo": "municipal", "abrangencia": "1721000", "regra": {"fixo": "03-19"}, "lei": "", "fonte": "TJ"},
+  {"id": "1721000/aniversario", "nome": "Aniversário de Palmas", "tipo": "municipal", "abrangencia": "1721000", "regra": {"fixo": "05-20"}, "lei": "", "fonte": "TJ"}
+ ]
+}
