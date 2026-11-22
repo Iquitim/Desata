@@ -1,6 +1,6 @@
 # Spec 049: dados públicos do Brasil — catálogo nativo, situação de cada órgão e downloads grandes
 
-Status: Em revisão · Versão 0.9.6 · Criada: 2026-11-22 · Constituição 1.8.0 (princípio IV)
+Status: Aprovada · Versão 0.9.6 · Criada: 2026-11-22 · Constituição 1.8.0 (princípio IV)
 
 ## Contexto
 
@@ -188,7 +188,8 @@ uma versão nova do programa.
   fonte de pasta pronta e as colunas com nome.
 - CA-06: "Corrigir valores pelo IPCA" sobre uma tabela de vendas mensais dá o mesmo valor que o cálculo à mão com
   o índice do mês; "Juntar com municípios do IBGE" casa "Sao Paulo/SP", "355030" e "3550308" com o mesmo município.
-- CA-10: Dias úteis de Campinas em 2027 descontam os nacionais, o 9 de julho e os municipais cadastrados; marcar
+- CA-10: Os dias úteis de um município que não é capital (por exemplo, Campinas), em 2027, descontam os nacionais,
+  os estaduais da tabela do programa (o 9 de julho) e os municipais que a pessoa cadastrou; marcar
   um feriado do programa como "Não vale mais" e incluir um recesso muda o resultado na hora; com uma tabela do
   programa revisada que muda o mesmo feriado, a edição continua valendo e aparece "O programa também mudou este
   feriado".
