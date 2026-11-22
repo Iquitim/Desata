@@ -23,6 +23,9 @@ class Service:
     probe: str
     # HEAD quando a sonda é um arquivo: confere sem baixar.
     probe_method: str = "GET"
+    # Os únicos caminhos em que o órgão só aceita a consulta por POST (o corpo é a própria consulta, montada pelo
+    # programa). Hoje, só a consulta geral do Comex Stat (decisão de 2026-11-22, RF-4981).
+    post_paths: tuple[str, ...] = ()
 
 
 # Link público de compartilhamento da pasta do CNPJ no Nextcloud oficial da Receita: igual para todos e publicado
@@ -96,6 +99,7 @@ SERVICES: dict[str, Service] = {
             ("api-comexstat.mdic.gov.br",),
             "https://comexstat.mdic.gov.br",
             "https://api-comexstat.mdic.gov.br/general/dates/updated",
+            post_paths=("/general",),
         ),
         Service(
             "receita",
@@ -139,3 +143,9 @@ def allowed(url: str) -> bool:
         and parts.password is None
         and parts.port in (None, 443)
     )
+
+
+def post_allowed(url: str) -> bool:
+    """POST só no caminho exato listado no serviço (a consulta geral do Comex Stat)."""
+    service = service_of(url)
+    return allowed(url) and service is not None and urlsplit(url).path in service.post_paths

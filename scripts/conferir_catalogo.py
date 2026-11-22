@@ -50,6 +50,7 @@ class Check:
     auth: tuple[str, str] | None = None
     headers: dict[str, str] = field(default_factory=dict)
     content: str | None = None
+    json: Any = None
 
 
 def _json(data: Any) -> bytes:
@@ -154,7 +155,9 @@ def _dav(r: httpx.Response) -> bytes:
 
 def _ok_list(r: httpx.Response) -> str:
     data = r.json()
-    rows = data if isinstance(data, list) else data.get("value") or data.get("items") or []
+    rows = (
+        data if isinstance(data, list) else data.get("value") or data.get("items") or data.get("data") or []
+    )
     if not rows:
         raise ValueError("resposta sem linhas")
     return f"{len(rows)} linhas"
@@ -214,6 +217,18 @@ def _ok_csv(r: httpx.Response) -> str:
 def _ok_comex(r: httpx.Response) -> str:
     data = r.json()["data"]
     return f"atualizado em {data['updated']} (mês {data['year']}-{data['monthNumber']})"
+
+
+def _ok_comex_list(r: httpx.Response) -> str:
+    rows = r.json()["data"]["list"]
+    if not rows:
+        raise ValueError("consulta sem linhas")
+    return f"{len(rows)} linhas"
+
+
+def _comex_small(r: httpx.Response) -> bytes:
+    data = r.json()
+    return _json({**data, "data": {"list": data["data"]["list"][:20]}})
 
 
 def _ok_any_json(r: httpx.Response) -> str:
@@ -381,6 +396,59 @@ def checks(month: str) -> list[Check]:
             _whole,
             suffix=".xls",
         ),
+        Check(
+            "ipea",
+            "ipea_meta",
+            "https://www.ipeadata.gov.br/api/odata4/Metadados('BM12_TJOVER12')",
+            _ok_list,
+            _whole,
+        ),
+        Check(
+            "siconfi",
+            "siconfi_dca",
+            "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/dca",
+            _ok_list,
+            _first(25),
+            params={"an_exercicio": 2024, "id_ente": 3550308, "no_anexo": "DCA-Anexo I-C"},
+        ),
+        Check(
+            "siconfi",
+            "siconfi_rreo",
+            "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/rreo",
+            _ok_list,
+            _first(25),
+            params={
+                "an_exercicio": 2025,
+                "nr_periodo": 6,
+                "co_tipo_demonstrativo": "RREO",
+                "no_anexo": "RREO-Anexo 01",
+                "id_ente": 3550308,
+            },
+        ),
+        Check(
+            "comex",
+            "comex_uf",
+            "https://api-comexstat.mdic.gov.br/tables/uf",
+            _ok_list,
+            _whole,
+            params={"language": "pt"},
+        ),
+        Check(
+            "comex",
+            "comex_geral",
+            "https://api-comexstat.mdic.gov.br/general?language=pt",
+            _ok_comex_list,
+            _comex_small,
+            method="POST",
+            json={
+                "flow": "export",
+                "monthDetail": True,
+                "period": {"from": "2026-01", "to": "2026-03"},
+                "filters": [{"filter": "state", "values": [41]}],
+                "details": ["country"],
+                "metrics": ["metricFOB", "metricKG"],
+            },
+        ),
         *probes(),
     ]
 
@@ -438,6 +506,7 @@ def main() -> int:
                     auth=c.auth,
                     headers=c.headers,
                     content=c.content,
+                    json=c.json,
                 )
                 if r.status_code >= 400 and c.name != "sgs_sem_periodo":
                     raise ValueError(f"HTTP {r.status_code}")

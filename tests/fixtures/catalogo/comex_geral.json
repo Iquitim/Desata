@@ -1,0 +1,150 @@
+{
+ "data": {
+  "list": [
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "China",
+    "metricFOB": "1258503630",
+    "metricKG": "2128109459"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "Estados Unidos",
+    "metricFOB": "988224532",
+    "metricKG": "329721376"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "02",
+    "country": "Estados Unidos",
+    "metricFOB": "848527789",
+    "metricKG": "328142088"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "01",
+    "country": "Estados Unidos",
+    "metricFOB": "694146348",
+    "metricKG": "288631590"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "Argentina",
+    "metricFOB": "663836399",
+    "metricKG": "108787216"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "01",
+    "country": "China",
+    "metricFOB": "659840971",
+    "metricKG": "958376314"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "02",
+    "country": "China",
+    "metricFOB": "537805461",
+    "metricKG": "711333999"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "02",
+    "country": "Argentina",
+    "metricFOB": "471955084",
+    "metricKG": "81950833"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "01",
+    "country": "Argentina",
+    "metricFOB": "426622635",
+    "metricKG": "98071443"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "Singapura",
+    "metricFOB": "281426211",
+    "metricKG": "536942785"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "02",
+    "country": "México",
+    "metricFOB": "267218898",
+    "metricKG": "45265589"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "Países Baixos (Holanda)",
+    "metricFOB": "202287784",
+    "metricKG": "190188799"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "Chile",
+    "metricFOB": "196762679",
+    "metricKG": "40550932"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "México",
+    "metricFOB": "190703194",
+    "metricKG": "29547322"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "01",
+    "country": "Países Baixos (Holanda)",
+    "metricFOB": "188181159",
+    "metricKG": "254364875"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "01",
+    "country": "Portugal",
+    "metricFOB": "177318344",
+    "metricKG": "29697418"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "01",
+    "country": "Emirados Árabes Unidos",
+    "metricFOB": "174845281",
+    "metricKG": "336635137"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "02",
+    "country": "Chile",
+    "metricFOB": "174063426",
+    "metricKG": "98251936"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "02",
+    "country": "Países Baixos (Holanda)",
+    "metricFOB": "169891108",
+    "metricKG": "160830707"
+   },
+   {
+    "year": "2026",
+    "monthNumber": "03",
+    "country": "Índia",
+    "metricFOB": "163223005",
+    "metricKG": "357135869"
+   }
+  ]
+ },
+ "success": true,
+ "message": null,
+ "processo_info": null,
+ "language": "pt"
+}

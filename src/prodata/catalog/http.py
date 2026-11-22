@@ -31,7 +31,7 @@ from prodata.connectors.api import _system_tls
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
-Method = Literal["GET", "HEAD", "PROPFIND"]
+Method = Literal["GET", "HEAD", "PROPFIND", "POST"]
 FailureKind = Literal["recusado", "conexao", "tempo", "http", "limite", "resposta"]
 
 READ_METHODS: frozenset[str] = frozenset({"GET", "HEAD", "PROPFIND"})
@@ -146,6 +146,11 @@ class CatalogClient:
 
     @staticmethod
     def check(url: str, method: str = "GET") -> None:
+        if method == "POST":
+            # A consulta do Comex Stat só existe por POST; em nenhum outro endereço o catálogo usa POST.
+            if not hosts.post_allowed(url):
+                raise CatalogError(f"O catálogo só lê dados: o método {method} não é usado aqui.", "recusado")
+            return
         if method not in READ_METHODS:
             raise CatalogError(f"O catálogo só lê dados: o método {method} não é usado.", "recusado")
         if not hosts.allowed(url):
@@ -199,6 +204,10 @@ class CatalogClient:
             try:
                 location = response.headers.get("location")
                 if response.status_code in (301, 302, 303, 307, 308) and location:
+                    if method == "POST":
+                        raise CatalogError(
+                            f"{_cap(_site(url))} redirecionou a consulta; o catálogo não seguiu.", "recusado"
+                        )
                     target = urljoin(url, location)
                     if not hosts.allowed(target):
                         raise CatalogError(
@@ -280,6 +289,12 @@ class CatalogClient:
 
     def head(self, url: str, **kwargs: Any) -> Answer:
         return self.request("HEAD", url, **kwargs)
+
+    def post_query(self, url: str, query: Any, **kwargs: Any) -> Answer:
+        """A consulta de um órgão que só a aceita por POST (corpo JSON montado pelo programa, só com a consulta)."""
+        body = json.dumps(query, ensure_ascii=False).encode("utf-8")
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        return self.request("POST", url, headers=headers, content=body, **kwargs)
 
     def propfind(self, url: str, body: bytes, *, auth: tuple[str, str], **kwargs: Any) -> Answer:
         headers = {"Depth": "1", "Content-Type": "application/xml"}
