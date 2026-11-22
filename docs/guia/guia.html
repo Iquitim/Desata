@@ -869,14 +869,8 @@
   <h3>Recomendações de limpeza</h3>
   <div class="side">
     <div>
-      <p>Depois de executar, o <strong>Perfil</strong> de uma caixa mostra o que vale limpar nos dados que ela entrega, em uma linha cada, com a contagem e exemplos de antes e depois:</p>
-      <ul>
-        <li><strong>Espaço no começo ou no fim</strong>: "SP " não casa com "SP" num Join ou num filtro.</li>
-        <li><strong>Número ou data guardados como texto</strong>, com os valores que impedem, como "N/D". O formato do número é decidido pela coluna: "1.234,56" é brasileiro, "1,234.56" ou "3.75" é americano; quando não dá para saber, vale o brasileiro ("1.200" vira 1200). No <em>Select</em>, <strong>Números no texto</strong> força Brasileiro ou Americano.</li>
-        <li><strong>O mesmo valor com maiúsculas diferentes</strong> ("SP" e "sp"), que viram grupos diferentes.</li>
-        <li><strong>Texto vazio misturado com vazio de verdade</strong> e <strong>linhas repetidas</strong> por inteiro.</li>
-      </ul>
-      <p><strong>Corrigir</strong> mostra o que muda e insere logo depois da caixa a ferramenta que resolve, já configurada (<em>Data Cleansing</em>, <em>Select</em> com troca de tipo ou <em>Unique</em>), com o resto do fluxo ligado nela. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz. <strong>Ignorar</strong> fica gravado no fluxo, para quem abrir depois. Nada é corrigido sozinho: nas caixas de entrada, só um ponto discreto avisa que há o que limpar.</p>
+      <p>Depois de executar, o <strong>Perfil</strong> de uma caixa aponta, com contagem e exemplos de antes e depois: <strong>espaço sobrando</strong> ("SP " não casa com "SP"), <strong>número ou data como texto</strong> (com os valores que impedem, como "N/D"), <strong>maiúsculas diferentes</strong>, <strong>texto vazio</strong> e <strong>linhas repetidas</strong>.</p>
+      <p><strong>Corrigir</strong> mostra o que muda e insere logo depois a ferramenta certa, já configurada; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz. <strong>Ignorar</strong> fica gravado no fluxo. Nada é corrigido sozinho. O formato do número é decidido pela coluna ("1,234.56" é americano; o ambíguo, como "1.200", fica brasileiro), e o <em>Select</em> pode forçar em <strong>Números no texto</strong>.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/limpeza-perfil.png" alt="Recomendações de limpeza no Perfil da caixa"></div><figcaption>Número guardado como texto por causa de um "N/D", e "SP" escrito de dois jeitos.</figcaption></figure>
   </div>
