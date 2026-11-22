@@ -4,7 +4,7 @@ Princípios não negociáveis do projeto. Toda spec, plano e PR deve ser compat�
 com eles; quando um princípio precisar mudar, altere este arquivo primeiro, em PR
 separado, com justificativa.
 
-Versão: 1.6.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-21 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047)
+Versão: 1.7.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-22 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047; definições compartilhadas da equipe — spec 048)
 
 ## I. Spec antes do código (SDD)
 
@@ -53,8 +53,10 @@ exceto widgets especializados reutilizáveis.
 - A pasta de um **espaço da equipe** (spec 047) é a única outra pasta em que o programa grava por conta
   própria: caminho absoluto escolhido explicitamente pela pessoa, já existente. Ali ele grava só os
   arquivos do espaço, em formatos e nomes fixos e saneados (fluxos, versões, assinaturas, membros, marcas
-  de edição, comentários e o estado dos agendamentos). Nunca grava ali dados das fontes, resultados de
-  execução, amostras ou segredos.
+  de edição, comentários, o estado dos agendamentos e as definições compartilhadas: constantes, conexões,
+  consultas e APIs, spec 048). Nunca grava ali dados das fontes, resultados de execução, amostras ou
+  segredos: uma conexão ou API da equipe vai sem senha, token ou chave, e cada pessoa guarda o seu segredo
+  no cofre do próprio computador.
 - Uploads têm lista de extensões permitidas e tamanho máximo.
 - Segredos (senhas de banco, chaves de API) nunca são salvos em workflows,
   arquivos do projeto ou logs, nem devolvidos pela API. Ficam no cofre do
@@ -93,7 +95,10 @@ próprios do programa.
   A chave privada fica só no cofre do sistema operacional; nunca vai para a pasta, para um fluxo ou para um log.
 - **Tudo o que dá permissão é assinado.** A lista de membros e papéis é assinada por um administrador; cada
   versão salva é assinada por quem salvou; a versão oficial de um fluxo é assinada por quem tem o papel de
-  publicar. Uma mudança feita fora do programa, ou por quem não tinha o papel, não tem assinatura válida.
+  publicar; cada definição compartilhada (constante, conexão, consulta, API) é assinada por quem a salvou.
+  Uma mudança feita fora do programa, ou por quem não tinha o papel, não tem assinatura válida.
+- **Mudança sensível pede conferência.** Quando um colega muda o que decide onde o fluxo lê ou grava (o
+  destino de uma conexão, o endereço de uma API, uma consulta), quem usa confere a mudança antes de executar.
 - **O que não confere não executa.** Fluxo, versão ou lista de membros com assinatura ausente ou inválida
   abre em modo protegido, com o motivo, e nada dele executa. Agendamentos executam só a versão oficial com
   assinatura válida.
