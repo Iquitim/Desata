@@ -25,8 +25,9 @@ registra a marca dona do espaço: só a mesma marca entra (RF-4701); a outra mos
     edicao/<fluxo>.json             marca de edição: usuario, nome, maquina, desde, renovado_em
     versoes/<fluxo>/<ts>-<origem>-<usuario>.json      versão (fluxo sem amostra)
     versoes/<fluxo>/<ts>-<origem>-<usuario>.json.sig  assinatura da versão
-    oficiais/<fluxo>.json           {"versao", "assinatura do publicador"}
-    agendamentos/<id>.json          estado publicado de um agendamento (sem caminhos locais)
+    oficiais/<fluxo>.prodata.json   versão oficial (fluxo inteiro) + .sig do tipo "oficial", de um Publicador
+    agendamentos/<id>.json          estado publicado de um agendamento, assinado pelo dono (sem caminhos locais)
+    agendamentos/<id>.substituido.json  quem assumiu, assinado por um Publicador
   <fluxo>.prodata.json              versão de trabalho (o que a biblioteca abre)
   <fluxo>.prodata.json.sig          assinatura da versão de trabalho
 ```

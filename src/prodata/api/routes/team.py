@@ -171,3 +171,17 @@ def editing(
 ) -> dict[str, Any]:
     """Quem está editando (spec 047, RF-4721..4723): abrir, renovar, soltar ou consultar a marca de edição."""
     return services.team.editing(space_id, workflow_id, req.acao, force=req.forcar)
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/oficial")
+def publish_official(
+    space_id: SpaceId, workflow_id: WorkflowId, services: ServicesDep
+) -> dict[str, Any] | None:
+    """Publicar como oficial (RF-4751): a versão de trabalho, assinada por um Publicador. É o que os agendamentos rodam."""
+    return services.team.publish(space_id, workflow_id)
+
+
+@router.get("/espacos/{space_id}/agendamentos")
+def team_schedules(space_id: SpaceId, services: ServicesDep) -> dict[str, Any]:
+    """Os agendamentos dos fluxos do espaço, de todos os computadores (RF-4753)."""
+    return services.team.team_schedules(space_id)

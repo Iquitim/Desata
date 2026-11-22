@@ -20,6 +20,7 @@ from prodata.team.local_state import LocalState
 from prodata.team.locks import LockStore
 from prodata.team.members import MembersStore
 from prodata.team.repository import HeldFileError, SpaceFlow, SpaceRepository
+from prodata.team.schedules import TeamSchedule, TeamSchedules
 from prodata.team.signing import (
     RANK,
     ROLE_NAMES,
@@ -33,9 +34,10 @@ from prodata.team.signing import (
 )
 from prodata.team.trust_diff import changed_parts, sensitive_parts
 from prodata.team.versions import SpaceOrigin, SpaceVersionInfo, SpaceVersions, content_sha
-from prodata.team.workspaces import Space, Workspaces
+from prodata.team.workspaces import CONTROL, Space, Workspaces
 
 READABLE = ("ok", "somente_leitura")
+OFFICIAL_DIR = "oficiais"  # _equipe/oficiais/<fluxo>.prodata.json + .sig, assinada por um Publicador
 log = logging.getLogger(__name__)
 
 
@@ -112,6 +114,10 @@ class TeamService:
             self._members_store(space.id).add_request(self.identity.current())
         return self.describe(self.workspaces.get(space.id))
 
+    def require(self, space_id: str, need: Role) -> None:
+        """Confere que sou membro com papel ``need`` ou acima (para outros serviços, como o de agendamentos)."""
+        self._require(space_id, need)
+
     def _require(self, space_id: str, need: Role) -> tuple[Space, SpaceRepository, Members]:
         space = self.workspaces.get(space_id)
         if space.estado not in READABLE:
@@ -146,6 +152,8 @@ class TeamService:
             lock = locks.get(f.id)
             if lock and lock.usuario != me.usuario:
                 f = f.model_copy(update={"editando": lock.nome, "editando_desde": lock.desde})
+            if info := self.official_info(space_id, f.id):  # selo de oficial na biblioteca (RF-4751)
+                f = f.model_copy(update={"oficial": info})
             out.append(f)
         return out
 
@@ -422,6 +430,130 @@ class TeamService:
         workflow = self._require(space_id, "leitor")[1].get(workflow_id)
         copy = workflow.model_copy(update={"id": new_id, "name": f"{workflow.name} (cópia)"})
         return self.library.save(copy)
+
+    # ------------------------------------------------------------------ versão oficial (RF-4751, RF-4752)
+
+    def _officials(self, space_id: str) -> SpaceRepository:
+        return SpaceRepository(self.workspaces.root(space_id) / CONTROL / OFFICIAL_DIR)
+
+    def publish(self, space_id: str, workflow_id: str) -> dict[str, Any] | None:
+        """Um Publicador marca a versão de trabalho como oficial, assinada por ele. Só publica uma versão que confere:
+        ninguém oficializa um arquivo mexido fora do programa."""
+        _, repo, members = self._require(space_id, "publicador")
+        workflow = repo.get(workflow_id)
+        reason = check_flow(self._signature_of(repo.signature(workflow_id)), space_id, workflow, members)
+        if reason:
+            raise InvalidInputError(f"{reason} Salve o fluxo pelo programa antes de publicar.")
+        signature = sign_flow(self.identity, space_id, workflow, "oficial")
+        officials = self._officials(space_id)
+        officials.root.mkdir(parents=True, exist_ok=True)
+        try:
+            officials.save(workflow, signature.model_dump_json(indent=1))
+        except HeldFileError as exc:
+            raise InvalidInputError(
+                "A pasta do espaço segurou o arquivo da versão oficial: tente publicar de novo em instantes."
+            ) from exc
+        return self.official_info(space_id, workflow_id)
+
+    def official(self, space_id: str, workflow_id: str) -> tuple[Workflow | None, str | None]:
+        """A versão oficial que vale, ou o motivo para não rodar (RF-4752)."""
+        space = self.workspaces.get(space_id)
+        if space.estado not in READABLE:
+            return None, space.motivo or "O espaço não está disponível agora (a pasta não foi encontrada)."
+        members, reason = self.members(space_id)
+        if members is None:
+            return None, f"{reason} Nada do espaço executa até um administrador conferir."
+        officials = self._officials(space_id)
+        if not officials.exists(workflow_id):
+            return None, "Este fluxo ainda não tem versão oficial: um Publicador do espaço precisa publicar."
+        try:
+            workflow = officials.get(workflow_id)
+        except InvalidInputError as exc:
+            return None, f"A versão oficial está ilegível: {exc.message}"
+        sig = self._signature_of(officials.signature(workflow_id))
+        problem = check_flow(sig, space_id, workflow, members, "oficial")
+        if problem:
+            return None, f"A versão oficial não confere: {problem}"
+        return workflow, None
+
+    def official_info(self, space_id: str, workflow_id: str) -> dict[str, Any] | None:
+        """Quem publicou, quando, se confere e se a versão de trabalho está à frente da oficial."""
+        officials = self._officials(space_id)
+        if not officials.exists(workflow_id):
+            return None
+        sig = self._signature_of(officials.signature(workflow_id))
+        workflow, problem = self.official(space_id, workflow_id)
+        working = self._signature_of(SpaceRepository(self.workspaces.root(space_id)).signature(workflow_id))
+        return {
+            "nome": (sig.nome or sig.autor) if sig else "desconhecido",
+            "quando": sig.quando.isoformat() if sig else None,
+            "confere": workflow is not None,
+            "motivo": problem,
+            "atual": bool(sig and working and sig.sha256 == working.sha256),
+        }
+
+    # ------------------------------------------------------------------ agendamentos do time (RF-4753)
+
+    def _schedules(self, space_id: str) -> TeamSchedules:
+        return TeamSchedules(self.workspaces.root(space_id), space_id)
+
+    def share_schedule(self, state: TeamSchedule) -> bool:
+        """Publica o estado de um agendamento meu (sem caminhos locais). Falhar aqui nunca impede o agendamento."""
+        try:
+            space = self.workspaces.get(state.espaco)
+            if space.estado != "ok":
+                return False
+            members, _ = self.members(state.espaco)
+            if self.my_role(members) is None:
+                return False
+            return self._schedules(state.espaco).publish(state, self.identity)
+        except (OSError, InvalidInputError, NotFoundError) as exc:
+            log.warning("Estado do agendamento não publicado no espaço: %s", exc)
+            return False
+
+    def unshare_schedule(self, space_id: str, schedule_id: str) -> None:
+        try:
+            if self.workspaces.get(space_id).estado == "ok":
+                self._schedules(space_id).remove(schedule_id)
+        except (OSError, InvalidInputError, NotFoundError) as exc:
+            log.warning("Estado do agendamento não removido do espaço: %s", exc)
+
+    def substitution(self, space_id: str, schedule_id: str) -> dict[str, Any] | None:
+        """Alguém assumiu este agendamento? Só vale a substituição assinada por um Publicador."""
+        try:
+            members, _ = self.members(space_id)
+            doc = self._schedules(space_id).substitution(schedule_id, members)
+        except OSError, InvalidInputError, NotFoundError:
+            return None
+        return {"nome": doc.nome, "maquina": doc.maquina, "quando": doc.quando.isoformat()} if doc else None
+
+    def team_schedules(self, space_id: str) -> dict[str, Any]:
+        """Os agendamentos dos fluxos do espaço: de quem, em que computador, próxima e última execução."""
+        _, _, members = self._require(space_id, "leitor")
+        me = self.identity.current()
+        items = []
+        for state, ok, sub in self._schedules(space_id).all(members):
+            items.append({**state.model_dump(mode="json", exclude={"assinatura", "chave_publica", "plano"}),
+                          "confere": ok, "meu": state.usuario == me.usuario,
+                          "substituido_por": {"nome": sub.nome, "maquina": sub.maquina} if sub else None})  # fmt: skip
+        return {"papel": self.my_role(members), "agendamentos": items}
+
+    def schedule_to_assume(self, space_id: str, schedule_id: str) -> TeamSchedule:
+        """O estado (que confere) de um agendamento que um Publicador quer assumir."""
+        _, _, members = self._require(space_id, "publicador")
+        schedules = self._schedules(space_id)
+        state = schedules.get(schedule_id, members)
+        if state is None:
+            raise NotFoundError(
+                "Esse agendamento não está mais no espaço, ou o estado publicado não confere."
+            )
+        if schedules.substitution(schedule_id, members):
+            raise InvalidInputError("Esse agendamento já foi assumido por outra pessoa.")
+        return state
+
+    def mark_substituted(self, space_id: str, schedule_id: str, new_id: str, machine: str) -> None:
+        self._require(space_id, "publicador")
+        self._schedules(space_id).substitute(schedule_id, new_id, self.identity, machine)
 
     # ------------------------------------------------------------------ membros (administradores)
 

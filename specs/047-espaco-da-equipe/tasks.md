@@ -30,9 +30,9 @@
 
 ## Marco 5 — Versão oficial e agendamentos
 
-- [ ] T17 Publicar como oficial (Publicador), selo na biblioteca (RF-4751)
-- [ ] T18 Agendamento de fluxo do espaço roda só a oficial assinada; motivo no histórico (RF-4752, CA-07)
-- [ ] T19 Agendamentos visíveis ao time; Assumir este agendamento (RF-4753, CA-07)
+- [x] T17 Publicar como oficial (Publicador), selo na biblioteca (RF-4751)
+- [x] T18 Agendamento de fluxo do espaço roda só a oficial assinada; motivo no histórico (RF-4752, CA-07)
+- [x] T19 Agendamentos visíveis ao time; Assumir este agendamento (RF-4753, CA-07)
 
 ## Marco 6 — Conferências e publicação
 

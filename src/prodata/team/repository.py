@@ -14,6 +14,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
@@ -40,6 +41,9 @@ class SpaceFlow(BaseModel):
     modified_at: datetime
     editando: str | None = None  # quem está editando agora (spec 047, RF-4724)
     editando_desde: datetime | None = None
+    oficial: dict[str, Any] | None = (
+        None  # versão oficial: quem publicou, quando e se a de trabalho está à frente
+    )
 
 
 def atomic_write(path: Path, text: str, *, retries: int = RETRIES, wait: float = RETRY_WAIT,

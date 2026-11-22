@@ -9,6 +9,7 @@ import { button, fmt, h } from './dom.js';
 import { icon } from './icons.js';
 import { openDialog, toast, toastError } from './ui.js';
 import { openMembersDialog, ROLE_NAMES } from './team_members.js';
+import { openTeamSchedules } from './team_schedules.js';
 
 let state = { configurado: false, espacos: [] };
 export const teamState = () => state;
@@ -81,6 +82,7 @@ export async function openSpacesDialog({ onChanged } = {}) {
           reason ? h('div', { class: `team-reason ${tone}` }, reason) : null),
         h('span', { class: `team-chip ${tone}` }, label),
         s.papel ? button({ label: 'Membros…', size: 'sm', variant: 'ghost', onClick: () => openMembersDialog(s, changed) }) : null,
+        s.papel ? button({ label: 'Agendamentos…', size: 'sm', variant: 'ghost', onClick: () => openTeamSchedules(s) }) : null,
         button({
           label: 'Sair', size: 'sm', variant: 'ghost', title: 'Sai do espaço neste computador. Nada é apagado da pasta.',
           onClick: async () => {
@@ -148,6 +150,14 @@ export function chooseSpace(title) {
   });
 }
 
+/** Selo da versão oficial (spec 047, RF-4751): quem publicou e se a versão de trabalho está à frente. */
+function officialChip(o) {
+  if (!o) return null;
+  if (!o.confere) return h('span', { class: 'team-chip err', title: o.motivo || 'A versão oficial não confere' }, icon('alert', 11), ' Oficial não confere');
+  const title = `Versão oficial publicada por ${o.nome}${o.quando ? ` em ${fmt.date(o.quando)}` : ''}. ${o.atual ? 'É a mesma da versão de trabalho.' : 'A versão de trabalho tem mudanças depois dela.'}`;
+  return h('span', { class: `team-chip ${o.atual ? 'ok' : 'warn'}`, title }, icon('star', 11), o.atual ? ' Oficial' : ' Oficial · trabalho à frente');
+}
+
 /** A lista de fluxos de um espaço, para a aba dele em Abrir da biblioteca. */
 export function spacePane(space, { onOpen, onCopied }) {
   const box = h('div', { class: 'wf-list' }, h('p', { class: 'muted' }, 'Carregando os fluxos do espaço…'));
@@ -158,7 +168,8 @@ export function spacePane(space, { onOpen, onCopied }) {
         h('button', { type: 'button', class: 'wf-main', onclick: () => onOpen(f) },
           icon('workflow', 16), h('span', { class: 'grow' }, h('strong', {}, f.name),
             h('small', { class: 'muted' }, ` · ${f.node_count} caixas · ${fmt.date(f.modified_at)}`)),
-            f.editando ? h('span', { class: 'team-chip warn', title: `${f.editando} está editando agora` }, icon('edit', 11), ` ${f.editando}`) : null),
+            f.editando ? h('span', { class: 'team-chip warn', title: `${f.editando} está editando agora` }, icon('edit', 11), ` ${f.editando}`) : null,
+            officialChip(f.oficial)),
         button({
           icon: 'copy', title: 'Fazer uma cópia em Meus fluxos', size: 'sm', variant: 'ghost',
           onClick: async () => {

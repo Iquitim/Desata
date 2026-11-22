@@ -30,6 +30,9 @@ class ScheduleIn(BaseModel):
     """O que a pessoa escolhe no diálogo."""
 
     workflow_id: str = Field("", max_length=64)
+    space_id: str = Field(
+        "", pattern=r"^([a-f0-9]{16})?$", description="Fluxo de um espaço da equipe (spec 047)."
+    )
     file_path: str = Field("", max_length=1024)
     name: str = Field("", max_length=120)
     frequency: Frequency = "daily"
@@ -58,6 +61,8 @@ class ScheduleIn(BaseModel):
     def _target(self) -> ScheduleIn:
         if bool(self.workflow_id) == bool(self.file_path):
             raise ValueError("Informe o fluxo da biblioteca ou o arquivo do fluxo, um dos dois.")
+        if self.space_id and not self.workflow_id:
+            raise ValueError("Informe o fluxo do espaço da equipe.")
         if self.workflow_id and not re.fullmatch(ID_PATTERN, self.workflow_id):
             raise ValueError("Identificador de fluxo inválido.")
         if self.frequency == "weekly" and not self.weekdays:

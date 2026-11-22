@@ -47,7 +47,7 @@ function commandLine(windows) {
   const wf = store.workflow;
   const cli = store.catalog?.cli_command || 'prodata';
   // Arquivo de fora da biblioteca roda pelo caminho; o da biblioteca, pelo ID, que não muda com o nome.
-  const target = store.filePath ? `"${store.filePath}"` : wf.id;
+  const target = store.space ? `espaco:${store.space.id}/${wf.id}` : store.filePath ? `"${store.filePath}"` : wf.id;
   const run = `${cli} run ${target}`;
   const task = `schtasks /Create /TN "${brand.nome} ${wf.name.replace(/"/g, '')}" /SC DAILY /ST 06:00 /TR "${run.replace(/"/g, '\\"')}"`;
   return h('div', { class: 'form' },
@@ -66,10 +66,14 @@ export async function openScheduleDialog(existing = null, { onDone } = {}) {
   if (!existing && !wf) return;
   let listed = { supported: true, items: [] };
   try { listed = await api.schedules(); } catch { /* o diálogo funciona sem a lista */ }
-  const target = existing ? { workflow_id: existing.workflow_id, file_path: existing.file_path, name: existing.name }
-    : { workflow_id: store.filePath ? '' : wf.id, file_path: store.filePath || '', name: wf.name };
-  const isOpenFlow = !existing || (wf && (existing.workflow_id ? existing.workflow_id === wf.id : existing.file_path === store.filePath));
-  const others = existing ? [] : listed.items.filter((i) => (i.workflow_id || i.file_path) === (target.workflow_id || target.file_path));
+  // Fluxo do espaço da equipe (spec 047, RF-4752): agenda a versão oficial do espaço, não a cópia aberta
+  const space = existing ? (existing.space_id || '') : (store.space?.id || '');
+  const target = existing ? { workflow_id: existing.workflow_id, file_path: existing.file_path, space_id: space, name: existing.name }
+    : { workflow_id: store.filePath && !space ? '' : wf.id, file_path: space ? '' : store.filePath || '', space_id: space, name: wf.name };
+  const isOpenFlow = !existing || (wf && (existing.space_id ? existing.space_id === store.space?.id && existing.workflow_id === wf.id
+    : existing.workflow_id ? existing.workflow_id === wf.id && !store.space : existing.file_path === store.filePath));
+  const keyOf = (i) => `${i.space_id || ''}|${i.workflow_id || i.file_path}`;
+  const others = existing ? [] : listed.items.filter((i) => keyOf(i) === keyOf(target));
 
   if (!listed.supported) {
     openDialog({ title: 'Executar sem abrir o programa', size: 'lg', body: h('div', { class: 'form' },
@@ -84,13 +88,13 @@ export async function openScheduleDialog(existing = null, { onDone } = {}) {
   const week = h('div', { class: 'sch-week', 'aria-hidden': 'true' });
   const body = h('div', { class: 'sch-form' });
   const errorBox = h('p', { class: 'text-error small', hidden: true });
-  const dirty = isOpenFlow && (isDirty() || (!store.savedSnapshot && !store.filePath));
-  const protectedFlow = isOpenFlow && isProtected();
+  const dirty = !space && isOpenFlow && (isDirty() || (!store.savedSnapshot && !store.filePath));
+  const protectedFlow = !space && isOpenFlow && isProtected(); // no espaço, quem decide é a assinatura do Publicador
 
   const state = { active: !existing?.paused };
   const refreshPreview = debounce(async () => {
     try {
-      const p = await api.schedulePreview({ ...target, ...plan, workflow_id: target.workflow_id || '', file_path: target.file_path || '' });
+      const p = await api.schedulePreview({ ...target, ...plan, workflow_id: target.workflow_id || '', file_path: target.file_path || '', space_id: target.space_id || '' });
       sentence.textContent = `Roda ${p.sentence.charAt(0).toLowerCase()}${p.sentence.slice(1)}`;
       next.textContent = state.active ? `Próxima: ${p.next_text}` : 'Desativado: não roda até ser ativado';
       errorBox.hidden = true;
@@ -161,6 +165,8 @@ export async function openScheduleDialog(existing = null, { onDone } = {}) {
 
   const summary = h('div', { class: ['sch-summary', !state.active && 'off'] }, h('span', { class: 'sch-summary-icon' }, icon('clock', 20)), h('div', { class: 'sch-summary-text' }, sentence, next, week));
   const notes = [
+    space ? h('p', { class: 'hint-box small' }, icon('star', 14), ' Roda a versão oficial do espaço, conferida na hora pela assinatura de um Publicador. '
+      + 'Mudanças salvas depois só entram quando alguém publicar de novo. O time vê este agendamento em Espaços da equipe › Agendamentos.') : null,
     protectedFlow ? h('p', { class: 'hint-box small sch-block' }, icon('lock', 14), ' Este fluxo veio de fora e ainda não foi confiado. Confira o que ele faz na faixa do topo e escolha Confiar e executar antes de agendar.') : null,
     !protectedFlow && dirty ? h('p', { class: 'hint-box small' }, store.savedSnapshot || store.filePath
       ? 'Há mudanças não salvas: o agendamento roda a versão salva. "Salvar e agendar" salva antes.'

@@ -13,7 +13,7 @@ import { isProtected } from './trust_banner.js';
 import { emit, isDirty, markSaved, mutate, on, store } from './store.js';
 import { openDialog, showMenu, toast, toastError } from './ui.js';
 import { reloadFromSpace } from './team_editing.js';
-import { chooseSpace, teamConfigured } from './team_spaces.js';
+import { chooseSpace, teamConfigured, teamState } from './team_spaces.js';
 import { openVersionsDialog } from './versions_dialog.js';
 
 export const RECENT_FILES = 'prodata.recentFiles';
@@ -186,6 +186,25 @@ export async function saveToFile(path) {
 
 const fileSlug = (name) => (name || 'fluxo').normalize('NFKD').replace(/[^\w-]+/g, '_').replace(/^_+|_+$/g, '') || 'fluxo';
 
+const canPublish = () => {
+  const space = store.space && teamState().espacos.find((s) => s.id === store.space.id);
+  return Boolean(space && (space.papel === 'publicador' || space.papel === 'administrador'));
+};
+
+/** Publicar como oficial (spec 047, RF-4751): a versão salva no espaço vira a que os agendamentos rodam. */
+async function publishOfficial() {
+  if (isDirty()) {
+    toast('Salve antes de publicar', { detail: 'A versão oficial é a que está salva no espaço; as mudanças não salvas ficariam de fora.' });
+    return;
+  }
+  try {
+    await api.publishOfficial(store.space.id, store.workflow.id);
+    toast('Publicada como versão oficial', { kind: 'success', detail: 'Os agendamentos deste fluxo passam a rodar esta versão. A biblioteca do espaço mostra o selo.' });
+  } catch (err) {
+    toastError(err, 'Não foi possível publicar');
+  }
+}
+
 /** Salvar no espaço da equipe…: grava uma cópia do fluxo aberto no espaço, e a aba passa a ser a do espaço. */
 export async function saveToSpace() {
   const space = await chooseSpace('Salvar no espaço da equipe');
@@ -270,6 +289,8 @@ export function saveButton() {
         { label: 'Salvar com amostra dos dados…', icon: 'database', onSelect: () => shareDialog() },
         // Só com algum espaço da equipe (spec 047, RF-4702): sem espaço, o menu é o de sempre.
         ...(teamConfigured() ? [{ label: 'Salvar no espaço da equipe…', icon: 'folder', disabled: Boolean(store.space), onSelect: () => saveToSpace() }] : []),
+        // Versão oficial (RF-4751): só para fluxo do espaço e quem é Publicador ou Administrador
+        ...(canPublish() ? [{ label: 'Publicar como oficial', icon: 'star', onSelect: () => publishOfficial() }] : []),
       ]);
     },
   });

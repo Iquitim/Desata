@@ -57,7 +57,11 @@ function row(item, refresh) {
   return h('div', { class: ['sch-item', `sch-${state}`], dataset: { id: item.id } },
     h('span', { class: 'sch-dot', title: label }),
     h('div', { class: 'sch-main' },
-      h('div', { class: 'sch-name' }, item.name, item.paused ? h('span', { class: 'sch-tag' }, 'desativado') : null),
+      h('div', { class: 'sch-name' }, item.name, item.paused ? h('span', { class: 'sch-tag' }, 'desativado') : null,
+        item.space_id ? h('span', { class: 'sch-tag', title: 'Fluxo do espaço da equipe: roda a versão oficial' }, 'espaço · versão oficial') : null),
+      // assumido por outra pessoa (spec 047, RF-4753): este computador não roda mais
+      item.substituido_por ? h('div', { class: 'sch-missing' }, icon('alert', 13),
+        ` Assumido por ${item.substituido_por.nome} (computador ${item.substituido_por.maquina}): não roda mais aqui. Pode excluir.`) : null,
       h('div', { class: 'sch-when' }, item.sentence, item.next_text ? h('span', { class: 'muted' }, ` · próxima: ${item.next_text}`) : null),
       last,
       item.task === 'missing' ? h('div', { class: 'sch-missing' }, icon('alert', 13), ' Removido no Agendador do Windows. ',

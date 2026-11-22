@@ -20,6 +20,7 @@ from prodata.config import Settings
 from prodata.domain.execution import ExecutionReport
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.errors import InvalidInputError, NotFoundError, ProdataError
+from prodata.scheduling.service import SPACE_TARGET
 from prodata.services.workflows import SUFFIX, load_from_file
 
 OK, FAILED, REFUSED = 0, 1, 2
@@ -122,6 +123,32 @@ def _record(
         )
     except OSError as exc:
         print(f"Histórico do agendamento não gravado: {exc}", file=sys.stderr)
+        return
+    if SPACE_TARGET.match(
+        getattr(args, "fluxo", "") or ""
+    ):  # o time vê a última execução (spec 047, RF-4753)
+        try:
+            _services().schedules.share_after_run(schedule)
+        except (ProdataError, OSError, ValueError) as exc:
+            print(f"Estado do agendamento não publicado no espaço: {exc}", file=sys.stderr)
+
+
+def _space_official(
+    services: Services, args: argparse.Namespace, space_id: str, workflow_id: str
+) -> Workflow:
+    """A versão oficial do fluxo do espaço, se confere; senão, recusa com o motivo (RF-4752). Um agendamento que outra
+    pessoa assumiu não roda mais neste computador (RF-4753)."""
+    schedule = getattr(args, "agendamento", None)
+    if schedule and (sub := services.team.substitution(space_id, schedule)):
+        raise InvalidInputError(
+            f"Este agendamento foi assumido por {sub['nome']} (computador {sub['maquina']}) e não roda mais aqui. "
+            f"Exclua-o em Arquivo › Agendamentos."
+        )
+    workflow, reason = services.team.official(space_id, workflow_id)
+    if workflow is None:
+        raise InvalidInputError(reason or "A versão oficial não está disponível.")
+    services.trust.space_flow(workflow, None, space=space_id)  # a assinatura do Publicador é a conferência
+    return workflow
 
 
 def run(args: argparse.Namespace) -> int:
@@ -130,10 +157,14 @@ def run(args: argparse.Namespace) -> int:
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     try:
         services = _services()
-        workflow = find_workflow(services, args.fluxo)
+        space = SPACE_TARGET.match(args.fluxo)
+        if space:  # fluxo do espaço da equipe (spec 047, RF-4752): só a versão oficial, conferida agora
+            workflow = _space_official(services, args, space.group(1), space.group(2))
+        else:
+            workflow = find_workflow(services, args.fluxo)
         name = workflow.name
         # A mesma conferência da tela (spec 028): fluxo de fora só roda depois de aberto e confirmado no programa.
-        if not services.trust.opened(workflow):
+        if not space and not services.trust.opened(workflow):
             print(
                 f"Recusado: '{workflow.name}' veio de fora e ainda não foi conferido neste computador.\n"
                 f"Abra o fluxo no {marca().nome}, confira o que ele faz na faixa do topo e escolha Confiar e executar.",

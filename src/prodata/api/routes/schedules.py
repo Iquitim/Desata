@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter
+from pydantic import BaseModel, Field
 
 from prodata.api.deps import ServicesDep
 from prodata.scheduling.model import ScheduleIn
@@ -69,3 +70,14 @@ def failures(services: ServicesDep) -> list[dict[str, Any]]:
 def seen(services: ServicesDep) -> dict[str, bool]:
     services.schedules.mark_seen()
     return {"ok": True}
+
+
+class AssumeRequest(BaseModel):
+    space_id: str = Field(pattern=r"^[a-f0-9]{16}$")
+    schedule_id: str = Field(pattern=r"^[a-f0-9]{8}$")
+
+
+@router.post("/assumir")
+def assume(req: AssumeRequest, services: ServicesDep) -> dict[str, Any]:
+    """Assumir este agendamento (spec 047, RF-4753): cria a tarefa aqui e o computador anterior deixa de rodar."""
+    return services.schedules.assume(req.space_id, req.schedule_id)

@@ -7,7 +7,7 @@ Sobe o próprio servidor, com uma pasta de dados temporária (nada vai para a bi
 janela e confere o comportamento de ponta a ponta: o que os testes do motor não enxergam (cliques, arrastos, diálogos,
 animações). Sai com 1 se alguma conferência falhar ou se a página tiver erro de JavaScript.
 
-Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2 e equipe3 (spec 047,
+Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2, equipe3 e equipe4 (spec 047,
 duas pessoas: sobe um segundo servidor).
 """
 
@@ -708,6 +708,72 @@ def equipe3(pg: Page) -> None:
         shutil.rmtree(folder, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- spec 047: versão oficial e agendamentos (marco 5)
+
+
+def equipe4(pg: Page) -> None:
+    """Publicar como oficial, selo na biblioteca, agendar um fluxo do espaço (sem criar tarefa no Windows) e a lista
+    de agendamentos do time."""
+    folder = Path(tempfile.mkdtemp(prefix="conferir-espaco4-"))
+    try:
+        pg.evaluate(POST, ["/api/equipe/identidade", {"nome": "Ana Souza"}])
+        sid = pg.evaluate(
+            POST, ["/api/equipe/espacos", {"acao": "criar", "caminho": str(folder), "nome": "Time 5"}]
+        )["id"]
+        pg.evaluate(PUT, [f"/api/equipe/espacos/{sid}/fluxos/fluxo_time", TEAM_FLOW])
+        pg.reload()  # a tela conhece o espaço novo e o papel
+        ready(pg)
+        open_space_flow(pg, "Time 5", "Fluxo do time")
+        pg.wait_for_function("() => window.__S.store.workflow?.id === 'fluxo_time'", timeout=10000)
+        pg.locator("#topActions .save-arrow").click()
+        pg.locator(".menu .menu-item", has_text="Publicar como oficial").click()
+        pg.locator(".toast", has_text="versão oficial").first.wait_for(timeout=10000)
+        check(
+            "Publicar como oficial grava a versão assinada",
+            (folder / "_equipe" / "oficiais" / "fluxo_time.prodata.json.sig").is_file(),
+        )
+        pg.locator(".top-menu", has_text="Arquivo").click()
+        pg.locator(".menu .menu-item", has_text="Abrir da biblioteca").click()
+        lib = pg.locator("dialog[open]")
+        lib.locator(".team-tabs .segment", has_text="Time 5").click()
+        item = lib.locator(".wf-item", has_text="Fluxo do time")
+        item.locator(".team-chip", has_text="Oficial").wait_for(timeout=10000)
+        check("a biblioteca mostra o selo de oficial", "Oficial" in item.inner_text(), item.inner_text())
+        pg.keyboard.press("Escape")
+
+        pg.locator(".top-menu", has_text="Arquivo").click()
+        pg.locator(".menu .menu-item", has_text="Agendar este fluxo").click()
+        dlg = pg.locator("dialog[open]", has_text="Agendar")
+        dlg.locator(".sch-sentence").wait_for(timeout=10000)
+        pg.wait_for_function(
+            "() => !document.querySelector('dialog[open] .sch-sentence').textContent.includes('…')",
+            timeout=10000,
+        )
+        text = dlg.inner_text()
+        check(
+            "agendar fluxo do espaço explica que roda a versão oficial",
+            "versão oficial do espaço" in text,
+            text[:300],
+        )
+        dlg.locator("button", has_text="Cancelar").click()  # nada é criado no Agendador do Windows
+
+        pg.locator(".top-menu", has_text="Arquivo").click()
+        pg.locator(".menu .menu-item", has_text="Espaços da equipe").click()
+        spaces = pg.locator("dialog[open][aria-label='Espaços da equipe']")
+        spaces.locator(".team-space", has_text="Time 5").locator("button", has_text="Agendamentos").click()
+        team = pg.locator("dialog[open][aria-label='Agendamentos · Time 5']")
+        team.locator(".ver-empty").wait_for(timeout=10000)
+        check(
+            "Agendamentos do time abre, com a explicação",
+            "Nenhum fluxo do espaço está agendado" in team.inner_text() and "assumir" in team.inner_text(),
+            team.inner_text(),
+        )
+        pg.keyboard.press("Escape")
+        pg.keyboard.press("Escape")
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -732,6 +798,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "equipe": equipe,
     "equipe2": equipe2,
     "equipe3": equipe3,
+    "equipe4": equipe4,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

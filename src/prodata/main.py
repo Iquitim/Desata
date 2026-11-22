@@ -106,6 +106,12 @@ def build_services(settings: Settings) -> Services:
         refresh_example_pdfs(datasets.pdfs)
         if workflows.exists(DEMO_WORKFLOW_ID):
             trust.created(workflows.get(DEMO_WORKFLOW_ID))
+    team = TeamService(
+        Workspaces(settings.storage_dir / "espacos.json", marca().id, marca().nome),
+        IdentityStore(secrets, settings.storage_dir / "equipe.json"),
+        workflows,
+        settings.storage_dir / "equipe",
+    )
     return Services(
         settings=settings,
         datasets=datasets,
@@ -140,14 +146,10 @@ def build_services(settings: Settings) -> Services:
             ),
             workflows,
             trust,
+            team=team,  # fluxos do espaço da equipe: só a versão oficial (spec 047)
         ),
         versions=VersionStore(settings.storage_dir / "versoes"),
-        team=TeamService(
-            Workspaces(settings.storage_dir / "espacos.json", marca().id, marca().nome),
-            IdentityStore(secrets, settings.storage_dir / "equipe.json"),
-            workflows,
-            settings.storage_dir / "equipe",
-        ),
+        team=team,
     )
 
 
