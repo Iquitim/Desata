@@ -151,6 +151,8 @@ export const api = {
   missingSecrets: (id, workflow) => request('POST', `/api/equipe/espacos/${enc(id)}/segredos-faltando`, { workflow }),
   comments: (id, wid, visto = false) => request('GET', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/comentarios${visto ? '?visto=true' : ''}`),
   addComment: (id, wid, body) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/comentarios`, body),
+  mergePreview: (id, wid, body) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/juntar`, body),
+  mergeApply: (id, wid, body) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/juntar/aplicar`, body),
   moveToSpace: (id, workflowId) => request('POST', `/api/equipe/espacos/${enc(id)}/mover`, { workflow_id: workflowId }),
   copyFromSpace: (id, wid) => request('POST', `/api/equipe/espacos/${enc(id)}/fluxos/${enc(wid)}/copia`),
   spaceMembers: (id) => request('GET', `/api/equipe/espacos/${enc(id)}/membros`),

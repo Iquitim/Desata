@@ -14,6 +14,7 @@ import { emit, isDirty, markSaved, mutate, on, store } from './store.js';
 import { openDialog, showMenu, toast, toastError } from './ui.js';
 import { reloadFromSpace } from './team_editing.js';
 import { chooseSpace, teamConfigured, teamState } from './team_spaces.js';
+import { openMergeDialog } from './merge_dialog.js';
 import { openVersionsDialog } from './versions_dialog.js';
 
 export const RECENT_FILES = 'prodata.recentFiles';
@@ -94,14 +95,14 @@ function conflictDialog(message) {
     size: 'md',
     body: h('div', { class: 'form' },
       h('p', { class: 'dialog-text' }, message),
-      h('p', { class: 'field-help' }, 'A sua versão está guardada em Versões anteriores, com o seu nome. Escolha qual fica como a versão do espaço; a outra continua guardada.')),
+      h('p', { class: 'field-help' }, 'A sua versão está guardada em Versões anteriores, com o seu nome. Juntar as duas traz o que cada um fez e só pergunta onde vocês dois mexeram na mesma caixa. ',
+        h('button', { type: 'button', class: 'link-button', onclick: () => { close(); openVersionsDialog(); } }, 'Ver as duas versões'))),
     actions: [
-      button({ icon: 'clock', label: 'Ver as duas', variant: 'ghost', onClick: () => { close(); openVersionsDialog(); } }),
-      button({ icon: 'refresh', label: 'Abrir a do colega', onClick: async () => {
+      button({ icon: 'refresh', label: 'Abrir a do colega', variant: 'ghost', onClick: async () => {
         close();
         try { await reloadFromSpace(); toast('Agora você vê a versão do colega', { detail: 'A sua está em Versões anteriores.' }); } catch (err) { toastError(err, 'Não foi possível abrir'); }
       } }),
-      button({ icon: 'save', label: 'Ficar com a minha', variant: 'primary', onClick: async () => {
+      button({ icon: 'save', label: 'Ficar com a minha', onClick: async () => {
         close();
         const sent = JSON.stringify(store.workflow);
         try {
@@ -112,6 +113,8 @@ function conflictDialog(message) {
           toast('A sua versão ficou no espaço', { kind: 'success', detail: 'A do colega está em Versões anteriores.' });
         } catch (err) { toastError(err, 'Não foi possível salvar'); }
       } }),
+      // juntar caixa por caixa (spec 048): o que só um mudou entra sozinho; onde os dois mexeram, a pessoa escolhe
+      button({ icon: 'columns', label: 'Juntar as duas', variant: 'primary', onClick: () => { close(); openMergeDialog({ outra: 'trabalho', nome: message.split(' salvou')[0] || 'o colega' }); } }),
     ],
   });
 }

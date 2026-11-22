@@ -16,10 +16,11 @@ from prodata.domain.constants import Constant
 from prodata.domain.workflow import ID_PATTERN, Workflow
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.team.definitions import KINDS, key_of
+from prodata.team.merge import apply, merge
 from prodata.team.repository import SpaceFlow
 from prodata.team.runtime import runner_for, used_sources
 from prodata.team.signing import Role
-from prodata.team.versions import SpaceVersionInfo
+from prodata.team.versions import SpaceVersionInfo, content_sha
 from prodata.team.workspaces import SPACE_ID
 
 router = APIRouter(prefix="/api/equipe", tags=["equipe"])
@@ -333,3 +334,52 @@ def add_comment(
 ) -> dict[str, Any]:
     return services.team.comment(space_id, workflow_id, req.tipo, texto=req.texto, alvo=req.alvo, caixa=req.caixa,
                                  rotulo=req.rotulo)  # fmt: skip
+
+
+# ---------------------------------------------------------------- juntar caixa por caixa (spec 048)
+
+
+class MergeRequest(BaseModel):
+    atual: Workflow
+    outra: str = Field("trabalho", pattern=r"^(trabalho|\d{8}-\d{6}-\d{6}-[a-z]+-[A-Za-z0-9._-]{1,64})$")
+    base: str | None = Field(None, pattern=r"^[0-9a-f]{64}$")
+    escolhas: dict[str, Literal["minha", "dele"]] = Field(default_factory=dict)
+
+
+def _merge_inputs(
+    space_id: str, workflow_id: str, req: MergeRequest, services: Services
+) -> tuple[Any, Workflow, Workflow]:
+    services.team.require(space_id, "leitor")
+    if req.outra == "trabalho":
+        theirs, _ = services.team.get(space_id, workflow_id)
+    else:
+        theirs = services.team.version(space_id, workflow_id, req.outra)
+    mine = req.atual.model_copy(update={"id": workflow_id})
+    return services.team.base_version(space_id, workflow_id, req.base), mine, theirs
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/juntar")
+def merge_preview(
+    space_id: SpaceId, workflow_id: WorkflowId, req: MergeRequest, services: ServicesDep
+) -> dict[str, Any]:
+    """O que entra sozinho e o que precisa de escolha, comparando com a versão de onde as duas partiram."""
+    base, mine, theirs = _merge_inputs(space_id, workflow_id, req, services)
+    plan = merge(base, mine, theirs)
+    preview, dropped = apply(base, mine, theirs, req.escolhas)
+    return {
+        **plan.model_dump(mode="json"),
+        "previa": preview.model_dump(mode="json", by_alias=True),
+        "fios_descartados": dropped,
+    }
+
+
+@router.post("/espacos/{space_id}/fluxos/{workflow_id}/juntar/aplicar")
+def merge_apply(
+    space_id: SpaceId, workflow_id: WorkflowId, req: MergeRequest, services: ServicesDep
+) -> dict[str, Any]:
+    """O fluxo juntado com as escolhas (entra como mudança não salva na tela). ``base``: a nova base do Salvar,
+    quando juntou com a versão de trabalho do espaço."""
+    base, mine, theirs = _merge_inputs(space_id, workflow_id, req, services)
+    joined, dropped = apply(base, mine, theirs, req.escolhas)
+    return {"fluxo": joined.model_dump(mode="json", by_alias=True), "fios_descartados": dropped,
+            "base": content_sha(theirs) if req.outra == "trabalho" else None}  # fmt: skip

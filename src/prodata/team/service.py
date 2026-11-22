@@ -360,6 +360,14 @@ class TeamService:
         self._require(space_id, "leitor")
         return self._versions(space_id).get(workflow_id, version_id)
 
+    def base_version(self, space_id: str, workflow_id: str, sha256: str | None) -> Workflow | None:
+        """A versão de onde as duas partiram (a que a pessoa abriu), para juntar (spec 048, RF-4822)."""
+        if not sha256:
+            return None
+        versions = self._versions(space_id)
+        found = versions.find(workflow_id, sha256)
+        return versions.get(workflow_id, found) if found else None
+
     def record_version(self, space_id: str, workflow: Workflow, origin: SpaceOrigin) -> None:
         """Antes de restaurar: o que estava aberto vira versão (spec 046), com a minha assinatura."""
         self._require(space_id, "editor")

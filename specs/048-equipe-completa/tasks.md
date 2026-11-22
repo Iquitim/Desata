@@ -21,8 +21,8 @@
 
 ## Marco 4 — Juntar caixa por caixa
 
-- [ ] T11 `merge` e `apply` com base, sem base e casos de exclusão (RF-4822, RF-4823, RF-4825)
-- [ ] T12 Janela Juntar: resumo, escolhas lado a lado, prévia e Aplicar; entradas no conflito e em Versões (RF-4821, RF-4824, RF-4826)
+- [x] T11 `merge` e `apply` com base, sem base e casos de exclusão (RF-4822, RF-4823, RF-4825)
+- [x] T12 Janela Juntar: resumo, escolhas lado a lado, prévia e Aplicar; entradas no conflito e em Versões (RF-4821, RF-4824, RF-4826)
 
 ## Marco 5 — Recomendações de limpeza
 

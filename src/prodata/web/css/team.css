@@ -85,3 +85,4 @@
   background: var(--surface); color: var(--text); font: inherit; font-size: var(--fs-sm); cursor: pointer; box-shadow: var(--shadow-md); }
 .cm-chip.has-new { border-color: var(--accent); }
 .cm-chip-new { padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-text); font-size: var(--fs-xs); font-weight: 700; }
+.link-button { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }

@@ -7,7 +7,7 @@ Sobe o próprio servidor, com uma pasta de dados temporária (nada vai para a bi
 janela e confere o comportamento de ponta a ponta: o que os testes do motor não enxergam (cliques, arrastos, diálogos,
 animações). Sai com 1 se alguma conferência falhar ou se a página tiver erro de JavaScript.
 
-Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2, equipe3, equipe4 e equipe5 (specs 047 e 048,
+Conferências: salvar (spec 045), versoes, fio, fonte, erros e pilula (spec 046), equipe, equipe2 a equipe6 (specs 047 e 048,
 duas pessoas: sobe um segundo servidor).
 """
 
@@ -929,6 +929,97 @@ def equipe5(pg: Page) -> None:
         shutil.rmtree(folder, ignore_errors=True)
 
 
+# ---------------------------------------------------------------- spec 048: juntar caixa por caixa (marco 4)
+
+
+def equipe6(pg: Page) -> None:
+    folder = Path(tempfile.mkdtemp(prefix="conferir-espaco6-"))
+    ctx2 = pg.context.browser.new_context(viewport={"width": 1500, "height": 950})  # type: ignore[union-attr]
+    bruno = ctx2.new_page()
+    try:
+        pg.evaluate(POST, ["/api/equipe/identidade", {"nome": "Ana Souza"}])
+        sid = pg.evaluate(
+            POST, ["/api/equipe/espacos", {"acao": "criar", "caminho": str(folder), "nome": "Time 7"}]
+        )["id"]
+        pg.evaluate(PUT, [f"/api/equipe/espacos/{sid}/fluxos/fluxo_sql", SQL_FLOW])
+        ready(bruno, URL_BRUNO)
+        bruno.evaluate(POST, ["/api/equipe/identidade", {"nome": "Bruno Lima"}])
+        bruno.evaluate(POST, ["/api/equipe/espacos", {"acao": "entrar", "caminho": str(folder)}])
+        pg.evaluate(
+            POST,
+            [
+                f"/api/equipe/espacos/{sid}/membros",
+                {"acao": "aceitar", "usuario": "bruno", "papel": "editor"},
+            ],
+        )
+
+        # Caixas diferentes: entra tudo sozinho
+        open_space_flow(pg, "Time 7", "Fluxo com SQL")
+        pg.wait_for_function(
+            "() => window.__S.store.workflow?.id === 'fluxo_sql' && !window.__S.store.running", timeout=20000
+        )
+        bruno_saves(bruno, sid, sql="SELECT 2")  # Bruno muda a caixa SQL
+        pg.evaluate("() => window.__S.mutate((wf) => { wf.nodes[0].label = 'Colunas da Ana'; })")
+        pg.keyboard.press("Control+s")
+        dlg = pg.locator("dialog[open][aria-label='Outra pessoa salvou este fluxo']")
+        dlg.wait_for(timeout=10000)
+        dlg.locator("button", has_text="Juntar as duas").click()
+        merge = pg.locator("dialog[open]", has=pg.locator(".mg-layout"))
+        merge.locator(".mg-summary").wait_for(timeout=10000)
+        check(
+            "juntar: caixas diferentes entram sozinhas, sem perguntar",
+            "2 mudanças juntadas" in merge.inner_text() and merge.locator(".mg-conflict").count() == 0,
+            merge.inner_text()[:300],
+        )
+        merge.locator("button", has_text="Aplicar").click()
+        merge.wait_for(
+            state="detached", timeout=10000
+        )  # o Aplicar terminou (o fluxo já estava com mudanças não salvas)
+        pg.wait_for_function(
+            "() => window.__S.store.workflow.nodes[1].config.sql === 'SELECT 2'", timeout=10000
+        )
+        joined = pg.evaluate(
+            "() => window.__S.store.workflow.nodes.map((n) => [n.label || '', n.config.sql || ''])"
+        )
+        check(
+            "o resultado tem as duas mudanças",
+            ["Colunas da Ana", ""] in joined and ["", "SELECT 2"] in joined,
+            joined,
+        )
+        pg.keyboard.press("Control+s")
+        pg.wait_for_function("() => !window.__S.isDirty()", timeout=10000)
+        check(
+            "depois de juntar, Salvar grava sem novo conflito",
+            pg.locator("dialog[open][aria-label='Outra pessoa salvou este fluxo']").count() == 0,
+        )
+
+        # A mesma caixa: escolher
+        bruno_saves(bruno, sid, sql="SELECT 3")
+        pg.evaluate("() => window.__S.mutate((wf) => { wf.nodes[1].config.sql = 'SELECT 4'; })")
+        pg.keyboard.press("Control+s")
+        dlg.wait_for(timeout=10000)
+        dlg.locator("button", has_text="Juntar as duas").click()
+        merge.locator(".mg-conflict").first.wait_for(timeout=10000)
+        check("a mesma caixa nos dois: a janela pergunta só essa", merge.locator(".mg-conflict").count() == 1)
+        merge.locator(".mg-option", has_text="A de Bruno Lima").click()
+        merge.locator("button", has_text="Aplicar").click()
+        pg.wait_for_function(
+            "() => window.__S.store.workflow.nodes[1].config.sql === 'SELECT 3'", timeout=10000
+        )
+        check("a escolha vale: ficou a do Bruno", True)
+        pg.keyboard.press("Control+z")
+        check(
+            "Desfazer volta ao de antes de juntar",
+            pg.evaluate("() => window.__S.store.workflow.nodes[1].config.sql") == "SELECT 4",
+        )
+    except Exception:
+        bruno.screenshot(path=str(Path(tempfile.gettempdir()) / "conferir-equipe6-bruno.png"))
+        raise
+    finally:
+        ctx2.close()
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -955,6 +1046,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "equipe3": equipe3,
     "equipe4": equipe4,
     "equipe5": equipe5,
+    "equipe6": equipe6,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
@@ -1001,7 +1093,7 @@ def main() -> int:
         # Duas pessoas (spec 047): o Bruno tem o próprio servidor, pasta de dados e usuário.
         second = (
             start_server(Path(folder) / "dados-bruno", PORT_BRUNO, "bruno")
-            if {"equipe2", "equipe3", "equipe5"} & set(chosen)
+            if {"equipe2", "equipe3", "equipe5", "equipe6"} & set(chosen)
             else None
         )
         try:

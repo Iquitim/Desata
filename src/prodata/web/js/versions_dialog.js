@@ -65,7 +65,7 @@ const sameNode = (a, b) => a.type === b.type && (a.label || '') === (b.label || 
   && stable(a.config || {}) === stable(b.config || {});
 
 /** Miniatura do canvas da versão, nas cores das famílias; marca o que volta e o que muda em relação a agora. */
-function preview(version) {
+export function preview(version) {
   const current = new Map((store.workflow?.nodes || []).map((n) => [n.id, n]));
   const nodes = version.nodes || [];
   const svg = document.createElementNS(SVG, 'svg');
@@ -120,7 +120,7 @@ function preview(version) {
     const g = el('g', { class: `ver-node ${state}`, 'data-category': tool?.category || 'prep' });
     g.append(el('rect', { x: n.x, y: n.y, width: NODE_W, height: NODE_MIN_H, rx: 8 }));
     g.append(el('rect', { x: n.x, y: n.y, width: 6, height: NODE_MIN_H, rx: 3, class: 'ver-node-band' }));
-    g.append(el('text', { x: n.x + 16, y: n.y + NODE_MIN_H / 2 + 5, class: 'ver-node-text' }, (n.label || tool?.label || n.type).slice(0, 22)));
+    g.append(el('text', { x: n.x + 16, y: n.y + NODE_MIN_H / 2 + 5, class: 'ver-node-text' }, (n.label || tool?.name || n.type).slice(0, 22)));
     if (state) g.append(el('title', {}, state === 'back' ? 'Volta ao restaurar' : 'Volta à configuração desta versão'));
     svg.append(g);
   }
@@ -145,6 +145,13 @@ export async function openVersionsDialog({ choose = null } = {}) {
   const side = h('div', { class: 'ver-side' }, h('p', { class: 'muted' }, 'Carregando…'));
   const restoreBtn = button({ icon: 'undo', label: 'Restaurar esta versão', variant: 'primary', disabled: true });
   let chosen = null;
+  // espaço da equipe (spec 048): juntar a versão de outra pessoa com a que está aberta, caixa por caixa
+  const mergeBtn = space ? button({ icon: 'columns', label: 'Juntar com a que está aberta', variant: 'ghost', disabled: true, onClick: async () => {
+    if (!chosen) return;
+    close();
+    const { openMergeDialog } = await import('./merge_dialog.js');
+    openMergeDialog({ outra: chosen.item.id, nome: chosen.item.autor_nome });
+  } }) : null;
 
   const { close } = openDialog({
     title: `Versões anteriores · ${wf.name}`,
@@ -155,8 +162,9 @@ export async function openVersionsDialog({ choose = null } = {}) {
         ? `Guardadas na pasta do espaço "${space.nome}", para todos do espaço (até 50 por fluxo).`
         : 'Guardadas neste computador, a cada Salvar (até 30 por fluxo).'),
       button({ label: 'Fechar', onClick: () => close() }),
+      mergeBtn,
       restoreBtn,
-    ],
+    ].filter(Boolean),
   });
 
   let items = [];
@@ -195,6 +203,7 @@ export async function openVersionsDialog({ choose = null } = {}) {
         preview(version),
         legend());
       restoreBtn.disabled = same || Boolean(store.readonly);
+      if (mergeBtn) mergeBtn.disabled = same || Boolean(store.readonly) || item.origin === 'restore';
       if (store.readonly) restoreBtn.title = 'Aberto só para ver: para restaurar, comece a editar.';
     } catch (err) {
       side.replaceChildren(h('p', { class: 'field-error' }, err.message || 'Não foi possível abrir esta versão.'));
