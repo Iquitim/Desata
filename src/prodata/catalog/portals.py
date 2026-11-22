@@ -105,6 +105,8 @@ PORTALS: tuple[Portal, ...] = (
     Portal(
         id="recife", nome="Dados abertos do Recife", orgao="Prefeitura do Recife", esfera="municipal",
         ckan="https://dados.recife.pe.gov.br", site="o portal da Prefeitura do Recife",
+        arquivos=("ckan-storage-download.app.emprel.gov.br",),
+        nota="Os arquivos ficam no armazenamento da Emprel, a empresa de TI da prefeitura, para onde o portal aponta.",
     ),
     Portal(
         id="fortaleza", nome="Dados abertos de Fortaleza", orgao="Prefeitura de Fortaleza", esfera="municipal",

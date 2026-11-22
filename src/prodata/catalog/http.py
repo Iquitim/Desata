@@ -18,6 +18,7 @@ from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
@@ -301,6 +302,64 @@ class CatalogClient:
     def propfind(self, url: str, body: bytes, *, auth: tuple[str, str], **kwargs: Any) -> Answer:
         headers = {"Depth": "1", "Content-Type": "application/xml"}
         return self.request("PROPFIND", url, headers=headers, content=body, auth=auth, **kwargs)
+
+    def download_to(
+        self, url: str, dest: Path, *, max_bytes: int, timeout: float | None = None
+    ) -> tuple[str, int, httpx.Headers]:
+        """Baixa ``url`` para ``dest`` (arquivos dos portais, RF-4938/4940).
+
+        Segue redirecionamento só dentro da lista oficial; grava em ``<dest>.parte`` e só renomeia no fim, então um
+        arquivo pela metade nunca fica com o nome final. Passou de ``max_bytes``: para, apaga e diz que é grande.
+        Devolve o endereço final, o tamanho e os cabeçalhos.
+        """
+        limit = timeout or self.timeout
+        partial = dest.with_name(dest.name + ".parte")
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        for _ in range(MAX_REDIRECTS + 1):
+            self.check(url, "GET")
+            request = self.client.build_request(
+                "GET", url, headers={"Accept-Encoding": "identity"}, timeout=limit
+            )
+            try:
+                response = self.client.send(request, stream=True)
+            except httpx.HTTPError as exc:
+                raise self._message(exc, url, limit) from None
+            try:
+                location = response.headers.get("location")
+                if response.status_code in (301, 302, 303, 307, 308) and location:
+                    target = urljoin(url, location)
+                    if not hosts.allowed(target):
+                        raise CatalogError(
+                            f"{_cap(_site(url))} redirecionou o arquivo para um endereço fora da lista oficial "
+                            f"({hosts.host_of(target) or 'sem endereço'}). O {marca().nome} não seguiu.",
+                            "recusado",
+                        )
+                    url = target
+                    continue
+                if response.status_code >= 400:
+                    raise http_error(Answer(response.status_code, response.headers, b"", url, 0.0))
+                declared = response.headers.get("content-length")
+                if declared and declared.isdigit() and int(declared) > max_bytes:
+                    raise self._too_big(url, max_bytes)
+                size = 0
+                try:
+                    with partial.open("wb") as fh:
+                        for chunk in response.iter_bytes():
+                            size += len(chunk)
+                            if size > max_bytes:
+                                raise self._too_big(url, max_bytes)
+                            fh.write(chunk)
+                except BaseException:
+                    partial.unlink(missing_ok=True)
+                    raise
+                partial.replace(dest)
+                return url, size, response.headers
+            except httpx.HTTPError as exc:
+                partial.unlink(missing_ok=True)
+                raise self._message(exc, url, limit) from None
+            finally:
+                response.close()
+        raise CatalogError(f"{_cap(_site(url))} redirecionou vezes demais.", "resposta")
 
     @contextmanager
     def stream(
