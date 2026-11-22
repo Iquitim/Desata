@@ -130,7 +130,10 @@ class Workspaces:
             return space.model_copy(update={"estado": "invalido", "motivo": exc.message})
         if manifest.marca != self._brand_id:
             return space.model_copy(
-                update={"estado": "outra_marca", "motivo": f"Este espaço é do {manifest.marca_nome}."}
+                update={
+                    "estado": "outra_marca",
+                    "motivo": "Esta pasta é de um espaço criado por outro programa e não pode ser usada aqui.",
+                }
             )
         if not writable(root):
             return space.model_copy(
@@ -179,7 +182,7 @@ class Workspaces:
         manifest = read_manifest(root)
         if manifest.marca != self._brand_id:
             raise InvalidInputError(
-                f"Este espaço é do {manifest.marca_nome}: abra-o no {manifest.marca_nome}."
+                "Esta pasta é de um espaço criado por outro programa e não pode ser usada aqui."
             )
         return self._register(manifest, root)
 

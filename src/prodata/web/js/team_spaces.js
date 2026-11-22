@@ -29,7 +29,7 @@ const STATE_LABEL = {
   ok: ['ok', 'Disponível'],
   somente_leitura: ['warn', 'Só leitura'],
   pasta_ausente: ['err', 'Pasta inacessível'],
-  outra_marca: ['err', 'De outra marca'],
+  outra_marca: ['err', 'Indisponível'],
   invalido: ['err', 'Com problema'],
 };
 
@@ -101,8 +101,7 @@ export async function openSpacesDialog({ onChanged } = {}) {
       h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Seu nome no espaço'), nameInput,
         h('span', { class: 'field-help' }, 'Aparece para o time em "quem está editando" e nas versões.')),
       h('div', { class: 'panel-subtitle' }, 'Seus espaços'), list,
-      h('p', { class: 'field-help' }, `Cada espaço pertence a uma marca: um espaço do ${brand.nome} só abre no ${brand.nome}. `
-        + 'Os dados das fontes, os resultados e as senhas nunca vão para a pasta do espaço.')),
+      h('p', { class: 'field-help' }, 'Os dados das fontes, os resultados e as senhas nunca vão para a pasta do espaço.')),
     actions: [
       button({ label: 'Entrar num espaço…', icon: 'folder', onClick: () => add('entrar') }),
       button({ label: 'Criar espaço…', icon: 'plus', variant: 'primary', onClick: () => add('criar') }),

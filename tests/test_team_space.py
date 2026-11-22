@@ -75,7 +75,7 @@ def test_create_join_leave_and_brand_ownership(tmp_path: Path) -> None:
     colleague = Workspaces(tmp_path / "b" / "espacos.json", "desata", "Desata")
     assert colleague.join(str(folder)).id == space.id
     other_brand = Workspaces(tmp_path / "p" / "espacos.json", "protege", "PRO.DATA")
-    with pytest.raises(InvalidInputError, match="Este espaço é do Desata"):
+    with pytest.raises(InvalidInputError, match="criado por outro programa"):
         other_brand.join(str(folder))
     colleague.leave(space.id)
     assert colleague.spaces() == [] and (folder / CONTROL / "espaco.json").is_file()  # sair não apaga nada
