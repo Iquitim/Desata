@@ -4,7 +4,7 @@ Princípios não negociáveis do projeto. Toda spec, plano e PR deve ser compat�
 com eles; quando um princípio precisar mudar, altere este arquivo primeiro, em PR
 separado, com justificativa.
 
-Versão: 1.7.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-22 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047; definições compartilhadas da equipe — spec 048)
+Versão: 1.8.0 · Ratificada: 2026-10-28 · Emendada: 2026-11-22 (princípio IV: cofre do SO, conectores somente leitura; destinos escolhidos pelo usuário — spec 009; imagens PNG do dashboard — spec 014; arquivos de origem vinculados — spec 017; pasta lida, modelo de Excel e estado das caixas — spec 033; pasta de um espaço da equipe e princípio VIII, colaboração opcional e verificável — spec 047; definições compartilhadas da equipe — spec 048; acesso à internet só pelo catálogo de dados públicos — spec 049)
 
 ## I. Spec antes do código (SDD)
 
@@ -57,6 +57,13 @@ exceto widgets especializados reutilizáveis.
   consultas e APIs, spec 048). Nunca grava ali dados das fontes, resultados de execução, amostras ou
   segredos: uma conexão ou API da equipe vai sem senha, token ou chave, e cada pessoa guarda o seu segredo
   no cofre do próprio computador.
+- O **catálogo de dados públicos** (spec 049) é o único acesso à internet que o programa faz por iniciativa
+  própria, e só nestes momentos: com o catálogo aberto (conferir se cada órgão está no ar e ler os metadados),
+  quando a pessoa pede **Atualizar o catálogo** e quando um fluxo executa uma fonte do catálogo. Só lê, por
+  HTTPS, de uma lista fixa de endereços oficiais embutida no programa; nunca envia dados das fontes, dos
+  fluxos ou da pessoa, nem usa conta, token ou chave. Arquivos grandes baixados do catálogo vão para uma pasta
+  escolhida explicitamente pela pessoa (caminho absoluto, já existente, nomes fixos e saneados), nunca para a
+  pasta de um espaço da equipe. Sem catálogo aberto e sem fonte do catálogo, o programa não acessa a rede.
 - Uploads têm lista de extensões permitidas e tamanho máximo.
 - Segredos (senhas de banco, chaves de API) nunca são salvos em workflows,
   arquivos do projeto ou logs, nem devolvidos pela API. Ficam no cofre do
