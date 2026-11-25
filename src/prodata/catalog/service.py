@@ -19,7 +19,9 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from prodata.catalog import curated, health, holidays, hosts, portals, sources
+import polars as pl
+
+from prodata.catalog import cache, curated, health, holidays, hosts, portals, sources
 from prodata.catalog.download import DownloadManager
 from prodata.catalog.http import CatalogClient, CatalogError
 from prodata.catalog.index import AGENCY_BY_ID, CatalogStore
@@ -256,6 +258,20 @@ class CatalogService:
                 self.news.record(
                     source_id, info.get("atualizado"), str(info.get("atualizado_rotulo", "")), now
                 )
+
+    # ---------------------------------------------------------------- municípios do IBGE (RF-4962)
+
+    def municipality_list(self) -> pl.DataFrame:
+        """Os municípios do IBGE: a última leitura guardada ou, sem ela, lidos agora (e guardados)."""
+        saved = cache.load(self.root, "ibge.localidades/municipios", {})
+        if saved is not None:
+            return saved.frame
+        with CatalogClient(timeout=60) as client:
+            result = sources.read(client, "ibge.localidades/municipios", {}, self.root)
+        cache.save(
+            self.root, "ibge.localidades/municipios", {}, result.frame, datetime.now(), result.warnings
+        )
+        return result.frame
 
     # ---------------------------------------------------------------- CNPJ (RF-4951..4953)
 

@@ -12,14 +12,85 @@ const NUMERIC = new Set(['Int64', 'Float64']);
 const DATES = new Set(['Date', 'Datetime']);
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CNY', 'ARS'];
 
-/** As receitas que cabem nesta coluna (número), para o menu do cabeçalho. */
+/** Coluna que parece município: pelo nome, ou por valores com 6 ou 7 dígitos ou "Nome/UF". */
+const looksLikeCity = (c) => /munic|cidade|localidade|ibge|cod_?mun/i.test(c.name)
+  || /^\d{6,7}$|[/(-]\s*[A-Za-z]{2}\)?$/.test(String(c.stats?.top ?? ''));
+
+/** As receitas que cabem nesta coluna, para o menu do cabeçalho. */
 export function recipeMenu(column, profile) {
-  if (!NUMERIC.has(column.type) || store.readonly) return [];
-  return [
-    'separator',
-    { label: 'Corrigir valores pelo IPCA…', icon: 'percent', onSelect: () => openRecipe('ipca', column, profile) },
-    { label: 'Converter para dólar pela PTAX…', icon: 'currency', onSelect: () => openRecipe('ptax', column, profile) },
-  ];
+  if (store.readonly) return [];
+  const items = [];
+  if (NUMERIC.has(column.type)) {
+    items.push({ label: 'Corrigir valores pelo IPCA…', icon: 'percent', onSelect: () => openRecipe('ipca', column, profile) },
+      { label: 'Converter para dólar pela PTAX…', icon: 'currency', onSelect: () => openRecipe('ptax', column, profile) });
+  }
+  if ((column.type === 'String' || column.type === 'Int64') && looksLikeCity(column)) {
+    items.push({ label: 'Juntar com municípios do IBGE…', icon: 'map', onSelect: () => openCities(column, profile) });
+  }
+  return items.length ? ['separator', ...items] : [];
+}
+
+/** Juntar com municípios do IBGE (RF-4962): mostra antes quantas linhas casam e lista as que não casam. */
+function openCities(column, profile) {
+  const nodeId = store.inspect.nodeId;
+  const port = store.inspect.anchor || 'out';
+  const columns = profile?.columns || [];
+  const cityCols = columns.filter((c) => c.type === 'String' || c.type === 'Int64');
+  const citySel = h('select', { class: 'input', 'aria-label': 'Coluna do município', onchange: () => conferir() },
+    cityCols.map((c) => h('option', { value: c.name, selected: c.name === column.name }, c.name)));
+  const ufSel = h('select', { class: 'input', 'aria-label': 'Coluna da UF', onchange: () => conferir() },
+    h('option', { value: '' }, 'No próprio texto (São Paulo/SP) ou sem UF'),
+    columns.filter((c) => c.type === 'String' && c.name !== column.name).map((c) => h('option', { value: c.name, selected: /^(uf|estado|sigla_uf)$/i.test(c.name) }, c.name)));
+  const result = h('div', { class: 'rc-check' }, h('p', { class: 'field-help' }, 'Conferindo com a lista do IBGE…'));
+  let last = null;
+  const conferir = async () => {
+    result.replaceChildren(h('p', { class: 'field-help' }, 'Conferindo com a lista do IBGE…'));
+    try {
+      last = await api.publicCitiesCheck({ fluxo: store.workflow.id, caixa: nodeId, saida: port, coluna: citySel.value, coluna_uf: ufSel.value });
+    } catch (err) {
+      result.replaceChildren(h('p', { class: 'pd-note pd-note-err' }, icon('alert', 13), ` ${err.message}`));
+      return;
+    }
+    const pct = last.linhas ? Math.round((last.casam / last.linhas) * 100) : 0;
+    result.replaceChildren(...[
+      h('div', { class: 'rc-match', role: 'img', 'aria-label': `${last.casam} de ${last.linhas} linhas casam` },
+        h('span', { class: 'rc-match-ok', style: { width: `${pct}%` } })),
+      h('p', {}, h('b', {}, `${last.casam.toLocaleString('pt-BR')} de ${last.linhas.toLocaleString('pt-BR')} linhas casam (${pct}%).`),
+        last.nao_casam ? ` ${last.nao_casam.toLocaleString('pt-BR')} ficam com o código vazio: corrija na origem ou com uma caixa antes.` : ' Todas casaram.'),
+      last.exemplos.length ? h('table', { class: 'rc-misses' },
+        h('thead', {}, h('tr', {}, h('th', {}, 'Não casou'), h('th', { class: 'num' }, 'Linhas'), h('th', {}, 'Por quê'))),
+        h('tbody', {}, last.exemplos.map((e) => h('tr', {}, h('td', { class: 'mono' }, e.valor || '(vazio)'), h('td', { class: 'num' }, e.linhas.toLocaleString('pt-BR')), h('td', {}, e.motivo))))) : null,
+    ].filter(Boolean)); // null viraria o texto "null"
+  };
+  const go = async () => {
+    const anchor = node(nodeId);
+    let recipe;
+    try {
+      recipe = await api.publicCitiesRecipe({ coluna: citySel.value, coluna_uf: ufSel.value, colunas: columns.map((c) => c.name),
+        x: (anchor?.x || 0) + 260, y: anchor?.y || 0 });
+    } catch (err) {
+      toastError(err, 'Não foi possível montar a junção');
+      return;
+    }
+    insert(nodeId, port, recipe);
+    dlg.close();
+    toast(recipe.container.title, { kind: 'success', detail: 'A fonte do IBGE e a caixa SQL entraram numa etapa. Ctrl+Z desfaz.' });
+  };
+  const dlg = openDialog({
+    title: 'Juntar com municípios do IBGE',
+    size: 'lg',
+    body: h('div', { class: 'stack-sm rc-dialog' },
+      h('div', { class: 'rc-scheme' }, h('span', { class: 'rc-step' }, icon('landmark', 14), 'Municípios do IBGE'), h('span', { class: 'rc-arrow' }, '→'),
+        h('span', { class: 'rc-step' }, icon('terminal', 14), 'Código de 7 ou 6 dígitos, ou nome com UF'), h('span', { class: 'rc-arrow' }, '→'),
+        h('span', { class: 'rc-step' }, icon('map', 14), 'código, nome e UF do IBGE')),
+      h('div', { class: 'row rc-cols' },
+        h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Município'), citySel),
+        h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'UF'), ufSel)),
+      result,
+      h('p', { class: 'field-help' }, icon('info', 12), " Sem diferenciar acento, maiúsculas, hífen e d'. Nome sem UF só casa quando existe num estado só.")),
+    actions: [button({ label: 'Cancelar', onClick: () => dlg.close() }), button({ icon: 'plus', label: 'Inserir no fluxo', variant: 'primary', onClick: go })],
+  });
+  conferir();
 }
 
 function scheme(kind) {

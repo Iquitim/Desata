@@ -16,7 +16,7 @@ from prodata.catalog.download import DownloadError
 from prodata.catalog.http import CatalogError
 from prodata.catalog.model import SourceNotFoundError
 from prodata.catalog.readers.files import FormatChangedError
-from prodata.catalog.recipes import RecipeRequest
+from prodata.catalog.recipes import MunicipalityRequest, RecipeRequest
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.nodes.public_data import PublicSelection
 
@@ -389,6 +389,36 @@ def download_action(
 
 
 # ---------------------------------------------------------------- receitas prontas (RF-4961)
+
+
+class MunicipalityCheck(BaseModel):
+    fluxo: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
+    caixa: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
+    saida: str = Field("out", pattern=r"^[A-Za-z0-9_-]{1,32}$")
+    coluna: str = Field(min_length=1, max_length=120)
+    coluna_uf: str = Field("", max_length=120)
+
+
+@router.post("/municipios/conferir")
+def municipality_check(req: MunicipalityCheck, services: ServicesDep) -> dict[str, Any]:
+    """Antes de inserir: quantas linhas casam com os municípios do IBGE e quais não casam, com o motivo (RF-4962).
+    Executa a mesma consulta da caixa SQL que vai entrar no fluxo."""
+    from prodata.catalog import municipios
+
+    frame = services.cache.table(req.fluxo, req.caixa, req.saida)
+    if frame is None:
+        raise HTTPException(409, "Execute o fluxo antes: a conferência usa o resultado desta caixa.")
+    listed = _guard(services.catalog.municipality_list)
+    try:
+        return municipios.check(frame, listed, req.coluna, req.coluna_uf or None)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from None
+
+
+@router.post("/receita/municipios")
+def municipality_recipe(req: MunicipalityRequest) -> dict[str, Any]:
+    """As caixas da junção com os municípios do IBGE (a fonte e a caixa SQL com a regra), para a tela inserir."""
+    return recipes.municipalities(req)
 
 
 @router.post("/receita")

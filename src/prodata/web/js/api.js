@@ -78,6 +78,8 @@ export const api = {
   downloadStart: (body) => request('POST', '/api/catalogo/downloads', body),
   downloads: () => request('GET', '/api/catalogo/downloads'),
   publicRecipe: (body) => request('POST', '/api/catalogo/receita', body),
+  publicCitiesCheck: (body) => request('POST', '/api/catalogo/municipios/conferir', body),
+  publicCitiesRecipe: (body) => request('POST', '/api/catalogo/receita/municipios', body),
   downloadAction: (id, action) => request('POST', `/api/catalogo/downloads/${enc(id)}/${action}`),
   publicHolidays: (local, ano) => request('GET', `/api/catalogo/feriados/editar?local=${enc(local)}&ano=${ano}`),
   publicHolidayAction: (action, body, local, ano) =>

@@ -162,3 +162,36 @@ def _pack(
         "largura": max(xs) - min(xs) + 260,
         "nota": note,
     }
+
+
+# ------------------------------------------------------------------ Juntar com municípios do IBGE (RF-4962)
+
+MUNICIPIOS_ID = "ibge.localidades/municipios"
+
+
+class MunicipalityRequest(BaseModel):
+    coluna: str = Field(pattern=COLUMN)
+    coluna_uf: str = Field("", pattern=r"^([^\[\]\n]{1,120})?$")
+    colunas: list[str] = Field(
+        default_factory=list, max_length=2000
+    )  # as colunas da tabela, para não repetir nomes
+    x: float = 0
+    y: float = 0
+
+
+def municipalities(req: MunicipalityRequest) -> dict[str, Any]:
+    """A fonte de municípios do IBGE e a caixa SQL com a regra da junção, numa etapa."""
+    from prodata.catalog import municipios
+
+    data, query = _id("municipios"), _id("junta")
+    sql = municipios.match_sql(req.coluna, req.coluna_uf or None, req.colunas or [req.coluna])
+    nodes = [
+        {"id": data, "type": "io.public_data", "label": "Municípios do IBGE", "x": req.x, "y": req.y + 170,
+         "config": _public(MUNICIPIOS_ID, {})},
+        {"id": query, "type": "transform.sql_query", "label": f"Junta {req.coluna} com os municípios", "x": req.x + 260,
+         "y": req.y, "config": {"sql": sql}},
+    ]  # fmt: skip
+    title = f"Juntar {req.coluna} com os municípios do IBGE"
+    note = ("Código de 7 dígitos, de 6 (sem o verificador) ou nome com UF, sem diferenciar acento e maiúsculas. As linhas "
+            "que não casam ficam com o código vazio.")  # fmt: skip
+    return _pack(nodes, [(data, "out", query, "in2")], query, "in", query, title, note)

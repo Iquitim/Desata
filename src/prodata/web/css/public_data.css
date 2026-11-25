@@ -361,3 +361,12 @@
   background: var(--surface); border: 1px solid var(--border); }
 .rc-step .icon { color: var(--accent); }
 .rc-arrow { color: var(--text-3); }
+.rc-cols { gap: 12px; flex-wrap: wrap; }
+.rc-cols .field { flex: 1 1 200px; min-width: 0; }
+.rc-check { display: grid; gap: 8px; }
+.rc-match { height: 10px; border-radius: 999px; background: color-mix(in srgb, var(--err) 25%, var(--surface-3)); overflow: hidden; }
+.rc-match-ok { display: block; height: 100%; background: var(--ok); }
+.rc-misses { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.rc-misses th, .rc-misses td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.rc-misses th { color: var(--text-2); font-weight: 600; }
+.rc-misses .num { text-align: right; font-variant-numeric: tabular-nums; }

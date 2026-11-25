@@ -1654,6 +1654,46 @@ def receitas(pg: Page) -> None:
     )
 
 
+def municipios(pg: Page) -> None:
+    """T19: Juntar com municípios do IBGE pelo menu da coluna, com a conferência antes, e a lista real do IBGE."""
+    new_flow(pg)
+    node_id = pg.evaluate("""() => window.__A.addNode('io.text_input', 100, 200, { table: { columns: ['cidade', 'vendas'],
+      rows: [['Sao Paulo/SP', '10'], ['355030', '5'], ['3509502', '7'], ['SANTA BARBARA D\\'OESTE - SP', '3'],
+             ['Bom Jesus', '2'], ['Cidade Inventada', '1']] } }).id""")
+    run(pg)
+    pg.evaluate("id => { window.__S.select(id); window.__S.inspect(id); }", node_id)
+    pg.locator("#results .tab[data-tab=data]").click()
+    pg.locator("th.sortable", has_text="cidade").first.click(button="right")
+    pg.locator(".menu .menu-item", has_text="Juntar com municípios do IBGE").click()
+    dlg = pg.locator("dialog[open]", has=pg.locator(".rc-dialog"))
+    dlg.locator(".rc-match").wait_for(timeout=60000)
+    text = dlg.inner_text()
+    check("a conferência conta antes de inserir", "4 de 6 linhas casam" in text, text[:300])
+    check(
+        "lista o que não casa, com o motivo",
+        "Bom Jesus" in text and "mais de um estado" in text and "Cidade Inventada" in text,
+        text[-400:],
+    )
+    _print(pg, "municipios")
+    dlg.locator("button", has_text="Inserir no fluxo").click()
+    pg.wait_for_function(
+        "() => window.__S.store.workflow.containers.some((c) => c.title.includes('municípios'))", timeout=5000
+    )
+    run(pg)
+    last = pg.evaluate(
+        "() => window.__S.store.workflow.nodes.find((n) => n.type === 'transform.sql_query').id"
+    )
+    rows = pg.evaluate(
+        f"() => fetch('/api/results/' + window.__S.store.workflow.id + '/{last}/out').then((r) => r.json()).then((d) => d.rows)"
+    )
+    codes = [r.get("ibge_municipio_codigo") for r in rows]
+    check(
+        "o fluxo dá o mesmo que a conferência",
+        codes[:4] == ["3550308", "3550308", "3509502", "3545803"] and codes[4:] == [None, None],
+        codes,
+    )
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1688,6 +1728,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "citacao": citacao,
     "cnpj": cnpj,
     "receitas": receitas,
+    "municipios": municipios,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
