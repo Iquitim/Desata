@@ -9,6 +9,7 @@ from fastapi import APIRouter, Path, Query, Response
 from pydantic import BaseModel, Field, ValidationError
 
 from prodata.api.deps import Services, ServicesDep
+from prodata.catalog.holidays import TeamHolidayEdits
 from prodata.connectors.api_model import SavedApi
 from prodata.connectors.models import Connection
 from prodata.connectors.queries import SavedQuery
@@ -197,12 +198,12 @@ def team_schedules(space_id: SpaceId, services: ServicesDep) -> dict[str, Any]:
 
 # ---------------------------------------------------------------- definições da equipe (spec 048)
 
-DefKindPath = Annotated[Literal["constantes", "conexoes", "consultas", "apis"], Path()]
+DefKindPath = Annotated[Literal["constantes", "conexoes", "consultas", "apis", "feriados"], Path()]
 DefKey = Annotated[str, Path(pattern=r"^[A-Za-z0-9_-]{1,64}$")]
 
 
 class ShareRequest(BaseModel):
-    tipo: Literal["constantes", "conexoes", "consultas", "apis"]
+    tipo: Literal["constantes", "conexoes", "consultas", "apis", "feriados"]
     id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,64}$")
 
 
@@ -215,6 +216,8 @@ class MissingRequest(BaseModel):
 
 
 def _local(services: Services, kind: str, key: str) -> BaseModel:
+    if kind == "feriados":  # as edições de feriados deste computador (spec 049, RF-4948)
+        return TeamHolidayEdits(id=key, edicoes=services.catalog.holiday_edits().to_json())
     if kind == "constantes":
         found = services.constants.all().get(key)
         if found is None:
@@ -303,6 +306,8 @@ def bring_definition(
         services.connections.save(item)
     elif isinstance(item, SavedApi):
         services.apis.save(item)
+    elif isinstance(item, TeamHolidayEdits):
+        services.catalog.holiday_replace(item.edits())
     elif isinstance(item, Constant):
         exists = item.name in services.constants.all()
         services.constants.save(item, previous=item.name if exists else None)

@@ -8,12 +8,17 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import threading
-from datetime import datetime
+import unicodedata
+import uuid
+from collections.abc import Callable
+from dataclasses import replace
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from prodata.catalog import curated, portals, sources
+from prodata.catalog import curated, holidays, portals, sources
 from prodata.catalog.http import CatalogClient
 from prodata.catalog.index import AGENCY_BY_ID, CatalogStore
 from prodata.catalog.model import SourceNotFoundError
@@ -178,6 +183,84 @@ class CatalogService:
         with CatalogClient(timeout=30) as client:
             return bcb_olinda.currencies(client)
 
+    # ---------------------------------------------------------------- feriados editáveis (RF-4945..4947)
+
+    def holidays_view(self, place: str, year: int) -> dict[str, Any]:
+        with self._job_lock:
+            edits = holidays.load_edits(self.root)
+        return {
+            "local": place,
+            "ano": year,
+            "revisado_em": holidays.program_revision(),
+            "linhas": holidays.editor_rows(place, year, edits),
+            "cobertura": "Nacionais, bancários, estaduais e capitais completos; outros municípios: os que você cadastrar.",
+        }
+
+    def _edit(self, change: Callable[[holidays.Edits], None]) -> None:
+        with self._job_lock:
+            edits = holidays.load_edits(self.root)
+            change(edits)
+            holidays.save_edits(self.root, edits)
+
+    def holiday_include(self, data: dict[str, Any]) -> None:
+        slug = re.sub(r"[^a-z0-9]+", "-", holidays_slug(data.get("nome", ""))).strip("-")[:40] or "feriado"
+        holiday = holidays.Holiday.from_json(
+            {
+                **data,
+                "id": f"meu/{slug}-{uuid.uuid4().hex[:6]}",
+                "tipo": data.get("tipo") or "meu",
+                "fonte": "você",
+            },
+            origem="meu",
+        )
+        self._edit(lambda e: e.include(holiday))
+
+    def holiday_correct(self, holiday_id: str, fields: dict[str, Any]) -> None:
+        clean = {k: v for k, v in fields.items() if v not in ("",)}
+        if "unico" in clean and isinstance(clean["unico"], str):
+            clean["unico"] = date.fromisoformat(clean["unico"])
+
+        def change(edits: holidays.Edits) -> None:
+            mine = next((h for h in edits.incluidos if h.id == holiday_id), None)
+            if mine is not None:
+                edits.include(replace(mine, **clean))
+                return
+            base = holidays.find_base(holiday_id)
+            if base is None:
+                raise SourceNotFoundError("Esse feriado não existe mais na base.")
+            edits.correct(base, **clean)
+
+        self._edit(change)
+
+    def holiday_stop(self, holiday_id: str, from_year: int) -> None:
+        if holidays.find_base(holiday_id) is None and not holiday_id.startswith("meu/"):
+            raise SourceNotFoundError("Esse feriado não existe na base.")
+        self._edit(lambda e: e.stop(holiday_id, from_year))
+
+    def holiday_restore(self, holiday_id: str) -> None:
+        self._edit(lambda e: e.restore(holiday_id))
+
+    def holiday_keep_mine(self, holiday_id: str) -> None:
+        """O programa também mudou este feriado: a pessoa fica com a dela, agora contra a versão nova do programa."""
+
+        def change(edits: holidays.Edits) -> None:
+            base = holidays.find_base(holiday_id)
+            if base is None or holiday_id not in edits.corrigidos:
+                raise SourceNotFoundError("Não há correção sua para esse feriado.")
+            fields, _old = edits.corrigidos[holiday_id]
+            edits.corrigidos[holiday_id] = (fields, base.fingerprint())
+
+        self._edit(change)
+
+    def holiday_edits(self) -> holidays.Edits:
+        with self._job_lock:
+            return holidays.load_edits(self.root)
+
+    def holiday_replace(self, edits: holidays.Edits) -> None:
+        """Trazer da equipe: as edições da lista da equipe passam a ser as deste computador."""
+        with self._job_lock:
+            holidays.save_edits(self.root, edits)
+
     # ---------------------------------------------------------------- atualizar (RF-4933)
 
     def refresh_status(self) -> dict[str, Any]:
@@ -213,6 +296,10 @@ class CatalogService:
             with self._job_lock:
                 self._job["rodando"] = False
                 self._job["fim"] = datetime.now().isoformat()
+
+
+def holidays_slug(text: str) -> str:
+    return unicodedata.normalize("NFKD", str(text)).encode("ascii", "ignore").decode().lower()
 
 
 def _state_json(state: Any) -> dict[str, Any]:

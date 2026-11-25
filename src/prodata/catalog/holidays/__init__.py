@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import polars as pl
+from pydantic import BaseModel, Field
 
 HolidayType = Literal["nacional", "estadual", "municipal", "bancario", "ponto_facultativo", "meu"]
 Origin = Literal["calculado", "anbima", "programa", "meu"]
@@ -423,3 +424,96 @@ def previous_business_day(day: date, frame: pl.DataFrame) -> date | None:
     """O último dia útil até ``day`` (inclusive), numa tabela de ``business_days`` (usado pela receita da PTAX)."""
     rows = frame.filter((pl.col("data") <= day) & pl.col("dia_util"))
     return rows["data"].max() if rows.height else None  # type: ignore[return-value]
+
+
+# ------------------------------------------------------------------ edições guardadas e a tela de edição (RF-4945)
+
+EDITS_FILE = "feriados_meus.json"
+
+
+class TeamHolidayEdits(BaseModel):
+    """A lista de edições de feriados levada para o espaço da equipe (RF-4948): uma definição assinada da spec 048,
+    sem segredo (só datas, nomes e leis)."""
+
+    id: str = Field("calendario", pattern=r"^[A-Za-z0-9_-]{1,64}$")
+    name: str = Field("Feriados da equipe", max_length=120)
+    edicoes: dict[str, Any] = Field(default_factory=dict)
+
+    def edits(self) -> Edits:
+        return Edits.from_json(self.edicoes)
+
+
+_WEEKDAYS = ("segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo")
+
+
+def load_edits(root: Path) -> Edits:
+    """As edições da pessoa, na pasta do catálogo deste computador. Arquivo estragado: sem edições, nunca erro."""
+    try:
+        return Edits.from_json(json.loads((root / EDITS_FILE).read_text(encoding="utf-8")))
+    except OSError, ValueError, KeyError, TypeError:
+        return Edits()
+
+
+def save_edits(root: Path, edits: Edits) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / EDITS_FILE
+    tmp = path.with_name(f"{path.name}.tmp")
+    tmp.write_text(json.dumps(edits.to_json(), ensure_ascii=False, indent=1), encoding="utf-8")
+    tmp.replace(path)
+
+
+def rule_text(h: Holiday) -> str:
+    """A regra em palavras: "todo ano em 09/07", "60 dias depois da Páscoa", "só em 24/12/2027"."""
+    if h.unico is not None:
+        text = f"só em {h.unico:%d/%m/%Y}"
+    elif h.pascoa is not None:
+        text = (
+            "domingo de Páscoa"
+            if h.pascoa == 0
+            else (
+                f"{h.pascoa} dias depois da Páscoa" if h.pascoa > 0 else f"{-h.pascoa} dias antes da Páscoa"
+            )
+        )
+    else:
+        day, month = (h.fixo or "01-01").split("-")[::-1]
+        text = f"todo ano em {day}/{month}"
+    if h.ajuste == "domingo_seguinte":
+        text += ", no domingo seguinte"
+    if h.desde and h.ate:
+        text += f" (de {h.desde} a {h.ate})"
+    elif h.desde:
+        text += f" (desde {h.desde})"
+    elif h.ate:
+        text += f" (até {h.ate})"
+    return text
+
+
+def editor_rows(place: str, year: int, edits: Edits) -> list[dict[str, Any]]:
+    """Os feriados que valem no lugar, com a regra, a data no ano, a origem e o que a pessoa mudou."""
+    wanted = places_for(place)
+    revision = program_revision()
+    rows: list[dict[str, Any]] = []
+    for item in merge([*NATIONAL, *program_holidays()], edits):
+        h = item.holiday
+        if h.abrangencia not in wanted:
+            continue
+        day = h.on(year)
+        origin = "meu" if h.origem == "meu" else h.origem
+        rows.append({
+            "id": h.id, "nome": h.nome, "tipo": h.tipo, "abrangencia": h.abrangencia, "regra": rule_text(h),
+            "fixo": h.fixo, "pascoa": h.pascoa, "unico": h.unico.isoformat() if h.unico else None,
+            "ajuste": h.ajuste, "desde": h.desde, "ate": h.ate,
+            "data": day.isoformat() if day else None, "dia_semana": _WEEKDAYS[day.weekday()] if day else None,
+            "lei": h.lei, "fonte": h.fonte, "confirmar": h.confirmar, "nota": h.nota, "origem": origin,
+            "revisado_em": revision if origin == "programa" else None,
+            "editado": item.editado, "deixou_de_valer": item.deixou_de_valer,
+            "programa_mudou": item.programa_mudou,
+            "original": {"nome": item.original.nome, "regra": rule_text(item.original), "lei": item.original.lei}
+            if item.original is not None else None,
+        })  # fmt: skip
+    rows.sort(key=lambda r: (r["data"] is None, r["data"] or "", r["abrangencia"], r["nome"]))
+    return rows
+
+
+def find_base(holiday_id: str) -> Holiday | None:
+    return next((h for h in (*NATIONAL, *program_holidays()) if h.id == holiday_id), None)

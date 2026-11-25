@@ -18,8 +18,8 @@
 
 - [x] T07 Rotas do catálogo; painel com menu de categorias e Portais, ícones, contagens, cartões com o selo Pronto ou Leitura automática, e busca (RF-4901..4904, RF-4936, RF-4939)
 - [x] T08 Detalhe da fonte: informações, colunas, prévia (obrigatória na leitura automática, com troca de separador, codificação e cabeçalho), escolhas e parâmetros do OData, Avançado, Abrir no navegador, Adicionar ao fluxo e à vista Dados (RF-4911..4915, RF-4937, RF-4938, RF-4940)
-- [ ] T09 Favoritos e recentes (RF-4905)
-- [ ] T09a Editar feriados…: incluir, corrigir, Não vale mais, Restaurar, origem de cada linha, Manter o meu / Usar o do programa; Compartilhar com a equipe (RF-4945..4948, CA-10)
+- [x] T09 Favoritos e recentes (RF-4905)
+- [x] T09a Editar feriados…: incluir, corrigir, Não vale mais, Restaurar, origem de cada linha, Manter o meu / Usar o do programa; Compartilhar com a equipe (RF-4945..4948, CA-10)
 
 ## Marco 3 — Situação dos órgãos
 
@@ -28,7 +28,7 @@
 
 ## Marco 4 — Fonte do catálogo no fluxo
 
-- [ ] T12 Ferramenta `public_data`: configuração, execução, período relativo, leitura guardada e Exigir dados atuais; formato aceito dos arquivos de portal e Aceitar o novo formato (RF-4925, RF-4938, RF-4971, RF-4973, CA-01, CA-12)
+- [ ] T12 Ferramenta `public_data`: configuração, execução, período relativo, leitura guardada e Exigir dados atuais; formato aceito dos arquivos de portal e Aceitar o novo formato; num fluxo do espaço, Feriados e Dias úteis usam a lista de feriados da equipe (RF-4925, RF-4938, RF-4948, RF-4971, RF-4973, CA-01, CA-12)
 - [ ] T13 Pasta Dados públicos na vista Dados; aviso Dados novos na vista e na caixa (RF-4935)
 - [ ] T14 Metadados de fonte no resultado; dicionário no Perfil; citação no dashboard e no HTML exportado (RF-4912, RF-4963, CA-07)
 

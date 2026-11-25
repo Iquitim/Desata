@@ -4,6 +4,7 @@
 import { api } from './api.js';
 import { openLink } from './desktop.js';
 import { button, h } from './dom.js';
+import { openHolidayEditor } from './holidays_editor.js';
 import { icon } from './icons.js';
 
 const PERIODS = [
@@ -346,6 +347,9 @@ export function publicDetail(entry, ctx = {}) {
       i.resumo ? h('p', {}, i.resumo) : null,
       i.descricao && i.descricao !== i.resumo ? h('details', { class: 'pd-more' }, h('summary', {}, 'Descrição do órgão'), h('p', {}, i.descricao)) : null,
       facts(),
+      entry.id.startsWith('calendario/') ? h('div', { class: 'row' }, button({ icon: 'edit', label: 'Editar feriados…', onClick: () => openHolidayEditor({
+        place: st.choices.local || 'BR', onChange: () => { st.preview = null; runPreview(); } }) }),
+      h('small', { class: 'field-help' }, 'Inclua os do seu município, corrija ou marque o que não vale mais.')) : null,
       i.avisos.map((a) => h('p', { class: 'pd-note' }, icon('alert', 13), ` ${a}`)),
       i.escolhas.length && !i.arquivos ? h('section', { class: 'pd-section' }, h('h3', {}, 'Escolhas'), i.escolhas.map(field)) : null,
       filesSection(), odataSection(), filePreviewSection(), previewSection(), columnsSection(), footer(), actions(),

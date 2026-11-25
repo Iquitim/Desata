@@ -382,7 +382,7 @@ def read(
         return comex.read_general(client, params.get("fluxo", "export"), f"{start:%Y-%m}", f"{end:%Y-%m}",
                                   details=list(details), metrics=metrics)  # fmt: skip
     if head == "calendario":
-        return _read_calendar(client, parts[1], params, choices, day)
+        return _read_calendar(client, parts[1], params, choices, day, root)
     if head == "ckan":
         return _read_portal(client, parts[1], parts[2], choices, root, day)
     if head == "receita.cnpj":
@@ -408,13 +408,14 @@ def _read_ibge(
 
 
 def _read_calendar(
-    client: CatalogClient, kind: str, params: dict[str, Any], choices: dict[str, Any], day: date
+    client: CatalogClient, kind: str, params: dict[str, Any], choices: dict[str, Any], day: date, root: Path
 ) -> ReadResult:
     period = PeriodChoice.model_validate(choices.get("periodo") or {"kind": "intervalo", "inicio": date(day.year, 1, 1),
                                                                      "fim": date(day.year, 12, 31)})  # fmt: skip
     start, end = period.resolve(day)
     calendar: holidays.Calendar = "bancario" if params.get("calendario") == "bancario" else "civil"
     place = str(params.get("local") or "BR")
+    edits = holidays.load_edits(root)  # as edições da pessoa valem nos feriados e nos dias úteis (RF-4948)
     bank: tuple[holidays.Holiday, ...] = ()
     warnings: list[str] = []
     if calendar == "bancario":
@@ -425,10 +426,10 @@ def _read_calendar(
                 f"ANBIMA indisponível ({exc.message}): feriados bancários calculados pelo programa."
             )
     if kind == "feriados":
-        frame = holidays.table(start.year, end.year, place, calendar=calendar, anbima=bank)
+        frame = holidays.table(start.year, end.year, place, calendar=calendar, anbima=bank, edits=edits)
         frame = frame.filter((pl.col("data") >= start) & (pl.col("data") <= end))
     else:
-        frame = holidays.business_days(start, end, place, calendar=calendar, anbima=bank)
+        frame = holidays.business_days(start, end, place, calendar=calendar, anbima=bank, edits=edits)
     return ReadResult(frame, [], warnings)
 
 

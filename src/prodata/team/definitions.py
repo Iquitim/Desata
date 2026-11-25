@@ -16,6 +16,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError
 
+from prodata.catalog.holidays import TeamHolidayEdits
 from prodata.connectors.api_model import SavedApi
 from prodata.connectors.models import Connection
 from prodata.connectors.queries import SavedQuery
@@ -27,19 +28,22 @@ from prodata.team.repository import SIG, HeldFileError, atomic_write
 from prodata.team.signing import Members, Signature, check_document, sign_document
 from prodata.team.workspaces import CONTROL
 
-DefKind = Literal["constantes", "conexoes", "consultas", "apis"]
+DefKind = Literal["constantes", "conexoes", "consultas", "apis", "feriados"]
 KINDS: dict[str, type[BaseModel]] = {
     "constantes": Constant,
     "conexoes": Connection,
     "consultas": SavedQuery,
     "apis": SavedApi,
+    # Edições dos feriados (spec 049, RF-4948): datas, nomes e leis, sem segredo.
+    "feriados": TeamHolidayEdits,
 }
-KIND_NAMES = {"constantes": "constante", "conexoes": "conexão", "consultas": "consulta", "apis": "API"}
+KIND_NAMES = {"constantes": "constante", "conexoes": "conexão", "consultas": "consulta", "apis": "API",
+              "feriados": "lista de feriados"}  # fmt: skip
 DEFINITIONS_DIR = "definicoes"
 _KEY = {"constantes": re.compile(NAME_PATTERN)}
 _ID = re.compile(ID_PATTERN)
 
-AnyDefinition = Constant | Connection | SavedQuery | SavedApi
+AnyDefinition = Constant | Connection | SavedQuery | SavedApi | TeamHolidayEdits
 
 
 def key_of(kind: str, item: BaseModel) -> str:

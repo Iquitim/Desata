@@ -176,6 +176,48 @@
 .pd-actions .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .pd-why { margin: 0; font-size: var(--fs-xs); color: var(--text-3); }
 
+/* Editar feriados (T09a) */
+.hol-dialog .dialog-body { display: flex; flex-direction: column; padding: 16px 18px; }
+.hol-root { display: flex; flex-direction: column; gap: 12px; }
+.hol-top { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.hol-top .pd-inline .input { width: 150px; }
+.hol-top > .row { margin-left: auto; display: flex; gap: 8px; }
+.hol-cover { flex: 1 1 260px; display: flex; gap: 4px; margin: 0; font-size: var(--fs-xs); color: var(--text-2); }
+.hol-form {
+  display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--accent);
+  border-radius: var(--radius-lg); background: var(--accent-weak);
+}
+.hol-form h3 { font-size: var(--fs-sm); font-weight: 600; }
+.hol-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.hol-form-grid .input { width: 100%; }
+.hol-rule { display: flex; flex-direction: column; gap: 6px; }
+.hol-rule .row { display: flex; flex-wrap: wrap; gap: 12px; font-size: var(--fs-sm); }
+.hol-rule .input { width: 180px; }
+.hol-form > .row { display: flex; justify-content: flex-end; gap: 8px; }
+.hol-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.hol-row {
+  display: grid; grid-template-columns: 72px minmax(0, 1fr) auto auto auto; gap: 10px; align-items: start;
+  padding: 8px 4px; border-bottom: 1px solid var(--border);
+}
+.hol-row.is-stopped { opacity: 0.55; }
+.hol-row.is-conflict { background: var(--warn-weak); }
+.hol-date { display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+.hol-date small, .hol-main small { color: var(--text-3); font-size: var(--fs-xs); }
+.hol-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: var(--fs-sm); }
+.hol-note { font-style: italic; }
+.hol-conflict { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; font-size: var(--fs-xs); }
+.hol-conflict p { display: flex; gap: 4px; margin: 0; color: var(--warn); }
+.hol-conflict dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; margin: 0; }
+.hol-conflict dt { color: var(--text-3); }
+.hol-conflict dd { margin: 0; }
+.hol-conflict .row, .hol-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.hol-actions { justify-content: flex-end; }
+.hol-mine { background: var(--accent-weak); color: var(--accent); }
+.hol-type-nacional { background: var(--surface-3); color: var(--text); }
+.hol-type-estadual, .hol-type-municipal { background: var(--surface-3); color: var(--text-2); }
+.hol-type-ponto_facultativo { background: var(--surface-2); color: var(--text-3); }
+.hol-type-meu { background: var(--accent-weak); color: var(--accent); }
+
 @media (max-width: 980px) {
   .pd-columns { grid-template-columns: 200px minmax(0, 1fr); }
   .pd-detail { display: none; }

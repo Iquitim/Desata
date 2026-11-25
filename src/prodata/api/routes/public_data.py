@@ -113,6 +113,86 @@ def currencies(services: ServicesDep) -> dict[str, Any]:
     return {"moedas": _guard(services.catalog.currencies)}
 
 
+# ---------------------------------------------------------------- feriados editáveis (RF-4945..4947)
+
+Place = Query("BR", max_length=7, pattern=r"^(BR|[A-Z]{2}|\d{7})$")
+
+
+@router.get("/feriados/editar")
+def holidays_view(
+    services: ServicesDep, local: str = Place, ano: int = Query(..., ge=1900, le=2100)
+) -> dict[str, Any]:
+    return _guard(lambda: services.catalog.holidays_view(local, ano))
+
+
+class HolidayIn(BaseModel):
+    nome: str = Field(min_length=1, max_length=120)
+    abrangencia: str = Field(pattern=r"^(BR|[A-Z]{2}|\d{7})$")
+    tipo: Literal["municipal", "estadual", "nacional", "ponto_facultativo", "meu"] = "meu"
+    fixo: str | None = Field(None, pattern=r"^\d{2}-\d{2}$")
+    pascoa: int | None = Field(None, ge=-100, le=100)
+    unico: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    ajuste: Literal["domingo_seguinte"] | None = None
+    desde: int | None = Field(None, ge=1900, le=2100)
+    lei: str = Field("", max_length=200)
+    nota: str = Field("", max_length=500)
+
+
+class HolidayChange(BaseModel):
+    id: str = Field(min_length=3, max_length=120)
+    campos: dict[str, Any] = Field(default_factory=dict)
+    desde: int | None = Field(None, ge=1900, le=2100)
+
+
+def _holiday_action(
+    services: ServicesDep, action: Callable[[], None], local: str, ano: int
+) -> dict[str, Any]:
+    try:
+        _guard(action)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from None
+    return services.catalog.holidays_view(local, ano)
+
+
+@router.post("/feriados/incluir")
+def holiday_include(
+    req: HolidayIn, services: ServicesDep, local: str = Place, ano: int = Query(2026)
+) -> dict[str, Any]:
+    return _holiday_action(
+        services, lambda: services.catalog.holiday_include(req.model_dump(exclude_none=True)), local, ano
+    )
+
+
+@router.post("/feriados/corrigir")
+def holiday_correct(
+    req: HolidayChange, services: ServicesDep, local: str = Place, ano: int = Query(2026)
+) -> dict[str, Any]:
+    return _holiday_action(services, lambda: services.catalog.holiday_correct(req.id, req.campos), local, ano)
+
+
+@router.post("/feriados/nao-vale-mais")
+def holiday_stop(
+    req: HolidayChange, services: ServicesDep, local: str = Place, ano: int = Query(2026)
+) -> dict[str, Any]:
+    return _holiday_action(
+        services, lambda: services.catalog.holiday_stop(req.id, req.desde or ano), local, ano
+    )
+
+
+@router.post("/feriados/restaurar")
+def holiday_restore(
+    req: HolidayChange, services: ServicesDep, local: str = Place, ano: int = Query(2026)
+) -> dict[str, Any]:
+    return _holiday_action(services, lambda: services.catalog.holiday_restore(req.id), local, ano)
+
+
+@router.post("/feriados/manter-o-meu")
+def holiday_keep(
+    req: HolidayChange, services: ServicesDep, local: str = Place, ano: int = Query(2026)
+) -> dict[str, Any]:
+    return _holiday_action(services, lambda: services.catalog.holiday_keep_mine(req.id), local, ano)
+
+
 @router.post("/favoritos/{source_id:path}")
 def toggle_favorite(source_id: str, services: ServicesDep) -> dict[str, Any]:
     if not source_id or len(source_id) > 300:

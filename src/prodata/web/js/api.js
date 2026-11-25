@@ -62,6 +62,9 @@ export const api = {
     request('POST', '/api/catalogo/arquivo/previa', { id, arquivo, opcoes, membro }),
   publicOdata: (id, arquivo) => request('GET', `/api/catalogo/odata?id=${enc(id)}&arquivo=${enc(arquivo)}`),
   publicCurrencies: () => request('GET', '/api/catalogo/moedas'),
+  publicHolidays: (local, ano) => request('GET', `/api/catalogo/feriados/editar?local=${enc(local)}&ano=${ano}`),
+  publicHolidayAction: (action, body, local, ano) =>
+    request('POST', `/api/catalogo/feriados/${action}?local=${enc(local)}&ano=${ano}`, body),
 
   datasets: () => request('GET', '/api/datasets'),
   previewDataset: (name, options = {}, rows = 100) =>

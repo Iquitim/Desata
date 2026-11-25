@@ -1171,6 +1171,29 @@ def catalogo(pg: Page) -> None:
         detail.locator(".pd-must").inner_text()[:300],
     )
     _print(pg, "arquivo")
+    # T09a: Editar feriados, com um município que não é capital (CA-10).
+    dlg.locator(".pd-menu-item", has_text="Calendário").click()
+    dlg.locator(".pd-card", has_text="Feriados").first.click()
+    detail.locator("button", has_text="Editar feriados").click()
+    editor = pg.locator("dialog.hol-dialog[open]")
+    editor.locator(".hol-row").first.wait_for(timeout=15000)
+    local = editor.locator(".hol-top input").first
+    local.fill("3509502")
+    local.press("Tab")
+    editor.locator(".hol-row", has_text="Revolução Constitucionalista").wait_for(timeout=15000)
+    check(
+        "Campinas mostra o 9 de julho de São Paulo", editor.locator(".hol-row", has_text="09/07").count() >= 1
+    )
+    editor.locator("button", has_text="Incluir feriado").click()
+    editor.locator(".hol-form input").first.fill("Nossa Senhora da Conceição")
+    editor.locator(".hol-rule input.input").fill("08/12")
+    editor.locator(".hol-form button", has_text="Incluir").click()
+    mine = editor.locator(".hol-row", has_text="Nossa Senhora da Conceição")
+    mine.wait_for(timeout=15000)
+    check("o feriado incluído aparece como Seu", "Seu" in mine.inner_text(), mine.inner_text())
+    check("nada de null escrito no editor", "null" not in editor.inner_text())
+    _print(pg, "feriados")
+    editor.locator("header button").click()
 
 
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
