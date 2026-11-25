@@ -133,6 +133,7 @@ uma versão nova do programa.
 | RF-4953 | **Download que não prende o programa.** O download roda em segundo plano, com uma barra na vista Dados (parte atual, total baixado, velocidade e tempo estimado), **Pausar**, **Continuar** e **Cancelar**. Fechar o programa pausa; ao abrir, a vista Dados oferece **Continuar o download do CNPJ**, retomando do ponto em que parou. Uma parte que falha tenta de novo sozinha três vezes antes de pedir ação. |
 | RF-4954 | **Conferido e pronto.** Cada ZIP é conferido (tamanho anunciado e integridade do ZIP) e descompactado na mesma pasta com nomes fixos (`empresas_0.csv`, `estabelecimentos_3.csv`…); o ZIP é apagado depois, salvo se a pessoa marcar **Manter os ZIPs**. No fim, a vista Dados ganha a fonte de pasta **CNPJ AAAA-MM** já configurada: separador, Latin-1, sem cabeçalho, nomes das colunas do leiaute da Receita, tipos (datas `AAAAMMDD` como data, capital social como número) e o dicionário de colunas. |
 | RF-4955 | **Leiaute conferido.** O programa conhece o leiaute publicado pela Receita. Se a quantidade de colunas de um arquivo não bate com o leiaute, a fonte avisa ("a Receita mudou o leiaute de Estabelecimentos: 31 colunas, esperadas 30") e entrega as colunas com nomes genéricos, sem adivinhar. |
+| RF-4957 | **Filtro na leitura.** Estabelecimentos inteiro passa de 20 GB de texto e não cabe na memória da maioria dos computadores. A fonte de pasta do CNPJ tem **Filtro na leitura**: UF, município, CNAE principal e situação cadastral (Estabelecimentos), e **Só as empresas destes estabelecimentos** (Empresas, Sócios e Simples, pela fonte de Estabelecimentos do mesmo mês). O programa lê os arquivos aos poucos e guarda só as linhas que passam; a prévia e o Perfil mostram o filtro em palavras. Sem filtro e sem limite de linhas, uma leitura que não caberia na memória deste computador não começa: a fonte explica o tamanho e oferece o filtro, em vez de travar o programa. |
 | RF-4956 | **Mês novo.** Quando a Receita publica um mês mais novo que o baixado, a fonte CNPJ mostra **Dados novos: AAAA-MM disponível** e oferece baixar, na mesma pasta-mãe. |
 
 ### Usar os dados com um clique
@@ -274,6 +275,9 @@ ANTT (não respondeu em 45 s), Bahia, Rio de Janeiro e Natal (sem conexão), Par
 - CA-13: Um CSV da pessoa com "0012" na linha 20.001 (depois da amostra) e um CNPJ que começa com zero chega ao
   fluxo com "0012" e o CNPJ inteiro, como texto, com o aviso na caixa; uma coluna de inteiros comuns continua
   inteira; o SQL gerado lê as mesmas colunas como texto.
+- CA-14: Estabelecimentos com Filtro na leitura (uma UF e um CNAE) lê só as linhas que passam, sem carregar o
+  arquivo inteiro; Empresas com Só as empresas destes estabelecimentos traz só os CNPJs básicos dessa leitura; sem
+  filtro, uma leitura maior que a memória deste computador não começa e a caixa explica o tamanho e o filtro.
 - CA-07: O dashboard e o HTML exportado de um fluxo com IPCA e Selic trazem a citação das duas fontes com a data.
 - CA-08: Abrir o programa, a vista Dados e executar um fluxo sem fonte pública não faz nenhuma requisição externa
   (teste automatizado); o fluxo salvo com a caixa Dados públicos não contém URL montada nem dados.
