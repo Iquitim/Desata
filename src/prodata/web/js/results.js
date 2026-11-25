@@ -28,6 +28,27 @@ const filtersByOutput = new Map();
 const outputKey = () => `${store.workflow?.id}:${store.inspect.nodeId}:${store.inspect.anchor}`;
 const currentFilters = () => filtersByOutput.get(outputKey()) || [];
 
+/** A fonte do catálogo Dados públicos da caixa inspecionada (spec 049): dicionário de colunas e citação. */
+function publicSource() {
+  const id = store.inspect.nodeId;
+  return node(id)?.type === 'io.public_data' ? nodeResult(id)?.extra?.fonte_publica || null : null;
+}
+const columnMeaning = (source, name) => source?.colunas?.find((c) => c.nome === name)?.descricao || '';
+
+/** O cartão da fonte no alto do Perfil: de onde vêm os dados, quando foram lidos e como citar (RF-4963). */
+function publicSourceCard(source) {
+  if (!source) return null;
+  const read = source.lido_em ? new Date(source.lido_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+  return h('section', { class: 'profile-source', 'aria-label': 'Fonte dos dados' },
+    h('span', { class: 'profile-source-icon' }, icon('landmark', 16)),
+    h('div', {},
+      h('strong', {}, [source.nome, source.orgao].filter(Boolean).join(' · ')),
+      read ? h('p', {}, `Lidos em ${read}, direto do órgão.`) : null,
+      source.citacao ? h('p', {}, h('span', { class: 'muted' }, 'Como citar: '), source.citacao) : null,
+      source.licenca ? h('p', { class: 'muted' }, source.licenca) : null,
+      source.colunas?.length ? h('p', { class: 'muted small' }, 'O significado de cada coluna aparece no cartão dela e na dica do cabeçalho em Resultado.') : null));
+}
+
 function setFilters(list) {
   filtersByOutput.set(outputKey(), list);
   state.offset = 0;
@@ -326,9 +347,10 @@ function dataView() {
   const sortIcon = (name) => (state.sortCol === name ? icon(state.sortDesc ? 'arrow-down' : 'arrow-up', 12) : null);
   const sortBy = (name, desc) => { state.sortCol = name; state.sortDesc = desc; state.offset = 0; load(); };
   const filtered = new Set(currentFilters().map((f) => f.column));
+  const source = publicSource(); // dicionário de colunas da fonte pública (RF-4912)
   const head = h('tr', {}, h('th', { class: 'rownum' }, '#'), cols.map((c) => h('th', {
     class: ['sortable', state.sortCol === c.name && 'sorted', filtered.has(c.name) && 'filtered'],
-    title: 'Clique para ordenar · botão direito para mais opções',
+    title: [columnMeaning(source, c.name), 'Clique para ordenar · botão direito para mais opções'].filter(Boolean).join('\n\n'),
     onclick: () => {
       if (state.sortCol !== c.name) sortBy(c.name, false);
       else if (!state.sortDesc) sortBy(c.name, true);
@@ -409,14 +431,17 @@ function profileView() {
       `Perfil das ${fmt.int(state.data.filtered_count)} linhas filtradas (de ${fmt.int(state.data.row_count)}).`)
     : null;
   // recomendações de limpeza (spec 048): o cartão aparece no alto quando a resposta chega
-  return h('div', {}, note, cleaningCard(), h('div', { class: 'profile-grid' }, state.data.profile.columns.map((c) => {
+  const source = publicSource();
+  return h('div', {}, note, publicSourceCard(source), cleaningCard(), h('div', { class: 'profile-grid' }, state.data.profile.columns.map((c) => {
     const s = c.stats || {};
+    const meaning = columnMeaning(source, c.name);
     const numeric = s.mean !== undefined;
     const facts = numeric
       ? [['Mín', s.min], ['Média', s.mean], ['Mediana', s.median], ['Máx', s.max], ['Desvio', s.std], ['Soma', s.sum]]
       : [['Distintos', c.unique_count], ['Mais comum', s.top ?? '—'], ['Ocorrências', s.top_count ?? 0]];
     return h('section', { class: 'profile-card' },
       h('header', {}, h('strong', { class: 'mono ellipsis' }, c.name), h('span', { class: 'th-type', title: `${typeName(c.type)} (${c.raw_type})` }, typeLabel(c.type))),
+      meaning ? h('p', { class: 'profile-meaning' }, meaning) : null,
       qualityBar(c),
       h('div', { class: 'q-legend' }, h('span', {}, h('i', { class: 'q-ok' }), `${c.ok_pct}% ok`),
         h('span', {}, h('i', { class: 'q-empty' }), `${c.empty_pct}% vazio`), h('span', {}, h('i', { class: 'q-null' }), `${c.null_pct}% nulo`),

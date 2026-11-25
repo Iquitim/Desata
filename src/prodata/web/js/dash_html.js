@@ -3,6 +3,7 @@
 // Rótulo e senha (spec 026): a senha é obrigatória em Confidencial e Restrito, e os dados ficam cifrados.
 
 import { api } from './api.js';
+import { buildCitation } from './dash_citation.js';
 import { encryptText } from './dash_crypt.js';
 import { widgetsByNode, pageHeight } from './dash_model.js';
 import { collectCss, saveDownload, stamp, toDataUri } from './dash_export.js';
@@ -60,6 +61,8 @@ function snapshot(displayed) {
     filters: [], options: [], nodes: {}, columns: {},
     fixed_filters: activeFiltersText(d.filters),
     frozen_filters: d.filters || [], // sem os filtros no arquivo, ainda apagam as categorias de fora
+    // de onde vêm os dados públicos (spec 049, RF-4963), a menos que a citação esteja desligada no dashboard
+    citation: d.cite_sources === false ? null : buildCitation(store.workflow.nodes, store.execution?.node_results),
   };
 }
 

@@ -117,6 +117,8 @@ def test_a_fonte_guardada_mostra_a_situacao_do_orgao(tmp_path: Path, catalog_ser
 def test_onde_e_usada_conta_a_fonte_com_quaisquer_escolhas() -> None:
     from prodata.services.usage import source_keys
 
-    config = {"fonte": {"id": "bcb.sgs/11", "escolhas": {"periodo": {"kind": "desde", "inicio": "2020-01-01"}}}}
+    config = {
+        "fonte": {"id": "bcb.sgs/11", "escolhas": {"periodo": {"kind": "desde", "inicio": "2020-01-01"}}}
+    }
     assert source_keys("io.public_data", config) == ["publica:bcb.sgs/11"]
     assert source_keys("io.public_data", {"fonte": {}}) == []

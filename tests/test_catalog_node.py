@@ -176,3 +176,23 @@ def test_mesmo_dia_reaproveita_dia_seguinte_le_de_novo(
 
     monkeypatch.setattr(module, "date", Tomorrow)
     assert module._signature(_ctx(tmp_path), cfg) != today
+
+
+def test_dicionario_das_colunas_vai_no_resultado(tmp_path: Path, catalog_server: Server) -> None:
+    """RF-4912: o significado de cada coluna acompanha a fonte, sem rede."""
+    catalog_server(_sgs)
+    out = public_data(_ctx(tmp_path), _cfg("bcb.sgs/11"))
+    names = {c["nome"]: c["descricao"] for c in out.extra["fonte_publica"]["colunas"]}
+    assert set(names) == {"data", "valor"}
+    assert all(names.values())
+
+
+def test_dicionario_generico_e_sem_dicionario() -> None:
+    from prodata.catalog import sources
+
+    assert [c["nome"] for c in sources.dictionary("bcb.sgs/99999", ["data", "valor", "extra"])] == [
+        "data",
+        "valor",
+    ]
+    assert sources.dictionary("ckan/cvm/x", ["cnpj"]) == []
+    assert sources.dictionary("../x", ["a"]) == []

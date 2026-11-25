@@ -129,6 +129,7 @@ class Dashboard(BaseModel):
     timeline: DashTimeline = Field(default_factory=DashTimeline)
     scenes: list[DashScene] = Field(default_factory=list, max_length=60)
     confidentiality: Confidentiality = DEFAULT_LABEL
+    cite_sources: bool = True  # citação das fontes públicas no rodapé (spec 049, RF-4963)
     items: list[DashItem] = Field(default_factory=list)  # ordem = camada (o último fica por cima)
     hidden: list[str] = Field(default_factory=list)  # caixas de BI fora da página (RF-1407)
 

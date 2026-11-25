@@ -284,3 +284,11 @@
   background: var(--surface); color: var(--accent); font: inherit; font-size: var(--fs-2xs); font-weight: 700; line-height: 15px; cursor: pointer; z-index: 2; }
 .node-news:hover { background: var(--accent-weak); }
 @media (max-width: 560px) { .pd-saved-fact { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Perfil da caixa Dados públicos: a fonte, a citação e o significado das colunas (T14, RF-4912, RF-4963) */
+.profile-source { display: flex; align-items: flex-start; gap: 10px; margin: 12px 12px 0; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 10px; background: var(--surface); font-size: var(--fs-sm); }
+.profile-source p { margin: 2px 0 0; overflow-wrap: anywhere; }
+.profile-source-icon { display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 8px;
+  color: var(--cat-inout); background: color-mix(in srgb, var(--cat-inout) 12%, var(--surface)); }
+.profile-meaning { margin: 4px 0 6px; font-size: var(--fs-xs); color: var(--text-2); line-height: 1.4; }

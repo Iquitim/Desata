@@ -4,6 +4,7 @@
 
 import { api } from './api.js';
 import { chartChrome, freeEl, placeItem, setCardEnv, visualCard } from './dash_cards.js';
+import { buildCitation, citationFooter } from './dash_citation.js';
 import { clickedValues, filterBar, isFilterActive, noFilterBadge, selectedIn } from './dash_filters.js';
 import { gifAction, initReplay, momentNote, openTimelineSetup, replaySlot, replayWidgets, stillMark, syncReplay } from './dash_replay_app.js';
 import { exportHtml } from './dash_html.js';
@@ -208,6 +209,24 @@ function pageEl({ editing = false, exporting = false } = {}) {
   }, look.backdrop, d.items.map((item) => itemEl(item, widgets, { editing, exporting })));
 }
 
+/** A citação das fontes públicas embaixo da página, com Ocultar e Mostrar (spec 049, RF-4963). */
+function citeEl() {
+  const d = dash();
+  const citation = buildCitation(store.workflow?.nodes, store.execution?.node_results);
+  if (!d || !citation) return null;
+  const width = PAGE_W * ui.scale;
+  if (d.cite_sources === false) {
+    return h('div', { class: 'dash-citation dash-citation-off', style: { width: `${width}px` } },
+      h('span', {}, 'A citação das fontes públicas está oculta no dashboard, na imagem e no HTML exportado.'),
+      button({ icon: 'eye', label: 'Mostrar', size: 'sm', variant: 'ghost', onClick: () => commitLayout((dd) => { dd.cite_sources = true; }) }));
+  }
+  return citationFooter(citation, {
+    width,
+    action: button({ label: 'Ocultar', size: 'sm', variant: 'ghost', title: 'Não mostrar a citação no dashboard, na imagem e no HTML exportado',
+      onClick: () => commitLayout((dd) => { dd.cite_sources = false; }) }),
+  });
+}
+
 /** Botão de exportar com selo e dica do que o rótulo faz naquela saída. */
 function exportButton({ icon: name, label, kind, onClick }) {
   const level = () => dash().confidentiality || 'interno';
@@ -349,16 +368,16 @@ export function render() {
     els.panelKey = key;
     if (keep) {
       Object.assign(els, { panel: previous.panel, stage: previous.stage });
-      els.stage.replaceChildren(sheet);
+      els.stage.replaceChildren(...[sheet, citeEl()].filter(Boolean));
       root.firstElementChild.replaceWith(headEl());
       drawFilterBar();
     } else {
       els.panel = panelEl();
-      els.stage = h('div', { class: 'dash-stage' }, sheet);
+      els.stage = h('div', { class: 'dash-stage' }, sheet, citeEl());
       root.replaceChildren(...[headEl(), filterBarEl(), h('div', { class: 'dash-workspace' }, els.stage, els.panel)].filter(Boolean));
     }
   } else {
-    root.replaceChildren(...[headEl(), filterBarEl(), replaySlot(), sheet].filter(Boolean));
+    root.replaceChildren(...[headEl(), filterBarEl(), replaySlot(), sheet, citeEl()].filter(Boolean));
   }
   root.scrollTop = scroll;
 }

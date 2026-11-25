@@ -154,6 +154,7 @@ def public_data(ctx: NodeContext, cfg: PublicDataConfig) -> NodeOutput:
             "citacao": cfg.fonte.citacao,
             "licenca": cfg.fonte.licenca,
             "lido_em": read_at.isoformat(timespec="seconds"),
+            "colunas": sources.dictionary(source_id, frame.columns),
         },
     }
     if warnings:

@@ -1,6 +1,7 @@
 // Imagem PNG da página ou de um visual, com a faixa do rótulo e dos filtros.
 
 import { api } from './api.js';
+import { buildCitation, citationFooter, citationHeight } from './dash_citation.js';
 import { renderPng, savePng, stamp } from './dash_export.js';
 import { activeFiltersText } from './dash_filters.js';
 import { PAGE_W, pageHeight } from './dash_model.js';
@@ -27,7 +28,10 @@ export async function exportPage() {
   }
   const strip = 40;
   const content = withStrip(page.pageEl({ exporting: true }), PAGE_W, pageHeight(d.page));
-  const data = await renderPng(content, PAGE_W, pageHeight(d.page) + strip, { background: d.page.background || 'var(--bg)' });
+  // a citação das fontes públicas embaixo da página (spec 049, RF-4963)
+  const citation = d.cite_sources === false ? null : buildCitation(store.workflow.nodes, store.execution?.node_results);
+  if (citation) content.append(citationFooter(citation, { width: PAGE_W }));
+  const data = await renderPng(content, PAGE_W, pageHeight(d.page) + strip + citationHeight(citation), { background: d.page.background || 'var(--bg)' });
   const saved = await savePng(`${store.workflow.name || 'Dashboard'} - ${stamp()}`, data);
   if (saved) { logImage(saved); toast(`Imagem salva: ${saved}`, { kind: 'success' }); }
 }

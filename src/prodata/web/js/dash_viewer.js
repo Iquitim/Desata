@@ -2,6 +2,7 @@
 // Roda sozinha, sem servidor: tudo o que precisa está no próprio arquivo. Com senha (spec 026), os dados
 // só existem cifrados até a pessoa digitá-la.
 
+import { citationFooter } from './dash_citation.js';
 import { chartChrome, freeEl, placeItem, setCardEnv, visualCard } from './dash_cards.js';
 import { computeWidget, applyFilters } from './dash_compute.js';
 import { decryptText } from './dash_crypt.js';
@@ -141,7 +142,9 @@ function start(data) {
       h('div', {}, data.org ? h('div', { class: 'dash-org' }, data.org) : null, h('h1', {}, data.name),
         h('p', { class: 'muted' }, `Dados de ${data.exported_at} · ${activeFiltersText(filters) || 'sem filtros aplicados'}`))));
     if (replay && !bar) buildBar();
-    root.replaceChildren(...[labelBar(data.label, data.label_name), head, note, filtersEl, bar?.el, sheet].filter(Boolean));
+    // a citação das fontes públicas (spec 049, RF-4963), com a largura da página
+    const cite = citationFooter(data.citation, { width: PAGE_W * scale });
+    root.replaceChildren(...[labelBar(data.label, data.label_name), head, note, filtersEl, bar?.el, sheet, cite].filter(Boolean));
   }
 
   setCardEnv({

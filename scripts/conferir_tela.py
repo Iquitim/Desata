@@ -1368,6 +1368,93 @@ def pasta_publica(pg: Page) -> None:
     check("a pasta some quando fica vazia", pg.locator(".pd-saved").count() == 0)
 
 
+def _public_box(source_id: str) -> dict[str, Any]:
+    from prodata.catalog import curated, hosts
+
+    s = curated.get(source_id)
+    assert s is not None
+    return {"fonte": {"id": s.id, "nome": s.nome, "orgao": hosts.SERVICES[s.servico].agency, "citacao": s.citacao,
+                      "licenca": s.licenca, "escolhas": {"periodo": {"kind": "ultimos_anos", "anos": 1}}}}  # fmt: skip
+
+
+def citacao(pg: Page) -> None:
+    """T14 (CA-07): dicionário no Perfil e na dica da coluna; citação de Selic e IPCA no dashboard e no HTML."""
+    new_flow(pg)
+    ids = pg.evaluate(
+        """([selic, ipca]) => {
+          const a = window.__A.addNode('io.public_data', 100, 100, { ...selic, __label: selic.fonte.nome }).id; const b = window.__A.addNode('io.public_data', 100, 260, { ...ipca, __label: ipca.fonte.nome }).id;
+          const ka = window.__A.addNode('bi.kpi_card', 400, 100, { title: 'Dias de Selic', metric: 'count' }).id;
+          const kb = window.__A.addNode('bi.kpi_card', 400, 260, { title: 'Meses de IPCA', metric: 'count' }).id;
+          window.__A.connect(a, 'out', ka, 'in'); window.__A.connect(b, 'out', kb, 'in'); return [a, b]; }""",
+        [_public_box("bcb.sgs/11"), _public_box("ibge.agregado/1737")],
+    )
+    run(pg)
+    statuses = pg.evaluate("ids => ids.map((id) => window.__S.store.execution.node_results[id]?.status)", ids)
+    check("as duas fontes executam", all(s in ("executed", "cached") for s in statuses), statuses)
+    pg.evaluate("id => { window.__S.select(id); window.__S.inspect(id); }", ids[0])
+    pg.locator("#results .tab[data-tab=profile]").click()
+    source = pg.locator(".profile-source")
+    source.wait_for(timeout=10000)
+    check("o Perfil mostra a fonte e como citar", "Como citar" in source.inner_text() and "SGS 11" in source.inner_text(),
+          source.inner_text())  # fmt: skip
+    meanings = pg.locator(".profile-meaning").all_inner_texts()
+    check("cada coluna da fonte tem o significado no Perfil", len(meanings) == 2 and all(meanings), meanings)
+    _print(pg, "perfil")
+    pg.locator("#results .tab[data-tab=data]").click()
+    th = pg.locator("th.sortable", has_text="valor").first
+    th.wait_for(timeout=10000)
+    check("a dica do cabeçalho explica a coluna", "Taxa" in (th.get_attribute("title") or "") or "%" in (th.get_attribute("title") or ""),
+          th.get_attribute("title"))  # fmt: skip
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    cite = pg.locator(".dash-citation")
+    cite.wait_for(timeout=20000)
+    text = cite.inner_text()
+    check(
+        "o dashboard cita as duas fontes com a data",
+        "SGS 11" in text and "IBGE" in text and "Lidos em" in text,
+        text,
+    )
+    check("a licença que pede atribuição vem escrita", "ODbL" in text, text)
+    pg.wait_for_timeout(700)  # a troca de vista desliza: o print sai com a página parada
+    cite.scroll_into_view_if_needed()
+    _print(pg, "dashboard")
+    cite.locator("button", has_text="Ocultar").click()
+    pg.locator(".dash-citation-off").wait_for(timeout=5000)
+    check(
+        "dá para ocultar a citação",
+        pg.evaluate("() => window.__S.store.workflow.dashboard.cite_sources") is False,
+    )
+    pg.locator(".dash-citation-off button", has_text="Mostrar").click()
+    pg.locator(".dash-citation:not(.dash-citation-off)").wait_for(timeout=5000)
+    pg.locator(".dash-download").click()
+    pg.locator(".dash-export-menu button", has_text="Baixar HTML").click()
+    dlg = pg.locator("dialog[open]")
+    dlg.wait_for(timeout=10000)
+    with pg.expect_download(timeout=30000) as info:
+        dlg.locator("button", has_text="Salvar HTML").click()
+    html_path = Path(tempfile.gettempdir()) / "conferir-citacao.html"
+    info.value.save_as(str(html_path))
+    viewer = pg.context.new_page()
+    viewer.goto(html_path.as_uri())
+    footer = viewer.locator(".dash-citation")
+    footer.wait_for(timeout=10000)
+    check(
+        "o HTML exportado traz a citação",
+        "SGS 11" in footer.inner_text() and "Lidos em" in footer.inner_text(),
+        footer.inner_text(),
+    )
+    check("no HTML, sem o botão Ocultar", footer.locator("button").count() == 0)
+    viewer.screenshot(path=str(Path(tempfile.gettempdir()) / "conferir-catalogo-html.png"), full_page=True)
+    viewer.close()
+    pg.locator(".dash-download").click()
+    with pg.expect_download(timeout=60000) as image:
+        pg.locator(".dash-export-menu button", has_text="Baixar imagem").click()
+    png = Path(tempfile.gettempdir()) / "conferir-catalogo-imagem.png"
+    image.value.save_as(str(png))
+    check("a imagem do dashboard foi gerada", png.stat().st_size > 10000, png.stat().st_size)
+    print(f"      print: {png}")
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1399,6 +1486,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "catalogo": catalogo,
     "caixa_publica": caixa_publica,
     "pasta_publica": pasta_publica,
+    "citacao": citacao,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

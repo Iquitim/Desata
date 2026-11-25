@@ -75,6 +75,30 @@ def _column(name: str, kind: str, description: str = "") -> dict[str, str]:
     return {"nome": name, "tipo": kind, "descricao": description}
 
 
+_GENERIC_COLUMNS: dict[str, tuple[tuple[str, str, str], ...]] = {
+    "bcb.sgs": (("data", "data", "Dia do valor."), ("valor", "numero", "Valor da série.")),
+    "ipea": (("data", "data", "Dia do valor."), ("valor", "numero", "Valor da série.")),
+    "ibge.agregado": (("codigo", "texto", "Código da localidade no IBGE."), ("localidade", "texto", "Nome."),
+                      ("periodo", "texto", "Período no formato do IBGE."), ("data", "data", "Primeiro dia do período."),
+                      ("valor", "numero", "Valor da variável escolhida.")),
+}  # fmt: skip
+
+
+def dictionary(source_id: str, columns: list[str]) -> list[dict[str, str]]:
+    """O dicionário das colunas que a leitura entregou (RF-4912), sem rede: o dos destaques ou o genérico do tipo."""
+    try:
+        parts = check_id(source_id)
+    except SourceNotFoundError:
+        return []
+    source = curated.get(source_id)
+    known = (
+        {c.name: (c.type, c.description) for c in source.colunas}
+        if source is not None
+        else {n: (t, d) for n, t, d in _GENERIC_COLUMNS.get(parts[0], ())}
+    )
+    return [_column(name, *known[name]) for name in columns if name in known and known[name][1]]
+
+
 def _service(service_id: str) -> dict[str, Any]:
     s = hosts.SERVICES[service_id]
     return {"servico": service_id, "orgao": s.agency, "pagina": s.page}

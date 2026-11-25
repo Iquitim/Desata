@@ -22,6 +22,7 @@ MODULES = (
     "dash_timeline.js",
     "dash_story.js",
     "dash_crypt.js",
+    "dash_citation.js",
     "dash_viewer.js",
 )
 

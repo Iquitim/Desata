@@ -593,3 +593,13 @@ html.compact .dash-actions .btn.dash-download { width: auto; padding: 0 7px; gap
 .tx-p-axis { margin-left: auto; font-size: var(--fs-2xs); color: var(--text-3); }
 .tx-p-number { font-weight: 700; line-height: 1.1; margin-top: 4px; }
 .dash-panel .form > .field-toggle.wide { flex-basis: 100%; }
+
+/* Citação das fontes públicas embaixo da página (spec 049, RF-4963): na tela, na imagem e no HTML exportado */
+.dash-citation { display: flex; align-items: flex-start; gap: 12px; box-sizing: border-box; max-width: 100%; margin: 10px auto 0; padding: 8px 14px;
+  font-size: var(--fs-sm); line-height: 1.45; color: var(--text-2); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.dash-citation-text { flex: 1; min-width: 0; }
+.dash-citation p { margin: 0; overflow-wrap: anywhere; }
+.dash-citation-license { font-size: var(--fs-xs); color: var(--text-3); }
+.dash-citation-off { align-items: center; border-style: dashed; background: transparent; }
+.dash-citation-off span { flex: 1; }
+.dash-workspace .dash-citation { margin-left: 0; }
