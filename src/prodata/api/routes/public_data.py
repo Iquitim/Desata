@@ -113,6 +113,26 @@ def currencies(services: ServicesDep) -> dict[str, Any]:
     return {"moedas": _guard(services.catalog.currencies)}
 
 
+# ---------------------------------------------------------------- situação dos órgãos (RF-4921..4924)
+
+
+@router.get("/situacao")
+def health_state(services: ServicesDep) -> dict[str, Any]:
+    """A última conferência de cada serviço, sem conferir de novo."""
+    return services.catalog.health_state()
+
+
+class HealthRequest(BaseModel):
+    forcar: bool = False
+    servicos: list[str] | None = Field(None, max_length=60)
+
+
+@router.post("/situacao")
+def check_health(req: HealthRequest, services: ServicesDep) -> dict[str, Any]:
+    """Confere os órgãos em paralelo (até 5 s): ao abrir o catálogo e em Conferir de novo (``forcar``)."""
+    return services.catalog.check_health(req.forcar, req.servicos)
+
+
 # ---------------------------------------------------------------- feriados editáveis (RF-4945..4947)
 
 Place = Query("BR", max_length=7, pattern=r"^(BR|[A-Z]{2}|\d{7})$")

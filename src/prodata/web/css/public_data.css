@@ -176,6 +176,38 @@
 .pd-actions .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .pd-why { margin: 0; font-size: var(--fs-xs); color: var(--text-3); }
 
+/* Situação dos órgãos (T11) */
+.pd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--border-strong); }
+.pd-dot.is-no_ar { background: var(--ok); }
+.pd-dot.is-lenta { background: var(--warn); }
+.pd-dot.is-fora { background: var(--err); }
+.pd-menu-item { grid-template-columns: 18px 1fr auto auto auto; }
+.pd-status {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px;
+  border-radius: 999px; font-size: var(--fs-xs); font-weight: 500;
+}
+.pd-status.is-fora { background: var(--err-weak); color: var(--err); }
+.pd-status.is-lenta { background: var(--warn-weak); color: var(--warn); }
+.pd-card.is-down { opacity: 0.72; }
+.pd-card.is-down .pd-card-icon { background: var(--surface-3); color: var(--text-3); }
+.pd-offline { color: var(--warn); font-size: var(--fs-xs); }
+.pd-health {
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+}
+.pd-health.is-fora { border-color: var(--err); background: var(--err-weak); }
+.pd-health.is-lenta { border-color: var(--warn); background: var(--warn-weak); }
+.pd-health-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--fs-sm); }
+.pd-health-head small { color: var(--text-3); font-size: var(--fs-xs); }
+.pd-health-head .btn { margin-left: auto; }
+.pd-health-why { display: flex; gap: 4px; margin: 0; font-size: var(--fs-xs); color: var(--text-2); }
+.pd-history { display: flex; flex-direction: column; gap: 4px; }
+.pd-history-bar { display: grid; grid-template-columns: repeat(30, 1fr); gap: 2px; }
+.pd-day { height: 14px; border-radius: 2px; background: var(--surface-3); }
+.pd-day.is-no_ar { background: var(--ok); }
+.pd-day.is-lenta { background: var(--warn); }
+.pd-day.is-fora { background: var(--err); }
+
 /* Editar feriados (T09a) */
 .hol-dialog .dialog-body { display: flex; flex-direction: column; padding: 16px 18px; }
 .hol-root { display: flex; flex-direction: column; gap: 12px; }

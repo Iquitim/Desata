@@ -18,7 +18,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from prodata.catalog import curated, holidays, portals, sources
+from prodata.catalog import curated, health, holidays, hosts, portals, sources
 from prodata.catalog.http import CatalogClient
 from prodata.catalog.index import AGENCY_BY_ID, CatalogStore
 from prodata.catalog.model import SourceNotFoundError
@@ -73,6 +73,7 @@ class CatalogService:
         self.root = root
         self.store = CatalogStore(root)
         self.prefs = Preferences(root / "preferencias.json")
+        self.health = health.HealthStore(root)
         self._job_lock = threading.Lock()
         self._job: dict[str, Any] = {"rodando": False, "orgaos": {}, "inicio": None, "fim": None}
 
@@ -85,10 +86,17 @@ class CatalogService:
         for source in curated.SOURCES:
             counts[source.categoria] = counts.get(source.categoria, 0) + 1
         counts["series"] = state["ipea"].quantidade
+        # Os serviços de que cada categoria depende: o ponto de situação dela é o pior deles (RF-4902).
+        services_of: dict[str, list[str]] = {"series": ["ipea"]}
+        for source in curated.SOURCES:
+            bucket = services_of.setdefault(source.categoria, [])
+            if source.servico not in bucket:
+                bucket.append(source.servico)
         categories = [
-            {"id": c.id, "nome": c.nome, "icone": c.icone, "quantidade": counts.get(c.id, 0)}
+            {"id": c.id, "nome": c.nome, "icone": c.icone, "quantidade": counts.get(c.id, 0),
+             "servicos": services_of.get(c.id, [])}
             for c in curated.CATEGORIES
-        ]
+        ]  # fmt: skip
         portal_rows = [
             {
                 "id": p.id,
@@ -97,6 +105,7 @@ class CatalogService:
                 "esfera": p.esfera,
                 "nota": p.nota,
                 "pagina": p.pagina,
+                "servico": hosts.PORTAL_SERVICE[p.id],
                 **_state_json(state[p.id]),
             }
             for p in portals.PORTALS
@@ -182,6 +191,22 @@ class CatalogService:
     def currencies(self) -> list[dict[str, str]]:
         with CatalogClient(timeout=30) as client:
             return bcb_olinda.currencies(client)
+
+    # ---------------------------------------------------------------- situação dos órgãos (RF-4921..4924)
+
+    def health_state(self) -> dict[str, Any]:
+        """O que foi conferido por último, sem conferir de novo (abre na hora, sem rede)."""
+        data = self.health.load()
+        return {
+            "sem_conexao": bool(data.get("sem_conexao")),
+            "conferido_em": data.get("conferido_em"),
+            "servicos": {sid: health.summary(data, sid) for sid in hosts.SERVICES},
+        }
+
+    def check_health(self, force: bool = False, services: list[str] | None = None) -> dict[str, Any]:
+        """Confere em paralelo (até 5 s): com o catálogo aberto, a cada 5 minutos, ou quando pedem Conferir de novo."""
+        self.health.check(lambda: CatalogClient(timeout=health.TIMEOUT), services, force=force)
+        return self.health_state()
 
     # ---------------------------------------------------------------- feriados editáveis (RF-4945..4947)
 

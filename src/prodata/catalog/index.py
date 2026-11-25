@@ -98,6 +98,7 @@ AGENCIES: tuple[Agency, ...] = (
     *(Agency(p.id, p.nome, hosts.PORTAL_SERVICE[p.id], _portal_reader(p.id)) for p in portals.PORTALS),
 )
 AGENCY_BY_ID = {a.id: a for a in AGENCIES}
+DATA_SERVICE = {"bcb": "bcb_sgs", "bcb_portal": "bcb_olinda"}
 # Órgão de cada serviço, para o filtro "por órgão" da busca.
 AGENCY_OF_SERVICE = {
     "bcb_sgs": "bcb", "bcb_dados": "bcb", "bcb_olinda": "bcb", "ibge": "ibge", "ipea": "ipea", "tesouro": "tesouro",
@@ -266,7 +267,13 @@ class CatalogStore:
                 for raw in self.entries(agency_id):
                     if raw["id"] in seen:
                         continue
-                    entry = {**raw, "orgao": agency_id, "destaque": False}
+                    entry = {
+                        **raw,
+                        "orgao": agency_id,
+                        "destaque": False,
+                        # O serviço de onde os DADOS vêm (a situação que importa): as séries do SGS e os OData do BCB.
+                        "servico": DATA_SERVICE.get(agency_id, AGENCY_BY_ID[agency_id].servico),
+                    }
                     if not _filters(entry, None, periodicity):
                         continue
                     extra = " ".join(

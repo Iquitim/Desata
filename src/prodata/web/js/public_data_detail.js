@@ -5,6 +5,7 @@ import { api } from './api.js';
 import { openLink } from './desktop.js';
 import { button, h } from './dom.js';
 import { openHolidayEditor } from './holidays_editor.js';
+import { healthBlock } from './public_data_health.js';
 import { icon } from './icons.js';
 
 const PERIODS = [
@@ -43,6 +44,9 @@ export function publicDetail(entry, ctx = {}) {
 
   // replaceChildren escreveria null e listas como texto ("null"): achata e tira os vazios.
   const redraw = () => root.replaceChildren(...render().flat(Infinity).filter((n) => n !== null && n !== undefined && n !== false));
+  root.refreshHealth = () => { if (st.info || st.error) redraw(); };
+  const serviceId = () => st.info?.servico || entry.servico || null;
+  const healthRow = () => ctx.health?.(serviceId()) || null;
   const setChoice = (key, value) => { st.choices = { ...st.choices, [key]: value }; st.preview = null; redraw(); };
 
   async function load() {
@@ -316,6 +320,7 @@ export function publicDetail(entry, ctx = {}) {
   function blockedReason() {
     if (!st.info) return 'Carregando';
     if (entry.id === 'receita.cnpj/dados-abertos') return 'O CNPJ vem em arquivos grandes: o download chega na etapa do CNPJ';
+    if (healthRow()?.situacao === 'fora') return `O órgão está fora do ar agora: ${healthRow().motivo || 'confira de novo em instantes'}`;
     if (st.info.leitura === 'pronta') return '';
     if (st.info.arquivos) {
       if (!st.resource) return 'Escolha um arquivo do conjunto';
@@ -344,6 +349,8 @@ export function publicDetail(entry, ctx = {}) {
     const i = st.info;
     return [
       header(), badge(),
+      serviceId() && entry.id.split('/')[0] !== 'calendario' ? healthBlock(healthRow(), {
+        busy: Boolean(ctx.checking?.()), offline: Boolean(ctx.offline?.()), onRecheck: () => ctx.recheck?.(serviceId()) }) : null,
       i.resumo ? h('p', {}, i.resumo) : null,
       i.descricao && i.descricao !== i.resumo ? h('details', { class: 'pd-more' }, h('summary', {}, 'Descrição do órgão'), h('p', {}, i.descricao)) : null,
       facts(),

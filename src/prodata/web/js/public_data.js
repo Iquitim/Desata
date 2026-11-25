@@ -6,6 +6,7 @@ import { api } from './api.js';
 import { button, debounce, h } from './dom.js';
 import { icon } from './icons.js';
 import { publicDetail } from './public_data_detail.js';
+import { cardBadge, dot, worst } from './public_data_health.js';
 import { openDialog, toastError } from './ui.js';
 
 const AGENCY_NAMES = { bcb: 'Banco Central', ibge: 'IBGE', ipea: 'Ipeadata', tesouro: 'Tesouro Nacional',
@@ -30,6 +31,9 @@ const state = {
   detailFor: null,
   // Adicionar ao fluxo / à vista Dados: ligado pela caixa Dados públicos (T12).
   onUse: null,
+  // Situação dos órgãos (RF-4921): a última conferência, e a nova chega sem segurar a tela.
+  health: null,
+  checking: false,
   dialog: null,
   poll: null,
   favorites: new Set(),
@@ -121,6 +125,20 @@ function followRefresh() {
   }, 900);
 }
 
+/** Confere a situação dos órgãos (até 5 s, em paralelo). ``force``: Conferir de novo. */
+async function checkHealth(force = false, services = null) {
+  state.checking = true;
+  state.detailEl?.refreshHealth?.();
+  try {
+    state.health = await api.publicCheckHealth(force, services);
+  } catch {
+    // sem resposta do próprio programa: fica a última conferência
+  }
+  state.checking = false;
+  draw();
+  state.detailEl?.refreshHealth?.();
+}
+
 async function toggleFavorite(entry, e) {
   e.stopPropagation();
   try {
@@ -135,7 +153,7 @@ async function toggleFavorite(entry, e) {
 
 // ------------------------------------------------------------------ desenho
 
-function menuItem({ kind, id, nome, icone, quantidade, aviso }) {
+function menuItem({ kind, id, nome, icone, quantidade, aviso, situacao }) {
   const active = state.section.kind === kind && state.section.id === id;
   return h('button', {
     class: `pd-menu-item${active ? ' is-active' : ''}`, type: 'button', 'aria-current': active ? 'true' : null,
@@ -145,6 +163,7 @@ function menuItem({ kind, id, nome, icone, quantidade, aviso }) {
   },
   icon(icone, 16),
   h('span', { class: 'pd-menu-name' }, nome),
+  situacao && situacao !== 'nao_conferido' ? dot(situacao) : null,
   aviso ? h('span', { class: 'pd-menu-warn', 'aria-label': aviso }, icon('alert', 12)) : null,
   quantidade !== undefined ? h('span', { class: 'pd-menu-count' }, number(quantidade)) : null);
 }
@@ -153,13 +172,13 @@ function menu() {
   const o = state.overview;
   const specials = SPECIALS.map((s) => menuItem({ kind: 'especial', ...s,
     quantidade: s.id === 'destaques' ? o.destaques : s.id === 'favoritos' ? o.favoritos : o.recentes }));
-  const categories = o.categorias.map((c) => menuItem({ kind: 'categoria', ...c }));
+  const categories = o.categorias.map((c) => menuItem({ kind: 'categoria', ...c, situacao: worst(state.health, c.servicos) }));
   const groups = Object.entries(SPHERES).map(([sphere, title]) => {
     const rows = o.portais.filter((p) => p.esfera === sphere);
     return h('div', { class: 'pd-menu-group' },
       h('span', { class: 'pd-menu-sub' }, title),
       rows.map((p) => menuItem({ kind: 'portal', id: p.id, nome: p.nome.replace(/^Dados abertos d[aoe]s? /, ''),
-        icone: 'globe', quantidade: p.quantidade || undefined, aviso: p.erro || p.aviso || '' })));
+        icone: 'globe', quantidade: p.quantidade || undefined, aviso: p.erro || p.aviso || '', situacao: worst(state.health, [p.servico]) })));
   });
   return h('nav', { class: 'pd-menu', 'aria-label': 'Categorias e portais' },
     specials, h('hr'), h('span', { class: 'pd-menu-title' }, 'Categorias'), categories,
@@ -180,8 +199,9 @@ function card(entry) {
   const group = entry.grupo && !entry.destaque && !portalOrg.startsWith(entry.grupo) ? entry.grupo : null;
   const meta = [inPortal ? null : agencyName(entry.orgao), entry.periodicidade, group].filter(Boolean).join(' · ');
   const updated = entry.atualizado ? `atualizado em ${when(entry.atualizado)}` : entry.direto ? 'confere ao abrir' : '';
+  const health = state.health?.servicos?.[entry.servico];
   return h('article', {
-    class: `pd-card${state.selected?.id === entry.id ? ' is-selected' : ''}`, tabindex: '0', role: 'button',
+    class: `pd-card${state.selected?.id === entry.id ? ' is-selected' : ''}${health?.situacao === 'fora' ? ' is-down' : ''}`, tabindex: '0', role: 'button',
     'aria-label': entry.nome,
     onclick: () => select(entry),
     onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(entry); } },
@@ -192,6 +212,7 @@ function card(entry) {
     h('button', { class: `pd-star${favorite ? ' is-on' : ''}`, type: 'button', title: favorite ? 'Tirar das favoritas' : 'Marcar como favorita',
       'aria-pressed': favorite ? 'true' : 'false', onclick: (e) => toggleFavorite(entry, e) }, icon('star', 15))),
   entry.resumo ? h('p', { class: 'pd-card-summary' }, entry.resumo) : null,
+  cardBadge(health),
   h('div', { class: 'pd-card-foot' }, badge(entry), updated ? h('span', { class: 'pd-card-date' }, updated) : null));
 }
 
@@ -243,7 +264,13 @@ function detail() {
   }
   // O mesmo elemento enquanto a fonte não muda: redesenhar o painel não recarrega o detalhe nem perde as escolhas.
   if (!state.detailEl || state.detailFor !== e.id) {
-    state.detailEl = publicDetail(e, { iconFor: categoryIcon, agencyName, onUse: state.onUse });
+    state.detailEl = publicDetail(e, {
+      iconFor: categoryIcon, agencyName, onUse: state.onUse,
+      health: (sid) => state.health?.servicos?.[sid] || null,
+      offline: () => Boolean(state.health?.sem_conexao),
+      checking: () => state.checking,
+      recheck: (sid) => checkHealth(true, sid ? [sid] : null),
+    });
     state.detailFor = e.id;
   }
   return state.detailEl;
@@ -263,7 +290,12 @@ function refreshBar() {
     return h('div', { class: 'pd-refresh', role: 'status' }, icon('refresh', 13, 'spin'), ' Lendo os catálogos direto dos órgãos… ', parts);
   }
   const read = o.lido_em ? `catálogo lido ${when(o.lido_em)}` : 'catálogo dos órgãos ainda não lido: os destaques já funcionam';
-  return h('div', { class: 'pd-refresh' }, h('span', {}, read));
+  if (state.health?.sem_conexao) {
+    // Sem internet não é órgão fora do ar (RF-4923): uma faixa só, sem acusar ninguém.
+    return h('div', { class: 'pd-refresh pd-offline', role: 'status' }, icon('alert', 13),
+      ` Sem conexão com a internet agora. A busca e o catálogo funcionam com o que foi lido${o.lido_em ? ` (${when(o.lido_em)})` : ''}.`);
+  }
+  return h('div', { class: 'pd-refresh' }, h('span', {}, read), state.checking ? h('span', { class: 'pd-job is-running' }, 'conferindo os órgãos…') : null);
 }
 
 function draw() {
@@ -307,7 +339,13 @@ export async function openPublicData() {
     state.dialog.close();
     return;
   }
+  try {
+    state.health = await api.publicHealth();
+  } catch {
+    state.health = null;
+  }
   await search();
+  checkHealth(false); // em paralelo: os selos chegam conforme as respostas (RF-4921)
   if (state.overview.atualizacao?.rodando) followRefresh();
   else if (state.overview.desatualizado) startRefresh();
 }

@@ -1153,6 +1153,24 @@ def catalogo(pg: Page) -> None:
         not detail.locator(".pd-actions .pd-why").count()
         or "Chega" in detail.locator(".pd-actions button").first.get_attribute("title"),
     )
+    # T11: a situação do órgão, conferida ao abrir, com Conferir de novo e a barra de 30 dias.
+    detail.locator(".pd-health").wait_for(timeout=15000)
+    pg.wait_for_function(
+        "() => !document.querySelector('.pd-health.is-nao_conferido') || document.querySelector('.pd-offline')",
+        timeout=30000,
+    )
+    health_text = detail.locator(".pd-health").inner_text()
+    check(
+        "o detalhe diz se o Banco Central está no ar",
+        any(t in health_text for t in ("No ar", "Lenta", "Fora do ar")),
+        health_text,
+    )
+    check("a barra tem os 30 dias", detail.locator(".pd-day").count() == 30)
+    check("os pontos de situação aparecem no menu", dlg.locator(".pd-menu .pd-dot").count() >= 5)
+    detail.locator(".pd-health button", has_text="Conferir de novo").click()
+    pg.wait_for_timeout(500)
+    detail.locator(".pd-health button", has_text="Conferir de novo").wait_for(timeout=20000)
+    check("Conferir de novo atualiza a hora", "conferido agora" in detail.locator(".pd-health").inner_text())
     _print(pg, "detalhe")
     # Um conjunto de portal: escolher o arquivo abre a prévia obrigatória.
     dlg.locator(".pd-menu-item", has_text="CVM").click()

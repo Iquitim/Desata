@@ -23,8 +23,8 @@
 
 ## Marco 3 — Situação dos órgãos
 
-- [ ] T10 `health.py`: sondas, No ar / Lenta / Fora do ar, motivo, "desde", sem conexão, histórico de 30 dias (RF-4921..4924)
-- [ ] T11 Selos na tela: categorias, cartões, detalhe, Conferir de novo, faixa sem conexão, barra de 30 dias (CA-02, CA-03)
+- [x] T10 `health.py`: sondas, No ar / Lenta / Fora do ar, motivo, "desde", sem conexão, histórico de 30 dias (RF-4921..4924)
+- [x] T11 Selos na tela: categorias, cartões, detalhe, Conferir de novo, faixa sem conexão, barra de 30 dias (CA-02, CA-03)
 
 ## Marco 4 — Fonte do catálogo no fluxo
 
