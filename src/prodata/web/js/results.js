@@ -31,7 +31,7 @@ const currentFilters = () => filtersByOutput.get(outputKey()) || [];
 /** A fonte do catálogo Dados públicos da caixa inspecionada (spec 049): dicionário de colunas e citação. */
 function publicSource() {
   const id = store.inspect.nodeId;
-  return node(id)?.type === 'io.public_data' ? nodeResult(id)?.extra?.fonte_publica || null : null;
+  return ['io.public_data', 'io.input_data'].includes(node(id)?.type) ? nodeResult(id)?.extra?.fonte_publica || null : null; // e a pasta do CNPJ
 }
 const columnMeaning = (source, name) => source?.colunas?.find((c) => c.nome === name)?.descricao || '';
 

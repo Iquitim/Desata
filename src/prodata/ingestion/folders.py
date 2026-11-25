@@ -83,10 +83,14 @@ def read_folder(
     limit: int | None = None,
     report: Callable[[str], None] | None = None,
     seen: dict[str, list[str]] | None = None,
+    notes: list[str] | None = None,
 ) -> tuple[pl.DataFrame, list[str]]:
     """Empilha os arquivos. Devolve a tabela e os arquivos com colunas diferentes das do primeiro.
-    ``seen`` recebe as colunas de cada arquivo (spec 046: quais arquivos não têm uma coluna)."""
+    ``seen`` recebe as colunas de cada arquivo (spec 046: quais arquivos não têm uma coluna); ``notes``, os avisos
+    da leitura com leiaute (spec 049: o leiaute da Receita mudou)."""
     from prodata.ingestion.readers import read_table  # evita ciclo na carga do pacote
+
+    layout = getattr(options, "layout", "")
 
     column = file_column.strip()
     frames: list[pl.DataFrame] = []
@@ -95,7 +99,14 @@ def read_folder(
     for i, path in enumerate(files, start=1):
         if report:
             report(f"{i}/{len(files)} arquivos")
-        frame = read_table(path, options, n_rows=limit)
+        if layout:
+            from prodata.catalog import cnpj
+
+            frame, said = cnpj.read_file(path, layout, n_rows=limit)
+            if notes is not None:
+                notes.extend(said)
+        else:
+            frame = read_table(path, options, n_rows=limit)
         if seen is not None:
             seen[path.name] = list(frame.columns)
         if not frames:
@@ -119,6 +130,28 @@ def read_folder(
         ) from exc
 
 
+def read_source(
+    source: FolderSource, limit: int, report: Callable[[str], None] | None, read_at: str
+) -> tuple[pl.DataFrame, dict[str, Any]]:
+    """Lê uma pasta cadastrada na vista Dados: a tabela e o que a caixa mostra (arquivos, avisos, leiaute)."""
+    files = source.files()
+    if not files:
+        raise InvalidInputError(f"Nenhum arquivo em {source.folder} casa com '{source.pattern}'.")
+    seen: dict[str, list[str]] = {}
+    notes: list[str] = []
+    table, odd = read_folder(
+        files, source, source.file_column, limit=limit or None, report=report, seen=seen, notes=notes
+    )
+    extra: dict[str, Any] = {"source": source.name, "source_read_at": read_at, "source_linked": source.folder}
+    extra["folder_files"] = [p.name for p in files]
+    extra = folder_warnings(extra, odd, seen, files[0].name)
+    if source.layout:  # CNPJ da Receita (spec 049): dicionário de colunas, citação e aviso de leiaute
+        from prodata.catalog import cnpj
+
+        extra = cnpj.with_layout(extra, source.layout, Path(source.folder), notes)
+    return table, extra
+
+
 def odd_warning(odd: list[str], first: str) -> str:
     shown = ", ".join(odd[:5]) + ("…" if len(odd) > 5 else "")
     return f"{len(odd)} arquivo(s) com colunas diferentes de {first}: {shown}. O que falta fica vazio."
@@ -132,6 +165,8 @@ class FolderSource(ReadOptions):
     folder: str = Field(min_length=1, max_length=400)
     pattern: str = Field("*.xlsx", max_length=120)
     file_column: str = Field("arquivo", max_length=60)
+    # Leiaute conhecido pelo programa (spec 049): o CNPJ da Receita, com nomes, tipos e o dicionário de colunas.
+    layout: str = Field("", pattern=r"^(receita\.cnpj/[a-z]{3,20})?$")
 
     @field_validator("name", "file_column")
     @classmethod

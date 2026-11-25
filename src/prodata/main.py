@@ -8,6 +8,7 @@ import re
 import threading
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from functools import partial
 from html import escape
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -24,6 +25,7 @@ from prodata.api.errors import install_error_handlers
 from prodata.api.routes import routers
 from prodata.brand import css as brand_css
 from prodata.brand import marca
+from prodata.catalog import cnpj
 from prodata.catalog.service import CatalogService
 from prodata.config import Settings
 from prodata.connectors import ConnectionStore, KeyringSecretStore, MemorySecretStore, SecretStore
@@ -114,6 +116,16 @@ def build_services(settings: Settings) -> Services:
         workflows,
         settings.storage_dir / "equipe",
     )
+    organization = OrganizationStore(settings.storage_dir / "organizacao.json")
+    # downloads grandes (CNPJ): nunca na pasta de dados nem na pasta de um espaço da equipe (RF-4952); no fim, as
+    # fontes de pasta prontas, numa pasta "CNPJ AAAA-MM" da vista Dados (RF-4954)
+    catalog = CatalogService(
+        settings.storage_dir / "catalogo",
+        forbidden=lambda: [settings.storage_dir, *(Path(s.caminho) for s in team.workspaces.spaces())],
+    )
+    catalog.downloads.after_download = partial(
+        cnpj.finish, folders=datasets.folders, organization=organization
+    )
     return Services(
         settings=settings,
         datasets=datasets,
@@ -141,7 +153,7 @@ def build_services(settings: Settings) -> Services:
         trust=trust,
         usage=UsageIndex(settings.workflows_dir),
         constants=constants,
-        organization=OrganizationStore(settings.storage_dir / "organizacao.json"),
+        organization=organization,
         schedules=SchedulingService(
             ScheduleStore(
                 settings.storage_dir / "agendamentos.json",
@@ -153,11 +165,7 @@ def build_services(settings: Settings) -> Services:
         ),
         versions=VersionStore(settings.storage_dir / "versoes"),
         team=team,
-        # downloads grandes (CNPJ): nunca na pasta de dados nem na pasta de um espaço da equipe (RF-4952)
-        catalog=CatalogService(
-            settings.storage_dir / "catalogo",
-            forbidden=lambda: [settings.storage_dir, *(Path(s.caminho) for s in team.workspaces.spaces())],
-        ),
+        catalog=catalog,
     )
 
 

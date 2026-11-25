@@ -322,7 +322,7 @@ class DownloadManager:
         try:
             with self.client_factory() as client:
                 for part in job["partes"]:
-                    if part["estado"] == "baixado":
+                    if part["estado"] in ("baixado", "pronto", "descompactando"):
                         continue
                     if not self._part_with_retries(client, job, part, stop):
                         return

@@ -279,10 +279,15 @@ def test_rotas(client: TestClient, tmp_path: Path, receita_server: Receita) -> N
     assert client.post("/api/catalogo/downloads/plano", json=body).json()["cabe"] is True
     job = client.post("/api/catalogo/downloads", json=body).json()
     end = time.monotonic() + 10
-    while client.get(f"/api/catalogo/downloads/{job['id']}").json()["estado"] != "concluido":
+    while (state := client.get(f"/api/catalogo/downloads/{job['id']}").json())["estado"] not in (
+        "concluido",
+        "erro",
+    ):
         assert time.monotonic() < end
         time.sleep(0.02)
-    assert client.get("/api/catalogo/downloads").json()["pendentes"] == []
+    # O programa confere o ZIP depois de baixar (T16): os bytes de teste não são um ZIP e o download diz isso.
+    assert state["estado"] == "erro" and "não é um ZIP válido" in state["motivo"]
+    assert [j["id"] for j in client.get("/api/catalogo/downloads").json()["pendentes"]] == [job["id"]]
     assert client.get("/api/catalogo/downloads/..%2Fx").status_code in (400, 404, 405)
     assert client.post(f"/api/catalogo/downloads/{job['id']}/apagar").status_code == 422
     storage = client.app.state.services.settings.storage_dir  # type: ignore[attr-defined]

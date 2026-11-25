@@ -240,6 +240,8 @@ export function folderEditor(existing = null, { onSaved, onLinked } = {}, host =
     live.replaceChildren(
       h('span', { class: 'org-preview-label' }, 'O que vai entrar'),
       stackArt(preview, value.pattern),
+      value.layout ? h('div', { class: 'fd-suggest' }, icon('landmark', 14), // CNPJ da Receita (spec 049)
+        h('span', {}, 'Leiaute do CNPJ da Receita: os nomes, os tipos e o significado das colunas vêm do programa, conferidos a cada leitura.')) : null,
       odd && !existing ? h('div', { class: 'fd-suggest' }, icon('info', 14),
         h('span', {}, 'Os arquivos têm colunas diferentes. Se forem assuntos distintos, cada um pode virar uma fonte.'),
         button({ label: 'Usar Um por arquivo', size: 'sm', onClick: () => choose('each') })) : null,

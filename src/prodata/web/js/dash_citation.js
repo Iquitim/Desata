@@ -13,7 +13,7 @@ const CHARS_PER_LINE = 190; // o que cabe numa linha da página de 1600 px, para
 export function buildCitation(nodes = [], results = {}) {
   const seen = new Map();
   for (const n of nodes) {
-    if (n.type !== 'io.public_data' || n.disabled) continue;
+    if (!['io.public_data', 'io.input_data'].includes(n.type) || n.disabled) continue; // Input Data: a pasta do CNPJ
     const f = results?.[n.id]?.extra?.fonte_publica;
     if (!f?.citacao) continue;
     const before = seen.get(f.citacao);

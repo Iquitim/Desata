@@ -28,7 +28,7 @@ from prodata.engine import constants as constants_engine
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.forms import ui
 from prodata.ingestion.datasets import resolve_inside, sanitize_filename
-from prodata.ingestion.folders import folder_warnings, read_folder, source_folder_id
+from prodata.ingestion.folders import read_source, source_folder_id
 from prodata.ingestion.options import ReadOptions
 from prodata.ingestion.readers import read_table_noted
 from prodata.nodes import output_names
@@ -205,17 +205,8 @@ def _read_source(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
 
 def _read_folder(ctx: NodeContext, folder_id: str, limit: int) -> NodeOutput:
     """Pasta de arquivos da aba Dados (spec 035): as opções de leitura são as do cadastro."""
-    source = ctx.datasets.folders.get(folder_id)
-    files = source.files()
-    if not files:
-        raise InvalidInputError(f"Nenhum arquivo em {source.folder} casa com '{source.pattern}'.")
-    seen: dict[str, list[str]] = {}
-    table, odd = read_folder(
-        files, source, source.file_column, limit=limit or None, report=ctx.report, seen=seen
-    )
-    extra: dict[str, Any] = {"source": source.name, "source_read_at": _now(), "source_linked": source.folder}
-    extra["folder_files"] = [p.name for p in files]
-    return NodeOutput(tables={"out": table}, extra=folder_warnings(extra, odd, seen, files[0].name))
+    table, extra = read_source(ctx.datasets.folders.get(folder_id), limit, ctx.report, _now())
+    return NodeOutput(tables={"out": table}, extra=extra)
 
 
 def _read_pdf(ctx: NodeContext, ref: tuple[str, str], limit: int) -> NodeOutput:
