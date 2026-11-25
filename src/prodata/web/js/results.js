@@ -13,6 +13,7 @@ import { tableSkeleton } from './skeleton.js';
 import { clearWidths, enableColumnResize, summaryButton, watchSummary } from './table_tools.js';
 import { enableCellFocus } from './cell_focus.js';
 import { cleaningCard } from './cleaning_ui.js';
+import { recipeMenu } from './recipes_ui.js';
 import { typeLabel, typeName } from './types.js';
 import { showMenu, toast } from './ui.js';
 
@@ -365,6 +366,7 @@ function dataView() {
         { label: 'Ordenar decrescente', icon: 'arrow-down', onSelect: () => sortBy(c.name, true) },
         'separator',
         { label: 'Larguras automáticas', icon: 'columns', onSelect: () => { clearWidths(outputKey()); draw(); } },
+        ...recipeMenu(c, state.data.profile), // receitas prontas: IPCA e PTAX (spec 049)
       ]);
     },
   },

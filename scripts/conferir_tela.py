@@ -1592,6 +1592,68 @@ def cnpj(pg: Page) -> None:
     box.locator("button", has_text="Cancelar").first.click()
 
 
+def receitas(pg: Page) -> None:
+    """T18: Corrigir pelo IPCA e Converter pela PTAX pelo menu da coluna, com o IBGE e o Banco Central de verdade."""
+    new_flow(pg)
+    node_id = pg.evaluate("""() => window.__A.addNode('io.text_input', 100, 200, { table: { columns: ['data', 'valor'],
+      rows: [['2025-01-15', '100'], ['2025-06-14', '250'], ['2025-09-20', '80']] } }).id""")
+    run(pg)
+    pg.evaluate("id => { window.__S.select(id); window.__S.inspect(id); }", node_id)
+    pg.locator("#results .tab[data-tab=data]").click()
+
+    def menu(label: str) -> None:
+        pg.locator("th.sortable", has_text="valor").first.click(button="right")
+        pg.locator(".menu .menu-item", has_text=label).click()
+
+    menu("Corrigir valores pelo IPCA")
+    dlg = pg.locator("dialog[open]", has=pg.locator(".rc-dialog"))
+    dlg.wait_for(timeout=5000)
+    check("o diálogo mostra o esquema da receita", "Junta pelo mês" in dlg.inner_text())
+    _print(pg, "receita-ipca")
+    dlg.locator("button", has_text="Inserir no fluxo").click()
+    pg.wait_for_function(
+        "() => window.__S.store.workflow.containers.some((c) => c.title.includes('IPCA'))", timeout=5000
+    )
+    check("as caixas entram numa etapa nomeada", True)
+    pg.evaluate("id => { window.__S.select(id); window.__S.inspect(id); }", node_id)
+    menu("Converter para dólar pela PTAX")
+    dlg = pg.locator("dialog[open]", has=pg.locator(".rc-dialog"))
+    dlg.locator("button", has_text="Inserir no fluxo").click()
+    pg.wait_for_function("() => window.__S.store.workflow.containers.length >= 2", timeout=5000)
+    run(pg)
+    errors = pg.evaluate(
+        "() => Object.entries(window.__S.store.execution.node_results).filter(([, r]) => r.status === 'error').map(([k, r]) => k + ': ' + r.error)"
+    )
+    check("as duas receitas executam com as fontes de verdade", not errors, errors)
+    last = pg.evaluate("""() => { const wf = window.__S.store.workflow; const used = new Set(wf.edges.map((e) => e.source));
+      return wf.nodes.find((n) => n.type === 'prep.formula' && !used.has(n.id)).id; }""")
+    rows = pg.evaluate(
+        f"() => fetch('/api/results/' + window.__S.store.workflow.id + '/{last}/out').then((r) => r.json()).then((d) => d.rows)"
+    )
+    check("o fim da corrente tem o valor em dólar e o valor corrigido",
+          all(r.get("valor_usd") and r.get("valor_corrigido") for r in rows), rows[:1])  # fmt: skip
+    joins = pg.evaluate("""() => { const wf = window.__S.store.workflow; const res = window.__S.store.execution.node_results;
+      return wf.nodes.filter((n) => n.type === 'transform.join' && n.config.match === 'previous').map((n) => (res[n.id]?.extra?.warnings || []).join(' ')); }""")
+    check(
+        "a PTAX avisa quantas datas usaram o dia útil anterior",
+        any("data anterior" in w for w in joins),
+        joins,
+    )
+    pg.evaluate("() => window.__CV.fitView?.()")
+    pg.wait_for_timeout(500)
+    _print(pg, "receitas-canvas")
+    overlap = pg.evaluate("""() => { const wf = window.__S.store.workflow; const [a, b] = wf.containers;
+      const inside = (c, n) => n.x >= c.x && n.x <= c.x + c.width && n.y >= c.y && n.y <= c.y + c.height;
+      return wf.nodes.filter((n) => inside(a, n) && inside(b, n)).map((n) => n.label); }""")
+    check("as etapas das duas receitas não se sobrepõem", not overlap, overlap)
+    pg.keyboard.press("Control+z")
+    pg.wait_for_timeout(300)
+    check(
+        "um Desfazer tira a última receita inteira",
+        pg.evaluate("() => window.__S.store.workflow.containers.length") == 1,
+    )
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1625,6 +1687,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "pasta_publica": pasta_publica,
     "citacao": citacao,
     "cnpj": cnpj,
+    "receitas": receitas,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

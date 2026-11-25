@@ -40,7 +40,7 @@
 
 ## Marco 6 — Usar com um clique
 
-- [ ] T18 Receitas Corrigir pelo IPCA e Converter pela PTAX (RF-4961)
+- [x] T18 Receitas Corrigir pelo IPCA e Converter pela PTAX (RF-4961)
 - [ ] T19 Juntar com municípios do IBGE, com casados e não casados antes de inserir (RF-4962, CA-06)
 
 ## Marco 7 — Conferências e publicação

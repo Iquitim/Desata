@@ -354,3 +354,10 @@
 .mem-mark { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
 .mem-legend { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-xs); color: var(--text-2); }
 .mem-quarter { font-weight: 700; color: var(--text); }
+
+/* Receitas prontas: IPCA e PTAX (T18, RF-4961) */
+.rc-scheme { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px; border-radius: 10px; background: var(--surface-2); }
+.rc-step { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: var(--fs-sm);
+  background: var(--surface); border: 1px solid var(--border); }
+.rc-step .icon { color: var(--accent); }
+.rc-arrow { color: var(--text-3); }

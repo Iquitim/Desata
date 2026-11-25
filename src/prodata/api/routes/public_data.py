@@ -11,10 +11,12 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from prodata.api.deps import ServicesDep
+from prodata.catalog import recipes
 from prodata.catalog.download import DownloadError
 from prodata.catalog.http import CatalogError
 from prodata.catalog.model import SourceNotFoundError
 from prodata.catalog.readers.files import FormatChangedError
+from prodata.catalog.recipes import RecipeRequest
 from prodata.errors import InvalidInputError, NotFoundError
 from prodata.nodes.public_data import PublicSelection
 
@@ -384,3 +386,12 @@ def download_action(
     downloads = services.catalog.downloads
     run = {"pausar": downloads.pause, "continuar": downloads.resume, "cancelar": downloads.cancel}[action]
     return _download(lambda: run(_job_id(job_id)))
+
+
+# ---------------------------------------------------------------- receitas prontas (RF-4961)
+
+
+@router.post("/receita")
+def recipe(req: RecipeRequest) -> dict[str, Any]:
+    """As caixas da receita (Corrigir pelo IPCA, Converter pela PTAX), para a tela inserir no fluxo. Sem rede."""
+    return recipes.build(req)

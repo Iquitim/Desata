@@ -729,6 +729,7 @@ Entradas: `L` (Esquerda), `R` (Direita). Saídas: `L` (Só na esquerda), `J` (Co
 - `keys` ([{"left": "", "right": ""}]): Chaves de junção
   - `left` (""): Esquerda [L] [nome de coluna]
   - `right` (""): Direita [R] [nome de coluna]
+- `match` ("exact"): Como casar. Opções: `exact`, `previous`. Na data anterior mais próxima, a última chave pega o valor da direita do mesmo dia ou, sem ele, do dia anterior mais próximo (como a cotação do último dia útil). As outras chaves continuam iguais
 - `keys_mode` ("both"): Colunas da chave no J. Opções: `both`, `left`, `right`
 - `fields` ([]): Colunas do J. Colunas não listadas são mantidas como estão
   - `name` (""): Name

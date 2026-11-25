@@ -77,6 +77,7 @@ export const api = {
   downloadPlan: (body) => request('POST', '/api/catalogo/downloads/plano', body),
   downloadStart: (body) => request('POST', '/api/catalogo/downloads', body),
   downloads: () => request('GET', '/api/catalogo/downloads'),
+  publicRecipe: (body) => request('POST', '/api/catalogo/receita', body),
   downloadAction: (id, action) => request('POST', `/api/catalogo/downloads/${enc(id)}/${action}`),
   publicHolidays: (local, ano) => request('GET', `/api/catalogo/feriados/editar?local=${enc(local)}&ano=${ano}`),
   publicHolidayAction: (action, body, local, ano) =>

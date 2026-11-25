@@ -46,6 +46,16 @@ STACK_ON = ["LJR", "LJ", "JR", "LR"]
 
 class JoinConfig(ToolConfig):
     keys: list[JoinKey] = Field(default_factory=lambda: [JoinKey()], title="Chaves de junção")
+    # Data anterior mais próxima (spec 049, receita da PTAX): cotações e índices só existem em dias úteis.
+    match: Literal["exact", "previous"] = Field(
+        "exact",
+        title="Como casar",
+        description="Na data anterior mais próxima, a última chave pega o valor da direita do mesmo dia ou, sem ele, "
+        "do dia anterior mais próximo (como a cotação do último dia útil). As outras chaves continuam iguais.",
+        json_schema_extra=ui(
+            labels={"exact": "Valores iguais", "previous": "Última chave: a data anterior mais próxima"}
+        ),
+    )
     keys_mode: Literal["both", "left", "right"] = Field(
         "both",
         title="Colunas da chave no J",
@@ -154,7 +164,11 @@ def multiplication_warning(stats: dict[str, int]) -> str:
         Port("U", "U", "Saídas empilhadas", when={"stack": STACK_ON}),
     ],
     annotate=lambda c: (
-        " · ".join(f"{k.left} = {k.right}" for k in c.keys if k.left)
+        " · ".join(
+            f"{k.left} {'≥' if c.match == 'previous' and k is c.keys[-1] else '='} {k.right}"
+            for k in c.keys
+            if k.left
+        )
         + (f" · U = {'+'.join(c.stack)}" if c.stack != "none" else "")
     ),
 )
@@ -174,6 +188,8 @@ def join(ctx: NodeContext, cfg: JoinConfig) -> NodeOutput:
     # chaves dos dois lados (spec 018): uma coluna calculada usada como chave na direita não pode sumir.
     clashes = {c: f"{cfg.right_prefix}{c}" for c in right.columns if c in left.columns}
     renamed_right_keys = [clashes.get(k, k) for k in right_on]
+    if cfg.match == "previous":
+        return _join_previous(left, right, cfg, left_on, right_on, clashes, renamed_right_keys)
     joined = left.join(
         right.rename(clashes),
         left_on=left_on,
@@ -199,6 +215,62 @@ def join(ctx: NodeContext, cfg: JoinConfig) -> NodeOutput:
     }
     if cfg.stack != "none":
         tables["U"] = stack_outputs(tables, cfg.stack, cfg.stack_column.strip())
+    return NodeOutput(tables=tables, extra=extra)
+
+
+def _join_previous(
+    left: pl.DataFrame,
+    right: pl.DataFrame,
+    cfg: JoinConfig,
+    left_on: list[str],
+    right_on: list[str],
+    clashes: dict[str, str],
+    renamed: list[str],
+) -> NodeOutput:
+    """Junta pela data anterior mais próxima (a última chave): o mesmo dia ou, sem ele, o anterior mais próximo.
+    Nunca multiplica linhas; o aviso diz quantas usaram uma data anterior (spec 049, RF-4961)."""
+    lk, rk = left_on[-1], right_on[-1]
+    lt, rt = left.schema[lk], right.schema[rk]
+    if lt != rt:
+        if lt.is_temporal() and rt.is_temporal():
+            right = right.with_columns(
+                pl.col(rk).cast(lt)
+            )  # a esquerda fica como veio; a direita segue o tipo dela
+        elif not (lt.is_numeric() and rt.is_numeric()):
+            raise ValueError(
+                f"Na data anterior mais próxima, {lk} e {rk} precisam ser do mesmo tipo (data ou número)."
+            )
+    elif not (lt.is_temporal() or lt.is_numeric()):
+        raise ValueError(f"Na data anterior mais próxima, a última chave ({lk}) precisa ser data ou número.")
+    row, used = "__pd_linha", "__pd_direita"
+    base = left.with_row_index(row)
+    sides = right.with_row_index(used).rename(clashes)
+    # O Polars descarta a chave de igualdade da direita nesta junção: uma cópia temporária faz o papel dela.
+    copies = [f"__pd_igual_{i}" for i in range(len(renamed) - 1)]
+    sides = sides.with_columns(pl.col(c).alias(a) for c, a in zip(renamed[:-1], copies, strict=True))
+    joined = (
+        base.filter(pl.col(lk).is_not_null()).sort(lk)
+        .join_asof(sides.filter(pl.col(renamed[-1]).is_not_null()).sort(renamed[-1]), left_on=lk, right_on=renamed[-1],
+                   by_left=left_on[:-1] or None, by_right=copies or None, strategy="backward", check_sortedness=False)
+        .sort(row)
+        .drop(copies, strict=False)  # o Polars já tira as cópias; o strict=False só garante
+    )  # fmt: skip
+    matched = joined.filter(pl.col(used).is_not_null())
+    earlier = matched.filter(pl.col(lk) != pl.col(renamed[-1])).height
+    picked = matched[used].unique().to_list()
+    joined_out = _keep_key_side(matched.drop(row, used), cfg.keys_mode, left_on, right_on, renamed)
+    joined_out, warnings = apply_select(joined_out, cfg.fields, cfg.order)
+    if earlier:
+        warnings = [f"{_count(earlier)} linha(s) sem valor na própria data usaram a data anterior mais próxima de {rk}.",
+                    *warnings]  # fmt: skip
+    tables = {
+        "L": base.join(matched.select(row), on=row, how="anti").drop(row),
+        "J": joined_out,
+        "R": right.with_row_index(used).filter(~pl.col(used).is_in(picked)).drop(used),
+    }
+    if cfg.stack != "none":
+        tables["U"] = stack_outputs(tables, cfg.stack, cfg.stack_column.strip())
+    extra: dict[str, object] = {"warnings": warnings} if warnings else {}
     return NodeOutput(tables=tables, extra=extra)
 
 
@@ -488,6 +560,11 @@ def join_sql(ctx: SqlContext, cfg: JoinConfig) -> dict[str, Fragment]:
     only_right = "SELECT r.*\nFROM {b} AS r\nWHERE NOT EXISTS (\n  SELECT 1 FROM {a} AS l WHERE {c}\n)"
     names = {"a": q(left.block), "b": q(right.block), "c": condition}
     explain = f"Junta por {label} e mantém as linhas que casaram" + (f"; {', '.join(what)}" if what else "")
+    if cfg.match == "previous":  # data anterior mais próxima (spec 049): ASOF JOIN do DuckDB
+        sides, only_right, names = _previous_sql(left.block, right.block, keys)
+        explain = f"Junta pela data anterior mais próxima ({label})" + (
+            f"; {', '.join(what)}" if what else ""
+        )
     out = {
         "L": Fragment(only.format(**names), f"Linhas da esquerda sem par em {label}"),
         "J": Fragment(f"SELECT\n  {join_list(items)}\n{sides}", explain),
@@ -496,6 +573,25 @@ def join_sql(ctx: SqlContext, cfg: JoinConfig) -> dict[str, Fragment]:
     if cfg.stack != "none":
         out["U"] = stack_sql(out, cfg.stack, cfg.stack_column.strip())
     return out
+
+
+def _previous_sql(left: str, right: str, keys: list[JoinKey]) -> tuple[str, str, dict[str, str]]:
+    """A junção pela data anterior mais próxima em SQL: o J com ASOF JOIN; o L, quem não tem data anterior; o R,
+    as linhas da direita que nenhuma da esquerda escolheu."""
+    same = [f"l.{q(k.left)} = r.{q(k.right)}" for k in keys[:-1]]
+    last = keys[-1]
+    condition = " AND ".join([*same, f"r.{q(last.right)} <= l.{q(last.left)}"])
+    newer = " AND ".join([*(f"r2.{q(k.right)} = r.{q(k.right)}" for k in keys[:-1]),
+                          f"r2.{q(last.right)} > r.{q(last.right)}", f"r2.{q(last.right)} <= l.{q(last.left)}"])  # fmt: skip
+    on = " AND ".join([*same, f"l.{q(last.left)} >= r.{q(last.right)}"])
+    sides = f"FROM {q(left)} AS l\nASOF JOIN {q(right)} AS r\n  ON {on}"
+    only_right = (
+        "SELECT r.*\nFROM {b} AS r\nWHERE NOT EXISTS (\n  SELECT 1 FROM {a} AS l WHERE {c}\n"
+        "    AND NOT EXISTS (SELECT 1 FROM {b} AS r2 WHERE "
+        + newer.replace("{", "{{").replace("}", "}}")
+        + ")\n)"
+    )
+    return sides, only_right, {"a": q(left), "b": q(right), "c": condition}
 
 
 def stack_sql(parts: dict[str, Fragment], chosen: str, column: str) -> Fragment:

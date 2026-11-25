@@ -695,3 +695,35 @@ def test_join_without_stack_has_no_u_output(store: DatasetStore, tmp_path: Path)
         "transform.join", {"L": MESSY, "R": OTHER}, store, tmp_path, keys=[{"left": "id", "right": "id"}]
     )
     assert "U" not in results
+
+
+# ------------------------------------------------------------------ Join pela data anterior mais próxima (spec 049)
+
+SALES = pl.DataFrame({
+    "dia": [date(2026, 1, 2), date(2026, 1, 3), date(2026, 1, 4), date(2026, 1, 5), date(2025, 12, 31), None],
+    "moeda": ["USD", "USD", "EUR", "USD", "USD", "USD"],
+    "valor": [100.0, 200.0, 300.0, 400.0, 50.0, 10.0],
+})  # fmt: skip
+PTAX = pl.DataFrame({
+    "data": [date(2026, 1, 2), date(2026, 1, 5), date(2026, 1, 2), date(2026, 1, 1)],
+    "moeda": ["USD", "USD", "EUR", "USD"],
+    "venda": [5.5, 5.6, 6.1, 5.4],
+})  # fmt: skip
+
+
+def test_join_data_anterior_mais_proxima(store: DatasetStore, tmp_path: Path) -> None:
+    config = {"keys": [{"left": "moeda", "right": "moeda"}, {"left": "dia", "right": "data"}], "match": "previous",
+              "keys_mode": "both", "stack": "LJ"}  # fmt: skip
+    results = run_both("transform.join", {"L": SALES, "R": PTAX}, store, tmp_path, **config)
+    assert_same(results)
+    joined = results["J"][1]
+    used = dict(zip(joined["dia"].to_list(), joined["data"].to_list(), strict=True))
+    assert used[date(2026, 1, 3)] == date(2026, 1, 2)  # sábado: a cotação de sexta
+    assert used[date(2026, 1, 5)] == date(2026, 1, 5)  # o próprio dia
+    assert used[date(2026, 1, 4)] == date(2026, 1, 2)  # EUR: só a moeda igual
+    assert joined.height == 4  # nunca multiplica
+    assert sorted(d for d in results["L"][1]["dia"].to_list() if d) == [
+        date(2025, 12, 31)
+    ]  # sem data anterior
+    assert results["L"][1].height == 2  # e a data vazia
+    assert results["R"][1]["data"].to_list() == [date(2026, 1, 1)]  # a cotação que ninguém usou
