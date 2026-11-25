@@ -53,12 +53,22 @@ export function publicDetail(entry, ctx = {}) {
     try {
       st.info = await api.publicDescribe(entry.id);
       for (const field of st.info.escolhas) if (field.padrao !== undefined && field.padrao !== null) st.choices[field.id] = field.padrao;
+      if (ctx.initialChoices) {
+        // Trocar, na caixa do fluxo: volta com as escolhas que ela já tinha.
+        st.choices = { ...st.choices, ...ctx.initialChoices };
+        st.options = { ...(ctx.initialChoices.formato_aceito?.opcoes || {}) };
+        st.member = ctx.initialChoices.formato_aceito?.membro || '';
+        if (ctx.initialChoices.consulta) st.entry = ctx.initialChoices.consulta;
+        if (ctx.initialChoices.parametros) st.params = { ...ctx.initialChoices.parametros };
+      }
     } catch (err) {
       st.error = err.message || String(err);
     }
     root.setAttribute('aria-busy', 'false');
     redraw();
-    if (st.info?.leitura === 'pronta' && st.info.id !== 'receita.cnpj/dados-abertos') runPreview();
+    const again = st.info?.arquivos?.find((a) => a.id === ctx.initialChoices?.arquivo);
+    if (again && again.situacao !== 'so_link') chooseFile(again, true);
+    else if (st.info?.leitura === 'pronta' && st.info.id !== 'receita.cnpj/dados-abertos') runPreview();
   }
 
   async function runPreview() {
@@ -72,15 +82,16 @@ export function publicDetail(entry, ctx = {}) {
     st.previewing = false; redraw();
   }
 
-  async function chooseFile(resource) {
+  async function chooseFile(resource, keep = false) {
     st.resource = resource; st.filePreview = null; st.fileError = null; st.odata = null; st.odataError = null;
+    if (!keep) { st.options = {}; st.member = ''; }
     st.choices = { ...st.choices, arquivo: resource.id };
     redraw();
     if (resource.situacao === 'legivel') readFile();
     if (resource.situacao === 'odata') {
       try {
         st.odata = await api.publicOdata(entry.id, resource.id);
-        const first = st.odata.consultas.find((c) => c.nome === st.odata.consulta) || st.odata.consultas[0];
+        const first = st.odata.consultas.find((c) => c.nome === (keep && st.entry ? st.entry : st.odata.consulta)) || st.odata.consultas[0];
         st.entry = first?.nome || null;
         st.choices = { ...st.choices, consulta: st.entry };
       } catch (err) {
@@ -337,10 +348,10 @@ export function publicDetail(entry, ctx = {}) {
     return h('footer', { class: 'pd-actions' },
       why ? h('p', { class: 'pd-why' }, why) : null,
       h('div', { class: 'row' },
-        button({ icon: 'plus', label: 'Adicionar ao fluxo', variant: 'primary', disabled: blocked || !ctx.onUse,
-          title: why || (ctx.onUse ? '' : 'Chega com a caixa Dados públicos'), onClick: () => ctx.onUse?.(entry, st.choices, 'fluxo') }),
-        button({ icon: 'database', label: 'À vista Dados', disabled: blocked || !ctx.onUse,
-          title: why || '', onClick: () => ctx.onUse?.(entry, st.choices, 'dados') })));
+        button({ icon: 'plus', label: ctx.useLabel || 'Adicionar ao fluxo', variant: 'primary', disabled: blocked || !ctx.onUse,
+          title: why || '', onClick: () => ctx.onUse?.(entry, st.choices, 'fluxo', st.info) }),
+        ctx.canUseData ? button({ icon: 'database', label: 'À vista Dados', disabled: blocked,
+          title: why || '', onClick: () => ctx.onUse?.(entry, st.choices, 'dados', st.info) }) : null));
   }
 
   function render() {

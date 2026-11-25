@@ -259,6 +259,7 @@ function nodeContext(n) {
     },
   };
   if (n.type === 'io.input_data') Object.assign(ctx, sourceContext(n, spec));
+  if (n.type === 'io.public_data') ctx.publicError = res?.status === 'error' ? res.error : null; // Aceitar o novo formato (spec 049)
   if (n.type === 'io.output_data') Object.assign(ctx, { chooseFolder, chooseFile: isDesktop() ? chooseDataFile : null });
   if (n.type === 'io.input_folder') {
     // As opções de leitura dependem do formato: aqui ele vem da extensão do padrão (vendas_*.xlsx).

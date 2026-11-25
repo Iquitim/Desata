@@ -52,6 +52,21 @@ def check_id(source_id: str) -> list[str]:
     return parts
 
 
+_SERVICE_OF_PREFIX = {
+    "bcb.sgs": "bcb_sgs", "bcb.ptax": "bcb_olinda", "bcb.focus": "bcb_olinda", "ibge.agregado": "ibge",
+    "ibge.localidades": "ibge", "ipea": "ipea", "tesouro.direto": "tesouro", "siconfi": "siconfi", "comex": "comex",
+    "calendario": "anbima", "receita.cnpj": "receita",
+}  # fmt: skip
+
+
+def service_of(source_id: str) -> str:
+    """O serviço de onde vêm os dados da fonte (para a situação e o aviso "fora do ar")."""
+    parts = check_id(source_id)
+    if parts[0] == "ckan":
+        return "bcb_olinda" if parts[1] == "bcb_portal" else hosts.PORTAL_SERVICE[parts[1]]
+    return _SERVICE_OF_PREFIX[parts[0]]
+
+
 def _period(choices: dict[str, Any], today: date, first: date | None = None) -> tuple[date, date]:
     return PeriodChoice.model_validate(choices.get("periodo") or {}).resolve(today, first)
 
@@ -331,7 +346,13 @@ def odata_entries(client: CatalogClient, resource_url: str) -> dict[str, Any]:
 
 
 def read(
-    client: CatalogClient, source_id: str, choices: dict[str, Any], root: Path, today: date | None = None
+    client: CatalogClient,
+    source_id: str,
+    choices: dict[str, Any],
+    root: Path,
+    today: date | None = None,
+    *,
+    team_holidays: holidays.Edits | None = None,
 ) -> ReadResult:
     """Lê a fonte com as escolhas da caixa. A prévia usa a mesma função (com período curto)."""
     parts = check_id(source_id)
@@ -382,7 +403,7 @@ def read(
         return comex.read_general(client, params.get("fluxo", "export"), f"{start:%Y-%m}", f"{end:%Y-%m}",
                                   details=list(details), metrics=metrics)  # fmt: skip
     if head == "calendario":
-        return _read_calendar(client, parts[1], params, choices, day, root)
+        return _read_calendar(client, parts[1], params, choices, day, root, team_holidays)
     if head == "ckan":
         return _read_portal(client, parts[1], parts[2], choices, root, day)
     if head == "receita.cnpj":
@@ -408,14 +429,21 @@ def _read_ibge(
 
 
 def _read_calendar(
-    client: CatalogClient, kind: str, params: dict[str, Any], choices: dict[str, Any], day: date, root: Path
+    client: CatalogClient,
+    kind: str,
+    params: dict[str, Any],
+    choices: dict[str, Any],
+    day: date,
+    root: Path,
+    team_holidays: holidays.Edits | None = None,
 ) -> ReadResult:
     period = PeriodChoice.model_validate(choices.get("periodo") or {"kind": "intervalo", "inicio": date(day.year, 1, 1),
                                                                      "fim": date(day.year, 12, 31)})  # fmt: skip
     start, end = period.resolve(day)
     calendar: holidays.Calendar = "bancario" if params.get("calendario") == "bancario" else "civil"
     place = str(params.get("local") or "BR")
-    edits = holidays.load_edits(root)  # as edições da pessoa valem nos feriados e nos dias úteis (RF-4948)
+    # As edições da pessoa valem nos feriados e nos dias úteis; num fluxo do espaço, as da equipe (RF-4948).
+    edits = team_holidays if team_holidays is not None else holidays.load_edits(root)
     bank: tuple[holidays.Holiday, ...] = ()
     warnings: list[str] = []
     if calendar == "bancario":

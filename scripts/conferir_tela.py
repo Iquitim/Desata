@@ -1214,6 +1214,60 @@ def catalogo(pg: Page) -> None:
     editor.locator("header button").click()
 
 
+def caixa_publica(pg: Page) -> None:
+    """T12: do catálogo para o fluxo, executar, o cartão do Configurar e Trocar."""
+    new_flow(pg)
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.locator(".dv-list-head button", has_text="Adicionar").click()
+    pg.locator(".menu .menu-item", has_text="Dados públicos do Brasil").click()
+    dlg = pg.locator("dialog.pd-dialog[open]")
+    dlg.locator(".pd-card").first.wait_for(timeout=20000)
+    dlg.locator(".pd-card", has_text="Taxa Selic diária").click()
+    detail = dlg.locator(".pd-detail")
+    add = detail.locator(".pd-actions button", has_text="Adicionar ao fluxo")
+    add.wait_for(timeout=20000)
+    pg.wait_for_function(
+        "() => { const b = [...document.querySelectorAll('.pd-actions button')].find((x) => x.textContent.includes('Adicionar ao fluxo')); return b && !b.disabled; }",
+        timeout=30000,
+    )
+    add.click()
+    pg.wait_for_function(
+        "() => window.__S.store.workflow.nodes.some((n) => n.type === 'io.public_data')", timeout=10000
+    )
+    node = pg.evaluate("() => window.__S.store.workflow.nodes.find((n) => n.type === 'io.public_data')")
+    check(
+        "a caixa entra no fluxo com a fonte e as escolhas",
+        node["config"]["fonte"]["id"] == "bcb.sgs/11"
+        and node["config"]["fonte"]["escolhas"]["periodo"]["kind"] == "ultimos_anos",
+        node["config"],
+    )
+    check("o fluxo não guarda endereço nem dados", "http" not in json.dumps(node["config"]))
+    run(pg)
+    status = pg.evaluate(f"() => window.__S.store.execution?.node_results?.['{node['id']}']?.status")
+    check("a caixa executa lendo do Banco Central", status in ("executed", "cached"), status)
+    configure(pg, node["id"])
+    card = pg.locator(".pd-box")
+    card.wait_for(timeout=10000)
+    check(
+        "o Configurar mostra a fonte em palavras",
+        "Taxa Selic diária" in card.inner_text() and "últimos 5 anos" in card.inner_text(),
+        card.inner_text(),
+    )
+    _print(pg, "caixa")
+    card.locator("button", has_text="Trocar").click()
+    dlg.wait_for(timeout=10000)
+    dlg.locator(".pd-detail h2").wait_for(timeout=20000)
+    check(
+        "Trocar abre o catálogo na mesma fonte",
+        "Taxa Selic diária" in dlg.locator(".pd-detail h2").inner_text(),
+    )
+    check(
+        "o botão diz Usar nesta caixa",
+        dlg.locator(".pd-actions button", has_text="Usar nesta caixa").count() == 1,
+    )
+    dlg.locator("header button").first.click()
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1243,6 +1297,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "equipe6": equipe6,
     "limpeza": limpeza,
     "catalogo": catalogo,
+    "caixa_publica": caixa_publica,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

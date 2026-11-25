@@ -264,8 +264,16 @@ function detail() {
   }
   // O mesmo elemento enquanto a fonte não muda: redesenhar o painel não recarrega o detalhe nem perde as escolhas.
   if (!state.detailEl || state.detailFor !== e.id) {
+    const initial = state.initialChoices?.for === e.id ? state.initialChoices.values : null;
     state.detailEl = publicDetail(e, {
-      iconFor: categoryIcon, agencyName, onUse: state.onUse,
+      iconFor: categoryIcon, agencyName, initialChoices: initial,
+      onUse: state.onUse ? (entry, escolhas, target, info) => {
+        if (target === 'dados') state.onUseData?.(entry, escolhas, info);
+        else state.onUse(entry, escolhas, target, info);
+        state.dialog?.close();
+      } : null,
+      canUseData: Boolean(state.onUseData),
+      useLabel: state.useLabel,
       health: (sid) => state.health?.servicos?.[sid] || null,
       offline: () => Boolean(state.health?.sem_conexao),
       checking: () => state.checking,
@@ -322,8 +330,19 @@ function draw() {
   }
 }
 
-/** Abre o catálogo. Com o catálogo dos órgãos velho (mais de 7 dias) ou nunca lido, atualiza sozinho em segundo plano. */
-export async function openPublicData() {
+/**
+ * Abre o catálogo. Com o catálogo dos órgãos velho (mais de 7 dias) ou nunca lido, atualiza sozinho em segundo plano.
+ * ``select``: já abre o detalhe dessa fonte (com ``choices``), como no Trocar da caixa. ``onUse(fonte, escolhas,
+ * destino, info)``: o que o Adicionar faz; ``onUseData``: Adicionar à vista Dados (sem ele, o botão não aparece).
+ */
+export async function openPublicData({ select = null, choices = null, onUse = null, onUseData = null, useLabel = null } = {}) {
+  state.useLabel = useLabel;
+  state.onUse = onUse;
+  state.onUseData = onUseData;
+  state.initialChoices = choices && select ? { for: select.id, values: choices } : null;
+  state.selected = select ? { id: select.id, nome: select.nome || select.id, orgao: select.orgao || '', servico: null } : null;
+  state.detailEl = null;
+  state.detailFor = null;
   const root = h('div', { class: 'pd-root' }, h('p', { class: 'pd-loading' }, 'Abrindo o catálogo…'));
   state.dialog = openDialog({
     title: 'Dados públicos do Brasil', body: root, size: 'xl',

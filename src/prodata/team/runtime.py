@@ -31,7 +31,14 @@ def runner_for(services: Services, space_id: str | None) -> WorkflowRunner:
         queries=OverlayQueries(services.queries, defs),
         apis=OverlayApis(services.apis, defs, secrets),
         constants=OverlayConstants(services.constants, defs),
+        # Feriados da equipe (spec 049, RF-4948): num fluxo do espaço, Feriados e Dias úteis usam a lista da equipe.
+        team_holidays=_team_holidays(defs),
     )
+
+
+def _team_holidays(defs: Any) -> Any:
+    item = defs.get("feriados", "calendario")
+    return item.edits() if item is not None else None
 
 
 def used_sources(workflow: Workflow, queries: Any) -> tuple[list[str], list[str]]:

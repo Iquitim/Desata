@@ -11,6 +11,7 @@ from prodata.nodes import (  # noqa: F401  (registro por efeito de import)
     ml,
     prep,
     prep_sql,
+    public_data,
     quality,
     quality_sql,
     reshape,

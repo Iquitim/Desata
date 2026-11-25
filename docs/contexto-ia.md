@@ -404,6 +404,16 @@ Entradas: `in` (Entrada), `in2` (Planilha 2, opcional, conforme a configuração
 - `if_exists` ("ask"): Se o arquivo já existir. Opções: `ask`, `replace`, `new_file`, `add_sheet`. "Adicionar planilha" só vale para Excel: vários Output Data podem montar um arquivo só
 - `stop_on_schema_change` (false): Parar se o formato da saída mudar. Desligado: grava e avisa no resultado quando sai uma coluna a mais, a menos ou com outro tipo
 
+#### `io.public_data`: Dados públicos
+
+Lê uma fonte do catálogo Dados públicos do Brasil (Banco Central, IBGE, Ipeadata, Tesouro, portais de dados abertos, feriados), direto do órgão, sem configurar API.
+
+Entradas: nenhuma. Saídas: `out` (Dados).
+
+- `fonte` ({"id": "", "nome": "", "orgao": "", "citacao": "", "licenca": "", "escolhas": {}}): Fonte. Escolha no catálogo Dados públicos do Brasil: a fonte e as escolhas (período, variável, local...)
+- `exigir_atual` (false): Exigir dados atuais. Com o órgão fora do ar, a caixa falha em vez de usar a última leitura guardada
+- `limit` (0): Limite de linhas. De 0 a …. 0 = todas as linhas
+
 #### `io.generate_rows`: Generate Rows
 
 Cria linhas sem ler arquivo: um calendário entre duas datas ou números em sequência.

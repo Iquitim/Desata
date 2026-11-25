@@ -208,6 +208,20 @@
 .pd-day.is-lenta { background: var(--warn); }
 .pd-day.is-fora { background: var(--err); }
 
+/* A caixa no Configurar (T12) */
+.pd-box { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+.pd-box-empty { flex-direction: row; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pd-box-empty > div { flex: 1; min-width: 160px; }
+.pd-box-head { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; }
+.pd-box .icon { color: var(--accent); }
+.pd-box p { margin: 2px 0 0; }
+.pd-box-changed {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-radius: var(--radius-sm);
+  background: var(--warn-weak); color: var(--warn); font-size: var(--fs-xs);
+}
+.pd-box-changed span { flex: 1 1 160px; }
+.pd-box .row { display: flex; gap: 6px; flex-wrap: wrap; }
+
 /* Editar feriados (T09a) */
 .hol-dialog .dialog-body { display: flex; flex-direction: column; padding: 16px 18px; }
 .hol-root { display: flex; flex-direction: column; gap: 12px; }

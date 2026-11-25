@@ -130,6 +130,7 @@ def build_services(settings: Settings) -> Services:
             workflows=workflows,
             secret_key=lambda: installation_key(secrets),
             guard=trust.check_runnable,
+            catalog_root=settings.storage_dir / "catalogo",
         ),
         workflows=workflows,
         connections=connections,

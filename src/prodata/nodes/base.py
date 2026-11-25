@@ -95,6 +95,10 @@ class NodeContext:
     secret_key: Callable[[], bytes] | None = None
     # Amostras que vieram no arquivo do fluxo (spec 040): usadas só quando a fonte não existe neste computador.
     samples: dict[str, Any] = field(default_factory=dict)
+    # Catálogo de dados públicos (spec 049): a pasta do catálogo deste computador (leituras guardadas, arquivos dos
+    # portais, feriados editados) e, num fluxo do espaço, as edições de feriados da equipe.
+    catalog_root: Path | None = None
+    team_holidays: Any = None
 
     def state_dir(self) -> Path:
         """Pasta desta caixa na pasta de dados do computador. Nunca vai no arquivo do fluxo."""

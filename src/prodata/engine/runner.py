@@ -117,8 +117,12 @@ class WorkflowRunner:
         workflows: Any = None,
         secret_key: Any = None,
         guard: Any = None,
+        catalog_root: Path | None = None,
     ) -> None:
         self.jira = jira
+        # Catálogo de dados públicos (spec 049): pasta do catálogo; feriados da equipe num fluxo do espaço.
+        self.catalog_root = catalog_root
+        self.team_holidays: Any = None
         # Spec 033: estado das caixas entre execuções, biblioteca (subfluxos) e chave do Mask.
         self.state_dir = state_dir
         self.workflows = workflows
@@ -142,7 +146,7 @@ class WorkflowRunner:
     def with_stores(self, **stores: Any) -> WorkflowRunner:
         """O mesmo executor (cache, andamento e assinaturas compartilhados) com outras lojas de conexões, consultas,
         APIs e constantes: um fluxo do espaço da equipe usa as definições da equipe (spec 048, RF-4803)."""
-        allowed = {"connections", "queries", "apis", "constants"}
+        allowed = {"connections", "queries", "apis", "constants", "team_holidays"}
         if set(stores) - allowed:
             raise ValueError(f"Lojas desconhecidas: {sorted(set(stores) - allowed)}")
         clone = copy.copy(self)
@@ -613,6 +617,8 @@ class WorkflowRunner:
             injected=self.injected,
             secret_key=self.secret_key,
             samples=workflow.samples,  # spec 040: só valem quando a fonte não está neste computador
+            catalog_root=self.catalog_root,
+            team_holidays=self.team_holidays,
         )
         ctx.run_subflow = lambda child: subflow.run(self, workflow, node, child, ctx)
         ctx.subflow_signature = lambda child: subflow.signature(self, child)

@@ -712,6 +712,11 @@ function categoryColors(field, value, set, ctx) {
 
 // ------------------------------------------------------------------ valores de uma coluna (spec 015)
 
+/** Widgets de módulos que não podem ser importados aqui sem ciclo (ex.: a caixa Dados públicos, spec 049). */
+export function registerWidget(name, fn) {
+  WIDGETS[name] = fn;
+}
+
 const WIDGETS = {
   color, optional_number: optionalNumber, category_colors: categoryColors, column_values: columnValues,
   rename_labels: renameLabels, tip_columns: tipColumnsField, tip_text: tipTextField, subflow: subflowField, file: fileField, model: modelField, model_save: modelSaveField, model_versions: modelVersionsField,
