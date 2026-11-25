@@ -75,6 +75,11 @@ def _get_paths(routes: list[Any], prefix: str = "") -> set[str]:
     return out
 
 
+# Rotas GET que acessam a internet por desenho: só a tela do catálogo, aberto, as chama (constituição 1.8.1).
+# A lista é exata: uma rota nova que acesse a rede não passa sem ser declarada aqui, de propósito.
+CATALOG_NETWORK_ROUTES = {"/api/catalogo/moedas"}
+
+
 def test_abrir_o_programa_e_a_vista_dados_nao_acessa_a_rede(
     network_attempts: list[Any], client: TestClient
 ) -> None:
@@ -82,10 +87,23 @@ def test_abrir_o_programa_e_a_vista_dados_nao_acessa_a_rede(
     paths = sorted(_get_paths(client.app.routes))  # type: ignore[attr-defined]
     assert "/api/datasets" in paths
     assert len(paths) > 20
+    assert set(paths) >= CATALOG_NETWORK_ROUTES  # a lista não guarda rota que não existe mais
     for path in ["/", *paths]:
-        client.get(path)
+        if path not in CATALOG_NETWORK_ROUTES:
+            client.get(path)
     assert network_attempts == []
     assert created == []
+
+
+def test_as_rotas_que_acessam_a_rede_sao_so_as_declaradas(
+    network_attempts: list[Any], client: TestClient
+) -> None:
+    """Cada rota da lista, chamada sozinha, é a única coisa que cria o cliente do catálogo."""
+    created = network_attempts.pop(0)
+    for path in sorted(CATALOG_NETWORK_ROUTES):
+        before = len(created)
+        client.get(path)
+        assert len(created) > before, f"{path} está na lista, mas não acessa a rede: tire da lista"
 
 
 def test_fluxo_sem_fonte_publica_nao_acessa_a_rede(network_attempts: list[Any], client: TestClient) -> None:
