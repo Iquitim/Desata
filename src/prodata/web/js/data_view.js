@@ -9,6 +9,7 @@ import { refreshConstants } from './constants.js';
 import { constantEditor } from './constants_ui.js';
 import { folderEditor, refreshFolderSources } from './folder_sources.js';
 import { pdfSourceForm, refreshPdfSources } from './pdf_sources.js';
+import { downloadsSection } from './cnpj_ui.js';
 import { openPublicData } from './public_data.js';
 import { addPublicNode } from './public_data_box.js';
 import { refreshSaved } from './public_news.js';
@@ -96,7 +97,7 @@ function listPane() {
     h('div', { class: 'dv-list-head' },
       h('div', {}, h('h1', {}, 'Seus dados'), h('p', {}, 'Valem para todos os fluxos deste computador')),
       button({ icon: 'plus', label: 'Adicionar', variant: 'primary', onClick: addMenu })),
-    missingSection(), search, list.el,
+    missingSection(), downloadsSection(), search, list.el, // downloads do CNPJ (spec 049)
     // fontes do catálogo Dados públicos guardadas com as escolhas (spec 049)
     publicSection({ selectedKey: ui.key, onOpen: (key) => { ui.key = key; ui.creating = null; renderDataView(); } }),
     // espaço da equipe (spec 048): as definições compartilhadas, numa pasta por espaço
@@ -240,7 +241,8 @@ export function renderDataView() {
  */
 function refreshKeepingEditor() {
   const list = root?.querySelector('.dv-list');
-  if (!list || store.view !== 'data' || !root.querySelector('.dv-detail.pe-active')) { renderDataView(); return; }
+  // Um editor aberto (PDF, cadastro de uma fonte) não perde o que a pessoa está digitando: só a lista é redesenhada.
+  if (!list || store.view !== 'data' || !root.querySelector('.dv-detail.pe-active, .dv-detail .dv-editor')) { renderDataView(); return; }
   const scroll = list.querySelector('.org-list')?.scrollTop || list.scrollTop;
   const fresh = listPane();
   root.replaceChild(fresh, list);
@@ -251,7 +253,7 @@ export function initDataView(el, opts) {
   root = el;
   handlers = { ...handlers, ...opts };
   initPortable(); // o que falta neste computador, para o fluxo aberto (spec 040)
-  for (const event of ['datasets', 'queries', 'apis', 'connections', 'constants', 'organization', 'folders']) on(event, () => renderDataView());
+  for (const event of ['datasets', 'queries', 'apis', 'connections', 'constants', 'organization', 'folders']) on(event, () => refreshKeepingEditor());
   on('public-saved', () => renderDataView()); // pasta Dados públicos (spec 049)
   on('pdfs', () => refreshKeepingEditor());
   on('numbers', () => refreshKeepingEditor());

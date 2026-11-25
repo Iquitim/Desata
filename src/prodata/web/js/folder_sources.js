@@ -4,6 +4,7 @@
 import { addNode } from './actions.js';
 import { api } from './api.js';
 import { viewportCenter } from './canvas.js';
+import { layoutFilterSection } from './cnpj_filter.js';
 import { columnQuality, stat } from './data_stats.js';
 import { previewTable, refreshDatasets } from './datasets.js';
 import { chooseFolder, isDesktop } from './desktop.js';
@@ -218,7 +219,8 @@ export function folderEditor(existing = null, { onSaved, onLinked } = {}, host =
       'Caminho completo. Só esta pasta, sem subpastas.');
     const which = field('Arquivos', pattern, '* vale qualquer trecho e ? um caractere. Ex.: vendas_*.xlsx');
     form.replaceChildren(...(state.mode === 'stack'
-      ? [field('Nome', name), where, which, field('Coluna com o nome do arquivo', column, 'Diz de qual arquivo veio cada linha. Vazio = não criar.'), sheetField]
+      ? [field('Nome', name), where, which, field('Coluna com o nome do arquivo', column, 'Diz de qual arquivo veio cada linha. Vazio = não criar.'), sheetField,
+        value.layout ? layoutFilterSection(value, () => schedule()) : null].filter(Boolean) // CNPJ: filtro na leitura (spec 049)
       : [where, which,
         h('div', { class: 'field' },
           h('label', { class: 'fd-check' }, groupCheck, ' Agrupar numa pasta da vista Dados'),
@@ -237,15 +239,17 @@ export function folderEditor(existing = null, { onSaved, onLinked } = {}, host =
       return;
     }
     const odd = (preview.files || []).some((f) => f.odd);
-    live.replaceChildren(
+    live.replaceChildren(...[ // null viraria o texto "null"
       h('span', { class: 'org-preview-label' }, 'O que vai entrar'),
       stackArt(preview, value.pattern),
       value.layout ? h('div', { class: 'fd-suggest' }, icon('landmark', 14), // CNPJ da Receita (spec 049)
         h('span', {}, 'Leiaute do CNPJ da Receita: os nomes, os tipos e o significado das colunas vêm do programa, conferidos a cada leitura.')) : null,
+      preview.filtro ? h('div', { class: 'fd-suggest' }, icon('filter', 14), h('span', {}, `Prévia com o filtro na leitura: ${preview.filtro}.`)) : null,
+      preview.nota ? h('p', { class: 'field-help' }, preview.nota) : null,
       odd && !existing ? h('div', { class: 'fd-suggest' }, icon('info', 14),
         h('span', {}, 'Os arquivos têm colunas diferentes. Se forem assuntos distintos, cada um pode virar uma fonte.'),
         button({ label: 'Usar Um por arquivo', size: 'sm', onClick: () => choose('each') })) : null,
-      trouble || filesCard(preview, 'Arquivos que casam'));
+      trouble || filesCard(preview, 'Arquivos que casam')].filter(Boolean));
   };
   const refresh = async () => {
     syncGroup();

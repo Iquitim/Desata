@@ -205,7 +205,8 @@ def _read_source(ctx: NodeContext, cfg: InputDataConfig) -> NodeOutput:
 
 def _read_folder(ctx: NodeContext, folder_id: str, limit: int) -> NodeOutput:
     """Pasta de arquivos da aba Dados (spec 035): as opções de leitura são as do cadastro."""
-    table, extra = read_source(ctx.datasets.folders.get(folder_id), limit, ctx.report, _now())
+    folders = ctx.datasets.folders
+    table, extra = read_source(folders.get(folder_id), limit, ctx.report, _now(), folders.get, ctx.memory_ok)
     return NodeOutput(tables={"out": table}, extra=extra)
 
 

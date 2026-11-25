@@ -292,3 +292,65 @@
 .profile-source-icon { display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 8px;
   color: var(--cat-inout); background: color-mix(in srgb, var(--cat-inout) 12%, var(--surface)); }
 .profile-meaning { margin: 4px 0 6px; font-size: var(--fs-xs); color: var(--text-2); line-height: 1.4; }
+
+/* CNPJ: faixa de downloads na vista Dados e o diálogo Baixar (T17, RF-4951..4953, RF-4956) */
+.cnpj-jobs { display: grid; gap: 8px; margin: 8px 0; }
+.cnpj-job { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.cnpj-job.is-erro { border-color: color-mix(in srgb, var(--err) 45%, var(--border)); }
+.cnpj-job.is-pausado { border-color: color-mix(in srgb, var(--warn) 45%, var(--border)); }
+.cnpj-job-head { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: var(--fs-sm); }
+.cnpj-job-state { padding: 1px 8px; border-radius: 999px; font-size: var(--fs-2xs); font-weight: 700; color: var(--accent); background: var(--accent-weak); }
+.cnpj-job.is-erro .cnpj-job-state { color: var(--err); background: color-mix(in srgb, var(--err) 12%, transparent); }
+.cnpj-job.is-pausado .cnpj-job-state { color: var(--warn); background: var(--warn-weak); }
+.cnpj-job.is-concluido .cnpj-job-state { color: var(--ok); background: var(--ok-weak); }
+.cnpj-progress { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.cnpj-progress span { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width .4s ease; }
+.cnpj-job-facts { color: var(--text-2); font-size: var(--fs-xs); }
+.cnpj-job-why { margin: 0; font-size: var(--fs-xs); color: var(--text-2); overflow-wrap: anywhere; }
+.cnpj-job-actions { gap: 6px; }
+.cnpj-new { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; border-radius: 10px; font-size: var(--fs-sm);
+  background: var(--accent-weak); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+.cnpj-new .icon { color: var(--accent); }
+.cnpj-new span { flex: 1 1 180px; }
+.cnpj-dialog { display: grid; gap: 12px; }
+.cnpj-groups { display: grid; gap: 4px; max-height: 320px; overflow-y: auto; padding: 4px; border: 1px solid var(--border); border-radius: 10px; }
+.cnpj-group { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--radius); cursor: pointer; }
+.cnpj-group:hover { background: var(--surface-2); }
+.cnpj-group-text { display: grid; flex: 1; min-width: 0; }
+.cnpj-group-text small { font-size: var(--fs-xs); }
+.cnpj-group-size { font-size: var(--fs-sm); color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cnpj-total { margin: 0; font-size: var(--fs-sm); }
+.cnpj-plan { display: grid; gap: 6px; }
+.cnpj-disk { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.cnpj-disk-fill { display: block; height: 100%; background: var(--ok); }
+.cnpj-disk-fill.is-short { background: var(--err); }
+.toggle-row { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); }
+
+/* Filtro na leitura do CNPJ (RF-4957) */
+.cf-section { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.cf-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cf-head .field-help { flex-basis: 100%; margin: 0; }
+.cf-ufs { display: flex; flex-wrap: wrap; gap: 4px; }
+.cf-uf { min-width: 38px; padding: 4px 6px; font: inherit; font-size: var(--fs-xs); font-weight: 700; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text-2); cursor: pointer; }
+.cf-uf.on { color: var(--accent-text); background: var(--accent); border-color: var(--accent); }
+.cf-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.cf-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border-radius: 999px; font-size: var(--fs-xs);
+  background: var(--accent-weak); color: var(--text); }
+.cf-chip button { padding: 0 4px; border: 0; background: none; color: var(--text-2); cursor: pointer; font: inherit; }
+.cf-options { display: grid; max-height: 180px; overflow-y: auto; }
+.cf-option { display: block; width: 100%; padding: 4px 8px; text-align: left; font: inherit; font-size: var(--fs-sm); border: 0; border-radius: var(--radius); background: none; cursor: pointer; }
+.cf-option:hover { background: var(--surface-2); }
+.cf-result p { margin: 2px 0; font-size: var(--fs-xs); }
+.cf-ok .icon { color: var(--ok); }
+.cf-bad { color: var(--err); }
+.cf-situations { gap: 12px; flex-wrap: wrap; }
+
+/* Pergunta de memória acima de 1/4 da RAM (RF-4957) */
+.mem-bar { display: grid; gap: 4px; }
+.mem-track { position: relative; height: 12px; border-radius: 999px; background: var(--surface-3); overflow: visible; }
+.mem-fill { display: block; height: 100%; border-radius: 999px; background: var(--warn); }
+.mem-fill.is-high { background: var(--err); }
+.mem-mark { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
+.mem-legend { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-xs); color: var(--text-2); }
+.mem-quarter { font-weight: 700; color: var(--text); }

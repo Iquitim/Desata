@@ -48,6 +48,8 @@ import { startPills } from './segmented_pill.js';
 import { libraryTabs, moveButton, refreshTeam } from './team_spaces.js';
 import { initCleaning } from './cleaning_ui.js';
 import { initPublicNews } from './public_news.js';
+import { askMemory } from './memory_ask.js';
+import { initCnpj } from './cnpj_ui.js';
 import { initTeamComments } from './team_comments.js';
 import { ensureSecrets } from './team_definitions.js';
 import { initTeamEditing, openSpaceFlow } from './team_editing.js';
@@ -80,7 +82,7 @@ async function resolveExports(targetNodeId) {
  * Executa o fluxo. `auto`: execução que o usuário não pediu (abrir o programa ou um fluxo, trocar de aba):
  * exportações que precisariam perguntar ficam esperando o próximo "Executar".
  */
-async function run(targetNodeId = null, { auto = false } = {}) {
+async function run(targetNodeId = null, { auto = false, memoryOk = [] } = {}) {
   if (store.running || !store.workflow) return;
   if (await blockedByTrust({ auto })) return; // fluxo de fora, ainda não confirmado: nada executa (spec 028)
   let workflow = store.workflow;
@@ -101,7 +103,8 @@ async function run(targetNodeId = null, { auto = false } = {}) {
   showProgress({ order: [], done: {}, running: null });
   const stop = watchProgress(workflow.id);
   try {
-    const report = await api.execute(workflow, targetNodeId, auto, store.space?.id || null);
+    const report = await api.execute(workflow, targetNodeId, auto, store.space?.id || null, memoryOk);
+    lastReport = report;
     setExecution(report, Object.keys(report.node_results));
     const errors = Object.values(report.node_results).filter((r) => r.status === 'error').length;
     // Aviso de fim (spec 044): só na execução pedida pela pessoa; com ele desligado, o erro continua avisando.
@@ -121,7 +124,12 @@ async function run(targetNodeId = null, { auto = false } = {}) {
     store.progress = null;
     emit('running');
   }
+  // Leitura acima de 1/4 da memória (spec 049, RF-4957): Parar ou Continuar assim mesmo, só nesta execução.
+  const allowed = !auto && lastReport ? await askMemory(lastReport) : [];
+  lastReport = null;
+  if (allowed.length) await run(targetNodeId, { memoryOk: allowed });
 }
+let lastReport = null;
 
 /** Consulta o andamento enquanto o fluxo executa (spec 018) e acende a caixa da vez. */
 function watchProgress(workflowId) {
@@ -695,6 +703,7 @@ async function boot() {
   initTeamComments($('#canvas')); // comentários nas caixas (spec 048)
   initCleaning(); // recomendações de limpeza (spec 048)
   initPublicNews(); // Dados novos nas caixas Dados públicos e a pasta da vista Dados (spec 049)
+  initCnpj(); // downloads do CNPJ: a faixa da vista Dados e o mês novo (spec 049)
   watchScheduleFailures(); // execução agendada que falhou: avisa ao abrir e enquanto aberto (spec 044)
   on('workflow:loaded', () => { resetTrustBanner(); refreshTrust(); });
   initCanvas($('#canvas'), { runTo: (id) => run(id), run: () => run(), refreshCache, viewSql: (id) => setView('sql', { sqlNode: id }) });

@@ -26,6 +26,8 @@ class ExecuteRequest(BaseModel):
     hold_exports: bool = False
     # Fluxo de um espaço da equipe (spec 048): usa as constantes, conexões, consultas e APIs da equipe.
     espaco: str | None = Field(None, pattern=r"^[a-f0-9]{16}$")
+    # Caixas que a pessoa liberou para passar de 1/4 da memória, só nesta execução (spec 049, RF-4957).
+    memoria_ok: list[str] = Field(default_factory=list, max_length=200)
 
 
 @router.post("/execute")
@@ -33,6 +35,8 @@ def execute(req: ExecuteRequest, services: ServicesDep) -> ExecutionReport:
     """Executa o fluxo inteiro ou apenas até ``target_node_id`` (o nó e seus ancestrais)."""
     services.trust.check_runnable(req.workflow.id)
     runner = runner_for(services, req.espaco)
+    if req.memoria_ok:
+        runner = runner.with_stores(memory_ok=frozenset(req.memoria_ok))
     return runner.run(req.workflow, req.target_node_id, hold_exports=req.hold_exports)
 
 

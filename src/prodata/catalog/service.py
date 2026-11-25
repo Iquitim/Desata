@@ -6,6 +6,7 @@ busca ao vivo ou a situação dos órgãos, com o catálogo aberto.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -68,6 +69,9 @@ class Preferences:
             data = self._load()
             data["recentes"] = [source_id, *[r for r in data["recentes"] if r != source_id]][:RECENTS]
             self._save(data)
+
+
+CNPJ_ID = "receita.cnpj/dados-abertos"
 
 
 class CatalogService:
@@ -239,6 +243,10 @@ class CatalogService:
             return
         with CatalogClient(timeout=20) as client:
             for source_id in wanted[:40]:
+                if source_id == CNPJ_ID:  # mês novo do CNPJ (RF-4956): o mês mais recente da pasta da Receita
+                    with contextlib.suppress(SourceNotFoundError, CatalogError):
+                        self.news.record(CNPJ_ID, receita.months(client)[-1], "mês publicado", now)
+                    continue
                 try:
                     info = sources.describe(client, source_id)
                 except SourceNotFoundError, CatalogError:
@@ -251,10 +259,16 @@ class CatalogService:
 
     # ---------------------------------------------------------------- CNPJ (RF-4951..4953)
 
-    def cnpj(self) -> dict[str, Any]:
-        """O mês mais recente da Receita, as partes com o tamanho e o que já foi baixado neste computador."""
+    def downloads_state(self) -> dict[str, Any]:
+        """Os downloads deste computador, os parados no meio e o mês mais novo que a Receita informou (sem rede)."""
+        return {"downloads": self.downloads.jobs(), "pendentes": self.downloads.pending(),
+                "mes_mais_novo": self.news.load().get(CNPJ_ID, {}).get("atualizado")}  # fmt: skip
+
+    def cnpj(self, month: str | None = None) -> dict[str, Any]:
+        """O mês da Receita (o mais recente, se não pedir outro), as partes com o tamanho e o que já foi baixado."""
         with CatalogClient(timeout=30) as client:
-            info = receita.summary(client)
+            info = receita.summary(client, month)
+        self.news.record(CNPJ_ID, info["mais_recente"], "mês publicado", datetime.now())
         return {**info, "downloads": self.downloads.jobs()}
 
     # ---------------------------------------------------------------- situação dos órgãos (RF-4921..4924)

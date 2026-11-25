@@ -2,6 +2,7 @@
 // antes de usar, as escolhas com valores prontos, a prévia de verdade e, nos portais, o arquivo com prévia obrigatória.
 
 import { api } from './api.js';
+import { CNPJ_ID, openCnpjDownload } from './cnpj_ui.js';
 import { openLink } from './desktop.js';
 import { button, h } from './dom.js';
 import { openHolidayEditor } from './holidays_editor.js';
@@ -343,6 +344,11 @@ export function publicDetail(entry, ctx = {}) {
   }
 
   function actions() {
+    if (entry.id === CNPJ_ID) { // arquivos grandes: o download na pasta escolhida (RF-4951, RF-4952)
+      return h('footer', { class: 'pd-actions' },
+        h('p', { class: 'pd-why' }, 'O CNPJ vem em arquivos grandes: você escolhe as partes e a pasta, e ele vira fontes de pasta na vista Dados.'),
+        h('div', { class: 'row' }, button({ icon: 'download', label: 'Baixar…', variant: 'primary', onClick: () => openCnpjDownload() })));
+    }
     const why = blockedReason();
     const blocked = Boolean(why);
     return h('footer', { class: 'pd-actions' },

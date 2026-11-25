@@ -158,9 +158,12 @@ def parts(client: CatalogClient, month: str) -> list[Part]:
     return sorted(out, key=lambda p: (order[p.grupo], p.indice or 0))
 
 
-def summary(client: CatalogClient) -> dict[str, Any]:
-    """O mês mais recente, as partes por grupo, com o tamanho de cada uma e o total (RF-4951)."""
-    month = months(client)[-1]
+def summary(client: CatalogClient, month: str | None = None) -> dict[str, Any]:
+    """O mês pedido (ou o mais recente), as partes por grupo, com o tamanho de cada uma e o total (RF-4951)."""
+    published = months(client)
+    if month is not None and month not in published:
+        raise SourceNotFoundError(f"A Receita não tem mais o mês {month}; o mais recente é {published[-1]}.")
+    month = month or published[-1]
     found = parts(client, month)
     groups = []
     for gid, name, description, default in GROUPS:
@@ -168,4 +171,9 @@ def summary(client: CatalogClient) -> dict[str, Any]:
         if items:
             groups.append({"id": gid, "nome": name, "descricao": description, "padrao": default,
                            "arquivos": [p.as_dict() for p in items], "tamanho": sum(p.tamanho for p in items)})  # fmt: skip
-    return {"mes": month, "grupos": groups, "tamanho": sum(p.tamanho for p in found)}
+    return {
+        "mes": month,
+        "mais_recente": published[-1],
+        "grupos": groups,
+        "tamanho": sum(p.tamanho for p in found),
+    }

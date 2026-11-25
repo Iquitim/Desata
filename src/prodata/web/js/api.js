@@ -70,6 +70,14 @@ export const api = {
   publicNews: (fontes) => request('POST', '/api/catalogo/novidades', { fontes }),
   publicNewsCheck: (ids) => request('POST', '/api/catalogo/novidades/conferir', { ids }),
   publicCheckHealth: (forcar = false, servicos = null) => request('POST', '/api/catalogo/situacao', { forcar, servicos }),
+  // CNPJ (spec 049, RF-4951..4957): partes, downloads, filtro na leitura
+  publicCnpj: (mes = null) => request('GET', `/api/catalogo/cnpj${mes ? `?mes=${enc(mes)}` : ''}`),
+  publicCnpjList: (texto) => request('POST', '/api/catalogo/cnpj/ler', { texto }),
+  publicCnpjValues: (fonte, tabela, q = '') => request('GET', `/api/catalogo/cnpj/valores?fonte=${enc(fonte)}&tabela=${enc(tabela)}&q=${enc(q)}`),
+  downloadPlan: (body) => request('POST', '/api/catalogo/downloads/plano', body),
+  downloadStart: (body) => request('POST', '/api/catalogo/downloads', body),
+  downloads: () => request('GET', '/api/catalogo/downloads'),
+  downloadAction: (id, action) => request('POST', `/api/catalogo/downloads/${enc(id)}/${action}`),
   publicHolidays: (local, ano) => request('GET', `/api/catalogo/feriados/editar?local=${enc(local)}&ano=${ano}`),
   publicHolidayAction: (action, body, local, ano) =>
     request('POST', `/api/catalogo/feriados/${action}?local=${enc(local)}&ano=${ano}`, body),
@@ -287,8 +295,8 @@ export const api = {
   progress: (workflowId) => request('GET', `/api/execute/${encodeURIComponent(workflowId)}/progress`),
   cancelRun: (workflowId) => request('POST', `/api/execute/${encodeURIComponent(workflowId)}/cancel`),
   // espaco (spec 048): fluxo do espaço da equipe, que usa as constantes, conexões, consultas e APIs da equipe
-  execute: (workflow, targetNodeId = null, holdExports = false, espaco = null) =>
-    request('POST', '/api/execute', { workflow, target_node_id: targetNodeId, hold_exports: holdExports, espaco }),
+  execute: (workflow, targetNodeId = null, holdExports = false, espaco = null, memoriaOk = []) =>
+    request('POST', '/api/execute', { workflow, target_node_id: targetNodeId, hold_exports: holdExports, espaco, memoria_ok: memoriaOk }),
   pendingExports: (workflow, targetNodeId = null) =>
     request('POST', '/api/exports/pending', { workflow, target_node_id: targetNodeId }),
   columnValues: (wfId, nodeId, anchor, column, limit = 500, search = '') =>

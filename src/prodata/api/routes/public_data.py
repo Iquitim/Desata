@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
@@ -14,7 +15,7 @@ from prodata.catalog.download import DownloadError
 from prodata.catalog.http import CatalogError
 from prodata.catalog.model import SourceNotFoundError
 from prodata.catalog.readers.files import FormatChangedError
-from prodata.errors import InvalidInputError
+from prodata.errors import InvalidInputError, NotFoundError
 from prodata.nodes.public_data import PublicSelection
 
 router = APIRouter(prefix="/api/catalogo", tags=["dados públicos"])
@@ -304,9 +305,38 @@ def _download(action: Callable[[], Any]) -> Any:
 
 
 @router.get("/cnpj")
-def cnpj(services: ServicesDep) -> dict[str, Any]:
-    """O mês mais recente publicado pela Receita, as partes com o tamanho e os downloads deste computador."""
-    return _download(services.catalog.cnpj)
+def cnpj(services: ServicesDep, mes: str | None = Query(None, pattern=r"^\d{4}-\d{2}$")) -> dict[str, Any]:
+    """O mês publicado pela Receita (o mais recente, ou o pedido), as partes com o tamanho e os downloads daqui."""
+    return _download(lambda: services.catalog.cnpj(mes))
+
+
+class CnpjListRequest(BaseModel):
+    texto: str = Field("", max_length=200_000)
+
+
+@router.post("/cnpj/ler")
+def cnpj_list(req: CnpjListRequest) -> dict[str, Any]:
+    """A lista de CNPJs colada, convertida para o formato da Receita, com como cada linha foi entendida (RF-4957)."""
+    from prodata.catalog import cnpj as cnpj_layout
+
+    return cnpj_layout.read_cnpj_list(req.texto)
+
+
+@router.get("/cnpj/valores")
+def cnpj_values(
+    services: ServicesDep,
+    fonte: str = Query(..., pattern=r"^[a-z0-9_-]{1,60}$"),
+    tabela: Literal["municipios", "cnaes"] = "municipios",
+    q: str = Query("", max_length=60),
+) -> dict[str, Any]:
+    """Municípios e CNAEs da tabela baixada junto (mesma pasta), para escolher no filtro sem decorar o código."""
+    from prodata.catalog import cnpj as cnpj_layout
+
+    try:
+        source = services.datasets.folders.get(fonte)
+    except NotFoundError as exc:
+        raise HTTPException(404, str(exc)) from None
+    return cnpj_layout.lookup_values(Path(source.folder), tabela, q)
 
 
 class DownloadRequest(BaseModel):
@@ -333,8 +363,7 @@ def download_start(req: DownloadRequest, services: ServicesDep) -> dict[str, Any
 
 @router.get("/downloads")
 def download_list(services: ServicesDep) -> dict[str, Any]:
-    downloads = services.catalog.downloads
-    return {"downloads": downloads.jobs(), "pendentes": downloads.pending()}
+    return services.catalog.downloads_state()
 
 
 def _job_id(job_id: str) -> str:

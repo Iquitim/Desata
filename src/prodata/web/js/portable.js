@@ -2,6 +2,7 @@
 // a caixa no Designer), cada fonte tem a ação para resolver, e "Salvar com amostra dos dados" leva uma amostra.
 
 import { api } from './api.js';
+import { cnpjOfKey, openCnpjDownload } from './cnpj_ui.js';
 import { allSources } from './data_sources.js';
 import { chooseSaveFile } from './desktop.js';
 import { button, debounce, fmt, h } from './dom.js';
@@ -28,6 +29,8 @@ export const checkSources = debounce(async () => {
 }, 250);
 
 const pending = () => portable.sources.filter((s) => s.state !== 'ok');
+/** As tabelas do CNPJ que o fluxo usa e faltam aqui: já marcadas no download (RF-4972). */
+const cnpjGroups = () => [...new Set(pending().map((s) => cnpjOfKey(s.key)?.grupo).filter(Boolean))];
 
 /** Selo na aba Dados: vermelho com o que falta; laranja quando só há amostra. */
 function paintBadge() {
@@ -107,6 +110,9 @@ function card(item) {
     item.sample?.linked ? h('p', { class: 'pt-linked' }, icon('link', 12),
       ' Quem enviou lia este arquivo de uma pasta do próprio computador (arquivo vinculado). Peça o arquivo e escolha aqui; até lá, vale a amostra.') : null,
     h('div', { class: 'pt-actions' },
+      cnpjOfKey(item.key) ? button({ icon: 'download', label: 'Baixar os dados do CNPJ aqui…', size: 'sm', variant: 'primary', // RF-4972
+        title: `O CNPJ é de cada computador: baixe o mês ${cnpjOfKey(item.key).mes} e o fluxo funciona sem trocar nada`,
+        onClick: () => openCnpjDownload({ mes: cnpjOfKey(item.key).mes, grupos: cnpjGroups() }) }) : null,
       item.kind === 'file' ? button({ icon: 'upload', label: 'Escolher o arquivo', size: 'sm', variant: sample ? '' : 'primary', onClick: () => pickFile(item) }) : null,
       options.length ? button({ icon: 'folder', label: item.kind === 'file' ? 'Usar um arquivo daqui…' : 'Usar uma fonte daqui…', size: 'sm',
         title: `Escolher uma fonte deste computador no lugar de ${item.label}`,

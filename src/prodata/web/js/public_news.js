@@ -44,8 +44,11 @@ export async function refreshNodeNews() {
 }
 
 /** Junto com a situação, ao abrir o catálogo: pergunta a cada órgão a última atualização das fontes em uso. */
+const extraIds = []; // outras fontes que pedem a conferência (o CNPJ baixado, para o mês novo)
+export const addNewsIds = (fn) => extraIds.push(fn);
+
 export async function checkNews() {
-  const ids = [...publicNodes().map((n) => n.config.fonte.id), ...saved.map((s) => s.fonte.id)];
+  const ids = [...publicNodes().map((n) => n.config.fonte.id), ...saved.map((s) => s.fonte.id), ...extraIds.flatMap((fn) => fn())];
   if (!ids.length) return;
   try {
     await api.publicNewsCheck([...new Set(ids)].slice(0, 60));

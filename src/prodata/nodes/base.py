@@ -99,6 +99,8 @@ class NodeContext:
     # portais, feriados editados) e, num fluxo do espaço, as edições de feriados da equipe.
     catalog_root: Path | None = None
     team_holidays: Any = None
+    # A pessoa respondeu Continuar assim mesmo: esta leitura pode passar de 1/4 da memória (spec 049, RF-4957).
+    memory_ok: bool = False
 
     def state_dir(self) -> Path:
         """Pasta desta caixa na pasta de dados do computador. Nunca vai no arquivo do fluxo."""

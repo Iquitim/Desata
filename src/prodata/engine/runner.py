@@ -36,7 +36,7 @@ from prodata.engine import schema_drift as drift
 from prodata.engine.cache import FrozenEntry, NodeEntry, ResultCache
 from prodata.engine.loop_run import LoopRun
 from prodata.engine.profiling import simple_type
-from prodata.errors import NotFoundError, ProdataError
+from prodata.errors import MemoryAskError, NotFoundError, ProdataError
 from prodata.ingestion.datasets import DatasetStore
 from prodata.nodes import REGISTRY, NodeContext, ToolSpec
 from prodata.nodes.io import OutputDataConfig, export_path
@@ -123,6 +123,7 @@ class WorkflowRunner:
         # Catálogo de dados públicos (spec 049): pasta do catálogo; feriados da equipe num fluxo do espaço.
         self.catalog_root = catalog_root
         self.team_holidays: Any = None
+        self.memory_ok: frozenset[str] = frozenset()  # liberadas para passar de 1/4 da memória (spec 049)
         # Spec 033: estado das caixas entre execuções, biblioteca (subfluxos) e chave do Mask.
         self.state_dir = state_dir
         self.workflows = workflows
@@ -146,7 +147,7 @@ class WorkflowRunner:
     def with_stores(self, **stores: Any) -> WorkflowRunner:
         """O mesmo executor (cache, andamento e assinaturas compartilhados) com outras lojas de conexões, consultas,
         APIs e constantes: um fluxo do espaço da equipe usa as definições da equipe (spec 048, RF-4803)."""
-        allowed = {"connections", "queries", "apis", "constants", "team_holidays"}
+        allowed = {"connections", "queries", "apis", "constants", "team_holidays", "memory_ok"}
         if set(stores) - allowed:
             raise ValueError(f"Lojas desconhecidas: {sorted(set(stores) - allowed)}")
         clone = copy.copy(self)
@@ -365,6 +366,8 @@ class WorkflowRunner:
             log.info("Erro traduzido; texto original: %s", friendly.technical)
         if friendly.hint:
             extra["error_hint"] = friendly.hint
+        if isinstance(exc, MemoryAskError):  # a tela pergunta Parar ou Continuar (spec 049, RF-4957)
+            extra["pergunta_memoria"] = {"estimado": exc.estimate, "memoria": exc.memory}
         return NodeResult(
             status="error",
             error=friendly.message,
@@ -619,6 +622,7 @@ class WorkflowRunner:
             samples=workflow.samples,  # spec 040: só valem quando a fonte não está neste computador
             catalog_root=self.catalog_root,
             team_holidays=self.team_holidays,
+            memory_ok=node.id in self.memory_ok,
         )
         ctx.run_subflow = lambda child: subflow.run(self, workflow, node, child, ctx)
         ctx.subflow_signature = lambda child: subflow.signature(self, child)

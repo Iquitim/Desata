@@ -101,4 +101,10 @@ def preview_folder(req: PreviewRequest, rows: int = Query(100, ge=1, le=500)) ->
         "rows": json_rows(table.head(rows)),
         "checked": min(len(files), CHECK_FILES),
     }
+    if source.layout:  # CNPJ (spec 049, RF-4957): o filtro em palavras; o de empresas só vale ao executar
+        from prodata.catalog import cnpj
+
+        out["filtro"] = cnpj.filter_words(source.layout, source.layout_filter)
+        if source.layout_companies_of:
+            out["nota"] = "A prévia não aplica Só as empresas destes estabelecimentos: a execução aplica."
     return out

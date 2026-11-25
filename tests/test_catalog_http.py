@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import date
+from typing import Any
 
 import httpx
 import pytest
@@ -186,3 +188,18 @@ def test_download_fora_da_lista(serve: Callable[[Handler], list[httpx.Request]])
     with CatalogClient() as client, pytest.raises(CatalogError), client.stream("https://exemplo.com/a.zip"):
         pass
     assert seen == []
+
+
+def test_304_sem_pedir_pede_de_novo_sem_cache(catalog_server: Any) -> None:
+    """O Banco Central às vezes responde 304 sem conteúdo sem o programa ter pedido: não é "série inexistente"."""
+    from prodata.catalog.readers import bcb_sgs
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if "no-cache" not in request.headers.get("cache-control", ""):
+            return httpx.Response(304)
+        return httpx.Response(200, json=[{"data": "09/12/2026", "valor": "13.75"}])
+
+    seen = catalog_server(handler)
+    with CatalogClient() as client:
+        assert bcb_sgs.last_value(client, 432) == (date(2026, 12, 9), 13.75)
+    assert len(seen) == 2

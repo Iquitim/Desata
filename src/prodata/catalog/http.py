@@ -280,6 +280,10 @@ class CatalogClient:
             if answer.status in RETRY_STATUS and attempt < retries:
                 time.sleep(RETRY_WAIT * 2**attempt)
                 continue
+            # 304 sem o programa ter pedido (cache do lado do órgão, visto no Banco Central): pede de novo sem cache.
+            if answer.status == 304 and attempt < retries and "Cache-Control" not in (headers or {}):
+                headers = {**(headers or {}), "Cache-Control": "no-cache", "Pragma": "no-cache"}
+                continue
             if answer.status >= 400 and answer.status not in ok:
                 raise http_error(answer)
             return answer

@@ -36,7 +36,7 @@
 
 - [x] T15 `download.py`: partes, tamanhos, espaço livre, pasta escolhida e proibida, Range, pausar, continuar, cancelar, novas tentativas, estado para retomar (RF-4951..4953)
 - [x] T16 Conferência e descompactação segura; `cnpj.py` com o leiaute e a fonte de pasta pronta; leiaute que não bate (RF-4954, RF-4955, CA-05)
-- [ ] T17 Tela: escolha das partes, barra na vista Dados, Continuar o download ao abrir, mês novo, Baixar aqui para o colega da equipe; filtro na leitura do CNPJ, com a leitura aos poucos e a recusa do que não cabe na memória (RF-4953, RF-4956, RF-4957, RF-4972)
+- [x] T17 Tela: escolha das partes, barra na vista Dados, Continuar o download ao abrir, mês novo, Baixar aqui para o colega da equipe; filtro na leitura do CNPJ, com a leitura aos poucos e a recusa do que não cabe na memória (RF-4953, RF-4956, RF-4957, RF-4972)
 
 ## Marco 6 — Usar com um clique
 

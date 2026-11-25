@@ -64,6 +64,18 @@ def read_series(client: CatalogClient, code: int, start: date, end: date) -> Rea
 def last_value(client: CatalogClient, code: int) -> tuple[date, float | None]:
     """O dado mais recente da série: dá o "último dado em" mesmo das séries que o portal não lista (433, 188...)."""
     answer = client.get(f"{DATA_URL.format(code=code)}/ultimos/1", params={"formato": "json"})
+    if answer.status == 304 or not answer.body.strip():
+        # O Banco Central às vezes responde 304 sem conteúdo (cache do lado dele) sem o programa ter pedido: vazio não é
+        # "série inexistente". Pede de novo sem cache e, se ainda vier vazio, os últimos 5 valores.
+        answer = client.get(f"{DATA_URL.format(code=code)}/ultimos/1", params={"formato": "json"},
+                            headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})  # fmt: skip
+        if answer.status == 304 or not answer.body.strip():
+            answer = client.get(f"{DATA_URL.format(code=code)}/ultimos/5", params={"formato": "json"},
+                                headers={"Cache-Control": "no-cache"})  # fmt: skip
+        if answer.status == 304 or not answer.body.strip():
+            raise CatalogError(
+                "O Banco Central respondeu sem conteúdo agora; tente de novo em instantes.", "resposta"
+            )
     if not answer.body.lstrip().startswith(b"["):
         raise SourceNotFoundError(f"A série {code} não existe no SGS do Banco Central.")
     rows = answer.json()

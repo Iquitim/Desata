@@ -1455,6 +1455,143 @@ def citacao(pg: Page) -> None:
     print(f"      print: {png}")
 
 
+def cnpj(pg: Page) -> None:
+    """T17: Baixar o CNPJ (só as tabelas pequenas, de verdade), a faixa na vista Dados, o filtro na leitura, a
+    pergunta de memória e o Baixar aqui do colega."""
+    target = DATA.parent / "cnpj-escolhida"
+    target.mkdir(exist_ok=True)
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.locator(".dv-list-head button", has_text="Adicionar").click()
+    pg.locator(".menu .menu-item", has_text="Dados públicos do Brasil").click()
+    dlg = pg.locator("dialog.pd-dialog[open]")
+    dlg.locator(".pd-card").first.wait_for(timeout=20000)
+    dlg.locator(".pd-search input").fill("cnpj")
+    dlg.locator(".pd-card", has_text="Cadastro de empresas").first.click()
+    dlg.locator(".pd-actions button", has_text="Baixar").click()
+    box = pg.locator("dialog[open]", has=pg.locator(".cnpj-dialog"))
+    box.locator(".cnpj-group").first.wait_for(timeout=30000)
+    text = box.inner_text()
+    check("o diálogo mostra o mês, as partes e o tamanho",
+          "Estabelecimentos" in text and "GB" in text and "mais recente" in text, text[:300])  # fmt: skip
+    for name in ("Empresas", "Estabelecimentos"):
+        item = box.locator(".cnpj-group", has_text=name).first
+        if item.locator("input").is_checked():
+            item.locator("input").uncheck()
+    box.locator("button", has_text="Escolher pasta").click()
+    ask = pg.locator("dialog[open]", has_text="Onde salvar o CNPJ")
+    ask.locator("input").fill(str(target))
+    ask.locator("button", has_text="OK").click()
+    box.locator(".cnpj-disk").wait_for(timeout=20000)
+    check("confere o espaço livre na pasta escolhida", "livres" in box.locator(".cnpj-plan").inner_text())
+    _print(pg, "cnpj-baixar")
+    box.get_by_role("button", name="Baixar", exact=True).click()
+    dlg.locator("header button").first.click()
+    job = pg.locator(".cnpj-job").first
+    job.wait_for(timeout=20000)
+    pg.wait_for_function(
+        "() => document.querySelector('.cnpj-job')?.classList.contains('is-concluido')", timeout=120000
+    )
+    check("a faixa da vista Dados mostra o download pronto", "Pronto" in job.inner_text(), job.inner_text())
+    pg.wait_for_function(
+        "() => (document.querySelector('.dv-list')?.textContent || '').includes('CNAE')", timeout=20000
+    )
+    check("as fontes prontas aparecem na lista", True)
+    _print(pg, "cnpj-pronto")
+    month = sorted(p.name for p in target.iterdir())[0].removeprefix("CNPJ-")
+    dest = target / f"CNPJ-{month}"
+    check(
+        "só a subpasta CNPJ-AAAA-MM, com nomes fixos",
+        (dest / "cnaes.csv").is_file() and not list(dest.glob("*.zip")),
+    )
+    # Estabelecimentos de mentira (o de verdade tem 5 GB), para o filtro na leitura no editor da fonte
+    names = ("cnpj_basico;cnpj_ordem;cnpj_dv;identificador_matriz_filial;nome_fantasia;situacao_cadastral;"
+             "data_situacao_cadastral;motivo_situacao_cadastral;nome_cidade_exterior;pais;data_inicio_atividade;"
+             "cnae_fiscal_principal;cnae_fiscal_secundaria;tipo_logradouro;logradouro;numero;complemento;bairro;cep;uf;"
+             "municipio;ddd_1;telefone_1;ddd_2;telefone_2;ddd_fax;fax;correio_eletronico;situacao_especial;"
+             "data_situacao_especial")  # fmt: skip
+
+    def row(basic: str, order: str, dv: str, uf: str, cnae: str) -> str:
+        fields = [basic, order, dv, "1", "LOJA", "02", "20050101", "00", "", "", "19990315", cnae, "", "RUA", "A", "1", "",
+                  "C", "01001000", uf, "7107"] + [""] * 9  # fmt: skip
+        return ";".join(f'"{f}"' for f in fields)
+
+    lines = [names, row("00000000", "0001", "91", "DF", "6422100"), row("12345678", "0001", "95", "SP", "1091101"),
+             row("12345678", "0002", "76", "RJ", "1091101")]  # fmt: skip
+    (dest / "estabelecimentos_0.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    created = pg.evaluate(
+        """(folder) => fetch('/api/folders', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'CNPJ teste · Estabelecimentos', folder, pattern: 'estabelecimentos_*.csv',
+            file_column: '', format: 'csv', delimiter: ';', encoding: 'utf-8', has_header: true,
+            layout: 'receita.cnpj/estabelecimentos' }) }).then((r) => r.json())""",
+        str(dest),
+    )
+    pg.evaluate("() => import('/static/js/folder_sources.js').then((m) => m.refreshFolderSources())")
+    pg.locator(".dv-list").get_by_text("CNPJ teste · Estabelecimentos").first.click()
+    pg.locator(".dv-detail .dv-tab", has_text="Cadastro").first.click()
+    section = pg.locator(".cf-section")
+    section.wait_for(timeout=10000)
+    section.locator(".cf-uf", has_text="SP").click()
+    section.locator("textarea").fill("00.000.000/0001-91\n191\n12.345.678\nnão é cnpj")
+    section.locator("button", has_text="Conferir e incluir").click()
+    pg.wait_for_function("() => document.querySelectorAll('.cf-chip').length >= 2", timeout=10000)
+    result = section.locator(".cf-result").inner_text()
+    check("o CNPJ colado é convertido e o inválido fica marcado",
+          "00.000.000/0001-91" in result and "empresa inteira" in result and "não é um CNPJ válido" in result, result)  # fmt: skip
+    section.locator(".cf-uf", has_text="SP").click()  # tira SP: fica só o CNPJ
+    pg.wait_for_timeout(1500)
+    _print(pg, "cnpj-filtro")
+    pg.locator(".dv-editor-actions button", has_text="Salvar").first.click()
+    pg.wait_for_timeout(800)
+    saved = pg.evaluate(
+        "(id) => fetch('/api/folders').then((r) => r.json()).then((l) => l.find((s) => s.id === id))",
+        created["id"],
+    )
+    check("o filtro salvo guarda os CNPJs no formato da Receita",
+          sorted(saved["layout_filter"].get("cnpj", [])) == ["00000000000191", "12345678"], saved["layout_filter"])  # fmt: skip
+    # a pergunta de memória (o freio de verdade é testado no motor; aqui, a tela)
+    pg.evaluate(
+        """() => import('/static/js/memory_ask.js').then((m) => { window.__mem = null; m.askMemory({ node_results: { x: {
+          status: 'error', error: 'Esta leitura deve ocupar cerca de 6,0 GB, mais de 1/4 da memória deste computador (16,0 GB).',
+          extra: { pergunta_memoria: { estimado: 6 * 1024 ** 3, memoria: 16 * 1024 ** 3 } } } } }).then((ids) => { window.__mem = ids; }); })"""
+    )
+    mem = pg.locator("dialog[open]", has=pg.locator(".mem-bar"))
+    mem.wait_for(timeout=5000)
+    check("a pergunta de memória mostra a barra e os dois botões",
+          mem.locator("button", has_text="Parar").count() == 1
+          and mem.locator("button", has_text="Continuar assim mesmo").count() == 1)  # fmt: skip
+    _print(pg, "cnpj-memoria")
+    mem.locator("button", has_text="Continuar assim mesmo").click()
+    pg.wait_for_function("() => window.__mem !== null", timeout=5000)
+    check("Continuar libera a caixa", pg.evaluate("() => window.__mem") == ["x"])
+    # o colega: o fluxo usa o CNPJ de um mês que não está aqui
+    new_flow(pg)
+    pg.evaluate(
+        "() => window.__A.addNode('io.input_data', 200, 200, { dataset: 'folder:cnpj_2024_01_estabelecimentos' })"
+    )
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    missing = pg.locator(".pt-item", has_text="cnpj_2024_01_estabelecimentos")
+    missing.wait_for(timeout=10000)
+    here = missing.locator("button", has_text="Baixar os dados do CNPJ aqui")
+    check("o colega vê Baixar os dados do CNPJ aqui", here.count() == 1)
+    here.click()
+    box = pg.locator("dialog[open]", has=pg.locator(".cnpj-dialog"))
+    pg.wait_for_function(
+        "() => { const t = document.querySelector('.cnpj-dialog')?.textContent || ''; return t.includes('Mês') || t.includes('não tem mais'); }",
+        timeout=30000,
+    )
+    text = box.inner_text()
+    if "não tem mais o mês" in text:
+        check("mês que a Receita apagou: o motivo em palavras", "o mais recente é" in text, text[:200])
+    else:
+        marked = box.locator(".cnpj-group", has_text="Estabelecimentos").first.locator("input")
+        check(
+            "abre no mês do fluxo, com Estabelecimentos marcado",
+            "2024-01" in text and marked.is_checked(),
+            text[:200],
+        )
+    box.locator("button", has_text="Cancelar").first.click()
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1487,6 +1624,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "caixa_publica": caixa_publica,
     "pasta_publica": pasta_publica,
     "citacao": citacao,
+    "cnpj": cnpj,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

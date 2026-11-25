@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import polars as pl
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 from prodata.errors import ConflictError, InvalidInputError, NotFoundError
 from prodata.ingestion.detect import EXTENSIONS
@@ -84,6 +84,8 @@ def read_folder(
     report: Callable[[str], None] | None = None,
     seen: dict[str, list[str]] | None = None,
     notes: list[str] | None = None,
+    companies: pl.Series | None = None,
+    budget: int | None = None,
 ) -> tuple[pl.DataFrame, list[str]]:
     """Empilha os arquivos. Devolve a tabela e os arquivos com colunas diferentes das do primeiro.
     ``seen`` recebe as colunas de cada arquivo (spec 046: quais arquivos não têm uma coluna); ``notes``, os avisos
@@ -102,7 +104,9 @@ def read_folder(
         if layout:
             from prodata.catalog import cnpj
 
-            frame, said = cnpj.read_file(path, layout, n_rows=limit)
+            frame, said = cnpj.read_file(
+                path, layout, limit, getattr(options, "layout_filter", {}), companies
+            )
             if notes is not None:
                 notes.extend(said)
         else:
@@ -120,6 +124,13 @@ def read_folder(
                 )
             frame = frame.with_columns(pl.lit(path.name).alias(column))
         frames.append(frame)
+        if budget is not None and layout and sum(f.estimated_size() for f in frames) > budget:
+            from prodata.catalog import (
+                cnpj,
+            )  # CNPJ (spec 049, RF-4957): para antes de usar o disco como memória
+
+            used = int(sum(f.estimated_size() for f in frames))
+            raise cnpj.memory_question(used, budget * cnpj.MEMORY_SHARE, layout, read_so_far=True)
     if not frames:
         return pl.DataFrame(), []
     try:
@@ -130,8 +141,31 @@ def read_folder(
         ) from exc
 
 
+def _companies(
+    source: FolderSource, lookup: Callable[[str], FolderSource] | None, report: Callable[[str], None] | None
+) -> pl.Series:
+    """Os CNPJs básicos da fonte de Estabelecimentos escolhida em Só as empresas destes estabelecimentos."""
+    from prodata.catalog import cnpj
+
+    if lookup is None:
+        raise InvalidInputError(
+            "Só as empresas destes estabelecimentos precisa da fonte cadastrada na vista Dados."
+        )
+    other = lookup(source.layout_companies_of)
+    if other.layout != f"{cnpj.LAYOUT_PREFIX}estabelecimentos":
+        raise InvalidInputError(f"'{other.name}' não é uma fonte de Estabelecimentos do CNPJ.")
+    if report:
+        report(f"lendo os CNPJs de {other.name}")
+    return cnpj.companies_in(other.files(), other.layout_filter)
+
+
 def read_source(
-    source: FolderSource, limit: int, report: Callable[[str], None] | None, read_at: str
+    source: FolderSource,
+    limit: int,
+    report: Callable[[str], None] | None,
+    read_at: str,
+    lookup: Callable[[str], FolderSource] | None = None,
+    memory_ok: bool = False,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
     """Lê uma pasta cadastrada na vista Dados: a tabela e o que a caixa mostra (arquivos, avisos, leiaute)."""
     files = source.files()
@@ -139,8 +173,28 @@ def read_source(
         raise InvalidInputError(f"Nenhum arquivo em {source.folder} casa com '{source.pattern}'.")
     seen: dict[str, list[str]] = {}
     notes: list[str] = []
+    companies = _companies(source, lookup, report) if source.layout_companies_of else None
+    budget = None
+    if (
+        source.layout and not limit and not memory_ok
+    ):  # CNPJ (spec 049, RF-4957): acima de 1/4 da memória, pergunta
+        from prodata.catalog import cnpj
+        from prodata.engine.cache import total_memory
+
+        memory = total_memory()
+        budget = cnpj.memory_budget(memory)
+        if (expected := cnpj.estimate(files, source.layout, source.layout_filter, companies)) > budget:
+            raise cnpj.memory_question(expected, memory, source.layout)
     table, odd = read_folder(
-        files, source, source.file_column, limit=limit or None, report=report, seen=seen, notes=notes
+        files,
+        source,
+        source.file_column,
+        limit=limit or None,
+        report=report,
+        seen=seen,
+        notes=notes,
+        companies=companies,
+        budget=budget,
     )
     extra: dict[str, Any] = {"source": source.name, "source_read_at": read_at, "source_linked": source.folder}
     extra["folder_files"] = [p.name for p in files]
@@ -149,6 +203,9 @@ def read_source(
         from prodata.catalog import cnpj
 
         extra = cnpj.with_layout(extra, source.layout, Path(source.folder), notes)
+        other = lookup(source.layout_companies_of).name if lookup and source.layout_companies_of else ""
+        if words := cnpj.filter_words(source.layout, source.layout_filter, other):
+            extra["leitura_filtrada"] = words
     return table, extra
 
 
@@ -167,6 +224,20 @@ class FolderSource(ReadOptions):
     file_column: str = Field("arquivo", max_length=60)
     # Leiaute conhecido pelo programa (spec 049): o CNPJ da Receita, com nomes, tipos e o dicionário de colunas.
     layout: str = Field("", pattern=r"^(receita\.cnpj/[a-z]{3,20})?$")
+    # Filtro na leitura do CNPJ (RF-4957): campo → valores; e a fonte de Estabelecimentos cujas empresas entram.
+    layout_filter: dict[str, list[str]] = Field(default_factory=dict)
+    layout_companies_of: str = Field("", pattern=r"^[a-z0-9_-]{0,60}$")
+
+    @model_validator(mode="after")
+    def _filter(self) -> FolderSource:
+        from prodata.catalog import cnpj
+
+        self.layout_filter = {k: list(dict.fromkeys(v)) for k, v in self.layout_filter.items() if v}
+        try:
+            cnpj.check_filter(self.layout, self.layout_filter, self.layout_companies_of)
+        except ValueError as exc:
+            raise ValueError(str(exc)) from None
+        return self
 
     @field_validator("name", "file_column")
     @classmethod
@@ -282,7 +353,13 @@ class FolderSources:
             files = source.files()
         except InvalidInputError as exc:  # padrão demais: a execução mostra o erro, a assinatura só registra
             return f"{source.digest()}#erro:{exc}"
-        return f"{source.digest()}#{files_signature(files)}"
+        mine = f"{source.digest()}#{files_signature(files)}"
+        if source.layout_companies_of:  # Só as empresas destes estabelecimentos: muda junto com a outra fonte
+            try:
+                return f"{mine}#{self.signature(source.layout_companies_of)}"
+            except (NotFoundError, InvalidInputError) as exc:
+                return f"{mine}#erro:{exc}"
+        return mine
 
 
 def missing_columns(seen: dict[str, list[str]]) -> tuple[dict[str, list[str]], list[str]]:
