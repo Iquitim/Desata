@@ -13,9 +13,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from prodata.catalog import curated, portals
+from prodata.catalog import curated, portals, sources
 from prodata.catalog.http import CatalogClient
 from prodata.catalog.index import AGENCY_BY_ID, CatalogStore
+from prodata.catalog.model import SourceNotFoundError
+from prodata.catalog.readers import bcb_olinda, ckan, files
 
 RECENTS = 20
 
@@ -132,6 +134,49 @@ class CatalogService:
         return self.store.search(
             query, agency=agency, category=category, periodicity=periodicity, limit=limit
         )
+
+    # ---------------------------------------------------------------- detalhe e prévia (RF-4911..4915)
+
+    def describe(self, source_id: str) -> dict[str, Any]:
+        with CatalogClient(timeout=30) as client:
+            return sources.describe(client, source_id)
+
+    def preview(self, source_id: str, choices: dict[str, Any]) -> dict[str, Any]:
+        with CatalogClient(timeout=90) as client:
+            return sources.preview(client, source_id, choices, self.root)
+
+    def file_preview(
+        self, source_id: str, resource_id: str, options: dict[str, Any], member: str
+    ) -> dict[str, Any]:
+        """A prévia obrigatória do arquivo de um portal (RF-4938), com as opções que a pessoa trocou."""
+        parts = sources.check_id(source_id)
+        if parts[0] != "ckan" or len(parts) != 3:
+            raise SourceNotFoundError("Só arquivos de portais têm prévia de arquivo.")
+        with CatalogClient(timeout=180) as client:
+            detail = ckan.dataset(client, parts[1], parts[2])
+            resource = next((a for a in detail["arquivos"] if a["id"] == resource_id), None)
+            if resource is None:
+                raise SourceNotFoundError("O portal não tem mais este arquivo.")
+            if resource["situacao"] != "legivel":
+                raise SourceNotFoundError(resource["motivo"] or "Este arquivo não tem prévia.")
+            return files.preview(
+                client, resource["url"], self.root, resource["formato"], options=options, member=member
+            )
+
+    def odata(self, source_id: str, resource_id: str) -> dict[str, Any]:
+        parts = sources.check_id(source_id)
+        if parts[0] != "ckan" or len(parts) != 3:
+            raise SourceNotFoundError("Só conjuntos de portais têm serviço OData.")
+        with CatalogClient(timeout=60) as client:
+            detail = ckan.dataset(client, parts[1], parts[2])
+            resource = next((a for a in detail["arquivos"] if a["id"] == resource_id), None)
+            if resource is None or resource["situacao"] != "odata":
+                raise SourceNotFoundError("Este arquivo não é um serviço OData do Banco Central.")
+            return sources.odata_entries(client, resource["url"])
+
+    def currencies(self) -> list[dict[str, str]]:
+        with CatalogClient(timeout=30) as client:
+            return bcb_olinda.currencies(client)
 
     # ---------------------------------------------------------------- atualizar (RF-4933)
 

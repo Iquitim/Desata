@@ -1138,6 +1138,39 @@ def catalogo(pg: Page) -> None:
         "Leitura automática" in dlg.locator(".pd-card").first.inner_text(),
     )
     _print(pg, "portal")
+    # T08: o detalhe de um destaque, com a prévia lida na hora e as colunas explicadas.
+    dlg.locator(".pd-menu-item", has_text="Economia e juros").click()
+    dlg.locator(".pd-card", has_text="Taxa Selic meta").click()
+    detail = dlg.locator(".pd-detail")
+    detail.locator(".pd-table tbody tr").first.wait_for(timeout=30000)
+    text = detail.inner_text()
+    check("o detalhe diz o último dado e a licença", "Último dado" in text and "Licença" in text, text[-400:])
+    check("nada de null escrito no detalhe", "null" not in text, text[:200])
+    detail.locator(".pd-table").scroll_into_view_if_needed()
+    check("a prévia de um destaque já vem lida", detail.locator(".pd-table tbody tr").count() >= 5)
+    check(
+        "Adicionar não pede prévia num destaque Pronto",
+        not detail.locator(".pd-actions .pd-why").count()
+        or "Chega" in detail.locator(".pd-actions button").first.get_attribute("title"),
+    )
+    _print(pg, "detalhe")
+    # Um conjunto de portal: escolher o arquivo abre a prévia obrigatória.
+    dlg.locator(".pd-menu-item", has_text="CVM").click()
+    dlg.locator(".pd-card").first.wait_for(timeout=20000)
+    dlg.locator(".pd-card").first.click()
+    detail.locator(".pd-files").wait_for(timeout=30000)
+    check(
+        "Adicionar fica travado até escolher o arquivo",
+        "Escolha um arquivo" in detail.locator(".pd-actions").inner_text(),
+    )
+    detail.locator(".pd-file button", has_text="Usar este").first.click()
+    detail.locator(".pd-must .pd-table, .pd-must .pd-note-err").first.wait_for(timeout=120000)
+    check(
+        "a prévia obrigatória mostra a tabela lida do portal",
+        detail.locator(".pd-must .pd-table tbody tr").count() > 0,
+        detail.locator(".pd-must").inner_text()[:300],
+    )
+    _print(pg, "arquivo")
 
 
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante

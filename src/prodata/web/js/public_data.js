@@ -5,6 +5,7 @@
 import { api } from './api.js';
 import { button, debounce, h } from './dom.js';
 import { icon } from './icons.js';
+import { publicDetail } from './public_data_detail.js';
 import { openDialog, toastError } from './ui.js';
 
 const AGENCY_NAMES = { bcb: 'Banco Central', ibge: 'IBGE', ipea: 'Ipeadata', tesouro: 'Tesouro Nacional',
@@ -25,6 +26,10 @@ const state = {
   selected: null,
   loading: false,
   ticket: 0,
+  detailEl: null,
+  detailFor: null,
+  // Adicionar ao fluxo / à vista Dados: ligado pela caixa Dados públicos (T12).
+  onUse: null,
   dialog: null,
   poll: null,
   favorites: new Set(),
@@ -236,18 +241,12 @@ function detail() {
       icon('table', 30), h('strong', {}, 'Escolha uma fonte'),
       h('p', {}, 'O detalhe mostra o período, a última atualização, as colunas explicadas, a prévia e como citar.'));
   }
-  return h('aside', { class: 'pd-detail', 'aria-label': `Detalhe de ${e.nome}` },
-    h('header', { class: 'pd-detail-head' },
-      h('span', { class: 'pd-card-icon' }, icon(categoryIcon(e), 20)),
-      h('div', {}, h('h2', {}, e.nome), h('p', { class: 'pd-card-meta' }, agencyName(e.orgao)))),
-    badge(e),
-    e.resumo ? h('p', {}, e.resumo) : null,
-    h('dl', { class: 'pd-facts' },
-      e.periodicidade ? [h('dt', {}, 'Periodicidade'), h('dd', {}, e.periodicidade)] : null,
-      e.unidade ? [h('dt', {}, 'Unidade'), h('dd', {}, e.unidade)] : null,
-      e.atualizado ? [h('dt', {}, 'Atualização'), h('dd', {}, when(e.atualizado))] : null,
-      e.codigo ? [h('dt', {}, 'Código'), h('dd', { class: 'mono' }, e.codigo)] : null),
-    h('p', { class: 'field-help' }, 'O detalhe completo, com prévia e escolhas, vem na próxima etapa.'));
+  // O mesmo elemento enquanto a fonte não muda: redesenhar o painel não recarrega o detalhe nem perde as escolhas.
+  if (!state.detailEl || state.detailFor !== e.id) {
+    state.detailEl = publicDetail(e, { iconFor: categoryIcon, agencyName, onUse: state.onUse });
+    state.detailFor = e.id;
+  }
+  return state.detailEl;
 }
 
 function refreshBar() {
@@ -296,7 +295,7 @@ export async function openPublicData() {
   const root = h('div', { class: 'pd-root' }, h('p', { class: 'pd-loading' }, 'Abrindo o catálogo…'));
   state.dialog = openDialog({
     title: 'Dados públicos do Brasil', body: root, size: 'xl',
-    onClose: () => { clearInterval(state.poll); state.dialog = null; },
+    onClose: () => { clearInterval(state.poll); state.dialog = null; state.detailEl = null; state.detailFor = null; },
   });
   state.dialog.el.classList.add('pd-dialog');
   try {

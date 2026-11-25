@@ -56,6 +56,12 @@ export const api = {
   publicRefreshStatus: () => request('GET', '/api/catalogo/atualizar'),
   publicFavorite: (id) => request('POST', `/api/catalogo/favoritos/${id.split('/').map(enc).join('/')}`),
   publicRecent: (id) => request('POST', `/api/catalogo/recentes/${id.split('/').map(enc).join('/')}`),
+  publicDescribe: (id) => request('GET', `/api/catalogo/fonte?id=${enc(id)}`),
+  publicPreview: (id, escolhas = {}) => request('POST', '/api/catalogo/previa', { id, escolhas }),
+  publicFilePreview: (id, arquivo, opcoes = {}, membro = '') =>
+    request('POST', '/api/catalogo/arquivo/previa', { id, arquivo, opcoes, membro }),
+  publicOdata: (id, arquivo) => request('GET', `/api/catalogo/odata?id=${enc(id)}&arquivo=${enc(arquivo)}`),
+  publicCurrencies: () => request('GET', '/api/catalogo/moedas'),
 
   datasets: () => request('GET', '/api/datasets'),
   previewDataset: (name, options = {}, rows = 100) =>
