@@ -6,7 +6,8 @@ import importlib
 import logging
 import re
 import threading
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from html import escape
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -152,7 +153,11 @@ def build_services(settings: Settings) -> Services:
         ),
         versions=VersionStore(settings.storage_dir / "versoes"),
         team=team,
-        catalog=CatalogService(settings.storage_dir / "catalogo"),
+        # downloads grandes (CNPJ): nunca na pasta de dados nem na pasta de um espaço da equipe (RF-4952)
+        catalog=CatalogService(
+            settings.storage_dir / "catalogo",
+            forbidden=lambda: [settings.storage_dir, *(Path(s.caminho) for s in team.workspaces.spaces())],
+        ),
     )
 
 
@@ -166,10 +171,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
     logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        yield
+        # Fechar o programa pausa o download do CNPJ: ao abrir, a vista Dados oferece continuar (RF-4953).
+        app.state.services.catalog.downloads.shutdown()
+
     app = FastAPI(
         title=marca().nome,
         version=__version__,
         description="API do motor de pipelines visuais (Polars + DuckDB + Arrow).",
+        lifespan=lifespan,
     )
     app.state.services = build_services(settings)
     app.add_middleware(

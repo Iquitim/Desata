@@ -19,10 +19,11 @@ from pathlib import Path
 from typing import Any
 
 from prodata.catalog import curated, health, holidays, hosts, portals, sources
+from prodata.catalog.download import DownloadManager
 from prodata.catalog.http import CatalogClient, CatalogError
 from prodata.catalog.index import AGENCY_BY_ID, CatalogStore
 from prodata.catalog.model import SourceNotFoundError
-from prodata.catalog.readers import bcb_olinda, ckan, files
+from prodata.catalog.readers import bcb_olinda, ckan, files, receita
 from prodata.catalog.saved import News, SavedSources
 
 RECENTS = 20
@@ -70,8 +71,9 @@ class Preferences:
 
 
 class CatalogService:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, forbidden: Callable[[], list[Path]] | None = None) -> None:
         self.root = root
+        self.downloads = DownloadManager(root, forbidden or (lambda: [root]))
         self.store = CatalogStore(root)
         self.prefs = Preferences(root / "preferencias.json")
         self.health = health.HealthStore(root)
@@ -246,6 +248,14 @@ class CatalogService:
                 self.news.record(
                     source_id, info.get("atualizado"), str(info.get("atualizado_rotulo", "")), now
                 )
+
+    # ---------------------------------------------------------------- CNPJ (RF-4951..4953)
+
+    def cnpj(self) -> dict[str, Any]:
+        """O mês mais recente da Receita, as partes com o tamanho e o que já foi baixado neste computador."""
+        with CatalogClient(timeout=30) as client:
+            info = receita.summary(client)
+        return {**info, "downloads": self.downloads.jobs()}
 
     # ---------------------------------------------------------------- situação dos órgãos (RF-4921..4924)
 

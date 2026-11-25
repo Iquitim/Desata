@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from typing import Any, Literal
 
@@ -9,6 +10,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from prodata.api.deps import ServicesDep
+from prodata.catalog.download import DownloadError
 from prodata.catalog.http import CatalogError
 from prodata.catalog.model import SourceNotFoundError
 from prodata.catalog.readers.files import FormatChangedError
@@ -289,3 +291,67 @@ def news_check(req: NewsCheckRequest, services: ServicesDep) -> dict[str, Any]:
     """Pergunta aos órgãos a última atualização junto com a situação, ao abrir o catálogo (RF-4921; a cada 6 horas por fonte)."""
     _guard(lambda: services.catalog.news_check(req.ids))
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- CNPJ: downloads grandes (RF-4951..4953)
+
+
+def _download(action: Callable[[], Any]) -> Any:
+    try:
+        return _guard(action)
+    except DownloadError as exc:
+        raise HTTPException(422, str(exc)) from None
+
+
+@router.get("/cnpj")
+def cnpj(services: ServicesDep) -> dict[str, Any]:
+    """O mês mais recente publicado pela Receita, as partes com o tamanho e os downloads deste computador."""
+    return _download(services.catalog.cnpj)
+
+
+class DownloadRequest(BaseModel):
+    mes: str = Field(pattern=r"^\d{4}-\d{2}$")
+    arquivos: list[str] = Field(min_length=1, max_length=60)
+    pasta: str = Field(min_length=3, max_length=500)
+    manter_zips: bool = False
+
+
+@router.post("/downloads/plano")
+def download_plan(req: DownloadRequest, services: ServicesDep) -> dict[str, Any]:
+    """Antes de baixar: o tamanho das partes, o espaço livre na pasta escolhida e se basta."""
+    return _download(
+        lambda: services.catalog.downloads.plan(req.mes, req.arquivos, req.pasta, req.manter_zips)
+    )
+
+
+@router.post("/downloads")
+def download_start(req: DownloadRequest, services: ServicesDep) -> dict[str, Any]:
+    return _download(
+        lambda: services.catalog.downloads.start(req.mes, req.arquivos, req.pasta, req.manter_zips)
+    )
+
+
+@router.get("/downloads")
+def download_list(services: ServicesDep) -> dict[str, Any]:
+    downloads = services.catalog.downloads
+    return {"downloads": downloads.jobs(), "pendentes": downloads.pending()}
+
+
+def _job_id(job_id: str) -> str:
+    if not re.fullmatch(r"[0-9a-f]{12}", job_id):
+        raise HTTPException(400, "Download inválido.")
+    return job_id
+
+
+@router.get("/downloads/{job_id}")
+def download_state(job_id: str, services: ServicesDep) -> dict[str, Any]:
+    return _download(lambda: services.catalog.downloads.get(_job_id(job_id)))
+
+
+@router.post("/downloads/{job_id}/{action}")
+def download_action(
+    job_id: str, action: Literal["pausar", "continuar", "cancelar"], services: ServicesDep
+) -> dict[str, Any]:
+    downloads = services.catalog.downloads
+    run = {"pausar": downloads.pause, "continuar": downloads.resume, "cancelar": downloads.cancel}[action]
+    return _download(lambda: run(_job_id(job_id)))

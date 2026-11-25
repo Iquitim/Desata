@@ -34,7 +34,7 @@
 
 ## Marco 5 — Downloads grandes: CNPJ
 
-- [ ] T15 `download.py`: partes, tamanhos, espaço livre, pasta escolhida e proibida, Range, pausar, continuar, cancelar, novas tentativas, estado para retomar (RF-4951..4953)
+- [x] T15 `download.py`: partes, tamanhos, espaço livre, pasta escolhida e proibida, Range, pausar, continuar, cancelar, novas tentativas, estado para retomar (RF-4951..4953)
 - [ ] T16 Conferência e descompactação segura; `cnpj.py` com o leiaute e a fonte de pasta pronta; leiaute que não bate (RF-4954, RF-4955, CA-05)
 - [ ] T17 Tela: escolha das partes, barra na vista Dados, Continuar o download ao abrir, mês novo, Baixar aqui para o colega da equipe (RF-4953, RF-4956, RF-4972)
 

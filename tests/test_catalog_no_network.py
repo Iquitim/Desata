@@ -77,7 +77,7 @@ def _get_paths(routes: list[Any], prefix: str = "") -> set[str]:
 
 # Rotas GET que acessam a internet por desenho: só a tela do catálogo, aberto, as chama (constituição 1.8.1).
 # A lista é exata: uma rota nova que acesse a rede não passa sem ser declarada aqui, de propósito.
-CATALOG_NETWORK_ROUTES = {"/api/catalogo/moedas"}
+CATALOG_NETWORK_ROUTES = {"/api/catalogo/moedas", "/api/catalogo/cnpj"}
 
 
 def test_abrir_o_programa_e_a_vista_dados_nao_acessa_a_rede(
