@@ -13,8 +13,10 @@ duas pessoas: sobe um segundo servidor).
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -32,6 +34,9 @@ PORT = 8795
 URL = f"http://127.0.0.1:{PORT}/"
 PORT_BRUNO = 8794  # segunda pessoa, para as conferências com duas pessoas (spec 047)
 URL_BRUNO = f"http://127.0.0.1:{PORT_BRUNO}/"
+DATA = (
+    Path(tempfile.gettempdir()) / "conferir-tela-dados"
+)  # trocada em main(): a pasta de dados do servidor da Ana
 UPLOAD = """async ([name, text]) => { const fd = new FormData(); fd.append('file', new File([text], name, { type: 'text/csv' }));
   fd.append('overwrite', 'true'); const r = await fetch('/api/datasets', { method: 'POST', body: fd }); return (await r.json()).name; }"""
 
@@ -1268,6 +1273,101 @@ def caixa_publica(pg: Page) -> None:
     dlg.locator("header button").first.click()
 
 
+def pasta_publica(pg: Page) -> None:
+    """T13: À vista Dados, a pasta Dados públicos, Usar no fluxo e o aviso Dados novos (na vista e na caixa)."""
+    new_flow(pg)
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.locator(".dv-list-head button", has_text="Adicionar").click()
+    pg.locator(".menu .menu-item", has_text="Dados públicos do Brasil").click()
+    dlg = pg.locator("dialog.pd-dialog[open]")
+    dlg.locator(".pd-card").first.wait_for(timeout=20000)
+    dlg.locator(".pd-card", has_text="Taxa Selic diária").click()
+    pg.wait_for_function(
+        "() => { const b = [...document.querySelectorAll('.pd-actions button')].find((x) => x.textContent.includes('À vista Dados')); return b && !b.disabled; }",
+        timeout=30000,
+    )
+    dlg.locator(".pd-actions button", has_text="À vista Dados").click()
+    folder = pg.locator(".pd-saved")
+    folder.wait_for(timeout=10000)
+    check(
+        "a pasta Dados públicos aparece na vista Dados",
+        "Taxa Selic diária" in folder.inner_text(),
+        folder.inner_text(),
+    )
+    head = pg.locator(".dv-detail .dv-head")
+    head.wait_for(timeout=10000)
+    check("o detalhe abre na fonte guardada", "Taxa Selic diária" in head.inner_text() and "Ainda não usada" in head.inner_text(),
+          head.inner_text())  # fmt: skip
+    facts = pg.locator(".pd-saved-facts").inner_text()
+    # Ainda não lida, ou a data da leitura quando outra conferência já leu a mesma consulta neste servidor.
+    read = "ainda não lida" in facts or bool(
+        re.search(r"Última leitura neste computador\s+\d{2}/\d{2}/\d{4}", facts)
+    )
+    check("o detalhe diz as escolhas e a última leitura", "últimos 5 anos" in facts and read, facts)
+    _print(pg, "pasta")
+    head.locator("button", has_text="Usar no fluxo").click()
+    pg.wait_for_function(
+        "() => window.__S.store.view === 'designer' && window.__S.store.workflow.nodes.some((n) => n.type === 'io.public_data')",
+        timeout=10000,
+    )
+    node_id = pg.evaluate("() => window.__S.store.workflow.nodes.find((n) => n.type === 'io.public_data').id")
+    run(pg)
+    check(
+        "sem novidade, a caixa não tem o aviso",
+        pg.locator(f".node[data-id='{node_id}'] .node-news").count() == 0,
+    )
+    # O órgão "publica" dados mais novos que a leitura (o que a conferência do catálogo gravaria).
+    tomorrow = time.strftime("%Y-%m-%d", time.localtime(time.time() + 86400))
+    (DATA / "catalogo" / "novidades.json").write_text(json.dumps({"bcb.sgs/11": {
+        "atualizado": tomorrow, "rotulo": "último dado em", "conferido_em": time.strftime("%Y-%m-%dT%H:%M:%S")}}), encoding="utf-8")  # fmt: skip
+    pg.evaluate("() => import('/static/js/public_news.js').then((m) => m.refreshNodeNews())")
+    badge = pg.locator(f".node[data-id='{node_id}'] .node-news")
+    badge.wait_for(timeout=10000)
+    check("a caixa ganha o aviso Dados novos", "Dados novos" in badge.inner_text() and "a última leitura vai até" in (badge.get_attribute("title") or ""),
+          badge.get_attribute("title"))  # fmt: skip
+    _print(pg, "dados-novos-caixa")
+    save_named(pg, "Selic com aviso")
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    item = pg.locator(".pd-saved .team-def-item", has_text="Taxa Selic diária")
+    item.locator(".pd-news-chip").wait_for(timeout=10000)
+    item.click()
+    note = pg.locator(".pd-news-note")
+    note.wait_for(timeout=10000)
+    check(
+        "a vista Dados mostra o aviso e o que muda",
+        "próxima execução" in note.inner_text(),
+        note.inner_text(),
+    )
+    pg.wait_for_function(
+        "() => document.querySelector('.dv-detail .dv-head')?.textContent.includes('Usada em 1 fluxo')",
+        timeout=10000,
+    )
+    check("o detalhe mostra onde é usada", pg.locator(".dv-detail .dv-lanes").count() == 1)
+    # A conferência que começou ao abrir o catálogo leva alguns segundos; a pasta se atualiza quando ela termina.
+    with contextlib.suppress(Exception):  # se não chegar, a conferência abaixo diz o que apareceu
+        pg.wait_for_function(
+            "() => /No ar|Lenta/.test(document.querySelector('.dv-detail .pd-saved-health')?.textContent || '')",
+            timeout=30000,
+        )
+    health = pg.locator(".dv-detail .pd-saved-health").inner_text()
+    check(
+        "o detalhe mostra a situação do órgão, conferida ao abrir o catálogo",
+        health in ("No ar", "Lenta"),
+        health,
+    )
+    _print(pg, "dados-novos-vista")
+    pg.locator(".dv-detail .dv-head button", has_text="Tirar da vista Dados").click()
+    confirm = pg.locator("dialog[open]")
+    check(
+        "tirar avisa que o fluxo continua funcionando",
+        "continuam funcionando" in confirm.inner_text(),
+        confirm.inner_text(),
+    )
+    confirm.locator("button", has_text="Tirar da vista Dados").click()
+    pg.wait_for_function("() => !document.querySelector('.pd-saved')", timeout=10000)
+    check("a pasta some quando fica vazia", pg.locator(".pd-saved").count() == 0)
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1298,6 +1398,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "limpeza": limpeza,
     "catalogo": catalogo,
     "caixa_publica": caixa_publica,
+    "pasta_publica": pasta_publica,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
@@ -1340,7 +1441,9 @@ def main() -> int:
         return 2
     errors: list[str] = []
     with tempfile.TemporaryDirectory(prefix="conferir-tela-") as folder:
-        server = start_server(Path(folder) / "dados")
+        global DATA
+        DATA = Path(folder) / "dados"
+        server = start_server(DATA)
         # Duas pessoas (spec 047): o Bruno tem o próprio servidor, pasta de dados e usuário.
         second = (
             start_server(Path(folder) / "dados-bruno", PORT_BRUNO, "bruno")

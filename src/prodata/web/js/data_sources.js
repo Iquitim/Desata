@@ -19,7 +19,11 @@ export const KINDS = {
   jiraconn: { title: 'Conexões com o Jira', one: 'conexão com o Jira', color: 'var(--cat-org)', icon: 'link' },
   conn: { title: 'Conexões com bancos', one: 'conexão', color: 'var(--cat-org)', icon: 'database' },
   const: { title: 'Constantes', one: 'constante compartilhada', color: 'var(--cat-bi)', icon: 'hash' },
+  public: { title: 'Dados públicos', one: 'dados públicos', color: 'var(--cat-inout)', icon: 'landmark' }, // pasta própria (spec 049)
 };
+
+/** Os fluxos que usam uma fonte do catálogo Dados públicos, com quaisquer escolhas (spec 049). */
+export const publicUses = (sourceId) => usage.map[`publica:${sourceId}`] || [];
 
 const JIRA_TABLES = { issues: 'Demandas', history: 'Histórico', comments: 'Comentários' };
 const FORMAT_LABELS = { csv: 'CSV', excel: 'Excel', parquet: 'Parquet', json: 'JSON', ndjson: 'JSON Lines', arrow: 'Arrow' };

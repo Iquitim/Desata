@@ -7,6 +7,7 @@ import { button, debounce, h } from './dom.js';
 import { icon } from './icons.js';
 import { publicDetail } from './public_data_detail.js';
 import { cardBadge, dot, worst } from './public_data_health.js';
+import { checkNews, refreshSaved } from './public_news.js';
 import { openDialog, toastError } from './ui.js';
 
 const AGENCY_NAMES = { bcb: 'Banco Central', ibge: 'IBGE', ipea: 'Ipeadata', tesouro: 'Tesouro Nacional',
@@ -364,7 +365,9 @@ export async function openPublicData({ select = null, choices = null, onUse = nu
     state.health = null;
   }
   await search();
-  checkHealth(false); // em paralelo: os selos chegam conforme as respostas (RF-4921)
+  // Em paralelo: os selos chegam conforme as respostas (RF-4921); a pasta da vista Dados mostra a situação nova.
+  checkHealth(false).then(() => refreshSaved());
+  checkNews(); // junto com a situação: a última atualização das fontes em uso, para o aviso Dados novos (RF-4935)
   if (state.overview.atualizacao?.rodando) followRefresh();
   else if (state.overview.desatualizado) startRefresh();
 }

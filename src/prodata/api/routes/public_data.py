@@ -13,6 +13,7 @@ from prodata.catalog.http import CatalogError
 from prodata.catalog.model import SourceNotFoundError
 from prodata.catalog.readers.files import FormatChangedError
 from prodata.errors import InvalidInputError
+from prodata.nodes.public_data import PublicSelection
 
 router = APIRouter(prefix="/api/catalogo", tags=["dados públicos"])
 
@@ -225,4 +226,66 @@ def add_recent(source_id: str, services: ServicesDep) -> dict[str, Any]:
     if not source_id or len(source_id) > 300:
         raise HTTPException(400, "Fonte inválida.")
     services.catalog.prefs.add_recent(source_id)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------- vista Dados e Dados novos (RF-4915, RF-4935)
+
+
+@router.get("/salvas")
+def saved_list(services: ServicesDep) -> dict[str, Any]:
+    """As fontes guardadas na vista Dados, com a última leitura e o aviso Dados novos (sem acessar a rede)."""
+    return {"fontes": services.catalog.saved_list()}
+
+
+class SavedIn(BaseModel):
+    fonte: PublicSelection
+
+
+@router.post("/salvas")
+def saved_add(req: SavedIn, services: ServicesDep) -> dict[str, Any]:
+    return _guard(lambda: services.catalog.saved_add(req.fonte.model_dump()))
+
+
+@router.put("/salvas/{key}")
+def saved_update(key: str, req: SavedIn, services: ServicesDep) -> dict[str, Any]:
+    _check_key(key)
+    return _guard(lambda: services.catalog.saved_update(key, req.fonte.model_dump()))
+
+
+@router.delete("/salvas/{key}")
+def saved_delete(key: str, services: ServicesDep) -> dict[str, Any]:
+    _check_key(key)
+    services.catalog.saved_delete(key)
+    return {"ok": True}
+
+
+def _check_key(key: str) -> None:
+    if not (1 <= len(key) <= 40 and key.isalnum()):
+        raise HTTPException(400, "Fonte guardada inválida.")
+
+
+class NewsItem(BaseModel):
+    id: str = Field(min_length=3, max_length=300)
+    escolhas: dict[str, Any] = Field(default_factory=dict)
+
+
+class NewsRequest(BaseModel):
+    fontes: list[NewsItem] = Field(default_factory=list, max_length=200)
+
+
+@router.post("/novidades")
+def news_state(req: NewsRequest, services: ServicesDep) -> dict[str, Any]:
+    """Dados novos das caixas e das fontes guardadas: compara o que o órgão informou com a leitura guardada (sem rede)."""
+    return {"novidades": services.catalog.news_state([i.model_dump() for i in req.fontes])}
+
+
+class NewsCheckRequest(BaseModel):
+    ids: list[str] = Field(default_factory=list, max_length=60)
+
+
+@router.post("/novidades/conferir")
+def news_check(req: NewsCheckRequest, services: ServicesDep) -> dict[str, Any]:
+    """Pergunta aos órgãos a última atualização junto com a situação, ao abrir o catálogo (RF-4921; a cada 6 horas por fonte)."""
+    _guard(lambda: services.catalog.news_check(req.ids))
     return {"ok": True}

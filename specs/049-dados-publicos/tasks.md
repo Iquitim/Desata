@@ -29,7 +29,7 @@
 ## Marco 4 — Fonte do catálogo no fluxo
 
 - [x] T12 Ferramenta `public_data`: configuração, execução, período relativo, leitura guardada e Exigir dados atuais; formato aceito dos arquivos de portal e Aceitar o novo formato; num fluxo do espaço, Feriados e Dias úteis usam a lista de feriados da equipe (RF-4925, RF-4938, RF-4948, RF-4971, RF-4973, CA-01, CA-12)
-- [ ] T13 Pasta Dados públicos na vista Dados; aviso Dados novos na vista e na caixa (RF-4935)
+- [x] T13 Pasta Dados públicos na vista Dados; aviso Dados novos na vista e na caixa (RF-4935)
 - [ ] T14 Metadados de fonte no resultado; dicionário no Perfil; citação no dashboard e no HTML exportado (RF-4912, RF-4963, CA-07)
 
 ## Marco 5 — Downloads grandes: CNPJ

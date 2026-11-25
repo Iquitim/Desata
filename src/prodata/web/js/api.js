@@ -63,6 +63,12 @@ export const api = {
   publicOdata: (id, arquivo) => request('GET', `/api/catalogo/odata?id=${enc(id)}&arquivo=${enc(arquivo)}`),
   publicCurrencies: () => request('GET', '/api/catalogo/moedas'),
   publicHealth: () => request('GET', '/api/catalogo/situacao'),
+  publicSaved: () => request('GET', '/api/catalogo/salvas'),
+  publicSavedAdd: (fonte) => request('POST', '/api/catalogo/salvas', { fonte }),
+  publicSavedUpdate: (key, fonte) => request('PUT', `/api/catalogo/salvas/${enc(key)}`, { fonte }),
+  publicSavedDelete: (key) => request('DELETE', `/api/catalogo/salvas/${enc(key)}`),
+  publicNews: (fontes) => request('POST', '/api/catalogo/novidades', { fontes }),
+  publicNewsCheck: (ids) => request('POST', '/api/catalogo/novidades/conferir', { ids }),
   publicCheckHealth: (forcar = false, servicos = null) => request('POST', '/api/catalogo/situacao', { forcar, servicos }),
   publicHolidays: (local, ano) => request('GET', `/api/catalogo/feriados/editar?local=${enc(local)}&ano=${ano}`),
   publicHolidayAction: (action, body, local, ano) =>

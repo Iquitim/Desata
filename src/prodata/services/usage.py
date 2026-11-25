@@ -19,6 +19,7 @@ from prodata.services.workflows import SUFFIX
 log = logging.getLogger(__name__)
 
 API = "api:"
+PUBLIC = "publica:"
 
 
 def source_keys(node_type: str, config: dict[str, Any]) -> list[str]:
@@ -27,6 +28,8 @@ def source_keys(node_type: str, config: dict[str, Any]) -> list[str]:
         return [str(config["dataset"])]
     if node_type == "io.api_loop" and config.get("source"):
         return [f"{API}{config['source']}"]
+    if node_type == "io.public_data" and isinstance(config.get("fonte"), dict) and config["fonte"].get("id"):
+        return [f"{PUBLIC}{config['fonte']['id']}"]  # a fonte do catálogo, com quaisquer escolhas (spec 049)
     if node_type == "flow.subflow" and config.get("workflow"):
         return [f"flow:{config['workflow']}"]  # quem usa cada subfluxo (spec 033)
     return []

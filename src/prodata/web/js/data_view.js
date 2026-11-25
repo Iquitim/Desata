@@ -11,6 +11,8 @@ import { folderEditor, refreshFolderSources } from './folder_sources.js';
 import { pdfSourceForm, refreshPdfSources } from './pdf_sources.js';
 import { openPublicData } from './public_data.js';
 import { addPublicNode } from './public_data_box.js';
+import { refreshSaved } from './public_news.js';
+import { PUBLIC_PREFIX, publicSavedDetail, publicSection, savePublic } from './public_saved.js';
 import { sourceDetail } from './data_detail.js';
 import { markOpened, organizedList } from './data_folders.js';
 import { allSources, KINDS, refreshUsage, usesOf } from './data_sources.js';
@@ -59,6 +61,10 @@ function addMenu(e) {
     'separator',
     { label: 'Dados públicos do Brasil', icon: 'landmark', onSelect: () => openPublicData({
       onUse: (entry, choices, _target, info) => { if (addPublicNode(entry, choices, info)) handlers.showDesigner(); },
+      onUseData: async (entry, choices, info) => { // À vista Dados: a pasta Dados públicos (RF-4915)
+        const key = await savePublic(entry, choices, info);
+        if (key) { ui.key = key; ui.creating = null; renderDataView(); }
+      },
     }) },
     'separator',
     { label: 'Nova conexão com banco', icon: 'database', onSelect: () => newSource('conn') },
@@ -91,6 +97,8 @@ function listPane() {
       h('div', {}, h('h1', {}, 'Seus dados'), h('p', {}, 'Valem para todos os fluxos deste computador')),
       button({ icon: 'plus', label: 'Adicionar', variant: 'primary', onClick: addMenu })),
     missingSection(), search, list.el,
+    // fontes do catálogo Dados públicos guardadas com as escolhas (spec 049)
+    publicSection({ selectedKey: ui.key, onOpen: (key) => { ui.key = key; ui.creating = null; renderDataView(); } }),
     // espaço da equipe (spec 048): as definições compartilhadas, numa pasta por espaço
     teamSection({ selectedKey: ui.key, onOpen: (key) => { ui.key = key; ui.creating = null; renderDataView(); } }), fileInput);
 }
@@ -198,7 +206,8 @@ async function removeSource(source, action) {
 export function renderDataView() {
   if (!root || store.view !== 'data') return;
   const team = ui.key?.startsWith('team:') ? ui.key : null;
-  const selected = ui.key && !team ? sourceByKey(ui.key) : null;
+  const pub = ui.key?.startsWith(PUBLIC_PREFIX) ? ui.key : null;
+  const selected = ui.key && !team && !pub ? sourceByKey(ui.key) : null;
   const ctx = {
     tab: ui.tab,
     rename: ui.rename,
@@ -214,11 +223,15 @@ export function renderDataView() {
     showDesigner: () => handlers.showDesigner(),
   };
   const main = ui.creating ? creatingPane()
+    : pub ? publicSavedDetail(pub, { showDesigner: () => handlers.showDesigner(), openFlow: (workflowId, nodeId) => handlers.openFlow(workflowId, nodeId),
+      refresh: () => renderDataView(), close: () => { ui.key = null; renderDataView(); } })
     : team ? teamDetail(team, { refresh: afterChange, close: () => { ui.key = null; renderDataView(); } })
       : selected ? sourceDetail(selected, ctx) : welcome();
   ui.rename = false;
   ui.pdfDoc = null;
   root.replaceChildren(listPane(), h('main', { class: 'dv-main' }, main));
+  // A pasta Dados públicos fica no fim da lista: a fonte aberta aparece à vista, sem a pessoa procurar.
+  if (pub) root.querySelector('.pd-saved .team-def-item.selected')?.scrollIntoView({ block: 'nearest' });
 }
 
 /**
@@ -239,6 +252,7 @@ export function initDataView(el, opts) {
   handlers = { ...handlers, ...opts };
   initPortable(); // o que falta neste computador, para o fluxo aberto (spec 040)
   for (const event of ['datasets', 'queries', 'apis', 'connections', 'constants', 'organization', 'folders']) on(event, () => renderDataView());
+  on('public-saved', () => renderDataView()); // pasta Dados públicos (spec 049)
   on('pdfs', () => refreshKeepingEditor());
   on('numbers', () => refreshKeepingEditor());
   on('sources', () => refreshKeepingEditor()); // o que falta neste computador (spec 040)
@@ -247,6 +261,6 @@ export function initDataView(el, opts) {
 /** Ao entrar na vista: dados de uso frescos, porque outro fluxo pode ter sido salvo. */
 export async function showDataView() {
   renderDataView();
-  await Promise.all([refreshUsage(), refreshTeamDefinitions()]);
+  await Promise.all([refreshUsage(), refreshTeamDefinitions(), refreshSaved()]);
   renderDataView();
 }

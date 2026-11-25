@@ -660,6 +660,7 @@ export function initCanvas(root, opts = {}) {
   on('wires', () => render()); // fios organizados ou curvos (spec 041)
   on('comments', () => render()); // selo dos comentários nas caixas (spec 048)
   on('cleaning', () => render()); // ponto das recomendações de limpeza (spec 048)
+  on('public-news', () => render()); // Dados novos nas caixas Dados públicos (spec 049)
   on('reveal:node', ({ id, reserve }) => revealNode(id, { reserve })); // a caixa fica à vista ao lado de um painel
 
   root.classList.toggle('tool-select', tool === 'select');

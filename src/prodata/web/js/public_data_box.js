@@ -39,7 +39,7 @@ export function addPublicNode(entry, choices, info) {
   return created;
 }
 
-function summary(fonte) {
+export function choicesSummary(fonte) {
   const e = fonte.escolhas || {};
   const parts = [PERIOD_WORDS(e.periodo)];
   if (e.moeda) parts.push(e.moeda);
@@ -78,7 +78,7 @@ export function publicSourceField(field, value, set, ctx) {
   }
   return h('div', { class: 'pd-box' },
     h('div', { class: 'pd-box-head' }, icon('landmark', 18),
-      h('div', {}, h('strong', {}, fonte.nome), h('p', { class: 'field-help' }, [fonte.orgao, summary(fonte)].filter(Boolean).join(' · ')))),
+      h('div', {}, h('strong', {}, fonte.nome), h('p', { class: 'field-help' }, [fonte.orgao, choicesSummary(fonte)].filter(Boolean).join(' · ')))),
     changed ? h('div', { class: 'pd-box-changed' }, icon('alert', 13),
       h('span', {}, 'O órgão mudou o arquivo. Confira na prévia antes de aceitar.'),
       button({ label: 'Ver no catálogo', size: 'sm', onClick: choose }),

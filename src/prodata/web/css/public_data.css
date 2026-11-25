@@ -268,3 +268,19 @@
   .pd-columns { grid-template-columns: 200px minmax(0, 1fr); }
   .pd-detail { display: none; }
 }
+
+/* Pasta Dados públicos na vista Dados e o aviso Dados novos (T13, RF-4915, RF-4935) */
+.pd-news-chip { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font-size: var(--fs-2xs); font-weight: 700;
+  color: var(--accent); background: var(--accent-weak); }
+.dv-chip.pd-news-chip { font-size: var(--fs-sm); padding: 4px 10px; }
+.pd-saved-health { color: var(--text-2); background: var(--surface-3); }
+.pd-news-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 10px; color: var(--text);
+  background: var(--accent-weak); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); font-size: var(--fs-sm); }
+.pd-news-note .icon { flex: none; margin-top: 2px; color: var(--accent); }
+.pd-saved-facts { display: grid; gap: 8px; }
+.pd-saved-fact { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 12px; font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.pd-saved-title { margin: 0; font-size: var(--fs-md); }
+.node-news { position: absolute; bottom: -9px; right: 46px; padding: 0 7px; height: 17px; border: 1px solid var(--accent); border-radius: 999px;
+  background: var(--surface); color: var(--accent); font: inherit; font-size: var(--fs-2xs); font-weight: 700; line-height: 15px; cursor: pointer; z-index: 2; }
+.node-news:hover { background: var(--accent-weak); }
+@media (max-width: 560px) { .pd-saved-fact { grid-template-columns: 1fr; gap: 2px; } }

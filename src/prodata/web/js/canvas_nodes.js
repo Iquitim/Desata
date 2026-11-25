@@ -14,6 +14,7 @@ import { driftBadge, driftHit, schemaChange } from './schema_notice.js';
 import { MAX_ANIMATED_NEW, setFlowTarget } from './canvas_edges.js';
 import { commentCount, openComments } from './team_comments.js';
 import { cleaningCount } from './cleaning_ui.js';
+import { newsOf } from './public_news.js';
 
 const ANNOT_CHARS = 19; // o que cabe na caixa, em letras: não depende de a fonte já ter carregado
 const ANNOT_TAIL = 8;
@@ -114,6 +115,7 @@ function buildNode(n, hidden) {
   timingBadge(n.id),
   commentBadge(n),
   cleaningBadge(n),
+  newsBadge(n),
   n.cache_point ? h('span', {
     class: 'node-cache', title: res?.extra?.frozen_at
       ? `Ponto de cache · resultado guardado em ${new Date(res.extra.frozen_at).toLocaleString('pt-BR')}`
@@ -136,7 +138,7 @@ function nodeKey(n, hidden) {
     timingOf(n.id)?.text || null, timingOf(n.id)?.level || null, // tempo nas caixas (spec 041)
     loopProblems().get(n.id) || null, // erro de desenho do laço (spec 041)
     Boolean(schemaChange(n.id)), driftHit(n.id)?.join(',') || null, // formato da fonte mudou (spec 046)
-    commentCount(n.id), cleaningCount(n.id)]); // comentários abertos e recomendações de limpeza (spec 048)
+    commentCount(n.id), cleaningCount(n.id), newsOf(n.id)?.novo ? newsOf(n.id).texto : null]); // comentários abertos e recomendações de limpeza (spec 048)
 }
 
 /**
@@ -222,6 +224,18 @@ function commentBadge(n) {
     onclick: (ev) => { ev.stopPropagation(); openComments(n.id); },
     onpointerdown: (ev) => ev.stopPropagation(),
   }, icon('chat', 11), String(count));
+}
+
+/** Dados novos (spec 049, RF-4935): o órgão publicou algo mais novo que a última leitura desta caixa. */
+function newsBadge(n) {
+  const news = n.type === 'io.public_data' ? newsOf(n.id) : null;
+  if (!news?.novo) return null;
+  return h('button', {
+    type: 'button', class: 'node-news', title: `${news.texto} Execute para ler de novo.`,
+    'aria-label': `Dados novos em ${n.label || n.id}`,
+    onclick: (ev) => { ev.stopPropagation(); select(n.id); },
+    onpointerdown: (ev) => ev.stopPropagation(),
+  }, 'Dados novos');
 }
 
 /** Ponto discreto de recomendação de limpeza (spec 048, RF-4834): só nas caixas de entrada; abre o Perfil. */

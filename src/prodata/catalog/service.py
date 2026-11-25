@@ -19,10 +19,11 @@ from pathlib import Path
 from typing import Any
 
 from prodata.catalog import curated, health, holidays, hosts, portals, sources
-from prodata.catalog.http import CatalogClient
+from prodata.catalog.http import CatalogClient, CatalogError
 from prodata.catalog.index import AGENCY_BY_ID, CatalogStore
 from prodata.catalog.model import SourceNotFoundError
 from prodata.catalog.readers import bcb_olinda, ckan, files
+from prodata.catalog.saved import News, SavedSources
 
 RECENTS = 20
 
@@ -74,6 +75,8 @@ class CatalogService:
         self.store = CatalogStore(root)
         self.prefs = Preferences(root / "preferencias.json")
         self.health = health.HealthStore(root)
+        self.saved = SavedSources(root)
+        self.news = News(root)
         self._job_lock = threading.Lock()
         self._job: dict[str, Any] = {"rodando": False, "orgaos": {}, "inicio": None, "fim": None}
 
@@ -191,6 +194,58 @@ class CatalogService:
     def currencies(self) -> list[dict[str, str]]:
         with CatalogClient(timeout=30) as client:
             return bcb_olinda.currencies(client)
+
+    # ---------------------------------------------------------------- vista Dados e Dados novos (RF-4915, RF-4935)
+
+    def saved_list(self) -> list[dict[str, Any]]:
+        """As fontes guardadas na vista Dados, com a última leitura, a situação do órgão e o aviso Dados novos."""
+        health_data = self.health.load()
+        rows = []
+        for item in self.saved.list():
+            fonte = item["fonte"]
+            source_id = str(fonte.get("id", ""))
+            try:
+                service = sources.service_of(source_id)
+            except SourceNotFoundError:
+                service = ""
+            rows.append({**item, "servico": service, "situacao": health.summary(health_data, service) if service else None,
+                         "novidade": self.news.state(source_id, fonte.get("escolhas") or {})})  # fmt: skip
+        return rows
+
+    def saved_add(self, fonte: dict[str, Any]) -> dict[str, Any]:
+        sources.check_id(str(fonte.get("id", "")))
+        return self.saved.add(fonte)
+
+    def saved_update(self, key: str, fonte: dict[str, Any]) -> dict[str, Any]:
+        sources.check_id(str(fonte.get("id", "")))
+        try:
+            return self.saved.update(key, fonte)
+        except KeyError:
+            raise SourceNotFoundError("Essa fonte não está mais na vista Dados.") from None
+
+    def saved_delete(self, key: str) -> None:
+        self.saved.delete(key)
+
+    def news_state(self, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [self.news.state(str(i.get("id", "")), dict(i.get("escolhas") or {})) for i in items]
+
+    def news_check(self, ids: list[str]) -> None:
+        """Pergunta a cada órgão a última atualização (com o catálogo aberto; no máximo a cada 6 horas por fonte)."""
+        now = datetime.now()
+        wanted = [i for i in dict.fromkeys(ids) if i and self.news.due(i, now)]
+        if not wanted:
+            return
+        with CatalogClient(timeout=20) as client:
+            for source_id in wanted[:40]:
+                try:
+                    info = sources.describe(client, source_id)
+                except SourceNotFoundError, CatalogError:
+                    continue
+                if info.get("avisos") and not info.get("atualizado"):
+                    continue  # o órgão não respondeu: não grava nada, confere de novo na próxima
+                self.news.record(
+                    source_id, info.get("atualizado"), str(info.get("atualizado_rotulo", "")), now
+                )
 
     # ---------------------------------------------------------------- situação dos órgãos (RF-4921..4924)
 
