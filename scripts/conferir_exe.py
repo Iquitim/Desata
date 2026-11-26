@@ -61,6 +61,46 @@ def team_official(data: Path, brand: str) -> str:
     return space
 
 
+def public_flows(data: Path) -> None:
+    """Spec 049: dois fluxos com a caixa Dados públicos, para o executável rodar sem rede.
+
+    - Selic diária, com uma leitura guardada na pasta de dados (como depois de uma execução com internet): sem
+      rede, a caixa usa essa leitura e avisa; com Exigir dados atuais, falha com o motivo.
+    - Feriados de São Paulo: calculados pelo próprio programa (as tabelas vão no pacote), sem rede nenhuma.
+    """
+    from datetime import date, datetime
+
+    import polars as pl
+
+    from prodata.catalog import cache
+    from prodata.domain.workflow import Workflow
+    from prodata.services.trust import TrustRegistry
+
+    choices = {"periodo": {"kind": "ultimos_anos", "anos": 1}}
+    frame = pl.DataFrame({"data": [date(2026, 11, 24), date(2026, 11, 25)], "valor": [0.050788, 0.050788]})
+    cache.save(data / "catalogo", "bcb.sgs/11", choices, frame, datetime(2026, 11, 25, 9, 30))
+    selic = {"id": "bcb.sgs/11", "nome": "Taxa Selic diária", "orgao": "Banco Central do Brasil",
+             "citacao": "Banco Central do Brasil, SGS 11", "escolhas": choices}  # fmt: skip
+    year = date.today().year
+    holidays = {"id": "calendario/feriados", "nome": "Feriados", "escolhas": {
+        "local": "SP", "periodo": {"kind": "intervalo", "inicio": f"{year}-07-09", "fim": f"{year}-07-09"}}}  # fmt: skip
+    folder = data / "workflows"
+    folder.mkdir(parents=True, exist_ok=True)
+    flows = {
+        "selic_guardada": {"fonte": selic},
+        "selic_atual": {"fonte": selic, "exigir_atual": True},
+        "feriados_sp": {"fonte": holidays},
+    }
+    for flow_id, config in flows.items():
+        body = {"id": flow_id, "name": flow_id, "edges": [],
+                "nodes": [{"id": "p", "type": "io.public_data", "label": "Dados públicos", "config": config}]}  # fmt: skip
+        (folder / f"{flow_id}.prodata.json").write_text(
+            json.dumps(body, ensure_ascii=False), encoding="utf-8"
+        )
+        # Feito "neste computador" (como o exemplo): a proteção da spec 046 recusa fluxo de fora não conferido.
+        TrustRegistry(data / "confianca.json").created(Workflow.model_validate(body))
+
+
 def conferir(brand: str, check: Checks) -> None:
     exe = DIST / brand / "prodata-cli.exe"
     print(f"== {brand}")
@@ -123,6 +163,47 @@ def conferir(brand: str, check: Checks) -> None:
         "espaço da equipe: oficial adulterada não roda",
         code == 2 and "não confere" in err,
         (code, err[-300:]),
+    )
+    # Dados públicos (spec 049, T20): sem rede, a leitura guardada; os feriados, calculados pelo programa
+    public_flows(data)
+    offline = {**env, "HTTPS_PROXY": "http://127.0.0.1:9", "HTTP_PROXY": "http://127.0.0.1:9", "NO_PROXY": ""}
+
+    def run_offline(*args: str) -> tuple[int, str, str]:
+        res = subprocess.run([str(exe), *args], env=offline, capture_output=True, timeout=400, check=False)  # noqa: S603
+        return res.returncode, res.stdout.decode("utf-8", "replace"), res.stderr.decode("utf-8", "replace")
+
+    code, out, err = run_offline("run", "selic_guardada", "--relatorio", str(data / "selic.json"))
+    selic = (
+        json.loads((data / "selic.json").read_text(encoding="utf-8"))
+        if (data / "selic.json").is_file()
+        else {}
+    )
+    node = selic.get("node_results", {}).get("p", {})
+    warnings = " ".join(node.get("extra", {}).get("warnings", []))
+    check("dados públicos sem rede: usa a leitura guardada, com o aviso e a data",
+          code == 0 and node.get("status") == "executed" and "usando os dados lidos em 25/11/2026" in warnings,
+          (code, node.get("status"), warnings[:200], err[-300:]))  # fmt: skip
+    check(
+        "a citação da fonte vai no resultado",
+        node.get("extra", {}).get("fonte_publica", {}).get("citacao") == "Banco Central do Brasil, SGS 11",
+    )
+    code, out, err = run_offline("run", "selic_atual")
+    check(
+        "Exigir dados atuais sem rede: falha com o motivo",
+        code != 0 and "Banco Central" in (out + err),
+        (code, (out + err)[-300:]),
+    )
+    code, out, err = run_offline("run", "feriados_sp", "--relatorio", str(data / "feriados.json"))
+    report = (
+        json.loads((data / "feriados.json").read_text(encoding="utf-8"))
+        if (data / "feriados.json").is_file()
+        else {}
+    )
+    status = report.get("node_results", {}).get("p", {}).get("status")
+    check(
+        "feriados calculados no executável, sem rede (tabelas no pacote)",
+        code == 0 and status == "executed",
+        (code, status, err[-300:]),
     )
     task = exe.with_name(
         "prodata-tarefa.exe"

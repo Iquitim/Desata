@@ -45,5 +45,5 @@
 
 ## Marco 7 — Conferências e publicação
 
-- [ ] T20 conferir_tela (`catalogo`, `cnpj`) e conferir_exe com uma fonte pública (leitura guardada, sem rede no CI)
+- [x] T20 conferir_tela (`catalogo`, `cnpj`) e conferir_exe com uma fonte pública (leitura guardada, sem rede no CI)
 - [ ] T21 Guia e Manual (capítulo Dados públicos do Brasil, Escopo e limitações), prints das duas marcas, README, `contexto-ia.md`, versão 0.9.6, instaladores, publicar (RF-4991)
