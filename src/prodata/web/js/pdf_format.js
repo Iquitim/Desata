@@ -34,7 +34,8 @@ export function howText(rule) {
   if (rule.tipo === 'posicao') return `na mesma posição da página ${rule.pagina + 1}`;
   const where = rule.direcao === 'direita' ? 'à direita de' : 'abaixo de';
   const labels = rule.rotulos.map((r) => `“${r}”`).join(' ou ');
-  return rule.tipo === 'secao' ? `${where} ${labels}, dentro de “${rule.inicio[0]}”` : `${where} ${labels}`;
+  const words = rule.palavras ? `, só ${rule.palavras === 1 ? 'a primeira palavra' : `as ${rule.palavras} primeiras palavras`}` : '';
+  return rule.tipo === 'secao' ? `${where} ${labels}, dentro de “${rule.inicio[0]}”${words}` : `${where} ${labels}${words}`;
 }
 
 export const clone = (x) => JSON.parse(JSON.stringify(x));

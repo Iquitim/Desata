@@ -29,6 +29,9 @@ class LabelRule(_Model):
     rotulos: list[str] = Field(min_length=1)  # variações aceitas: "Total líquido", "Valor líquido"
     direcao: Literal["direita", "abaixo"] = "direita"
     distancia: float = Field(default=0.3, gt=0, le=1)  # até onde procurar o valor, em fração da página
+    # Quantas palavras o valor tem (0.9.6): "R$ 1.791.203 milhões" com o valor marcado "R$ 1.791.203" para em 2.
+    # O número pode crescer no mês seguinte e continua sendo uma palavra. Vazio = até a última palavra grudada.
+    palavras: int | None = Field(default=None, ge=1, le=60)
 
     @field_validator("rotulos")
     @classmethod

@@ -154,6 +154,8 @@ def _label_candidates(lines: Sequence[Line], rule: LabelRule) -> tuple[list[Cand
             if rule.direcao == "direita"
             else _below(hit, lines, index, rule.distancia)
         )
+        if rule.palavras:  # o valor tem só estas palavras: o que vem grudado depois ("milhões") fica de fora
+            words = words[: rule.palavras]
         if words:
             found.append(Candidate(_join(words), _origin(words), _origin(hit.words)))
     return found, len(hits)

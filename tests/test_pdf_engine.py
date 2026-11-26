@@ -130,6 +130,7 @@ def test_marcar_valor_propoe_campo_conferido(docs: dict) -> None:
         "rotulos": ["Total líquido"],
         "direcao": "direita",
         "distancia": 0.3,
+        "palavras": None,  # sem palavras grudadas depois do valor: sem limite
     }
     assert s["fragil"] is False and s["resultado"]["estado"] == ENCONTRADO
     assert s["resultado"]["valor"] == "834086.00"
@@ -415,3 +416,31 @@ def test_rotulo_proposto_ja_vem_com_curinga() -> None:
     rule = suggest_field(info, value)["campo"]["regra"]
     assert rule["tipo"] == "rotulo", rule
     assert rule["rotulos"] == ["a [mês] de [ano] a arrecadação alcançou"]
+
+
+# ------------------------------------------------------------------ valor com palavras grudadas depois (0.9.6)
+
+
+def test_valor_marcado_sem_as_palavras_grudadas_usa_o_rotulo() -> None:
+    """Marcar "R$ 1.791.203" em "... alcançou R$ 1.791.203 milhões" fica à direita do rótulo, só com 2 palavras,
+    em vez de cair na posição fixa da página."""
+    info = _sentence("a julho de 2026, a arrecadação alcançou R$ 1.791.203 milhões")
+    value = [w for w in info["words"] if w["t"] in ("R$", "1.791.203")]
+    proposal = suggest_field(info, value)
+    rule = proposal["campo"]["regra"]
+    assert rule["tipo"] == "rotulo" and rule["palavras"] == 2, proposal["explicacao"]
+    assert "só as 2 primeiras palavras" in proposal["explicacao"]
+    assert proposal["resultado"]["candidatos"][0]["texto"] == "R$ 1.791.203"
+    # No mês seguinte o número cresce, mas continua sendo uma palavra: o valor vem inteiro.
+    other = _sentence("a agosto de 2026, a arrecadação alcançou R$ 12.345.678.901 milhões")
+    spec = FieldSpec.model_validate(proposal["campo"])
+    field = extract(Recipe(id="x", nome="x", campos=[spec]), other).as_dict()["campos"][0]
+    assert field["estado"] == ENCONTRADO, field
+    assert Decimal(str(field["valor"])) == Decimal("12345678901")
+
+
+def test_regra_sem_limite_pega_todas_as_palavras_grudadas() -> None:
+    info = _sentence("Observação: entregue no prazo combinado")
+    spec = FieldSpec(nome="obs", tipo="texto", regra=LabelRule(rotulos=["Observação"]))
+    field = extract(Recipe(id="x", nome="x", campos=[spec]), info).as_dict()["campos"][0]
+    assert field["valor"] == "entregue no prazo combinado"

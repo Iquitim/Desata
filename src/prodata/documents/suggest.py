@@ -119,6 +119,16 @@ def suggest_field(info: dict[str, Any], selected: Sequence[dict[str, Any]]) -> d
         result = extract_field(prop["campo"], lines)
         hit = result.candidatos[0] if result.candidatos else None
         exact = hit is not None and normalize(hit.texto).endswith(normalize(text))
+        if not exact and hit is not None and normalize(hit.texto).startswith(normalize(text)):
+            # O rótulo achou o valor e mais palavras grudadas depois ("R$ 1.791.203 milhões"): a regra passa a
+            # pegar só as palavras marcadas, em vez de cair na posição fixa da página, que é frágil.
+            rule = prop["campo"].regra
+            rule = rule.model_copy(update={"palavras": len(chosen)})
+            prop = {**prop, "campo": prop["campo"].model_copy(update={"regra": rule}),
+                    "explicacao": f"{prop['explicacao']}, só as {len(chosen)} primeiras palavras"}  # fmt: skip
+            result = extract_field(prop["campo"], lines)
+            hit = result.candidatos[0] if result.candidatos else None
+            exact = hit is not None and normalize(hit.texto).endswith(normalize(text))
         if result.estado == ENCONTRADO and exact:
             return {**prop, "campo": prop["campo"].model_dump(mode="json"), "resultado": result.as_dict()}
     last = proposals[-1]
