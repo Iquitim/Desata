@@ -128,6 +128,17 @@
   .toc { columns: 3; column-gap: 14pt; font-size: 9.3pt; }
   .toc div { display: flex; gap: 8pt; padding: 4pt 0; border-bottom: 1px dotted var(--line); break-inside: avoid; }
   .toc span:first-child { color: var(--blue); font-weight: 700; width: 16pt; }
+  .toc-parts { columns: 2; column-gap: 18pt; }
+  .toc-part { break-inside: avoid; margin-bottom: 8pt; }
+  .toc-part b { display: block; padding: 3pt 0; font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-strong); }
+  /* Abertura de cada parte (0.9.6): onde a pessoa está e o que vem a seguir */
+  .part { break-before: page; padding-top: 70mm; }
+  .part-num { font-size: 10pt; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-strong); }
+  .part-title { margin: 4pt 0 8pt; font-size: 30pt; line-height: 1.1; color: var(--blue); }
+  .part-what { max-width: 120mm; font-size: 12pt; color: var(--ink-2); }
+  .part-list { list-style: none; margin: 16pt 0 0; padding: 0; max-width: 120mm; }
+  .part-list li { display: flex; gap: 10pt; padding: 6pt 0; border-bottom: 1px dotted var(--line); font-size: 11pt; }
+  .part-list li span { width: 18pt; color: var(--blue); font-weight: 700; }
   .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt; margin: 10pt 0; }
   .stat { border: 1px solid var(--line); border-radius: 7pt; padding: 9pt 10pt; }
   .stat b { display: block; font-size: 16pt; font-weight: 720; color: var(--blue); letter-spacing: -0.02em; }
@@ -206,7 +217,7 @@
     <div class="rule"></div>
     <p class="lead">Troque o copiar e colar por um processo visual, que se refaz com um clique e mostra de onde veio cada número. Sem programar, com tudo rodando no seu computador.</p>
     <div class="shot"><img src="../../src/prodata/web/manual/img/flow-crop.png" alt="Fluxo de dados no {{produto}}"></div>
-    <div class="meta"><span>Versão 0.9.5 · Windows</span><span>Novembro de 2026</span></div>
+    <div class="meta"><span>Versão 0.9.6 · Windows</span><span>Novembro de 2026</span></div>
   </div>
 </section>
 
@@ -232,45 +243,33 @@
     <div class="stat"><b>100%</b><span>do processamento no seu computador, sem nuvem</span></div>
   </div>
   <h3>Neste guia</h3>
-  <div class="toc">
-    <div><span>1</span>O que dá para resolver</div>
-    <div><span>2</span>Conhecendo a tela</div>
-    <div><span>3</span>Seu primeiro fluxo</div>
-    <div><span>4</span>Trazendo dados</div>
-    <div><span>5</span>Montando o fluxo</div>
-    <div><span>6</span>Cruzando e tratando textos</div>
-    <div><span>7</span>Dados que dá para confiar</div>
-    <div><span>8</span>Explorando os resultados</div>
-    <div><span>9</span>Indicadores e visuais</div>
-    <div><span>10</span>Montando o dashboard</div>
-    <div><span>11</span>Linha do tempo e história</div>
-    <div><span>12</span>Dados de APIs</div>
-    <div><span>13</span>Dados do Jira</div>
-    <div><span>14</span>Dados de PDFs</div>
-    <div><span>15</span>Do fluxo ao SQL</div>
-    <div><span>16</span>O fechamento que se refaz sozinho</div>
-    <div><span>17</span>Modelos de previsão</div>
-    <div><span>18</span>Organização</div>
-    <div><span>19</span>Compartilhar o fluxo</div>
-    <div><span>20</span>Trabalhar em equipe</div>
-    <div><span>21</span>Segurança e privacidade</div>
-    <div><span>22</span>Instalação e requisitos</div>
-    <div><span>23</span>Escopo e limitações</div>
-    <div><span>24</span>Todas as ferramentas</div>
-    <div><span>25</span>Atalhos e perguntas</div>
+  <div class="toc toc-parts">
+    <div class="toc-part"><b>Parte I · Começar</b><div><span>1</span>O que dá para resolver</div><div><span>2</span>Instalação e requisitos</div><div><span>3</span>Conhecendo a tela</div><div><span>4</span>Seu primeiro fluxo</div></div>
+    <div class="toc-part"><b>Parte II · Trazer dados</b><div><span>5</span>A vista Dados</div><div><span>6</span>Arquivos e pastas</div><div><span>7</span>Bancos de dados</div><div><span>8</span>Dados públicos do Brasil</div><div><span>9</span>Dados de APIs, sem programar</div><div><span>10</span>Dados do Jira, sem escrever JQL</div><div><span>11</span>Dados de PDFs, apontando no documento</div></div>
+    <div class="toc-part"><b>Parte III · Transformar</b><div><span>12</span>Montando o fluxo</div><div><span>13</span>Fórmulas e cálculos</div><div><span>14</span>Cruzando tabelas e tratando textos</div><div><span>15</span>Dados que dá para confiar</div></div>
+    <div class="toc-part"><b>Parte IV · Mostrar</b><div><span>16</span>Explorando os resultados</div><div><span>17</span>Indicadores e visuais</div><div><span>18</span>Montando o dashboard</div><div><span>19</span>Linha do tempo e história</div></div>
+    <div class="toc-part"><b>Parte V · Automatizar</b><div><span>20</span>O fechamento que se refaz sozinho</div><div><span>21</span>Levando a lógica para o banco</div><div><span>22</span>Modelos de previsão</div></div>
+    <div class="toc-part"><b>Parte VI · Trabalhar junto</b><div><span>23</span>Organização e personalização</div><div><span>24</span>Compartilhar o fluxo</div><div><span>25</span>Trabalhar em equipe</div></div>
+    <div class="toc-part"><b>Parte VII · Referência</b><div><span>26</span>Segurança e privacidade</div><div><span>27</span>Escopo e limitações</div><div><span>28</span>Todas as ferramentas</div><div><span>29</span>Atalhos e perguntas frequentes</div></div>
   </div>
 </section>
-
-<!-- ================================================================ 1. CASOS -->
+<!-- ================================================================ PARTE I -->
+<section class="part" data-part="Parte I · Começar">
+  <div class="part-num">Parte I</div>
+  <h1 class="part-title">Começar</h1>
+  <p class="part-what">Instalar, conhecer a tela e montar o primeiro fluxo em seis passos.</p>
+  <ol class="part-list"><li><span>1</span>O que dá para resolver</li><li><span>2</span>Instalação e requisitos</li><li><span>3</span>Conhecendo a tela</li><li><span>4</span>Seu primeiro fluxo</li></ol>
+</section>
+<!-- ================================================================ 1. O QUE DÁ PARA RESOLVER -->
 <section class="chapter">
-  <div class="eyebrow">1 · Na prática</div>
+  <div class="eyebrow">1 · Começar</div>
   <h2>O que dá para resolver</h2>
   <p class="intro">Situações comuns, e as ferramentas que resolvem cada uma. Todas aparecem no fluxo de demonstração que acompanha o programa.</p>
   <div class="grid-2">
     <div class="case"><h4>Fechamento que se refaz sozinho</h4><p>Vincule a planilha da pasta da rede e monte as regras uma vez. No mês seguinte, é só clicar em Executar: o {{produto}} percebe que o arquivo mudou e recalcula só o que depende dele.</p><small>Input Data · Formula · Summarize · Output Data</small></div>
     <div class="case"><h4>Cruzar bases sem perder linhas</h4><p>Clientes com vendas, metas com realizado. O Join separa o que casou do que ficou sem par de cada lado, então a linha que não encontrou correspondência aparece, em vez de sumir.</p><small>Join · Select · Data Cleansing</small></div>
     <div class="case"><h4>Confiar no número antes da reunião</h4><p>O perfil de cada coluna mostra vazios, valores distintos e espaços invisíveis. E, para explicar um total, basta clicar nas caixas e seguir o caminho do dado.</p><small>Perfil · Filtros · Browse</small></div>
-    <div class="case"><h4>Trazer dados de sistemas e da web</h4><p>Consulte bancos em modo somente leitura e leia APIs, inclusive uma chamada para cada linha da sua tabela, como buscar o detalhe de cada cliente.</p><small>Consultas de banco · APIs · API Loop</small></div>
+    <div class="case"><h4>Trazer dados de sistemas e do país</h4><p>Consulte bancos em modo somente leitura, leia APIs e use o catálogo de dados públicos: Selic, IPCA, dólar, municípios e o cadastro de empresas, direto do órgão, prontos para cruzar com os seus.</p><small>Consultas de banco · Dados públicos · APIs</small></div>
     <div class="case"><h4>Um relatório para mandar a quem decide</h4><p>Monte a página com KPIs, Pareto e Venn. Baixe em imagem para o e-mail ou em HTML, que abre sem o {{produto}} e mantém os filtros funcionando.</p><small>KPI Card · Chart · Venn · Dashboard</small></div>
     <div class="case"><h4>Passar a lógica ao time de dados</h4><p>A aba SQL escreve o que foi construído e confere etapa por etapa se o código dá o mesmo resultado. O protótipo vira especificação, sem reescrever do zero.</p><small>Aba SQL · .sql e .zip</small></div>
   </div>
@@ -286,12 +285,37 @@
     <div class="card"><h4>Ensina enquanto você usa</h4><p>Cross Tab, Join, Summarize e API Loop mostram um esquema do antes e depois com os seus próprios dados.</p></div>
   </div>
 </section>
-<!-- ================================================================ 2. TELA -->
+<!-- ================================================================ 2. INSTALAÇÃO E REQUISITOS -->
 <section class="chapter">
-  <div class="eyebrow">2 · Primeiros passos</div>
+  <div class="eyebrow">2 · Começar</div>
+  <h2>Instalação e requisitos</h2>
+  <h3>Duas formas de usar</h3>
+  <div class="grid-2">
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.6-setup.exe</code> (260 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.6-portable.zip</code> (347 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
+  </div>
+  <h3>Requisitos</h3>
+  <table>
+    <tr><th style="width:30%">Item</th><th>Requisito</th></tr>
+    <tr><td class="tool">Sistema</td><td>Windows 10 ou 11, 64 bits.</td></tr>
+    <tr><td class="tool">Componentes</td><td>WebView2 e .NET Framework 4.x — já presentes no Windows 11 e no Windows 10 atualizado. <strong>Não é preciso instalar Python.</strong></td></tr>
+    <tr><td class="tool">Espaço em disco</td><td>Cerca de 600 MB para o programa, mais o tamanho dos seus dados.</td></tr>
+    <tr><td class="tool">Memória</td><td>Os dados são processados em memória: reserve RAM compatível com o tamanho das suas tabelas (como regra prática, 3 a 5 vezes o tamanho dos arquivos).</td></tr>
+  </table>
+  <h3>Primeira execução</h3>
+  <div class="steps">
+    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 27): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
+    <div class="step"><div><h4>Explore o exemplo</h4><p>O fluxo de demonstração já vem pronto. Clique em <strong>Executar</strong>, clique nas caixas, abra o Dashboard e siga os quadros <strong>Experimente</strong> deste guia.</p></div></div>
+    <div class="step"><div><h4>Comece o seu</h4><p>Siga o capítulo 4 com um arquivo seu: envie na vista Dados e arraste para o canvas.</p></div></div>
+  </div>
+</section>
+<!-- ================================================================ 3. CONHECENDO A TELA -->
+<section class="chapter">
+  <div class="eyebrow">3 · Começar</div>
   <h2>Conhecendo a tela</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="executar">Mostrar o Executar</button><button type="button" class="manual-only m-act" data-show="tema">Mostrar o botão de tema</button></div>
-  <p class="intro">Uma tela só, dividida em áreas com papéis claros. Todos os painéis podem ser movidos ou ocultados (veja o capítulo 18).</p>
+  <p class="intro">Uma tela só, dividida em áreas com papéis claros. Todos os painéis podem ser movidos ou ocultados (veja o capítulo 23).</p>
   <figure>
     <div class="frame">
       <img src="../../src/prodata/web/manual/img/overview.png" alt="Tela principal do {{produto}}">
@@ -340,9 +364,9 @@
     <tr><td>Organizar um fluxo grande</td><td>Agrupa caixas numa etapa, recolhe a etapa e arruma o fluxo em colunas.</td></tr>
   </table>
 </section>
-<!-- ================================================================ 3. PRIMEIRO FLUXO -->
+<!-- ================================================================ 4. SEU PRIMEIRO FLUXO -->
 <section class="chapter">
-  <div class="eyebrow">3 · Mão na massa</div>
+  <div class="eyebrow">4 · Começar</div>
   <h2>Seu primeiro fluxo</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-try="primeiro">Abrir este fluxo pronto</button></div>
   <p class="intro">Uma pergunta real: <strong>quanto cada estado representa no faturamento mensal?</strong> Em seis passos, com os arquivos de exemplo que já vêm no programa.</p>
@@ -361,14 +385,27 @@
   <div class="callout ok"><strong>No mês seguinte</strong>Se o arquivo mudar, é só clicar em Executar. Nada precisa ser refeito: é essa a diferença para a planilha.</div>
   <p><strong>Agora veja um fluxo completo.</strong> O exemplo <em>Pipeline 360° de clientes</em> vem pronto, separado em etapas, e os próximos capítulos o usam nos quadros <strong>Experimente</strong>. Para treinar com a tela guiando cada passo, abra as <strong>lições guiadas</strong>, no começo do Manual (<kbd>F1</kbd>).</p>
 </section>
-<!-- ================================================================ 4. DADOS -->
+<!-- ================================================================ PARTE II -->
+<section class="part" data-part="Parte II · Trazer dados">
+  <div class="part-num">Parte II</div>
+  <h1 class="part-title">Trazer dados</h1>
+  <p class="part-what">De onde vêm os dados: arquivos e pastas, bancos, dados públicos do Brasil, APIs, Jira e PDFs.</p>
+  <ol class="part-list"><li><span>5</span>A vista Dados</li><li><span>6</span>Arquivos e pastas</li><li><span>7</span>Bancos de dados</li><li><span>8</span>Dados públicos do Brasil</li><li><span>9</span>Dados de APIs, sem programar</li><li><span>10</span>Dados do Jira, sem escrever JQL</li><li><span>11</span>Dados de PDFs, apontando no documento</li></ol>
+</section>
+<!-- ================================================================ 5. A VISTA DADOS -->
 <section class="chapter">
-  <div class="eyebrow">4 · Entrada de dados</div>
-  <h2>Trazendo dados</h2>
-  <div class="goal"><b>Ao final:</b> <span>você sabe onde ficam as suas fontes, onde cada uma é usada, como ler arquivos e bancos, e como trocar um valor em vários fluxos de uma vez.</span></div>
+  <div class="eyebrow">5 · Trazer dados</div>
+  <h2>A vista Dados</h2>
+  <p class="intro">Tudo o que um fluxo lê fica na vista Dados: arquivos, pastas, bancos, dados públicos, APIs, Jira, PDFs e constantes. Você cadastra uma vez e usa em quantos fluxos quiser.</p>
+  <div class="goal"><b>Ao final:</b> <span>você sabe onde ficam as suas fontes, onde cada uma é usada, como organizar em pastas, como escolher a fonte no fluxo e como trocar um valor em vários fluxos de uma vez.</span></div>
   <h3>A vista Dados</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="vista_dados">Mostrar onde fica</button></div>
-  <p>A primeira tela da barra superior reúne tudo o que os fluxos leem: <strong>arquivos, consultas de banco, APIs, conexões e constantes</strong>. Você cadastra uma vez e usa em quantos fluxos quiser. Cada cartão mostra a situação da fonte (ok, vinculado, falta senha, não encontrado) e em quantos fluxos ela é usada. O botão <strong>Adicionar</strong> cria qualquer uma delas.</p>
+  <p>A primeira tela da barra superior reúne tudo o que os fluxos leem: <strong>arquivos e pastas, consultas de banco, dados públicos do Brasil, APIs, consultas do Jira, leitores de PDF, conexões e constantes</strong>. Você cadastra uma vez e usa em quantos fluxos quiser. Cada cartão mostra a situação da fonte (ok, vinculado, falta senha, não encontrado) e em quantos fluxos ela é usada. O botão <strong>Adicionar</strong> cria qualquer uma delas.</p>
+  <p><strong>Comece por aqui.</strong> Sem nenhuma fonte aberta, a vista mostra as seis origens, cada uma com um esquema do caminho do dado e o botão para começar. Os próximos capítulos detalham cada uma.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dados-comece.png" alt="Comece por aqui com as seis origens de dados"></div>
+    <figcaption>Arquivo ou pasta, dados públicos, banco, API, PDF e Jira: de onde vêm os seus dados.</figcaption>
+  </figure>
   <figure>
     <div class="frame"><img src="../../src/prodata/web/manual/img/dados-vista.png" alt="Vista Dados com um arquivo aberto"></div>
     <figcaption>Um arquivo aberto na vista Dados: números, prévia das primeiras linhas e a qualidade de cada coluna.</figcaption>
@@ -404,50 +441,6 @@
     <figcaption>Nome, cor e a prévia de como a pasta vai aparecer.</figcaption>
   </figure>
   <div class="callout ok"><strong>Só a tela muda</strong>Pastas, nomes de exibição e descrições ficam neste computador, junto com as fontes, e não entram nos fluxos. Excluir uma pasta devolve as fontes para <em>Sem pasta</em>: nenhuma fonte é apagada e nenhum fluxo muda.</div>
-  <h3>Arquivos</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="adicionar_fonte">Mostrar onde fica</button></div>
-  <p>Envie arquivos pela vista <strong>Dados</strong>, em <strong>Adicionar</strong>, ou solte-os direto no canvas. Antes de usar, a <strong>prévia</strong> mostra o que foi detectado e as primeiras linhas — e qualquer ajuste aparece na hora.</p>
-  <p><strong>Enviar ou vincular?</strong> Enviar faz uma <em>cópia</em> do arquivo. Para uma planilha que é atualizada todo dia numa pasta da rede ou no OneDrive, use <strong>Vincular arquivo</strong>: o {{produto}} lê o original onde ele está, sem copiar. A cada execução, se o arquivo mudou, ele é relido e só o que depende dele roda de novo; a vista Dados e o Configurar mostram quando o arquivo foi modificado e avisam se ele foi movido ou renomeado. O {{produto}} nunca grava no arquivo vinculado.</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/preview-crop.png" alt="Prévia de arquivo com detecção automática"></div>
-    <figcaption>Um CSV no padrão brasileiro (ponto e vírgula, vírgula decimal, Windows-1252) reconhecido sem nenhuma configuração.</figcaption>
-  </figure>
-  <table>
-    <tr><th>Formato</th><th>Detalhes</th></tr>
-    <tr><td class="tool">CSV / TXT / TSV</td><td>Detecta separador (<code>,</code> <code>;</code> tabulação <code>|</code>), codificação (UTF-8, Windows-1252, ISO-8859-1) e separador decimal. Permite pular linhas, definir valores nulos e cabeçalho.</td></tr>
-    <tr><td class="tool">Excel</td><td><code>.xlsx</code>, <code>.xls</code>, <code>.xlsm</code> e <code>.xlsb</code>, com escolha da aba.</td></tr>
-    <tr><td class="tool">Parquet · Arrow</td><td>Formatos analíticos de alto desempenho.</td></tr>
-    <tr><td class="tool">JSON · JSON Lines</td><td>Lista de registros ou um registro por linha (detectado automaticamente).</td></tr>
-    <tr><td class="tool">Tabela digitada</td><td>A ferramenta <em>Text Input</em> oferece uma grade para digitar ou colar do Excel (tabelas de-para, metas, parâmetros).</td></tr>
-    <tr><td class="tool">Pasta inteira</td><td>Cadastre uma <strong>pasta de arquivos</strong> na vista Dados: todos os arquivos que casam com um padrão de nome, como <code>vendas_*.xlsx</code>, viram uma tabela só. Veja abaixo.</td></tr>
-    <tr><td class="tool">Linhas geradas</td><td>A ferramenta <em>Generate Rows</em> cria um calendário entre duas datas ou números em sequência, sem ler arquivo.</td></tr>
-  </table>
-  <h3>Uma pasta inteira</h3>
-  <p>No fechamento, os arquivos chegam um por filial ou um por dia. Em vez de cadastrar um por um, em <strong>Adicionar</strong> escolha <strong>Pasta de arquivos</strong>, informe a pasta e o padrão do nome, como <code>vendas_*.xlsx</code> (<code>*</code> vale qualquer trecho), e escolha o que fazer com os arquivos:</p>
-  <table>
-    <tr><th>Opção</th><th>O que faz</th><th>Quando usar</th></tr>
-    <tr><td class="tool">Uma tabela só</td><td>Empilha todos os arquivos numa fonte, com as colunas alinhadas pelo nome. Os arquivos que chegarem depois entram sozinhos.</td><td>Arquivos com as mesmas colunas: um por filial, por dia ou por mês.</td></tr>
-    <tr><td class="tool">Um por arquivo</td><td>Cada arquivo vira uma fonte separada, vinculada onde está, e todas ficam juntas numa pasta da organização. Vale para os arquivos de hoje.</td><td>Arquivos diferentes entre si, como cadastros e relatórios de assuntos distintos.</td></tr>
-  </table>
-  <p>Enquanto você digita, o cadastro desenha o que vai acontecer e lista os arquivos. Se os arquivos tiverem colunas diferentes, ele sugere <em>Um por arquivo</em>; arquivos que já estão vinculados aparecem marcados e não são vinculados de novo.</p>
-  <figure>
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta-separados.png" alt="Cadastro no modo Um por arquivo"></div>
-    <figcaption>Em <em>Um por arquivo</em>, a lista mostra as fontes que serão criadas e a pasta da organização onde elas vão ficar.</figcaption>
-  </figure>
-  <p><strong>Uma tabela só, no fluxo.</strong> A pasta entra pelo <em>Input Data</em>, como qualquer fonte. A coluna <code>arquivo</code> diz de onde veio cada linha; coluna que falta num arquivo fica vazia, e a vista Dados e a caixa avisam quais arquivos destoam. A pasta é lida onde está: o {{produto}} nunca grava, move ou apaga nada nela, e o limite é de 500 arquivos. Se ela sumir ou nenhum arquivo casar, o cartão avisa e a fonte entra no filtro <em>Com problema</em>.</p>
-  <figure>
-    <div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta.png" alt="Pasta de arquivos aberta na vista Dados"></div>
-    <figcaption>A pasta aberta: os arquivos que entram, o que tem colunas diferentes, a qualidade das colunas e a prévia já empilhada.</figcaption>
-  </figure>
-  <h3>Bancos de dados</h3>
-  <p>Cadastre conexões com <strong>PostgreSQL</strong>, <strong>SQL Server</strong> ou <strong>ODBC</strong> e teste com um clique. Depois, na própria vista <strong>Dados</strong>, crie <strong>consultas de banco</strong>: escolha uma tabela da lista ou escreva o SQL, veja a prévia e dê um nome. A consulta fica ao lado dos arquivos e é usada exatamente como eles: arraste para o canvas ou escolha no <em>Input Data</em>, a mesma ferramenta que lê arquivos.</p>
-  <figure class="m50" style="max-width:40%">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/connection-crop.png" alt="Cadastro de conexão com banco de dados"></div>
-    <figcaption>A senha vai para o Gerenciador de Credenciais do Windows — nunca para arquivos do projeto.</figcaption>
-  </figure>
-  <div class="callout ok"><strong>Seguro por padrão</strong>As conexões são somente leitura: apenas consultas de leitura (<code>SELECT</code>/<code>WITH</code>) são aceitas, e comandos que alteram dados são recusados antes de chegar ao banco. Por padrão, cada execução consulta o banco de novo; a opção "Reaproveitar resultado" evita consultas repetidas quando os dados não mudam.</div>
-  <p><strong>Outros bancos, por ODBC.</strong> Oracle, MySQL e a maioria dos ERPs têm driver ODBC. Crie a fonte de dados em <em>Fontes de Dados ODBC (64 bits)</em>, no Windows, e informe no {{produto}} só o nome dela (o DSN), com usuário e senha se o banco pedir. A senha fica no cofre, e a conexão continua somente leitura. Esta versão foi conferida com um driver local de teste: em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado que você conhece.</p>
-
   <h3>Escolher a fonte no Input Data</h3>
   <div class="side">
     <div>
@@ -483,15 +476,420 @@
   </figure>
   <div class="callout ok"><strong>Só refaz o que usa a constante</strong>Ao mudar o valor, só as caixas que usam a constante (e as que vêm depois delas) são executadas de novo. O fluxo guarda o valor de cada compartilhada que usa: enviado a outra pessoa, ele roda com esse valor e avisa que a constante não está cadastrada no computador dela.</div>
 
-  <div class="try"><strong>Experimente</strong><ol><li>Abra a vista <strong>Dados</strong> e clique em <code>metas_regionais_br.csv</code>.</li><li>Veja na prévia o que foi detectado sozinho: separador, codificação e decimal.</li><li>Abra <em>Onde é usada</em>: o mapa mostra as caixas do exemplo que dependem dele.</li><li>Em <strong>Adicionar → Pasta de arquivos</strong>, aponte para uma pasta sua com vários arquivos e alterne entre <em>Uma tabela só</em> e <em>Um por arquivo</em>: o desenho e a lista mostram o que cada opção faz antes de você confirmar. Nada é criado até você clicar no botão.</li></ol></div>
+  <div class="try"><strong>Experimente</strong><ol><li>Abra a vista <strong>Dados</strong> e clique em <code>metas_regionais_br.csv</code>.</li><li>Abra <em>Onde é usada</em>: o mapa mostra as caixas do exemplo que dependem dele.</li><li>Crie uma pasta <em>Metas</em> e arraste o arquivo até ela: nenhum fluxo muda.</li></ol></div>
 </section>
-<!-- ================================================================ 5. FLUXO -->
+<!-- ================================================================ 6. ARQUIVOS E PASTAS -->
 <section class="chapter">
-  <div class="eyebrow">5 · Ferramentas</div>
+  <div class="eyebrow">6 · Trazer dados</div>
+  <h2>Arquivos e pastas</h2>
+  <p class="intro">Planilhas, CSVs e arquivos de sistemas antigos, um de cada vez ou uma pasta inteira. O {{produto}} reconhece sozinho o formato brasileiro e mostra o que entendeu antes de você usar.</p>
+  <div class="goal"><b>Ao final:</b> <span>você envia ou vincula um arquivo, confere a leitura na prévia e transforma a pasta do mês numa tabela só, que se atualiza sozinha.</span></div>
+  <h3>Arquivos</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="adicionar_fonte">Mostrar onde fica</button></div>
+  <p>Envie arquivos pela vista <strong>Dados</strong>, em <strong>Adicionar</strong>, ou solte-os direto no canvas. Antes de usar, a <strong>prévia</strong> mostra o que foi detectado e as primeiras linhas — e qualquer ajuste aparece na hora.</p>
+  <p><strong>Enviar ou vincular?</strong> Enviar faz uma <em>cópia</em> do arquivo. Para uma planilha que é atualizada todo dia numa pasta da rede ou no OneDrive, use <strong>Vincular arquivo</strong>: o {{produto}} lê o original onde ele está, sem copiar. A cada execução, se o arquivo mudou, ele é relido e só o que depende dele roda de novo; a vista Dados e o Configurar mostram quando o arquivo foi modificado e avisam se ele foi movido ou renomeado. O {{produto}} nunca grava no arquivo vinculado.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/preview-crop.png" alt="Prévia de arquivo com detecção automática"></div>
+    <figcaption>Um CSV no padrão brasileiro (ponto e vírgula, vírgula decimal, Windows-1252) reconhecido sem nenhuma configuração.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Formato</th><th>Detalhes</th></tr>
+    <tr><td class="tool">CSV / TXT / TSV</td><td>Detecta separador (<code>,</code> <code>;</code> tabulação <code>|</code>), codificação (UTF-8, Windows-1252, ISO-8859-1) e separador decimal. Permite pular linhas, definir valores nulos e cabeçalho.</td></tr>
+    <tr><td class="tool">Excel</td><td><code>.xlsx</code>, <code>.xls</code>, <code>.xlsm</code> e <code>.xlsb</code>, com escolha da aba.</td></tr>
+    <tr><td class="tool">Parquet · Arrow</td><td>Formatos analíticos de alto desempenho.</td></tr>
+    <tr><td class="tool">JSON · JSON Lines</td><td>Lista de registros ou um registro por linha (detectado automaticamente).</td></tr>
+    <tr><td class="tool">Tabela digitada</td><td>A ferramenta <em>Text Input</em> oferece uma grade para digitar ou colar do Excel (tabelas de-para, metas, parâmetros).</td></tr>
+    <tr><td class="tool">Pasta inteira</td><td>Cadastre uma <strong>pasta de arquivos</strong> na vista Dados: todos os arquivos que casam com um padrão de nome, como <code>vendas_*.xlsx</code>, viram uma tabela só. Veja abaixo.</td></tr>
+    <tr><td class="tool">Linhas geradas</td><td>A ferramenta <em>Generate Rows</em> cria um calendário entre duas datas ou números em sequência, sem ler arquivo.</td></tr>
+  </table>
+  <div class="callout ok"><strong>Zeros à esquerda ficam</strong>CEP, CNPJ, código de município e matrícula com zero na frente chegam inteiros. O {{produto}} confere o arquivo todo, não só as primeiras linhas: uma coluna de números com algum valor que começa com zero, ou com 12 dígitos ou mais, é lida como texto, com um aviso na prévia e na caixa.</div>
+  <h3>Uma pasta inteira</h3>
+  <p>No fechamento, os arquivos chegam um por filial ou um por dia. Em vez de cadastrar um por um, em <strong>Adicionar</strong> escolha <strong>Pasta de arquivos</strong>, informe a pasta e o padrão do nome, como <code>vendas_*.xlsx</code> (<code>*</code> vale qualquer trecho), e escolha o que fazer com os arquivos:</p>
+  <table>
+    <tr><th>Opção</th><th>O que faz</th><th>Quando usar</th></tr>
+    <tr><td class="tool">Uma tabela só</td><td>Empilha todos os arquivos numa fonte, com as colunas alinhadas pelo nome. Os arquivos que chegarem depois entram sozinhos.</td><td>Arquivos com as mesmas colunas: um por filial, por dia ou por mês.</td></tr>
+    <tr><td class="tool">Um por arquivo</td><td>Cada arquivo vira uma fonte separada, vinculada onde está, e todas ficam juntas numa pasta da organização. Vale para os arquivos de hoje.</td><td>Arquivos diferentes entre si, como cadastros e relatórios de assuntos distintos.</td></tr>
+  </table>
+  <p>Enquanto você digita, o cadastro desenha o que vai acontecer e lista os arquivos. Se os arquivos tiverem colunas diferentes, ele sugere <em>Um por arquivo</em>; arquivos que já estão vinculados aparecem marcados e não são vinculados de novo.</p>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta-separados.png" alt="Cadastro no modo Um por arquivo"></div>
+    <figcaption>Em <em>Um por arquivo</em>, a lista mostra as fontes que serão criadas e a pasta da organização onde elas vão ficar.</figcaption>
+  </figure>
+  <p><strong>Uma tabela só, no fluxo.</strong> A pasta entra pelo <em>Input Data</em>, como qualquer fonte. A coluna <code>arquivo</code> diz de onde veio cada linha; coluna que falta num arquivo fica vazia, e a vista Dados e a caixa avisam quais arquivos destoam. A pasta é lida onde está: o {{produto}} nunca grava, move ou apaga nada nela, e o limite é de 500 arquivos. Se ela sumir ou nenhum arquivo casar, o cartão avisa e a fonte entra no filtro <em>Com problema</em>.</p>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta.png" alt="Pasta de arquivos aberta na vista Dados"></div>
+    <figcaption>A pasta aberta: os arquivos que entram, o que tem colunas diferentes, a qualidade das colunas e a prévia já empilhada.</figcaption>
+  </figure>
+  <h3>A pasta do mês, todo mês</h3>
+  <p>Cadastre a pasta do mês uma vez, na vista Dados, como <strong>Pasta de arquivos</strong> na opção <em>Uma tabela só</em>, e leia com o <em>Input Data</em>. No mês seguinte, basta os arquivos novos chegarem.</p>
+  <ul>
+    <li>Arquivo novo, removido ou alterado: a caixa refaz sozinha na execução seguinte, também pela linha de comando.</li>
+    <li>Sem mudança na pasta, a execução aproveita o resultado guardado.</li>
+    <li>A mesma pasta serve a vários fluxos, aparece no mapa de uso e avisa quando some.</li>
+    <li>Num computador sem o cadastro, a caixa explica que a pasta precisa ser cadastrada na vista Dados.</li>
+  </ul>
+  <figure class="m80"><div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta-cadastro.png" alt="Cadastro de uma pasta de arquivos"></div><figcaption>Enquanto você digita, a lista mostra os arquivos que entram e marca o que tem colunas diferentes.</figcaption></figure>
+  <div class="callout tip"><strong>Já usa a caixa Input Folder?</strong>Ela saiu da paleta, mas os fluxos que a usam continuam executando igual. No Configurar dela, <strong>Levar para a vista Dados</strong> cadastra a pasta com a mesma configuração e troca a caixa por um Input Data, no mesmo lugar e com os mesmos fios.</div>
+  <div class="try"><strong>Experimente</strong><ol><li>Na vista <strong>Dados</strong>, clique em <code>metas_regionais_br.csv</code> e veja na prévia o que foi detectado sozinho: separador, codificação e decimal.</li><li>Em <strong>Adicionar → Pasta de arquivos</strong>, aponte para uma pasta sua com vários arquivos e alterne entre <em>Uma tabela só</em> e <em>Um por arquivo</em>: o desenho e a lista mostram o que cada opção faz antes de você confirmar. Nada é criado até você clicar no botão.</li></ol></div>
+</section>
+<!-- ================================================================ 7. BANCOS DE DADOS -->
+<section class="chapter">
+  <div class="eyebrow">7 · Trazer dados</div>
+  <h2>Bancos de dados</h2>
+  <p class="intro">O {{produto}} consulta PostgreSQL, SQL Server e qualquer banco com driver ODBC, sempre só para leitura. A consulta vira uma fonte, usada no fluxo como um arquivo.</p>
+  <div class="goal"><b>Ao final:</b> <span>você cadastra a conexão uma vez, com a senha no cofre do Windows, e cria as consultas que os fluxos usam.</span></div>
+  <h3>Conectar e consultar</h3>
+  <p>Cadastre conexões com <strong>PostgreSQL</strong>, <strong>SQL Server</strong> ou <strong>ODBC</strong> e teste com um clique. Depois, na própria vista <strong>Dados</strong>, crie <strong>consultas de banco</strong>: escolha uma tabela da lista ou escreva o SQL, veja a prévia e dê um nome. A consulta fica ao lado dos arquivos e é usada exatamente como eles: arraste para o canvas ou escolha no <em>Input Data</em>, a mesma ferramenta que lê arquivos.</p>
+  <figure class="m50" style="max-width:40%">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/connection-crop.png" alt="Cadastro de conexão com banco de dados"></div>
+    <figcaption>A senha vai para o Gerenciador de Credenciais do Windows — nunca para arquivos do projeto.</figcaption>
+  </figure>
+  <div class="callout ok"><strong>Seguro por padrão</strong>As conexões são somente leitura: apenas consultas de leitura (<code>SELECT</code>/<code>WITH</code>) são aceitas, e comandos que alteram dados são recusados antes de chegar ao banco. Por padrão, cada execução consulta o banco de novo; a opção "Reaproveitar resultado" evita consultas repetidas quando os dados não mudam.</div>
+  <p><strong>Outros bancos, por ODBC.</strong> Oracle, MySQL e a maioria dos ERPs têm driver ODBC. Crie a fonte de dados em <em>Fontes de Dados ODBC (64 bits)</em>, no Windows, e informe no {{produto}} só o nome dela (o DSN), com usuário e senha se o banco pedir. A senha fica no cofre, e a conexão continua somente leitura. Esta versão foi conferida com um driver local de teste: em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado que você conhece.</p>
+
+</section>
+<!-- ================================================================ 8. DADOS PÚBLICOS DO BRASIL -->
+<section class="chapter">
+  <div class="eyebrow">8 · Trazer dados</div>
+  <h2>Dados públicos do Brasil</h2>
+  <p class="intro">Selic, IPCA, dólar, municípios, feriados, contas públicas, comércio exterior e o cadastro de empresas: o {{produto}} traz um catálogo com as fontes oficiais do país, prontas para usar. Sem cadastrar API, sem token e sem planilha baixada à mão: a leitura vai direto ao órgão.</p>
+  <div class="goal"><b>Ao final:</b> <span>você acha uma fonte no catálogo, confere a prévia, usa no fluxo, cita a origem no dashboard e corrige valores pela inflação ou converte pelo dólar com um clique.</span></div>
+  <h3>O catálogo</h3>
+  <div class="steps">
+    <div class="step"><div><h4>Abra o catálogo</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Dados públicos do Brasil</strong>. Na primeira vez, ele lê a lista de fontes de cada órgão; os destaques já funcionam antes disso.</p></div></div>
+    <div class="step"><div><h4>Procure</h4><p>Pelo menu de categorias (economia, preços, câmbio, território, empresas, calendário, contas públicas…), pelos portais de dados abertos ou pela busca, que não liga para acento: <em>ipca</em>, <em>municipios</em>, <em>432</em>, <em>cnpj</em>.</p></div></div>
+    <div class="step"><div><h4>Leia o selo</h4><p><strong>Pronto</strong> são as fontes conferidas uma a uma, com as colunas explicadas. <strong>Leitura automática</strong> são os conjuntos dos portais, lidos como vierem: a prévia é obrigatória antes de usar.</p></div></div>
+  </div>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/catalogo-abertura.png" alt="Catálogo Dados públicos do Brasil com categorias, busca e cartões"></div>
+    <figcaption>Categorias e portais à esquerda, os cartões no meio e o detalhe à direita. O ponto colorido diz como está cada órgão agora.</figcaption>
+  </figure>
+  <table>
+    <tr><th>Origem</th><th>Exemplos</th></tr>
+    <tr><td class="tool">Banco Central</td><td>Selic, CDI, as séries do SGS pelo código, a PTAX do dólar e de outras moedas, as expectativas do mercado (Focus) e os conjuntos do portal de dados abertos</td></tr>
+    <tr><td class="tool">IBGE</td><td>IPCA, INPC, PIB dos municípios, população, desocupação; regiões, estados e os 5.571 municípios com códigos de 7 e de 6 dígitos</td></tr>
+    <tr><td class="tool">Outros órgãos</td><td>Ipeadata (qualquer série, pela busca), Tesouro Direto, Siconfi (contas de estados e municípios), Comex Stat (exportações e importações) e o CNPJ da Receita</td></tr>
+    <tr><td class="tool">Portais de dados abertos</td><td>ANEEL, CVM, IBAMA, TSE, estados e prefeituras: milhares de conjuntos, com o arquivo escolhido na hora</td></tr>
+    <tr><td class="tool">Calendário</td><td>Feriados nacionais, estaduais, das capitais e bancários, e os dias úteis de qualquer local</td></tr>
+  </table>
+  <h3>O detalhe de uma fonte</h3>
+  <div class="side">
+    <div>
+      <p>Clique num cartão e o detalhe abre ao lado, com tudo o que você precisa saber antes de usar:</p>
+      <ul>
+        <li><strong>Período</strong> e <strong>última atualização</strong> informados pelo próprio órgão, conferidos na hora.</li>
+        <li>As <strong>colunas explicadas</strong> em português: o que cada uma significa e a unidade.</li>
+        <li>As <strong>escolhas</strong> da fonte: período (os últimos anos, desde uma data ou um intervalo), variável, local ou moeda.</li>
+        <li>A <strong>prévia</strong>: as últimas linhas, lidas do órgão com as suas escolhas.</li>
+        <li><strong>Como citar</strong> e a licença de uso.</li>
+        <li>A situação do órgão: <strong>No ar</strong>, <strong>Lenta</strong> ou <strong>Fora do ar desde…</strong>, com os últimos 30 dias.</li>
+      </ul>
+      <p><strong>Adicionar ao fluxo</strong> cria a caixa já configurada. <strong>À vista Dados</strong> guarda a fonte com as escolhas, para usar em vários fluxos. A estrela leva a fonte para <em>Favoritos</em>.</p>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/catalogo-detalhe.png" alt="Detalhe da Taxa Selic com período, colunas, prévia e citação"></div><figcaption>A Selic diária: o último dado, as colunas, a prévia lida agora e como citar.</figcaption></figure>
+  </div>
+  <h3>No fluxo: a caixa Dados públicos</h3>
+  <p>A caixa <strong>Dados públicos</strong> lê a fonte a cada execução, direto do órgão, pelo mesmo caminho da prévia. No Configurar, um cartão diz em palavras o que ela lê; <strong>Trocar a fonte ou as escolhas</strong> reabre o catálogo na mesma fonte.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/caixa-publica.png" alt="Caixa Dados públicos no canvas e o cartão no Configurar"></div>
+    <figcaption>A caixa no fluxo e o cartão no Configurar: a fonte, o órgão e o período.</figcaption>
+  </figure>
+  <div class="grid-3">
+    <div class="card"><h4>Período que anda sozinho</h4><p>"Os últimos 5 anos" é calculado na hora de executar: no agendamento, sempre os dados mais recentes.</p></div>
+    <div class="card"><h4>Órgão fora do ar</h4><p>A caixa usa a última leitura guardada da mesma consulta e avisa: "Banco Central fora do ar: usando os dados lidos em…". Para falhar em vez disso, ligue <strong>Exigir dados atuais</strong>.</p></div>
+    <div class="card"><h4>O fluxo guarda pouco</h4><p>Só a fonte e as escolhas vão no arquivo do fluxo: nada de endereço montado nem de dados. Quem recebe o fluxo lê do órgão no próprio computador.</p></div>
+  </div>
+  <h3>Portais de dados abertos</h3>
+  <div class="side">
+    <div>
+      <p>Num portal, cada conjunto tem vários arquivos: escolha um e confira a <strong>prévia obrigatória</strong>, com o separador, a codificação e as colunas que o {{produto}} entendeu. Só depois de conferir dá para adicionar.</p>
+      <p>A cada execução, a caixa confere se o órgão mudou o arquivo. Se uma coluna sumiu ou mudou de tipo, ela para com o motivo ("O órgão mudou o arquivo: saiu a coluna valor_pago") e oferece <strong>Aceitar o novo formato</strong> depois que você conferir.</p>
+      <p>Arquivos grandes demais para ler na hora, PDFs e páginas da web aparecem com <strong>Abrir no navegador</strong> e o motivo.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/catalogo-portal.png" alt="Conjunto de um portal de dados abertos com a prévia do arquivo"></div><figcaption>Um conjunto da ANEEL: o arquivo escolhido e a prévia conferida antes de usar.</figcaption></figure>
+  </div>
+  <h3>Feriados e dias úteis</h3>
+  <div class="side">
+    <div>
+      <p>Os feriados nacionais são calculados pelo próprio programa, com a Páscoa e as datas móveis; os estaduais e os das capitais vêm de uma tabela revisada; os bancários, da ANBIMA. A fonte <strong>Dias úteis</strong> desconta tudo isso, para qualquer município.</p>
+      <p><strong>Editar feriados</strong> deixa você incluir o feriado da sua cidade, corrigir uma data ou dizer que um feriado não vale mais. A edição mostra a origem de cada linha (lei, tabela do programa ou sua) e fica por cima da tabela do programa: uma atualização não apaga o que você mudou.</p>
+      <p>Num espaço da equipe, a lista de feriados também pode ser compartilhada: os fluxos do espaço usam a da equipe.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/feriados-editor.png" alt="Editor de feriados com a origem de cada um"></div><figcaption>Os feriados de São Paulo em 2027, com a origem de cada um e o seu, cadastrado por cima.</figcaption></figure>
+  </div>
+  <h3>Na vista Dados e o aviso de dados novos</h3>
+  <p>As fontes guardadas com <strong>À vista Dados</strong> ficam na pasta <strong>Dados públicos</strong>, com a última leitura neste computador, a situação do órgão e os fluxos que as usam. Quando o órgão publica algo mais novo que a última leitura, a fonte e a caixa no canvas ganham o aviso <strong>Dados novos</strong>, com a data. A conferência acontece só quando o catálogo está aberto: abrir a vista Dados não acessa a internet.</p>
+  <div class="grid-2">
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/pasta-publica.png" alt="Pasta Dados públicos na vista Dados com o aviso Dados novos"></div><figcaption>A fonte guardada, com o aviso e o que muda na próxima execução.</figcaption></figure>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/dados-novos-caixa.png" alt="Caixa no canvas com o selo Dados novos"></div><figcaption>No canvas, o selo discreto na caixa. Executar lê de novo e o selo some.</figcaption></figure>
+  </div>
+  <h3>De onde veio cada número</h3>
+  <p>O <strong>Perfil</strong> da caixa mostra a fonte, quando foi lida, como citar e o significado de cada coluna; a mesma frase aparece na dica do cabeçalho em <strong>Resultado</strong>. No <strong>Dashboard</strong>, a citação entra sozinha no rodapé, na imagem e no HTML exportado: "Fonte: Banco Central do Brasil, SGS 11 — Taxa Selic diária; IBGE, tabela 1737 — IPCA. Lidos em 25/11/2026", com a licença que pede atribuição logo abaixo. <strong>Ocultar</strong> tira a citação do dashboard e das exportações.</p>
+  <div class="grid-2">
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/perfil-fonte.png" alt="Perfil com a fonte, a citação e o significado das colunas"></div><figcaption>No Perfil, a fonte e o significado de cada coluna.</figcaption></figure>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/dash-citacao.png" alt="Rodapé do dashboard com a citação das fontes"></div><figcaption>No dashboard, a citação das duas fontes, com a data da leitura.</figcaption></figure>
+  </div>
+  <h3>Usar com um clique: inflação, dólar e municípios</h3>
+  <p>No <strong>Resultado</strong>, o botão direito no cabeçalho de uma coluna oferece receitas prontas. Cada uma insere caixas comuns numa etapa nomeada, logo depois da caixa: dá para abrir e mudar cada uma, e um <strong>Desfazer</strong> tira tudo de uma vez.</p>
+  <table>
+    <tr><th>Receita</th><th>O que faz</th><th>Onde aparece</th></tr>
+    <tr><td class="tool">Corrigir valores pelo IPCA</td><td>Leva cada valor para o mês de referência (o mais recente publicado, a cada execução, ou um mês escolhido): valor × índice de referência ÷ índice do mês. Mês ainda sem IPCA fica vazio, sem a linha sumir.</td><td>Coluna de número</td></tr>
+    <tr><td class="tool">Converter para dólar pela PTAX</td><td>Divide pela PTAX de venda (fechamento) do dia ou, sem cotação nesse dia, do último dia útil anterior. O Join avisa quantas linhas usaram o dia anterior.</td><td>Coluna de número</td></tr>
+    <tr><td class="tool">Juntar com municípios do IBGE</td><td>Casa código de 7 dígitos, de 6 ou nome com UF ("São Paulo/SP", "Sao Paulo - SP"), sem diferenciar acento e maiúsculas. Mostra antes quantas linhas casam e lista as que não casam, com o motivo.</td><td>Coluna que parece município</td></tr>
+  </table>
+  <div class="grid-2">
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/receita-ipca.png" alt="Diálogo Corrigir valores pelo IPCA"></div><figcaption>A receita do IPCA: o esquema do que entra, a coluna de valor, a de data e o mês de referência.</figcaption></figure>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/municipios-conferencia.png" alt="Conferência da junção com os municípios do IBGE"></div><figcaption>Antes de inserir: 4 de 6 linhas casam, e o motivo de cada uma que não casou.</figcaption></figure>
+  </div>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/receitas-canvas.png" alt="Fluxo com as etapas das receitas do IPCA e da PTAX"></div>
+    <figcaption>As duas receitas no fluxo, cada uma na sua etapa: dados públicos, Join, Summarize e fórmulas comuns.</figcaption>
+  </figure>
+  <h3>CNPJ: o cadastro de empresas</h3>
+  <p>A Receita publica todo mês o cadastro de todas as empresas do Brasil, em arquivos grandes (uns 8 GB compactados). Por isso o CNPJ não é lido na hora: ele é baixado para uma pasta sua.</p>
+  <div class="steps">
+    <div class="step"><div><h4>Escolha as partes e a pasta</h4><p>No catálogo, em <strong>Cadastro de empresas (CNPJ) &gt; Baixar…</strong>: marque as partes (Estabelecimentos, Empresas, Sócios, Simples e as tabelas auxiliares), veja o tamanho de cada uma e escolha a pasta. O {{produto}} confere o espaço livre antes e cria ali só a subpasta <code>CNPJ-AAAA-MM</code>.</p></div></div>
+    <div class="step"><div><h4>Acompanhe sem parar o trabalho</h4><p>O download roda em segundo plano, com uma faixa na vista Dados: parte atual, velocidade, tempo estimado, <strong>Pausar</strong>, <strong>Continuar</strong> e <strong>Cancelar</strong>. Fechar o programa pausa; ao abrir, é só continuar do ponto em que parou.</p></div></div>
+    <div class="step"><div><h4>Use as fontes prontas</h4><p>Cada ZIP é conferido antes de abrir e descompactado com nome fixo. No fim, a vista Dados ganha a pasta <strong>CNPJ AAAA-MM</strong>, com uma fonte para cada tabela, já com os nomes e os tipos das colunas do leiaute da Receita.</p></div></div>
+  </div>
+  <div class="grid-2">
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/cnpj-baixar.png" alt="Diálogo Baixar o CNPJ com as partes, a pasta e o espaço livre"></div><figcaption>As partes com o tamanho, a pasta escolhida e o espaço livre conferido.</figcaption></figure>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/cnpj-faixa.png" alt="Faixa de download na vista Dados"></div><figcaption>A faixa da vista Dados e a pasta CNPJ com as fontes prontas.</figcaption></figure>
+  </div>
+  <div class="side">
+    <div>
+      <p><strong>Filtro na leitura.</strong> Estabelecimentos inteiro passa de 20 GB de texto e não cabe na memória da maioria dos computadores. No Cadastro da fonte, o <strong>Filtro na leitura</strong> escolhe UF, município e CNAE (com busca pelo nome), situação cadastral e CNPJ. O programa lê os arquivos aos poucos e guarda só as linhas que passam.</p>
+      <p><strong>CNPJ em qualquer formato.</strong> Cole a lista, com ou sem pontuação: <code>00.000.000/0001-91</code> é um estabelecimento, <code>12.345.678</code> é a empresa inteira, e um número que perdeu os zeros no Excel é completado. A tela mostra como entendeu cada linha; o que não é CNPJ válido fica de fora, marcado.</p>
+      <p><strong>Só as empresas destes estabelecimentos.</strong> Em Empresas, Sócios e Simples, use os CNPJs que passaram no filtro de Estabelecimentos: as empresas de SP com um CNAE, sem ler o Brasil inteiro.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/cnpj-filtro.png" alt="Filtro na leitura com CNPJ, UF, município, CNAE e situação"></div><figcaption>O filtro na leitura: os CNPJs colados e convertidos, e os campos de UF, município e CNAE.</figcaption></figure>
+  </div>
+  <div class="side">
+    <div>
+      <p><strong>Memória.</strong> Antes de ler, o programa estima o tamanho do resultado e, durante a leitura, mede o que já leu. Acima de 1/4 da memória do computador, o Windows passa a usar o disco como memória e tudo fica lento: a leitura para e pergunta <strong>Parar</strong> ou <strong>Continuar assim mesmo</strong>, com a estimativa. A resposta vale só para aquela execução.</p>
+      <p><strong>Para o colega.</strong> O CNPJ é de cada computador. Num fluxo compartilhado, quem não tem o mesmo mês vê <strong>Baixar os dados do CNPJ aqui…</strong> em <em>Faltam neste computador</em>: depois do download, o fluxo funciona sem trocar nada.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/memoria-pergunta.png" alt="Pergunta Parar ou Continuar assim mesmo com a barra de memória"></div><figcaption>A estimativa, a memória do computador e a marca de 1/4.</figcaption></figure>
+  </div>
+  <div class="callout ok"><strong>A internet só pelo catálogo</strong>O {{produto}} acessa a internet para os dados públicos só com o catálogo aberto, no Atualizar ou quando um fluxo executa uma caixa Dados públicos, e só nos endereços oficiais de uma lista fixa. Abrir o programa, a vista Dados ou um fluxo sem essas caixas não faz nenhuma requisição.</div>
+  <div class="try"><strong>Experimente</strong><ol><li>Na vista <strong>Dados</strong>, abra <strong>Adicionar &gt; Dados públicos do Brasil</strong> e busque <em>selic</em>.</li><li>Abra <em>Taxa Selic diária</em>, confira a prévia e clique em <strong>Adicionar ao fluxo</strong>. Execute.</li><li>No Resultado, clique com o botão direito em <code>valor</code> e escolha <strong>Converter para dólar pela PTAX…</strong>: veja a etapa nascer e execute de novo.</li></ol></div>
+</section>
+<!-- ================================================================ 9. DADOS DE APIS, SEM PROGRAMAR -->
+<section class="chapter">
+  <div class="eyebrow">9 · Trazer dados</div>
+  <h2>Dados de APIs, sem programar</h2>
+  <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O {{produto}} faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto. Para os dados oficiais do país, veja antes o catálogo do capítulo 8: ele já traz as fontes prontas. Este capítulo é para o que não está lá, como os sistemas da sua empresa.</p>
+  <div class="goal"><b>Ao final:</b> <span>você sabe cadastrar uma API, testar, e buscar um dado para cada linha da sua tabela.</span></div>
+  <h3>Três conceitos que explicam tudo</h3>
+  <div class="anatomy">…/estados/<span class="v">{sigla}</span>/municipios<span class="f">?view=nivelado</span>
+    <small><strong>{sigla}</strong> é a <strong>variável</strong>: um espaço no endereço, preenchido com um valor diferente a cada chamada. <strong>view=nivelado</strong> é um <strong>parâmetro fixo</strong>: ajusta a resposta e é igual em toda chamada.</small></div>
+  <table>
+    <tr><th>Tipo de API</th><th>Como é</th><th>Exemplo</th><th>No fluxo</th></tr>
+    <tr><td class="tool">Chamada direta</td><td>O endereço é sempre o mesmo</td><td>Todos os estados</td><td><strong>Input Data</strong></td></tr>
+    <tr><td class="tool">Com variável</td><td>O endereço tem um espaço a preencher</td><td>Os municípios de um estado</td><td><strong>API Loop</strong>, ligado a uma tabela</td></tr>
+  </table>
+  <p>A variável é reconhecida sozinha quando o nome está entre chaves. Se você colar um endereço com um valor real, como <code>…/estados/SP/municipios</code>, troque o valor por <code>{sigla}</code>. Se a documentação escrever <code>:sigla</code> ou <code>&lt;sigla&gt;</code>, a tela avisa e converte com um clique.</p>
+  <h3>Cadastrar e testar</h3>
+  <div class="steps">
+    <div class="step"><div><h4>Comece de um exemplo</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Nova API</strong>, escolha um exemplo pronto ou cole o endereço.</p></div></div>
+    <div class="step"><div><h4>Confira o pedido</h4><p><strong>O que será enviado</strong> mostra o pedido sendo montado, com a credencial sempre oculta.</p></div></div>
+    <div class="step"><div><h4>Ajuste o que precisar</h4><p>A aba <strong>Parâmetros</strong> separa variáveis de parâmetros fixos. <strong>Autenticação</strong> aceita token, chave, usuário e senha ou OAuth 2. <strong>Páginas</strong> lê respostas divididas em partes.</p></div></div>
+    <div class="step"><div><h4>Clique em Testar</h4><p>A resposta real aparece ao lado da tabela que ela gerou.</p></div></div>
+  </div>
+  <figure class="m50" style="max-width:44%">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/api-editor.png" alt="Resposta da API ao lado da tabela"></div>
+    <figcaption>A resposta real do IBGE e a tabela que sai dela. Passar o mouse num campo acende a coluna; <strong>Usar como linhas</strong> escolhe de onde vêm as linhas, sem digitar caminho.</figcaption>
+  </figure>
+  <div class="side">
+    <div>
+      <h3 style="margin-top:0">Como saber quais parâmetros existem?</h3>
+      <p>Cada API tem os seus, quase sempre opcionais, e a lista está na documentação dela. Não existe uma lista única.</p>
+      <ul>
+        <li>Guarde o link em <strong>Documentação da API</strong>: o botão abre a página no navegador.</li>
+        <li>Anote em cada parâmetro <strong>para que serve</strong>: fica salvo para quem usar a API depois.</li>
+        <li>Teste primeiro só com o endereço e acrescente o que precisar.</li>
+      </ul>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/api-vars.png" alt="Cadastro com a variável sigla e o parâmetro fixo view"></div><figcaption>A variável e o parâmetro fixo, separados, com o link da documentação.</figcaption></figure>
+  </div>
+  <h3>Uma chamada por linha: API Loop</h3>
+  <div class="side">
+    <div>
+      <p>Com uma API que tem variável, a caixa <strong>API Loop</strong> faz uma chamada para cada linha da tabela de entrada e junta as respostas numa tabela só. A entrada pode vir de outra API: a lista de estados alimenta os municípios de cada um.</p>
+      <p>Ligue a tabela e, em <strong>De onde vem cada variável</strong>, escolha a coluna:</p>
+      <figure class="small"><div class="frame"><img src="../../src/prodata/web/manual/img/api-params.png" alt="Escolha da coluna que preenche a variável"></div></figure>
+      <ul style="margin-top:8pt">
+        <li>A saída <strong>R</strong> traz as respostas ao lado da linha que as pediu; a <strong>E</strong>, o que falhou e o motivo.</li>
+        <li>Valores iguais são chamados uma vez só.</li>
+        <li>Um limite de pedidos, que conta páginas e novas tentativas, protege a API e a sua cota. A caixa também para depois de várias falhas seguidas.</li>
+        <li>O Loop não roda ao abrir um fluxo: espera o clique em <strong>Executar</strong>.</li>
+      </ul>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/api-loop.png" alt="Esquema do API Loop"></div><figcaption>O esquema, com os seus dados: entrada, chamadas e saída.</figcaption></figure>
+  </div>
+  <div class="try"><strong>Experimente</strong><ol><li>No exemplo, clique em <strong>Executar</strong>: a etapa <em>5 · API pública do IBGE</em> busca os estados e os municípios de cada um. Abrir o fluxo não chama a internet; sem rede, só essa etapa dá erro.</li><li>Clique na caixa <em>Municípios por estado</em> e passe o mouse num valor do esquema para ver o caminho dele.</li></ol></div>
+</section>
+<!-- ================================================================ 10. DADOS DO JIRA, SEM ESCREVER JQL -->
+<section class="chapter">
+  <div class="eyebrow">10 · Trazer dados</div>
+  <h2>Dados do Jira, sem escrever JQL</h2>
+  <p class="intro">O {{produto}} lê demandas, histórico e comentários do Jira Cloud e transforma tudo em tabelas. Ele só lê: nenhuma chamada altera o seu Jira.</p>
+  <div class="goal"><b>Ao final:</b> <span>você conecta o Jira com um token de leitura, monta uma consulta e leva a tabela para o fluxo.</span></div>
+  <h3>Conectar</h3>
+  <div class="steps">
+    <div class="step"><div><h4>Diga qual é o seu Jira</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Conectar ao Jira</strong>, cole o endereço de qualquer página do seu Jira.</p></div></div>
+    <div class="step"><div><h4>Crie um token de leitura</h4><p><strong>Criar meu token</strong> abre a página da Atlassian no navegador. Escolha criar um token com escopos e marque só as permissões de leitura, como <code>read:jira-work</code> e <code>read:jira-user</code>.</p></div></div>
+    <div class="step"><div><h4>Cole e teste</h4><p>Informe o e-mail da conta e o token. O teste mostra quem conectou e quantos projetos essa conta enxerga.</p></div></div>
+  </div>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/jira-conexao.png" alt="Conexão com o Jira em três passos"></div>
+    <figcaption>Nada é cadastrado no Jira para o {{produto}} funcionar. O token fica no cofre do Windows e nunca vai para fluxos, arquivos ou registros.</figcaption>
+  </figure>
+  <p>Um token comum também funciona, mas ele poderia alterar dados em outro programa. Por isso o {{produto}} avisa e recomenda o token com escopo.</p>
+  <h3>Montar a consulta</h3>
+  <p>Em <strong>Adicionar &gt; Nova consulta do Jira</strong>, a tela vai em passos: o que trazer, de quais projetos (com busca) e os filtros. Tipos e status só aparecem depois de escolher o projeto, e somente os que existem nele, agrupados em A fazer, Em andamento e Concluído. Uma frase resume o que será trazido. O JQL fica em <strong>Mais opções</strong>, para quem preferir escrever à mão.</p>
+  <table>
+    <tr><th>Tabela</th><th>Uma linha por</th><th>Para quê</th></tr>
+    <tr><td class="tool">Demandas</td><td>Demanda</td><td>Status, tipo, responsável, datas e campos personalizados que você marcar</td></tr>
+    <tr><td class="tool">Histórico de alterações</td><td>Mudança de um campo</td><td>Saber quando cada status mudou. É a entrada da caixa Estado por período</td></tr>
+    <tr><td class="tool">Comentários</td><td>Comentário</td><td>Costumam ter nomes e dados pessoais: traga só se precisar</td></tr>
+  </table>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/jira-consulta.png" alt="Consulta do Jira com projetos, filtros e prévia"></div>
+    <figcaption>A consulta vira uma fonte: arraste para o canvas e ela aparece no Input Data, como um arquivo.</figcaption>
+  </figure>
+  <h3>Só o que mudou</h3>
+  <p>A primeira execução traz tudo e guarda uma cópia local. As seguintes buscam só o que mudou desde a última leitura, com folga de segurança, e conferem com o Jira quais demandas ainda atendem à consulta: o que foi excluído, saiu do filtro ou passou do período sai da tabela. Se a carga cair no meio, a próxima continua de onde parou, e o limite de chamadas do Jira é respeitado.</p>
+  <div class="avoid"><h4>Quando reler tudo</h4><p>Raramente é preciso, por exemplo quando um campo muda de nome no Jira. Na página da consulta, <strong>Reler tudo</strong> refaz a carga inteira, e <strong>Apagar o guardado</strong> remove a cópia local.</p></div>
+  <h3>Do evento à foto de cada período</h3>
+  <p>O Jira guarda mudanças; muitas análises precisam de fotos: como cada demanda estava no fim de cada mês. A caixa <strong>Estado por período</strong> faz essa passagem para qualquer tabela de eventos. Na entrada <strong>I</strong> vão os itens; na <strong>E</strong>, os eventos. Com o histórico do Jira, use <code>campo</code> igual a <code>status</code>.</p>
+  <p>O que os eventos não explicam fica <strong>sem histórico</strong>. O valor de hoje nunca é usado para preencher o passado, a menos que a demanda nunca tenha mudado e você escolha a coluna de estado atual.</p>
+</section>
+<!-- ================================================================ 11. DADOS DE PDFS, APONTANDO NO DOCUMENTO -->
+<section class="chapter">
+  <div class="eyebrow">11 · Trazer dados</div>
+  <h2>Dados de PDFs, apontando no documento</h2>
+  <p class="intro">Relatórios, extratos e documentos chegam em PDF e costumam ser copiados à mão para planilhas. No {{produto}}, você ensina a extração apontando no próprio documento: clica no valor, vê a coluna nascer e confere de onde ela veio. Depois, a mesma extração vale para os próximos PDFs com o mesmo layout.</p>
+  <div class="goal"><b>Ao final:</b> <span>você sabe tirar campos e tabelas de um PDF, testar nos outros arquivos e usar o resultado em qualquer fluxo.</span></div>
+  <h3>Marcar um dado e ver a coluna nascer</h3>
+  <div class="steps">
+    <div class="step"><div><h4>Crie a fonte</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; PDF</strong>, envie um PDF, vincule um arquivo (lido onde está) ou escolha uma <strong>pasta de PDFs</strong> com padrão de nome, como <code>relatorio_*.pdf</code>. O editor <strong>Preparar extração</strong> abre na hora.</p></div></div>
+    <div class="step"><div><h4>Clique no valor</h4><p>Um clique marca uma palavra; dois cliques, o valor inteiro; arrastar marca uma área. Em cima da seleção aparece a prévia: o valor já convertido, o tipo e como o {{produto}} vai achar o dado.</p></div></div>
+    <div class="step"><div><h4>Tecle Enter</h4><p>O campo nasce no painel <strong>Campos</strong> e a coluna aparece no <strong>Resultado</strong>, com o valor convertido e o original ao lado. Nome e tipo mudam ali mesmo. Também dá para arrastar a seleção até o Resultado.</p></div></div>
+  </div>
+  <figure>
+    <div class="frame"><img src="../../src/prodata/web/manual/img/pdf-editor.png" alt="Editor Preparar extração com campos, documento e resultado"></div>
+    <figcaption>Três áreas: o que você já ensinou (Campos), o documento e o Resultado. Cada campo tem a sua cor, na página e na tabela.</figcaption>
+  </figure>
+  <p>Tudo também funciona pelo teclado: clique no documento e use as setas para andar pelas palavras, <kbd>Shift</kbd> para estender a seleção, <kbd>Enter</kbd> para criar o campo, <kbd>T</kbd> para criar tabela e <kbd>Esc</kbd> para limpar. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz qualquer mudança.</p>
+  <h3>Como o {{produto}} acha o dado nos outros PDFs</h3>
+  <p>O {{produto}} não guarda a posição do número na página, e sim o significado dela: o valor fica <strong>à direita</strong> de um rótulo, <strong>abaixo</strong> dele ou dentro de uma seção. Assim, o mesmo relatório com o cabeçalho mais abaixo, ou com mais linhas, continua funcionando.</p>
+  <div class="pdf-rule" role="img" aria-label="Esquema: o rótulo, o valor ao lado e os estados do campo">
+    <div><b>1 · O rótulo</b><span class="pdf-line"><span class="lab">Total líquido:</span> R$ 834.086,00</span><small>Maiúsculas, acentos e espaços a mais não contam. Dá para aceitar variações, como “Valor líquido”.</small></div>
+    <div><b>2 · O valor ao lado</b><span class="pdf-line">Total líquido: <span class="val">R$ 834.086,00</span></span><small>Vira <code>834086.00</code>, tipo Moeda. O texto original fica guardado para conferir.</small></div>
+    <div><b>3 · Em outro PDF</b><span class="pdf-line">Total líquido: <span class="two">R$ 150.000,00</span><br>Total líquido: <span class="two">R$ 149.500,00</span></span><small>Dois valores diferentes: o campo fica <strong>Ambíguo</strong> e nada é escolhido sozinho.</small></div>
+  </div>
+  <p>Para trocar o rótulo, clique no alvo do campo, marque outro texto no documento e tecle <kbd>R</kbd> (<strong>Usar como rótulo</strong>). Achar pela posição fixa na página existe como última opção, marcado como <strong>frágil</strong>: se o layout mudar, o valor some ou vem errado.</p>
+  <div class="side">
+    <div>
+      <p><strong>Rótulo com data que muda.</strong> Num relatório mensal, o texto antes do valor costuma trazer o mês: "a julho de 2026, a arrecadação alcançou". No PDF de agosto, esse texto não existe mais. Por isso o rótulo aceita <strong>curingas</strong>: <code>[mês]</code>, <code>[ano]</code>, <code>[data]</code>, <code>[número]</code> e <code>[*]</code> (qualquer palavra). Ao propor ou marcar um rótulo, o {{produto}} já troca mês, ano e data pelo curinga e diz o que trocou ("julho → [mês]"); em <strong>Rótulos aceitos</strong>, clicar numa palavra a transforma em curinga.</p>
+      <p><strong>Só o valor, sem o que vem grudado.</strong> Marcou "R$ 1.791.203" em "R$ 1.791.203 milhões"? A regra pega só as palavras marcadas ("só as 2 primeiras palavras", em <strong>Como encontrar</strong>). No mês seguinte o número pode crescer e continua sendo uma palavra só.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-curinga.png" alt="Rótulos aceitos com o mês e o ano como curinga"></div><figcaption>O rótulo com <code>[mês]</code> e <code>[ano]</code>: vale no relatório de qualquer mês.</figcaption></figure>
+  </div>
+  <h3>Tabelas, mesmo em várias páginas</h3>
+  <div class="side">
+    <div>
+      <p>Arraste sobre a tabela, do cabeçalho até a última linha que você quer, e tecle <kbd>T</kbd>. O {{produto}} propõe as colunas pelos espaços em branco e desenha <strong>guias</strong> tracejadas na página. Arraste uma guia (ou foque e use as setas) e a prévia muda na hora.</p>
+      <ul>
+        <li><strong>A tabela vai até onde você marcou.</strong> Marcou só parte das linhas? Ela termina <strong>depois dessas linhas</strong>. Marcou até a última linha da página? Ela segue nas páginas seguintes até o fim.</li>
+        <li><strong>As bordas da caixa se arrastam</strong>, como as guias: a de baixo encaixa entre as linhas (antes de uma linha de texto, como “Total geral”, a tabela termina antes dela), a de cima escolhe a linha do cabeçalho e as laterais limitam a largura.</li>
+        <li><strong>Termina em</strong> mostra a regra: num texto, depois de N linhas ou no fim do documento.</li>
+        <li><strong>Nova linha quando</strong>: uma observação escrita em duas linhas vira uma célula só, porque a linha nova começa quando a coluna escolhida tem valor.</li>
+        <li>Nas páginas seguintes, o cabeçalho repetido é ignorado.</li>
+        <li><strong>Começa em</strong> diz quais textos identificam o cabeçalho. Se ele muda de um mês para outro, deixe só o que se repete, como “VAR., PARTICIPAÇÃO”.</li>
+        <li>Subtotais e rodapés são <strong>sugeridos</strong> para exclusão; nada sai sem a sua confirmação.</li>
+        <li>Nenhuma linha é inventada: se a tabela não pode ser montada, ela mostra o problema e pede ajuste.</li>
+      </ul>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-tabela.png" alt="Tabela com guias de coluna sobre a página"></div><figcaption>As guias sobre a página e a tabela já montada, com a linha de duas linhas unida.</figcaption></figure>
+  </div>
+  <h3>Quando há dúvida</h3>
+  <div class="pdf-states">
+    <div><b>Encontrado</b>um valor válido</div>
+    <div><b>Ausente</b>nenhum candidato</div>
+    <div><b>Ambíguo</b>mais de um valor diferente</div>
+    <div><b>Inválido</b>achou, mas não converte</div>
+    <div><b>Não suportado</b>PDF escaneado, com senha ou danificado</div>
+  </div>
+  <p>Cada documento fica <strong>Aprovado</strong>, <strong>Revisar</strong> ou <strong>Falhou</strong> (quando falta um campo obrigatório). Para um documento que fugiu do padrão, <strong>Corrigir só neste documento</strong> informa o valor certo sem mudar a regra. Fica registrado quem corrigiu, quando e o valor de antes, e a correção deixa de valer sozinha se o PDF mudar.</p>
+  <h3>Testar em outros arquivos</h3>
+  <div class="side">
+    <div>
+      <p>A cada mudança, o {{produto}} roda a extração de verdade numa amostra dos PDFs e mostra quantos foram avaliados, como “3 de 3 avaliados”. Nada é estimado.</p>
+      <p>A aba <strong>Testar em outros arquivos</strong> monta a matriz documento × campo. Clique numa célula para abrir aquele documento com o trecho destacado.</p>
+      <p>Ao mudar uma regra, um quadro mostra quantos documentos mantiveram o resultado, quantos foram corrigidos e quantos passaram a falhar, com <strong>Desfazer</strong>.</p>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-teste.png" alt="Matriz de documentos por campo"></div><figcaption>Os estados de cada campo em cada documento. O relatório com dois totais falha: o total é obrigatório e ficou Ambíguo.</figcaption></figure>
+  </div>
+  <h3>Reaproveitar a extração</h3>
+  <div class="side">
+    <div>
+      <p>A extração que você ensinou fica guardada e pode servir a outras fontes com o mesmo layout, como os relatórios de outra filial ou de outro ano. Ela vale só para PDF: planilhas, bancos e APIs já chegam como tabela.</p>
+      <ul>
+        <li>Ao criar a fonte, escolha em <strong>Extração</strong> uma das extrações salvas: os campos já vêm prontos.</li>
+        <li>No editor, o menu <strong>Extração</strong> copia como extração nova (para ajustar sem mexer na original), troca por outra, exporta e importa.</li>
+        <li>O arquivo exportado não leva caminho nem senha: dá para mandar a um colega.</li>
+        <li>Em <strong>Extrações salvas</strong>, cada uma mostra quais fontes a usam e pode ser excluída. Se alguma fonte usa, a tela avisa e ela volta a rascunho.</li>
+      </ul>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-extracoes.png" alt="Lista de extrações salvas com as fontes que usam cada uma"></div><figcaption>As extrações salvas, com as fontes que usam cada uma.</figcaption></figure>
+  </div>
+  <h3>De onde veio cada valor</h3>
+  <p>Clique em qualquer valor do Resultado, ou numa célula da tabela, e a página rola até o trecho exato e o destaca, inclusive em outra página. No sentido contrário, clicar no documento sobre um valor já extraído destaca o campo ou a célula que ele gerou.</p>
+  <h3>Tirar e adicionar documentos</h3>
+  <div class="side">
+    <div>
+      <p>Na <strong>Visão geral</strong>, cada documento tem um <strong>×</strong> para <strong>tirar da fonte</strong>: ele sai da extração e das saídas, mas o arquivo continua onde está, na sua pasta. Os tirados ficam em <strong>Fora da fonte</strong>, com <strong>Trazer de volta</strong>.</p>
+      <p><strong>Adicionar PDFs</strong> soma um ou vários arquivos aos da pasta. O {{produto}} guarda uma cópia de cada, marcada como <em>adicionado</em>, e não grava nada na sua pasta. Uma fonte de um PDF só vira uma fonte de vários. Só a cópia guardada pelo programa é apagada de fato, e sempre com confirmação.</p>
+      <p>A lista é avaliada de novo na hora, e o fluxo usa o conjunto novo na próxima execução. A fonte nunca fica sem documento: o último não sai.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-documentos.png" alt="Lista de documentos com um PDF fora da fonte e o botão Trazer de volta"></div><figcaption>Um relatório tirado da fonte: continua no disco e volta com um clique.</figcaption></figure>
+  </div>
+
+  <h3>No fluxo</h3>
+  <div class="side">
+    <div>
+      <p>A fonte entra no fluxo pelo <strong>Input Data</strong>, como qualquer outra. Ela tem quatro saídas:</p>
+      <table>
+        <tr><th>Saída</th><th>O que traz</th></tr>
+        <tr><td class="tool">campos</td><td>Uma linha por documento, uma coluna por campo</td></tr>
+        <tr><td class="tool">itens_&lt;tabela&gt;</td><td>Uma linha por item, com o documento de origem</td></tr>
+        <tr><td class="tool">falhas</td><td>O que faltou ou ficou em dúvida, sem copiar o conteúdo</td></tr>
+        <tr><td class="tool">origem</td><td>Página e região de cada valor</td></tr>
+      </table>
+      <p>Em <strong>Quando um documento falhar</strong>, escolha entre parar a execução (a opção segura, sugerida), entregar só os aprovados ou entregar todos com a situação. PDF novo na pasta entra na próxima execução; PDF alterado é relido; sem mudança, o resultado guardado é aproveitado.</p>
+    </div>
+    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-visao.png" alt="Visão geral da fonte PDF com documentos, política e saídas"></div><figcaption>A visão geral: situação de cada documento, a política de falha e as saídas.</figcaption></figure>
+  </div>
+  <div class="avoid"><h4>Seguro por padrão</h4><p>O PDF é lido no seu computador, num processo separado, com tempo e memória limitados: um arquivo quebrado nunca derruba o programa. Conteúdo ativo do PDF (scripts, formulários) nunca é executado, e trechos do documento não vão para os registros. PDFs escaneados (só imagem) ainda não são lidos.</p></div>
+  <p>No fluxo de exemplo, a etapa <em>6 · PDFs da Receita Federal</em> lê três relatórios reais da <strong>Análise da Arrecadação das Receitas Federais</strong> (julho a setembro de 2026), publicados pela Receita Federal no gov.br, com reprodução autorizada mediante citação da fonte. A extração já vem pronta, e os dados do PDF entram no resto do fluxo: a arrecadação de cada mês é cruzada com o faturamento das <em>Transações</em> (quanto a empresa fatura para cada R$ 1 bilhão arrecadado pela União), e a tabela por tributo vira o gráfico dos principais tributos. Os três gráficos estão no dashboard do exemplo. Em setembro o cabeçalho da tabela mudou de formato, e a mesma extração continua funcionando.</p>
+  <div class="try"><strong>Experimente</strong><ol><li>Em <strong>Dados &gt; Adicionar &gt; PDF</strong>, clique em <strong>Usar os PDFs de exemplo</strong>.</li><li>Clique no valor ao lado de “Total líquido” e tecle <kbd>Enter</kbd>. Depois arraste sobre a tabela e tecle <kbd>T</kbd>.</li><li>Abra <strong>Testar em outros arquivos</strong>: o relatório de dezembro tem dois totais e fica Ambíguo.</li><li>Na lista da vista Dados, abra <strong>Arrecadação federal (Receita Federal)</strong> e clique num valor da tabela para ver de onde ele veio no relatório.</li></ol></div>
+</section>
+<!-- ================================================================ PARTE III -->
+<section class="part" data-part="Parte III · Transformar">
+  <div class="part-num">Parte III</div>
+  <h1 class="part-title">Transformar</h1>
+  <p class="part-what">Montar o fluxo, escrever fórmulas, cruzar tabelas e conferir a qualidade.</p>
+  <ol class="part-list"><li><span>12</span>Montando o fluxo</li><li><span>13</span>Fórmulas e cálculos</li><li><span>14</span>Cruzando tabelas e tratando textos</li><li><span>15</span>Dados que dá para confiar</li></ol>
+</section>
+<!-- ================================================================ 12. MONTANDO O FLUXO -->
+<section class="chapter">
+  <div class="eyebrow">12 · Transformar</div>
   <h2>Montando o fluxo</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_ferramentas">Mostrar onde fica</button></div>
-  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como escrever fórmulas e como editar com agilidade. A lista das 46 ferramentas está no capítulo 24.</p>
-  <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e escreve fórmulas sem decorar funções.</span></div>
+  <p class="intro">Um fluxo é feito de caixas ligadas por fios. Este capítulo mostra o que vale para todas: como configurar, como entender o que cada uma faz, como ligar e como editar com agilidade. As fórmulas têm um capítulo próprio, o seguinte, e a lista de todas as ferramentas está no capítulo 28.</p>
+  <div class="goal"><b>Ao final:</b> <span>você configura qualquer caixa, lê o esquema <strong>Como funciona</strong> dela e liga as caixas sem errar o caminho do dado.</span></div>
 
   <h3>Configurando uma caixa</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="tab_configurar">Mostrar onde fica</button></div>
@@ -540,12 +938,32 @@
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fio-sugeridas.png" alt="Lista de ferramentas com as sugeridas no topo"></div><figcaption>No vazio, a lista começa pelas sugeridas.</figcaption></figure>
   </div>
 
+  <h3>Editando com agilidade</h3>
+  <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
+    <ul>
+      <li><strong>Lixeira na caixa</strong>: passe o mouse sobre uma caixa e clique no ícone de lixeira (ou use <kbd>Delete</kbd>).</li>
+      <li><strong>Copiar e colar</strong>: <kbd>Ctrl</kbd>+<kbd>C</kbd> e <kbd>Ctrl</kbd>+<kbd>V</kbd> copiam uma caixa — ou uma etapa inteira, com as ligações internas. Dá para colar em outro fluxo.</li>
+      <li><strong>Botão direito</strong>: configurar, executar até ali, copiar, recortar, colar, duplicar, renomear, desativar e excluir. Num fio, insere uma ferramenta no meio; no espaço vazio, cola ou cria caixas.</li>
+      <li><strong>Várias caixas</strong>: <kbd>Shift</kbd> + clique (ou <kbd>Shift</kbd> + arrastar no vazio, ou o modo <strong>Selecionar</strong> da barra do canvas, tecla <kbd>V</kbd>) seleciona várias; a tecla <kbd>H</kbd> volta a <strong>Navegar</strong>; arraste para mover todas, alinhe, distribua, agrupe numa etapa ou tire delas.</li>
+      <li><strong>Ver o que entra</strong>: clique numa porta de entrada para ver, na tabela, os dados que chegam por ela.</li>
+    </ul>
+    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/menu-crop.png" alt="Menu do botão direito numa caixa"></div><figcaption>Menu do botão direito numa caixa.</figcaption></figure>
+  </div>
+
+</section>
+<!-- ================================================================ 13. FÓRMULAS E CÁLCULOS -->
+<section class="chapter">
+  <div class="eyebrow">13 · Transformar</div>
+  <h2>Fórmulas e cálculos</h2>
+  <p class="intro">Uma fórmula cria ou muda uma coluna a partir das outras: uma conta, uma condição, um texto limpo, uma data. Este capítulo vai do básico às fórmulas que olham outras linhas e ao ranking dentro de cada grupo.</p>
+  <div class="goal"><b>Ao final:</b> <span>você escreve fórmulas sem decorar funções, trata datas escritas de qualquer jeito e calcula ranking e média móvel por grupo.</span></div>
   <h3>Escrevendo fórmulas</h3>
   <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
     <div>
       <p>As caixas <em>Formula</em> e <em>Filter</em> têm um editor feito para quem não programa. Para fórmulas longas, <strong>Expandir</strong> abre o mesmo editor numa janela larga, com colunas, funções e constantes ao lado:</p>
       <ul>
         <li><strong>Cores</strong> separam colunas, funções, IF/THEN/ELSE, operadores lógicos (AND, OR, NOT), comparações, textos e números. Coluna inexistente e parêntese sem par ficam sublinhados em vermelho.</li>
+        <li><strong>Condições em sequência</strong>: <code>IF [valor] &gt; 1000 THEN "Alto" ELSEIF [valor] &gt; 100 THEN "Médio" ELSE "Baixo" ENDIF</code>. Os botões <strong>IF…ENDIF</strong> e <strong>ELSEIF</strong> inserem a estrutura; o <code>ELSEIF</code> pode repetir quantas vezes precisar.</li>
         <li><strong>Autocompletar</strong>: comece a digitar e o {{produto}} sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
         <li><strong>Dica da função</strong>: dentro dos parênteses aparece o que cada argumento espera.</li>
         <li><strong>Assistente</strong>: botões <em>Coluna</em>, <em>Função</em> (85 funções com descrição e exemplo) e operadores. Para calcular entre colunas da mesma linha: <code>Average([jan], [fev], [mar])</code>, <code>Sum</code>, <code>Median</code>, <code>Mode</code> (moda), <code>StdDev</code> (desvio padrão), <code>Max</code>, <code>Min</code>. Diferente é <code>!=</code>. Para juntar textos use <code>Concat</code>.</li>
@@ -619,46 +1037,10 @@
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/rank-explicacao.png" alt="Esquema do Rank"></div><figcaption>Top 3 de MRR por UF: a posição recomeça em cada UF, e o 4º aparece apagado, como "fora".</figcaption></figure>
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/explain-media-movel.png" alt="Esquema da média móvel"></div><figcaption>Média móvel de 3 meses: as duas primeiras linhas ficam vazias até a janela se completar.</figcaption></figure>
   </div>
-  <h3>Editando com agilidade</h3>
-  <div style="display:grid; grid-template-columns: 1fr 44%; gap: 14pt; align-items: start">
-    <ul>
-      <li><strong>Lixeira na caixa</strong>: passe o mouse sobre uma caixa e clique no ícone de lixeira (ou use <kbd>Delete</kbd>).</li>
-      <li><strong>Copiar e colar</strong>: <kbd>Ctrl</kbd>+<kbd>C</kbd> e <kbd>Ctrl</kbd>+<kbd>V</kbd> copiam uma caixa — ou uma etapa inteira, com as ligações internas. Dá para colar em outro fluxo.</li>
-      <li><strong>Botão direito</strong>: configurar, executar até ali, copiar, recortar, colar, duplicar, renomear, desativar e excluir. Num fio, insere uma ferramenta no meio; no espaço vazio, cola ou cria caixas.</li>
-      <li><strong>Várias caixas</strong>: <kbd>Shift</kbd> + clique (ou <kbd>Shift</kbd> + arrastar no vazio, ou o modo <strong>Selecionar</strong> da barra do canvas, tecla <kbd>V</kbd>) seleciona várias; a tecla <kbd>H</kbd> volta a <strong>Navegar</strong>; arraste para mover todas, alinhe, distribua, agrupe numa etapa ou tire delas.</li>
-      <li><strong>Ver o que entra</strong>: clique numa porta de entrada para ver, na tabela, os dados que chegam por ela.</li>
-    </ul>
-    <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/menu-crop.png" alt="Menu do botão direito numa caixa"></div><figcaption>Menu do botão direito numa caixa.</figcaption></figure>
-  </div>
-
-  <h3>Listas que recolhem</h3>
-  <div class="side">
-    <div>
-      <p>Fórmulas da <em>Formula</em>, regras do <em>Data Quality</em>, agregações do <em>Summarize</em>, chaves do <em>Join</em>, ordenação do <em>Sort</em>: toda lista do Configurar tem a <strong>seta</strong> em cada item. Recolhido, o item vira um cartão de uma linha com o resumo (<code>receita_anual = Round(…)</code>), e um clique o abre de novo.</p>
-      <p><strong>Dois cliques no título</strong> dão um nome ao item, como "Receita anual". <strong>Recolher todos</strong> e <strong>Expandir todos</strong> ficam no topo da lista. Um item com erro fica com a borda vermelha mesmo recolhido. Nomear e recolher não mudam o resultado: a caixa não precisa executar de novo.</p>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/lista-formulas.png" alt="Fórmulas recolhidas com nome"></div><figcaption>Duas fórmulas recolhidas, com nome e resumo.</figcaption></figure>
-  </div>
-  <h3>Recolher caixas e etapas</h3>
-  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Etapas e caixas → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos. Um laço dentro de uma etapa recolhida fica representado pelo cartão, sem a moldura tracejada.</p>
-  <div class="side">
-    <div>
-  <p>Uma <strong>caixa</strong> também recolhe (botão direito → <em>Recolher a caixa</em>): fica só com o ícone e as portas, e o nome aparece ao passar o mouse. Recolher é só desenho: o resultado, o SQL e o cache não mudam, e buscar uma caixa escondida abre a etapa dela.</p>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/recolher-etapas.png" alt="Fluxo com etapas recolhidas"></div><figcaption>Quatro etapas recolhidas em cartões: os fios ligam direto neles.</figcaption></figure>
-  </div>
-  <h3>Fios organizados</h3>
-  <div class="side">
-    <div>
-      <p>Os fios seguem em linhas retas, com cantos arredondados, e <strong>desviam das caixas</strong> e dos títulos das etapas. Fios que correm juntos ganham pistas separadas; os que saem da mesma porta dividem o tronco. Ao arrastar uma caixa, o fio dela fica curvo até você soltar.</p>
-      <p><strong>Exibir → Fios → Curvos</strong> volta ao desenho anterior. <strong>Organizar o fluxo</strong> (em Exibir, ou botão direito no canvas vazio) arruma as caixas em colunas, da esquerda para a direita, mantendo cada etapa junta; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fios-organizados.png" alt="Fios que desviam das caixas"></div><figcaption>Os fios contornam as caixas, cada um na sua pista.</figcaption></figure>
-  </div>
 </section>
-<!-- ================================================================ CRUZAR E TRATAR -->
+<!-- ================================================================ 14. CRUZANDO TABELAS E TRATANDO TEXTOS -->
 <section class="chapter">
-  <div class="eyebrow">6 · Cruzar e tratar</div>
+  <div class="eyebrow">14 · Transformar</div>
   <h2>Cruzando tabelas e tratando textos</h2>
   <p class="intro">Juntar duas bases é onde os números mais mudam sem ninguém perceber. Estas caixas mostram, no próprio esquema, o que casou, o que multiplicou e o que foi escondido.</p>
   <div class="goal"><b>Ao final:</b> <span>você escolhe o que sai de um Join, empilha tabelas, cruza bases sem dobrar somas, casa nomes escritos de jeitos diferentes, separa trechos de um texto e protege dados pessoais.</span></div>
@@ -699,6 +1081,20 @@
       <figure style="margin:6pt 0 0; max-width:60%"><div class="frame"><img src="../../src/prodata/web/manual/img/append-conta.png" alt="Conta de linhas do Append Fields antes de executar"></div></figure>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/append-explicacao.png" alt="Esquema do Append Fields"></div><figcaption>Cada UF aparece uma vez para cada cenário, com a cor de onde veio.</figcaption></figure>
+  </div>
+  <h3>Juntar pela data anterior mais próxima</h3>
+  <div class="side">
+    <div>
+      <p>Cotações, índices e taxas existem só em dias úteis, e as suas vendas acontecem também no sábado. Em <strong>Como casar</strong>, a opção <strong>Última chave: a data anterior mais próxima</strong> faz cada data da esquerda pegar o valor da direita do mesmo dia ou, sem ele, do dia anterior mais próximo.</p>
+      <ul>
+        <li>As outras chaves continuam iguais: a moeda casa com a moeda, e só a data procura para trás.</li>
+        <li>Nunca multiplica linhas: cada linha da esquerda pega no máximo um valor.</li>
+        <li>O Join avisa quantas linhas usaram uma data anterior, e a coluna da data da direita mostra qual foi.</li>
+        <li>Data da esquerda antes de qualquer valor da direita sai pela <strong>L</strong>, como em qualquer Join.</li>
+      </ul>
+      <p>É o que a receita <strong>Converter para dólar pela PTAX</strong> usa (capítulo 8). Na aba SQL, vira um <code>ASOF JOIN</code>.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/join-anterior.png" alt="Join com a opção data anterior mais próxima"></div><figcaption>Venda no sábado com a cotação de sexta, e o aviso de quantas linhas usaram o dia anterior.</figcaption></figure>
   </div>
   <h3>Junção que multiplica linhas</h3>
   <div class="side feature">
@@ -749,9 +1145,9 @@
   </div>
   <div class="try"><strong>Experimente</strong><ol><li>Ligue dois <em>Text Input</em> num <em>Join</em>, com a mesma chave repetida no da direita.</li><li>Execute e abra o <strong>Como funciona</strong>: o aviso mostra quantas linhas viraram quantas.</li><li>Ponha um <em>Unique</em> antes da entrada direita e execute de novo: o aviso some.</li></ol></div>
 </section>
-<!-- ================================================================ 7. DATA QUALITY -->
+<!-- ================================================================ 15. DADOS QUE DÁ PARA CONFIAR -->
 <section class="chapter">
-  <div class="eyebrow">7 · Qualidade</div>
+  <div class="eyebrow">15 · Transformar</div>
   <h2>Dados que dá para confiar</h2>
   <p class="intro">Um CPF inválido, um setor em branco ou um estado fora da lista chegam ao relatório sem ninguém ver. A ferramenta <strong>Data Quality</strong> confere regras antes de o dado seguir e separa o que passou do que falhou, com o motivo.</p>
   <div class="goal"><b>Ao final:</b> <span>você sabe montar regras de qualidade sem escrever fórmulas e decidir o que fazer com as linhas que falharam.</span></div>
@@ -871,13 +1267,21 @@
     <div>
       <p>Depois de executar, o <strong>Perfil</strong> de uma caixa aponta, com contagem e exemplos de antes e depois: <strong>espaço sobrando</strong> ("SP " não casa com "SP"), <strong>número ou data como texto</strong> (com os valores que impedem, como "N/D"), <strong>maiúsculas diferentes</strong>, <strong>texto vazio</strong> e <strong>linhas repetidas</strong>.</p>
       <p><strong>Corrigir</strong> mostra o que muda e insere logo depois a ferramenta certa, já configurada; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz. <strong>Ignorar</strong> fica gravado no fluxo. Nada é corrigido sozinho. O formato do número é decidido pela coluna ("1,234.56" é americano; o ambíguo, como "1.200", fica brasileiro), e o <em>Select</em> pode forçar em <strong>Números no texto</strong>.</p>
+      <p><strong>No canvas</strong>, um ponto discreto marca a caixa onde cada problema <strong>surge</strong>, de entrada ou do meio do fluxo (uma fórmula que cria "Alto" e "alto", por exemplo). As caixas seguintes, que só herdam o mesmo problema, não repetem o ponto; o Perfil de qualquer caixa continua com a lista completa.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/limpeza-perfil.png" alt="Recomendações de limpeza no Perfil da caixa"></div><figcaption>Número guardado como texto por causa de um "N/D", e "SP" escrito de dois jeitos.</figcaption></figure>
   </div>
 </section>
-<!-- ================================================================ 6. RESULTADOS -->
+<!-- ================================================================ PARTE IV -->
+<section class="part" data-part="Parte IV · Mostrar">
+  <div class="part-num">Parte IV</div>
+  <h1 class="part-title">Mostrar</h1>
+  <p class="part-what">Explorar o resultado, criar indicadores, montar o dashboard e contar a história no tempo.</p>
+  <ol class="part-list"><li><span>16</span>Explorando os resultados</li><li><span>17</span>Indicadores e visuais</li><li><span>18</span>Montando o dashboard</li><li><span>19</span>Linha do tempo e história</li></ol>
+</section>
+<!-- ================================================================ 16. EXPLORANDO OS RESULTADOS -->
 <section class="chapter">
-  <div class="eyebrow">8 · Análise</div>
+  <div class="eyebrow">16 · Mostrar</div>
   <h2>Explorando os resultados</h2>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="aba_resultado">Mostrar a tabela</button><button type="button" class="manual-only m-act" data-show="filtros_resultado">Mostrar os filtros</button></div>
   <p class="intro">Cada caixa guarda o resultado da última execução. Clique nela — ou em uma de suas saídas — e a tabela mostra os dados correspondentes.</p>
@@ -914,9 +1318,9 @@
   </div>
   <div class="try"><strong>Experimente</strong><ol><li>Clique na caixa <em>Clientes</em> e, na tabela, em <strong>Filtros</strong>: filtre <code>uf</code> por SP.</li><li>Repare que o cabeçalho das colunas passa a mostrar a soma e a contagem só das linhas filtradas.</li></ol></div>
 </section>
-<!-- ================================================================ 7. DASHBOARD -->
+<!-- ================================================================ 17. INDICADORES E VISUAIS -->
 <section class="chapter">
-  <div class="eyebrow">9 · Visuais</div>
+  <div class="eyebrow">17 · Mostrar</div>
   <h2>Indicadores e visuais</h2>
   <p class="intro">Os números nascem dentro do fluxo: as caixas de BI calculam e o Dashboard mostra. Quando os dados mudam, basta executar de novo.</p>
   <table>
@@ -947,6 +1351,7 @@
   <ul>
     <li>Todo visual tem o botão <strong>Ver tabela</strong>, com os números exatos — o dado nunca depende só do desenho.</li>
     <li>Passar o mouse mostra o valor de cada barra, ponto ou região. Clicar no título leva à caixa que gerou o visual.</li>
+    <li><strong>Nada some sem aviso.</strong> Linha e área com datas ou números no eixo mostram a série inteira, na ordem do eixo; acima de 2.000 pontos, uma amostra espalhada do primeiro ao último, com o aviso no rodapé. Colunas, barras e rosca mostram as maiores categorias até o <strong>Máximo de categorias</strong> da caixa, e o rodapé diz quantas eram e se as demais foram somadas em Outros.</li>
     <li>O painel <strong>Gráficos e resumos</strong>, abaixo do canvas, mostra os visuais das caixas de BI. Um botão no fim dele mostra também um gráfico automático para cada <strong>Summarize</strong>, o que é opcional.</li>
   </ul>
   <h3>Ver o gráfico sem sair do Designer</h3>
@@ -960,9 +1365,9 @@
   <h3>Linha de referência</h3>
   <p>No Configurar do <strong>Chart</strong>, <strong>Linha de referência</strong> desenha uma linha no gráfico: um <strong>valor fixo</strong> (ou uma constante, como <code>[#meta]</code>, que muda em todos os fluxos de uma vez), a <strong>média</strong> ou a <strong>mediana</strong> dos valores do gráfico. O rótulo é seu, como "Meta do mês". Vale para colunas, barras, linha, área, colunas agrupadas e dispersão. No Dashboard, o que fica acima e abaixo da linha ganha cores próprias, verde e vermelho por padrão, que se trocam na aba Eixos do painel Formato.</p>
 </section>
-<!-- ================================================================ 8. DASHBOARD -->
+<!-- ================================================================ 18. MONTANDO O DASHBOARD -->
 <section class="chapter">
-  <div class="eyebrow">10 · Dashboard</div>
+  <div class="eyebrow">18 · Mostrar</div>
   <h2>Montando o dashboard</h2>
   <p class="intro">O fluxo define <strong>o que</strong> mostrar; o dashboard define <strong>onde e como</strong>. Mudar cores ou posições não executa nada de novo.</p>
   <div class="goal"><b>Ao final:</b> <span>você monta a página, filtra e entrega em imagem ou em um arquivo que abre em qualquer navegador.</span></div>
@@ -982,7 +1387,7 @@
     <div>
       <h3>Organizar com um clique</h3>
       <p>O botão <strong>Organizar</strong> mostra os seus visuais em seis arranjos — Automático, KPIs no topo com 2 ou 3 colunas, Destaque, KPIs na lateral e Relatório — e aplica o escolhido.</p>
-      <p>Textos, imagens e o que não estiver selecionado ficam onde estão; um <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
+      <p>Textos, imagens e formas ficam onde estão; um <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz. Com visuais selecionados, a galeria pergunta antes: <strong>Todos os visuais</strong> ou <strong>Só os selecionados</strong>. Com um só selecionado, o padrão é arrumar todos.</p>
     </div>
     <figure>
       <div class="frame"><img src="../../src/prodata/web/manual/img/dash-organize.png" alt="Galeria de layouts"></div>
@@ -1050,9 +1455,9 @@
   </figure>
   <div class="try"><strong>Experimente</strong><ol><li>Abra o <strong>Dashboard</strong>, clique em <strong>Adicionar filtro</strong> e escolha <code>uf</code>.</li><li>Marque SP: os visuais com a coluna mudam na hora, sem executar o fluxo.</li><li>Clique em <strong>Baixar</strong>, depois em <strong>Baixar HTML</strong>, e abra o arquivo: o filtro continua funcionando.</li></ol></div>
 </section>
-<!-- ================================================================ REPLAY -->
+<!-- ================================================================ 19. LINHA DO TEMPO E HISTÓRIA -->
 <section class="chapter">
-  <div class="eyebrow">11 · Replay</div>
+  <div class="eyebrow">19 · Mostrar</div>
   <h2>Linha do tempo e história</h2>
   <p class="intro">O dashboard pode andar no tempo. Os visuais acompanham a reprodução sem executar o fluxo, com o mesmo cálculo do resto do programa.</p>
   <div class="goal"><b>Ao final:</b> <span>você reproduz o dashboard, encontra os momentos que importam, gera um GIF de um gráfico e conta o que viu em cenas.</span></div>
@@ -1097,263 +1502,19 @@
   </figure>
   <p>O <strong>HTML</strong> exportado leva a linha do tempo, os destaques e a história, com filtros, senha e rótulo como sempre. O arquivo inclui as colunas usadas pelos visuais, e o diálogo mostra quais são antes de gerar.</p>
 </section>
-<!-- ================================================================ 5. APIS -->
-<section class="chapter">
-  <div class="eyebrow">12 · Dados de APIs</div>
-  <h2>Dados de APIs, sem programar</h2>
-  <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O {{produto}} faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto.</p>
-  <div class="goal"><b>Ao final:</b> <span>você sabe cadastrar uma API, testar, e buscar um dado para cada linha da sua tabela.</span></div>
-  <h3>Três conceitos que explicam tudo</h3>
-  <div class="anatomy">…/estados/<span class="v">{sigla}</span>/municipios<span class="f">?view=nivelado</span>
-    <small><strong>{sigla}</strong> é a <strong>variável</strong>: um espaço no endereço, preenchido com um valor diferente a cada chamada. <strong>view=nivelado</strong> é um <strong>parâmetro fixo</strong>: ajusta a resposta e é igual em toda chamada.</small></div>
-  <table>
-    <tr><th>Tipo de API</th><th>Como é</th><th>Exemplo</th><th>No fluxo</th></tr>
-    <tr><td class="tool">Chamada direta</td><td>O endereço é sempre o mesmo</td><td>Todos os estados</td><td><strong>Input Data</strong></td></tr>
-    <tr><td class="tool">Com variável</td><td>O endereço tem um espaço a preencher</td><td>Os municípios de um estado</td><td><strong>API Loop</strong>, ligado a uma tabela</td></tr>
-  </table>
-  <p>A variável é reconhecida sozinha quando o nome está entre chaves. Se você colar um endereço com um valor real, como <code>…/estados/SP/municipios</code>, troque o valor por <code>{sigla}</code>. Se a documentação escrever <code>:sigla</code> ou <code>&lt;sigla&gt;</code>, a tela avisa e converte com um clique.</p>
-  <h3>Cadastrar e testar</h3>
-  <div class="steps">
-    <div class="step"><div><h4>Comece de um exemplo</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Nova API</strong>, escolha um exemplo pronto ou cole o endereço.</p></div></div>
-    <div class="step"><div><h4>Confira o pedido</h4><p><strong>O que será enviado</strong> mostra o pedido sendo montado, com a credencial sempre oculta.</p></div></div>
-    <div class="step"><div><h4>Ajuste o que precisar</h4><p>A aba <strong>Parâmetros</strong> separa variáveis de parâmetros fixos. <strong>Autenticação</strong> aceita token, chave, usuário e senha ou OAuth 2. <strong>Páginas</strong> lê respostas divididas em partes.</p></div></div>
-    <div class="step"><div><h4>Clique em Testar</h4><p>A resposta real aparece ao lado da tabela que ela gerou.</p></div></div>
-  </div>
-  <figure class="m50" style="max-width:44%">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/api-editor.png" alt="Resposta da API ao lado da tabela"></div>
-    <figcaption>A resposta real do IBGE e a tabela que sai dela. Passar o mouse num campo acende a coluna; <strong>Usar como linhas</strong> escolhe de onde vêm as linhas, sem digitar caminho.</figcaption>
-  </figure>
-  <div class="side">
-    <div>
-      <h3 style="margin-top:0">Como saber quais parâmetros existem?</h3>
-      <p>Cada API tem os seus, quase sempre opcionais, e a lista está na documentação dela. Não existe uma lista única.</p>
-      <ul>
-        <li>Guarde o link em <strong>Documentação da API</strong>: o botão abre a página no navegador.</li>
-        <li>Anote em cada parâmetro <strong>para que serve</strong>: fica salvo para quem usar a API depois.</li>
-        <li>Teste primeiro só com o endereço e acrescente o que precisar.</li>
-      </ul>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/api-vars.png" alt="Cadastro com a variável sigla e o parâmetro fixo view"></div><figcaption>A variável e o parâmetro fixo, separados, com o link da documentação.</figcaption></figure>
-  </div>
-  <h3>Uma chamada por linha: API Loop</h3>
-  <div class="side">
-    <div>
-      <p>Com uma API que tem variável, a caixa <strong>API Loop</strong> faz uma chamada para cada linha da tabela de entrada e junta as respostas numa tabela só. A entrada pode vir de outra API: a lista de estados alimenta os municípios de cada um.</p>
-      <p>Ligue a tabela e, em <strong>De onde vem cada variável</strong>, escolha a coluna:</p>
-      <figure class="small"><div class="frame"><img src="../../src/prodata/web/manual/img/api-params.png" alt="Escolha da coluna que preenche a variável"></div></figure>
-      <ul style="margin-top:8pt">
-        <li>A saída <strong>R</strong> traz as respostas ao lado da linha que as pediu; a <strong>E</strong>, o que falhou e o motivo.</li>
-        <li>Valores iguais são chamados uma vez só.</li>
-        <li>Um limite de pedidos, que conta páginas e novas tentativas, protege a API e a sua cota. A caixa também para depois de várias falhas seguidas.</li>
-        <li>O Loop não roda ao abrir um fluxo: espera o clique em <strong>Executar</strong>.</li>
-      </ul>
-    </div>
-    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/api-loop.png" alt="Esquema do API Loop"></div><figcaption>O esquema, com os seus dados: entrada, chamadas e saída.</figcaption></figure>
-  </div>
-  <div class="try"><strong>Experimente</strong><ol><li>No exemplo, clique em <strong>Executar</strong>: a etapa <em>5 · API pública do IBGE</em> busca os estados e os municípios de cada um. Abrir o fluxo não chama a internet; sem rede, só essa etapa dá erro.</li><li>Clique na caixa <em>Municípios por estado</em> e passe o mouse num valor do esquema para ver o caminho dele.</li></ol></div>
+<!-- ================================================================ PARTE V -->
+<section class="part" data-part="Parte V · Automatizar">
+  <div class="part-num">Parte V</div>
+  <h1 class="part-title">Automatizar</h1>
+  <p class="part-what">Fazer o fluxo rodar sozinho, levar a lógica para o banco e prever com o histórico.</p>
+  <ol class="part-list"><li><span>20</span>O fechamento que se refaz sozinho</li><li><span>21</span>Levando a lógica para o banco</li><li><span>22</span>Modelos de previsão</li></ol>
 </section>
-<!-- ================================================================ JIRA -->
+<!-- ================================================================ 20. O FECHAMENTO QUE SE REFAZ SOZINHO -->
 <section class="chapter">
-  <div class="eyebrow">13 · Jira</div>
-  <h2>Dados do Jira, sem escrever JQL</h2>
-  <p class="intro">O {{produto}} lê demandas, histórico e comentários do Jira Cloud e transforma tudo em tabelas. Ele só lê: nenhuma chamada altera o seu Jira.</p>
-  <div class="goal"><b>Ao final:</b> <span>você conecta o Jira com um token de leitura, monta uma consulta e leva a tabela para o fluxo.</span></div>
-  <h3>Conectar</h3>
-  <div class="steps">
-    <div class="step"><div><h4>Diga qual é o seu Jira</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Conectar ao Jira</strong>, cole o endereço de qualquer página do seu Jira.</p></div></div>
-    <div class="step"><div><h4>Crie um token de leitura</h4><p><strong>Criar meu token</strong> abre a página da Atlassian no navegador. Escolha criar um token com escopos e marque só as permissões de leitura, como <code>read:jira-work</code> e <code>read:jira-user</code>.</p></div></div>
-    <div class="step"><div><h4>Cole e teste</h4><p>Informe o e-mail da conta e o token. O teste mostra quem conectou e quantos projetos essa conta enxerga.</p></div></div>
-  </div>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/jira-conexao.png" alt="Conexão com o Jira em três passos"></div>
-    <figcaption>Nada é cadastrado no Jira para o {{produto}} funcionar. O token fica no cofre do Windows e nunca vai para fluxos, arquivos ou registros.</figcaption>
-  </figure>
-  <p>Um token comum também funciona, mas ele poderia alterar dados em outro programa. Por isso o {{produto}} avisa e recomenda o token com escopo.</p>
-  <h3>Montar a consulta</h3>
-  <p>Em <strong>Adicionar &gt; Nova consulta do Jira</strong>, a tela vai em passos: o que trazer, de quais projetos (com busca) e os filtros. Tipos e status só aparecem depois de escolher o projeto, e somente os que existem nele, agrupados em A fazer, Em andamento e Concluído. Uma frase resume o que será trazido. O JQL fica em <strong>Mais opções</strong>, para quem preferir escrever à mão.</p>
-  <table>
-    <tr><th>Tabela</th><th>Uma linha por</th><th>Para quê</th></tr>
-    <tr><td class="tool">Demandas</td><td>Demanda</td><td>Status, tipo, responsável, datas e campos personalizados que você marcar</td></tr>
-    <tr><td class="tool">Histórico de alterações</td><td>Mudança de um campo</td><td>Saber quando cada status mudou. É a entrada da caixa Estado por período</td></tr>
-    <tr><td class="tool">Comentários</td><td>Comentário</td><td>Costumam ter nomes e dados pessoais: traga só se precisar</td></tr>
-  </table>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/jira-consulta.png" alt="Consulta do Jira com projetos, filtros e prévia"></div>
-    <figcaption>A consulta vira uma fonte: arraste para o canvas e ela aparece no Input Data, como um arquivo.</figcaption>
-  </figure>
-  <h3>Só o que mudou</h3>
-  <p>A primeira execução traz tudo e guarda uma cópia local. As seguintes buscam só o que mudou desde a última leitura, com folga de segurança, e conferem com o Jira quais demandas ainda atendem à consulta: o que foi excluído, saiu do filtro ou passou do período sai da tabela. Se a carga cair no meio, a próxima continua de onde parou, e o limite de chamadas do Jira é respeitado.</p>
-  <div class="avoid"><h4>Quando reler tudo</h4><p>Raramente é preciso, por exemplo quando um campo muda de nome no Jira. Na página da consulta, <strong>Reler tudo</strong> refaz a carga inteira, e <strong>Apagar o guardado</strong> remove a cópia local.</p></div>
-  <h3>Do evento à foto de cada período</h3>
-  <p>O Jira guarda mudanças; muitas análises precisam de fotos: como cada demanda estava no fim de cada mês. A caixa <strong>Estado por período</strong> faz essa passagem para qualquer tabela de eventos. Na entrada <strong>I</strong> vão os itens; na <strong>E</strong>, os eventos. Com o histórico do Jira, use <code>campo</code> igual a <code>status</code>.</p>
-  <p>O que os eventos não explicam fica <strong>sem histórico</strong>. O valor de hoje nunca é usado para preencher o passado, a menos que a demanda nunca tenha mudado e você escolha a coluna de estado atual.</p>
-</section>
-<!-- ================================================================ PDF -->
-<section class="chapter">
-  <div class="eyebrow">14 · PDF</div>
-  <h2>Dados de PDFs, apontando no documento</h2>
-  <p class="intro">Relatórios, extratos e documentos chegam em PDF e costumam ser copiados à mão para planilhas. No {{produto}}, você ensina a extração apontando no próprio documento: clica no valor, vê a coluna nascer e confere de onde ela veio. Depois, a mesma extração vale para os próximos PDFs com o mesmo layout.</p>
-  <div class="goal"><b>Ao final:</b> <span>você sabe tirar campos e tabelas de um PDF, testar nos outros arquivos e usar o resultado em qualquer fluxo.</span></div>
-  <h3>Marcar um dado e ver a coluna nascer</h3>
-  <div class="steps">
-    <div class="step"><div><h4>Crie a fonte</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; PDF</strong>, envie um PDF, vincule um arquivo (lido onde está) ou escolha uma <strong>pasta de PDFs</strong> com padrão de nome, como <code>relatorio_*.pdf</code>. O editor <strong>Preparar extração</strong> abre na hora.</p></div></div>
-    <div class="step"><div><h4>Clique no valor</h4><p>Um clique marca uma palavra; dois cliques, o valor inteiro; arrastar marca uma área. Em cima da seleção aparece a prévia: o valor já convertido, o tipo e como o {{produto}} vai achar o dado.</p></div></div>
-    <div class="step"><div><h4>Tecle Enter</h4><p>O campo nasce no painel <strong>Campos</strong> e a coluna aparece no <strong>Resultado</strong>, com o valor convertido e o original ao lado. Nome e tipo mudam ali mesmo. Também dá para arrastar a seleção até o Resultado.</p></div></div>
-  </div>
-  <figure>
-    <div class="frame"><img src="../../src/prodata/web/manual/img/pdf-editor.png" alt="Editor Preparar extração com campos, documento e resultado"></div>
-    <figcaption>Três áreas: o que você já ensinou (Campos), o documento e o Resultado. Cada campo tem a sua cor, na página e na tabela.</figcaption>
-  </figure>
-  <p>Tudo também funciona pelo teclado: clique no documento e use as setas para andar pelas palavras, <kbd>Shift</kbd> para estender a seleção, <kbd>Enter</kbd> para criar o campo, <kbd>T</kbd> para criar tabela e <kbd>Esc</kbd> para limpar. <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz qualquer mudança.</p>
-  <h3>Como o {{produto}} acha o dado nos outros PDFs</h3>
-  <p>O {{produto}} não guarda a posição do número na página, e sim o significado dela: o valor fica <strong>à direita</strong> de um rótulo, <strong>abaixo</strong> dele ou dentro de uma seção. Assim, o mesmo relatório com o cabeçalho mais abaixo, ou com mais linhas, continua funcionando.</p>
-  <div class="pdf-rule" role="img" aria-label="Esquema: o rótulo, o valor ao lado e os estados do campo">
-    <div><b>1 · O rótulo</b><span class="pdf-line"><span class="lab">Total líquido:</span> R$ 834.086,00</span><small>Maiúsculas, acentos e espaços a mais não contam. Dá para aceitar variações, como “Valor líquido”.</small></div>
-    <div><b>2 · O valor ao lado</b><span class="pdf-line">Total líquido: <span class="val">R$ 834.086,00</span></span><small>Vira <code>834086.00</code>, tipo Moeda. O texto original fica guardado para conferir.</small></div>
-    <div><b>3 · Em outro PDF</b><span class="pdf-line">Total líquido: <span class="two">R$ 150.000,00</span><br>Total líquido: <span class="two">R$ 149.500,00</span></span><small>Dois valores diferentes: o campo fica <strong>Ambíguo</strong> e nada é escolhido sozinho.</small></div>
-  </div>
-  <p>Para trocar o rótulo, clique no alvo do campo, marque outro texto no documento e tecle <kbd>R</kbd> (<strong>Usar como rótulo</strong>). Achar pela posição fixa na página existe como última opção, marcado como <strong>frágil</strong>: se o layout mudar, o valor some ou vem errado.</p>
-  <h3>Tabelas, mesmo em várias páginas</h3>
-  <div class="side">
-    <div>
-      <p>Arraste sobre a tabela, do cabeçalho até a última linha que você quer, e tecle <kbd>T</kbd>. O {{produto}} propõe as colunas pelos espaços em branco e desenha <strong>guias</strong> tracejadas na página. Arraste uma guia (ou foque e use as setas) e a prévia muda na hora.</p>
-      <ul>
-        <li><strong>A tabela vai até onde você marcou.</strong> Marcou só parte das linhas? Ela termina <strong>depois dessas linhas</strong>. Marcou até a última linha da página? Ela segue nas páginas seguintes até o fim.</li>
-        <li><strong>As bordas da caixa se arrastam</strong>, como as guias: a de baixo encaixa entre as linhas (antes de uma linha de texto, como “Total geral”, a tabela termina antes dela), a de cima escolhe a linha do cabeçalho e as laterais limitam a largura.</li>
-        <li><strong>Termina em</strong> mostra a regra: num texto, depois de N linhas ou no fim do documento.</li>
-        <li><strong>Nova linha quando</strong>: uma observação escrita em duas linhas vira uma célula só, porque a linha nova começa quando a coluna escolhida tem valor.</li>
-        <li>Nas páginas seguintes, o cabeçalho repetido é ignorado.</li>
-        <li><strong>Começa em</strong> diz quais textos identificam o cabeçalho. Se ele muda de um mês para outro, deixe só o que se repete, como “VAR., PARTICIPAÇÃO”.</li>
-        <li>Subtotais e rodapés são <strong>sugeridos</strong> para exclusão; nada sai sem a sua confirmação.</li>
-        <li>Nenhuma linha é inventada: se a tabela não pode ser montada, ela mostra o problema e pede ajuste.</li>
-      </ul>
-    </div>
-    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-tabela.png" alt="Tabela com guias de coluna sobre a página"></div><figcaption>As guias sobre a página e a tabela já montada, com a linha de duas linhas unida.</figcaption></figure>
-  </div>
-  <h3>Quando há dúvida</h3>
-  <div class="pdf-states">
-    <div><b>Encontrado</b>um valor válido</div>
-    <div><b>Ausente</b>nenhum candidato</div>
-    <div><b>Ambíguo</b>mais de um valor diferente</div>
-    <div><b>Inválido</b>achou, mas não converte</div>
-    <div><b>Não suportado</b>PDF escaneado, com senha ou danificado</div>
-  </div>
-  <p>Cada documento fica <strong>Aprovado</strong>, <strong>Revisar</strong> ou <strong>Falhou</strong> (quando falta um campo obrigatório). Para um documento que fugiu do padrão, <strong>Corrigir só neste documento</strong> informa o valor certo sem mudar a regra. Fica registrado quem corrigiu, quando e o valor de antes, e a correção deixa de valer sozinha se o PDF mudar.</p>
-  <h3>Testar em outros arquivos</h3>
-  <div class="side">
-    <div>
-      <p>A cada mudança, o {{produto}} roda a extração de verdade numa amostra dos PDFs e mostra quantos foram avaliados, como “3 de 3 avaliados”. Nada é estimado.</p>
-      <p>A aba <strong>Testar em outros arquivos</strong> monta a matriz documento × campo. Clique numa célula para abrir aquele documento com o trecho destacado.</p>
-      <p>Ao mudar uma regra, um quadro mostra quantos documentos mantiveram o resultado, quantos foram corrigidos e quantos passaram a falhar, com <strong>Desfazer</strong>.</p>
-    </div>
-    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-teste.png" alt="Matriz de documentos por campo"></div><figcaption>Os estados de cada campo em cada documento. O relatório com dois totais falha: o total é obrigatório e ficou Ambíguo.</figcaption></figure>
-  </div>
-  <h3>Reaproveitar a extração</h3>
-  <div class="side">
-    <div>
-      <p>A extração que você ensinou fica guardada e pode servir a outras fontes com o mesmo layout, como os relatórios de outra filial ou de outro ano. Ela vale só para PDF: planilhas, bancos e APIs já chegam como tabela.</p>
-      <ul>
-        <li>Ao criar a fonte, escolha em <strong>Extração</strong> uma das extrações salvas: os campos já vêm prontos.</li>
-        <li>No editor, o menu <strong>Extração</strong> copia como extração nova (para ajustar sem mexer na original), troca por outra, exporta e importa.</li>
-        <li>O arquivo exportado não leva caminho nem senha: dá para mandar a um colega.</li>
-        <li>Em <strong>Extrações salvas</strong>, cada uma mostra quais fontes a usam e pode ser excluída. Se alguma fonte usa, a tela avisa e ela volta a rascunho.</li>
-      </ul>
-    </div>
-    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-extracoes.png" alt="Lista de extrações salvas com as fontes que usam cada uma"></div><figcaption>As extrações salvas, com as fontes que usam cada uma.</figcaption></figure>
-  </div>
-  <h3>De onde veio cada valor</h3>
-  <p>Clique em qualquer valor do Resultado, ou numa célula da tabela, e a página rola até o trecho exato e o destaca, inclusive em outra página. No sentido contrário, clicar no documento sobre um valor já extraído destaca o campo ou a célula que ele gerou.</p>
-  <h3>Tirar e adicionar documentos</h3>
-  <div class="side">
-    <div>
-      <p>Na <strong>Visão geral</strong>, cada documento tem um <strong>×</strong> para <strong>tirar da fonte</strong>: ele sai da extração e das saídas, mas o arquivo continua onde está, na sua pasta. Os tirados ficam em <strong>Fora da fonte</strong>, com <strong>Trazer de volta</strong>.</p>
-      <p><strong>Adicionar PDFs</strong> soma um ou vários arquivos aos da pasta. O {{produto}} guarda uma cópia de cada, marcada como <em>adicionado</em>, e não grava nada na sua pasta. Uma fonte de um PDF só vira uma fonte de vários. Só a cópia guardada pelo programa é apagada de fato, e sempre com confirmação.</p>
-      <p>A lista é avaliada de novo na hora, e o fluxo usa o conjunto novo na próxima execução. A fonte nunca fica sem documento: o último não sai.</p>
-    </div>
-    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-documentos.png" alt="Lista de documentos com um PDF fora da fonte e o botão Trazer de volta"></div><figcaption>Um relatório tirado da fonte: continua no disco e volta com um clique.</figcaption></figure>
-  </div>
-
-  <h3>No fluxo</h3>
-  <div class="side">
-    <div>
-      <p>A fonte entra no fluxo pelo <strong>Input Data</strong>, como qualquer outra. Ela tem quatro saídas:</p>
-      <table>
-        <tr><th>Saída</th><th>O que traz</th></tr>
-        <tr><td class="tool">campos</td><td>Uma linha por documento, uma coluna por campo</td></tr>
-        <tr><td class="tool">itens_&lt;tabela&gt;</td><td>Uma linha por item, com o documento de origem</td></tr>
-        <tr><td class="tool">falhas</td><td>O que faltou ou ficou em dúvida, sem copiar o conteúdo</td></tr>
-        <tr><td class="tool">origem</td><td>Página e região de cada valor</td></tr>
-      </table>
-      <p>Em <strong>Quando um documento falhar</strong>, escolha entre parar a execução (a opção segura, sugerida), entregar só os aprovados ou entregar todos com a situação. PDF novo na pasta entra na próxima execução; PDF alterado é relido; sem mudança, o resultado guardado é aproveitado.</p>
-    </div>
-    <figure class="tall"><div class="frame"><img src="../../src/prodata/web/manual/img/pdf-visao.png" alt="Visão geral da fonte PDF com documentos, política e saídas"></div><figcaption>A visão geral: situação de cada documento, a política de falha e as saídas.</figcaption></figure>
-  </div>
-  <div class="avoid"><h4>Seguro por padrão</h4><p>O PDF é lido no seu computador, num processo separado, com tempo e memória limitados: um arquivo quebrado nunca derruba o programa. Conteúdo ativo do PDF (scripts, formulários) nunca é executado, e trechos do documento não vão para os registros. PDFs escaneados (só imagem) ainda não são lidos.</p></div>
-  <p>No fluxo de exemplo, a etapa <em>6 · PDFs da Receita Federal</em> lê três relatórios reais da <strong>Análise da Arrecadação das Receitas Federais</strong> (julho a setembro de 2026), publicados pela Receita Federal no gov.br, com reprodução autorizada mediante citação da fonte. A extração já vem pronta, e os dados do PDF entram no resto do fluxo: a arrecadação de cada mês é cruzada com o faturamento das <em>Transações</em> (quanto a empresa fatura para cada R$ 1 bilhão arrecadado pela União), e a tabela por tributo vira o gráfico dos principais tributos. Os três gráficos estão no dashboard do exemplo. Em setembro o cabeçalho da tabela mudou de formato, e a mesma extração continua funcionando.</p>
-  <div class="try"><strong>Experimente</strong><ol><li>Em <strong>Dados &gt; Adicionar &gt; PDF</strong>, clique em <strong>Usar os PDFs de exemplo</strong>.</li><li>Clique no valor ao lado de “Total líquido” e tecle <kbd>Enter</kbd>. Depois arraste sobre a tabela e tecle <kbd>T</kbd>.</li><li>Abra <strong>Testar em outros arquivos</strong>: o relatório de dezembro tem dois totais e fica Ambíguo.</li><li>Na lista da vista Dados, abra <strong>Arrecadação federal (Receita Federal)</strong> e clique num valor da tabela para ver de onde ele veio no relatório.</li></ol></div>
-</section>
-<!-- ================================================================ 10. SQL -->
-<section class="chapter">
-  <div class="eyebrow">15 · Do fluxo ao SQL</div>
-  <h2>Levando a lógica para o banco</h2>
-  <p class="intro">O {{produto}} é onde você constrói rápido e experimenta. A aba <strong>SQL</strong>, ao lado de Designer e Dashboard, mostra o que foi construído escrito em SQL e confere se o código dá o mesmo resultado, para que levar a lógica ao lake seja uma revisão, não uma reescrita.</p>
-  <figure class="m80">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/sql.png" alt="Aba SQL"></div>
-    <figcaption>À esquerda, as saídas e o caminho no fluxo; à direita, o código daquela saída.</figcaption>
-  </figure>
-  <h3>Uma saída, um código</h3>
-  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="vista_sql">Mostrar onde fica</button></div>
-  <p>Cada saída do fluxo tem o próprio código, só com o que existe entre as entradas e ela: se a saída usa apenas o J de um Join, as saídas L e R nem aparecem. Clique numa saída para ver o caminho aceso na trilha. Marque outras saídas para juntar tudo num código só, em que as etapas comuns aparecem uma vez, com a marca "usada por 2".</p>
-  <div class="grid-2">
-    <div>
-      <h3>O estado da saída</h3>
-      <ul>
-        <li><strong>Conferido</strong>: etapa por etapa e de ponta a ponta, o SQL deu o mesmo resultado que o fluxo. Para rodar no Fabric, o código ainda precisa de adaptação.</li>
-        <li><strong>Conferido, com ressalvas</strong>: bateu, mas há pontos a revisar, como a ordem das linhas.</li>
-        <li><strong>Parcial</strong>: há uma caixa sem SQL no caminho. O código vai até ela.</li>
-        <li><strong>Não bate</strong>: o SQL deu outro resultado, e a tela diz quantas linhas diferem.</li>
-        <li><strong>Ainda não conferido</strong>: execute o fluxo para conferir.</li>
-      </ul>
-      <p>Caixas sem tradução, como as de Machine Learning, ficam em vermelho, com a etiqueta "sem SQL".</p>
-    </div>
-    <figure style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/sql-parcial.png" alt="Saída parcial"></div>
-      <figcaption>A saída depende do modelo: o caminho para no Treino.</figcaption></figure>
-  </div>
-  <div class="grid-2">
-    <div>
-      <h3>Entregando para o time de dados</h3>
-      <p><strong>Copiar SQL</strong> copia o código que está na tela. <strong>Baixar</strong> gera um arquivo <code>.sql</code>, ou um <code>.zip</code> com um arquivo por saída, mais o unificado, pronto para mandar pelo Teams. Cada arquivo abre com um cabeçalho que diz o que ele produz, de que fontes precisa, o que foi conferido e o que ficou de fora.</p>
-      <p>O arquivo leva só a lógica. Dados, senhas e caminhos de pastas ficam de fora; a exceção é o <em>Text Input</em>, cujos valores digitados fazem parte do código, e o cabeçalho avisa. As constantes também entram já com o valor, e o cabeçalho lista as usadas: para mudar uma, gere o código de novo.</p>
-      <p>O botão <strong>Fluxo completo</strong> mostra o seu desenho inteiro com o caminho aceso. No Designer, o botão direito numa caixa traz <strong>Ver SQL</strong>.</p>
-    </div>
-    <figure style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/sql-fluxo.png" alt="Fluxo completo"></div>
-      <figcaption>Fluxo completo: o caminho da saída aceso, as caixas sem SQL em vermelho.</figcaption></figure>
-  </div>
-  <div class="try"><strong>Experimente</strong><ol><li>Abra a aba <strong>SQL</strong> e clique na saída <em>Exportar</em>: o caminho para em vermelho, na caixa do modelo.</li><li>Clique em <strong>Mostrar visuais</strong> e escolha <em>Gráfico por UF</em>: esse caminho não passa pelo modelo, e o estado mostra <strong>Conferido, com ressalvas</strong>.</li></ol></div>
-  <h3>Spark SQL e T-SQL para o Microsoft Fabric</h3>
-  <p>No topo da aba, escolha o dialeto. <strong>DuckDB</strong> é o código do próprio {{produto}}, conferido com os resultados. <strong>Spark SQL</strong> (Lakehouse e notebooks) e <strong>T-SQL</strong> (Warehouse) são convertidos dele, bloco a bloco, para encurtar o caminho do time de dados.</p>
-  <div class="callout warn"><strong>Convertido não é conferido</strong>O código em Spark SQL e T-SQL não é executado nem comparado com os resultados, e sai marcado como <strong>não conferido</strong> na tela e no arquivo. Os blocos que leem arquivo pedem a troca pela tabela do Fabric, os que usam funções próprias do {{produto}} vêm marcados com <em>Atenção</em>, e o que a conversão não entende fica em DuckDB, com o motivo escrito. Revise antes de usar.</div>
-  <figure class="m80" style="max-width:62%">
-    <div class="frame"><img src="../../src/prodata/web/manual/img/sql-fabric.png" alt="Aba SQL em T-SQL, com o aviso de não conferido"></div>
-    <figcaption>O aviso fica acima do código enquanto o dialeto não é o DuckDB.</figcaption>
-  </figure>
-</section>
-<!-- ================================================================ FECHAMENTO -->
-<section class="chapter">
-  <div class="eyebrow">16 · Automação</div>
+  <div class="eyebrow">20 · Automatizar</div>
   <h2>O fechamento que se refaz sozinho</h2>
-  <p class="intro">Todo mês chegam arquivos novos, o relatório tem o mesmo formato e alguém precisa rodar tudo. Este capítulo junta as peças que tiram esse trabalho da sua mão.</p>
+  <p class="intro">Todo mês chegam arquivos novos, o relatório tem o mesmo formato e alguém precisa rodar tudo. Este capítulo junta as peças que tiram esse trabalho da sua mão. A pasta que se atualiza sozinha está no capítulo 6.</p>
   <div class="goal"><b>Ao final:</b> <span>o fluxo lê a pasta do mês, grava no modelo de Excel da área, reaproveita etapas e roda sozinho pelo Agendador do Windows.</span></div>
-  <h3>Uma pasta inteira de uma vez</h3>
-  <p>Cadastre a pasta do mês uma vez, na vista Dados, como <strong>Pasta de arquivos</strong> na opção <em>Uma tabela só</em> (capítulo 4), e leia com o <em>Input Data</em>. No mês seguinte, basta os arquivos novos chegarem.</p>
-  <ul>
-    <li>Arquivo novo, removido ou alterado: a caixa refaz sozinha na execução seguinte, também pela linha de comando.</li>
-    <li>Sem mudança na pasta, a execução aproveita o resultado guardado.</li>
-    <li>A mesma pasta serve a vários fluxos, aparece no mapa de uso e avisa quando some.</li>
-    <li>Num computador sem o cadastro, a caixa explica que a pasta precisa ser cadastrada na vista Dados.</li>
-  </ul>
-  <figure class="m80"><div class="frame"><img src="../../src/prodata/web/manual/img/dados-pasta-cadastro.png" alt="Cadastro de uma pasta de arquivos"></div><figcaption>Enquanto você digita, a lista mostra os arquivos que entram e marca o que tem colunas diferentes.</figcaption></figure>
-  <div class="callout tip"><strong>Já usa a caixa Input Folder?</strong>Ela saiu da paleta, mas os fluxos que a usam continuam executando igual. No Configurar dela, <strong>Levar para a vista Dados</strong> cadastra a pasta com a mesma configuração e troca a caixa por um Input Data, no mesmo lugar e com os mesmos fios.</div>
   <h3>Calendário e sequências</h3>
   <div class="side feature slim">
     <div>
@@ -1442,9 +1603,55 @@
     <li>Em <strong>Avançado</strong> fica a linha de comando, para outro agendador: termina com código 0 quando tudo executou, ou 1 quando alguma caixa falhou, e o relatório fica em <code>logs/execucoes</code>.</li>
   </ul>
 </section>
-<!-- ================================================================ MODELOS -->
+<!-- ================================================================ 21. LEVANDO A LÓGICA PARA O BANCO -->
 <section class="chapter">
-  <div class="eyebrow">17 · Previsão</div>
+  <div class="eyebrow">21 · Automatizar</div>
+  <h2>Levando a lógica para o banco</h2>
+  <p class="intro">O {{produto}} é onde você constrói rápido e experimenta. A aba <strong>SQL</strong>, ao lado de Designer e Dashboard, mostra o que foi construído escrito em SQL e confere se o código dá o mesmo resultado, para que levar a lógica ao lake seja uma revisão, não uma reescrita.</p>
+  <figure class="m80">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/sql.png" alt="Aba SQL"></div>
+    <figcaption>À esquerda, as saídas e o caminho no fluxo; à direita, o código daquela saída.</figcaption>
+  </figure>
+  <h3>Uma saída, um código</h3>
+  <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="vista_sql">Mostrar onde fica</button></div>
+  <p>Cada saída do fluxo tem o próprio código, só com o que existe entre as entradas e ela: se a saída usa apenas o J de um Join, as saídas L e R nem aparecem. Clique numa saída para ver o caminho aceso na trilha. Marque outras saídas para juntar tudo num código só, em que as etapas comuns aparecem uma vez, com a marca "usada por 2".</p>
+  <div class="grid-2">
+    <div>
+      <h3>O estado da saída</h3>
+      <ul>
+        <li><strong>Conferido</strong>: etapa por etapa e de ponta a ponta, o SQL deu o mesmo resultado que o fluxo. Para rodar no Fabric, o código ainda precisa de adaptação.</li>
+        <li><strong>Conferido, com ressalvas</strong>: bateu, mas há pontos a revisar, como a ordem das linhas.</li>
+        <li><strong>Parcial</strong>: há uma caixa sem SQL no caminho. O código vai até ela.</li>
+        <li><strong>Não bate</strong>: o SQL deu outro resultado, e a tela diz quantas linhas diferem.</li>
+        <li><strong>Ainda não conferido</strong>: execute o fluxo para conferir.</li>
+      </ul>
+      <p>Caixas sem tradução, como as de Machine Learning, ficam em vermelho, com a etiqueta "sem SQL".</p>
+    </div>
+    <figure style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/sql-parcial.png" alt="Saída parcial"></div>
+      <figcaption>A saída depende do modelo: o caminho para no Treino.</figcaption></figure>
+  </div>
+  <div class="grid-2">
+    <div>
+      <h3>Entregando para o time de dados</h3>
+      <p><strong>Copiar SQL</strong> copia o código que está na tela. <strong>Baixar</strong> gera um arquivo <code>.sql</code>, ou um <code>.zip</code> com um arquivo por saída, mais o unificado, pronto para mandar pelo Teams. Cada arquivo abre com um cabeçalho que diz o que ele produz, de que fontes precisa, o que foi conferido e o que ficou de fora.</p>
+      <p>O arquivo leva só a lógica. Dados, senhas e caminhos de pastas ficam de fora; a exceção é o <em>Text Input</em>, cujos valores digitados fazem parte do código, e o cabeçalho avisa. As constantes também entram já com o valor, e o cabeçalho lista as usadas: para mudar uma, gere o código de novo.</p>
+      <p>O botão <strong>Fluxo completo</strong> mostra o seu desenho inteiro com o caminho aceso. No Designer, o botão direito numa caixa traz <strong>Ver SQL</strong>.</p>
+    </div>
+    <figure style="margin-top:0"><div class="frame"><img src="../../src/prodata/web/manual/img/sql-fluxo.png" alt="Fluxo completo"></div>
+      <figcaption>Fluxo completo: o caminho da saída aceso, as caixas sem SQL em vermelho.</figcaption></figure>
+  </div>
+  <div class="try"><strong>Experimente</strong><ol><li>Abra a aba <strong>SQL</strong> e clique na saída <em>Exportar</em>: o caminho para em vermelho, na caixa do modelo.</li><li>Clique em <strong>Mostrar visuais</strong> e escolha <em>Gráfico por UF</em>: esse caminho não passa pelo modelo, e o estado mostra <strong>Conferido, com ressalvas</strong>.</li></ol></div>
+  <h3>Spark SQL e T-SQL para o Microsoft Fabric</h3>
+  <p>No topo da aba, escolha o dialeto. <strong>DuckDB</strong> é o código do próprio {{produto}}, conferido com os resultados. <strong>Spark SQL</strong> (Lakehouse e notebooks) e <strong>T-SQL</strong> (Warehouse) são convertidos dele, bloco a bloco, para encurtar o caminho do time de dados.</p>
+  <div class="callout warn"><strong>Convertido não é conferido</strong>O código em Spark SQL e T-SQL não é executado nem comparado com os resultados, e sai marcado como <strong>não conferido</strong> na tela e no arquivo. Os blocos que leem arquivo pedem a troca pela tabela do Fabric, os que usam funções próprias do {{produto}} vêm marcados com <em>Atenção</em>, e o que a conversão não entende fica em DuckDB, com o motivo escrito. Revise antes de usar.</div>
+  <figure class="m80" style="max-width:62%">
+    <div class="frame"><img src="../../src/prodata/web/manual/img/sql-fabric.png" alt="Aba SQL em T-SQL, com o aviso de não conferido"></div>
+    <figcaption>O aviso fica acima do código enquanto o dialeto não é o DuckDB.</figcaption>
+  </figure>
+</section>
+<!-- ================================================================ 22. MODELOS DE PREVISÃO -->
+<section class="chapter">
+  <div class="eyebrow">22 · Automatizar</div>
   <h2>Modelos de previsão</h2>
   <p class="intro">Um modelo aprende com o histórico e aplica o que aprendeu a dados novos: quem tende a atrasar, quanto um cliente deve comprar. No {{produto}}, treinar, guardar e reaproveitar um modelo são caixas do fluxo.</p>
   <div class="goal"><b>Ao final:</b> <span>você treina um modelo, sabe quando ele muda, usa em outros fluxos e leva para outro computador.</span></div>
@@ -1476,13 +1683,20 @@
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/model-input.png" alt="Caixa Model Input"></div><figcaption>Escolher da biblioteca, importar um arquivo ou exportar.</figcaption></figure>
   </div>
 </section>
-
+<!-- ================================================================ PARTE VI -->
+<section class="part" data-part="Parte VI · Trabalhar junto">
+  <div class="part-num">Parte VI</div>
+  <h1 class="part-title">Trabalhar junto</h1>
+  <p class="part-what">Organizar o trabalho, levar o fluxo para outro computador e trabalhar em equipe.</p>
+  <ol class="part-list"><li><span>23</span>Organização e personalização</li><li><span>24</span>Compartilhar o fluxo</li><li><span>25</span>Trabalhar em equipe</li></ol>
+</section>
+<!-- ================================================================ 23. ORGANIZAÇÃO E PERSONALIZAÇÃO -->
 <section class="chapter">
-  <div class="eyebrow">18 · Organização</div>
+  <div class="eyebrow">23 · Trabalhar junto</div>
   <h2>Organização e personalização</h2>
   <h3>Etapas</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="etapa">Mostrar onde fica</button></div>
-  <p>Agrupe partes do fluxo em etapas com nome, descrição e cor (paleta <em>Organização</em>, botão <strong>Etapa</strong> ou tecla <kbd>G</kbd>). Arrastar o título move a etapa junto com tudo o que está dentro. Cada etapa tem um <strong>interruptor</strong>: desligada, as caixas de dentro deixam de executar — útil para pausar uma parte do processo sem apagar nada. Com o botão direito no título, a etapa também <strong>recolhe</strong> num cartão pequeno (capítulo 5).</p>
+  <p>Agrupe partes do fluxo em etapas com nome, descrição e cor (paleta <em>Organização</em>, botão <strong>Etapa</strong> ou tecla <kbd>G</kbd>). Arrastar o título move a etapa junto com tudo o que está dentro. Cada etapa tem um <strong>interruptor</strong>: desligada, as caixas de dentro deixam de executar — útil para pausar uma parte do processo sem apagar nada. Com o botão direito no título, a etapa também <strong>recolhe</strong> num cartão pequeno (veja Recolher caixas e etapas, logo abaixo).</p>
   <div style="display:grid; grid-template-columns: 30% 1fr; gap: 12pt; align-items: start">
     <figure style="margin:0"><div class="frame"><img src="../../src/prodata/web/manual/img/container-crop.png" alt="Configuração da etapa"></div><figcaption>Configurações da etapa.</figcaption></figure>
     <div>
@@ -1495,6 +1709,30 @@
       </ul>
       <figure style="margin-top:6pt"><div class="frame"><img src="../../src/prodata/web/manual/img/containerOff-crop.png" alt="Etapa desligada"></div><figcaption>Uma etapa desligada: tracejada, esmaecida e sem executar.</figcaption></figure>
     </div>
+  </div>
+  <h3>Listas que recolhem</h3>
+  <div class="side">
+    <div>
+      <p>Fórmulas da <em>Formula</em>, regras do <em>Data Quality</em>, agregações do <em>Summarize</em>, chaves do <em>Join</em>, ordenação do <em>Sort</em>: toda lista do Configurar tem a <strong>seta</strong> em cada item. Recolhido, o item vira um cartão de uma linha com o resumo (<code>receita_anual = Round(…)</code>), e um clique o abre de novo.</p>
+      <p><strong>Dois cliques no título</strong> dão um nome ao item, como "Receita anual". <strong>Recolher todos</strong> e <strong>Expandir todos</strong> ficam no topo da lista. Um item com erro fica com a borda vermelha mesmo recolhido. Nomear e recolher não mudam o resultado: a caixa não precisa executar de novo.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/lista-formulas.png" alt="Fórmulas recolhidas com nome"></div><figcaption>Duas fórmulas recolhidas, com nome e resumo.</figcaption></figure>
+  </div>
+  <h3>Recolher caixas e etapas</h3>
+  <p>Num fluxo grande, recolha o que não está em foco. Com o botão direito no título de uma <strong>etapa</strong>, <em>Recolher etapa</em> troca a moldura e as caixas de dentro por um cartão com o nome, quantas caixas tem, os ícones delas e o estado (executada, com erro, com amostra). Os fios passam a ligar no cartão, e dois cliques o abrem de novo. <strong>Exibir → Etapas e caixas → Recolher todas as etapas</strong> mostra o fluxo inteiro em blocos. Um laço dentro de uma etapa recolhida fica representado pelo cartão, sem a moldura tracejada.</p>
+  <div class="side">
+    <div>
+  <p>Uma <strong>caixa</strong> também recolhe (botão direito → <em>Recolher a caixa</em>): fica só com o ícone e as portas, e o nome aparece ao passar o mouse. Recolher é só desenho: o resultado, o SQL e o cache não mudam, e buscar uma caixa escondida abre a etapa dela.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/recolher-etapas.png" alt="Fluxo com etapas recolhidas"></div><figcaption>Quatro etapas recolhidas em cartões: os fios ligam direto neles.</figcaption></figure>
+  </div>
+  <h3>Fios organizados</h3>
+  <div class="side">
+    <div>
+      <p>Os fios seguem em linhas retas, com cantos arredondados, e <strong>desviam das caixas</strong> e dos títulos das etapas. Fios que correm juntos ganham pistas separadas; os que saem da mesma porta dividem o tronco. Ao arrastar uma caixa, o fio dela fica curvo até você soltar.</p>
+      <p><strong>Exibir → Fios → Curvos</strong> volta ao desenho anterior. <strong>Organizar o fluxo</strong> (em Exibir, ou botão direito no canvas vazio) arruma as caixas em colunas, da esquerda para a direita, mantendo cada etapa junta; <kbd>Ctrl</kbd>+<kbd>Z</kbd> desfaz.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/fios-organizados.png" alt="Fios que desviam das caixas"></div><figcaption>Os fios contornam as caixas, cada um na sua pista.</figcaption></figure>
   </div>
   <h3>Painéis do seu jeito</h3>
   <div class="manual-only m-acts"><button type="button" class="manual-only m-act" data-show="exibir">Mostrar o menu Exibir</button><button type="button" class="manual-only m-act" data-show="foco">Mostrar o botão Foco</button></div>
@@ -1561,9 +1799,9 @@
     <figcaption>Ponto de cache no Join: as caixas anteriores aparecem "em cache" e a tabela mostra o que chega pela entrada [R].</figcaption>
   </figure>
 </section>
-<!-- ================================================================ COMPARTILHAR -->
+<!-- ================================================================ 24. COMPARTILHAR O FLUXO -->
 <section class="chapter">
-  <div class="eyebrow">19 · Compartilhar</div>
+  <div class="eyebrow">24 · Trabalhar junto</div>
   <h2>Compartilhar o fluxo</h2>
   <p class="intro">Um fluxo é um arquivo pequeno: dá para mandar por e-mail, pelo Teams ou deixar numa pasta da equipe. Este capítulo mostra o que acontece do outro lado: quem recebe vê o que falta no computador dele, pode rodar com uma amostra dos dados e confere o que o fluxo faz antes de executar.</p>
   <div class="goal"><b>Ao final:</b> <span>você manda um fluxo que roda no computador de outra pessoa e sabe o que ela vai ver ao abrir.</span></div>
@@ -1604,10 +1842,9 @@
     <figcaption>Um fluxo recebido: antes de executar, o que ele lê, calcula e grava.</figcaption>
   </figure>
 </section>
-
-<!-- ================================================================ EQUIPE (spec 047) -->
+<!-- ================================================================ 25. TRABALHAR EM EQUIPE -->
 <section class="chapter">
-  <div class="eyebrow">20 · Equipe</div>
+  <div class="eyebrow">25 · Trabalhar junto</div>
   <h2>Trabalhar em equipe</h2>
   <p class="intro">Um espaço da equipe é uma pasta que todos já usam: uma pasta da rede, do OneDrive ou do SharePoint. O {{produto}} guarda ali os fluxos da equipe e mostra quem está editando, o que mudou e qual é a versão oficial. Não existe servidor novo nem conta nova, e quem só usa no próprio computador continua exatamente como antes.</p>
   <div class="goal"><b>Ao final:</b> <span>você cria um espaço, chama a equipe, edita sem pisar no trabalho do colega e agenda só a versão que foi aprovada.</span></div>
@@ -1768,19 +2005,26 @@
   </div>
   <div class="callout warn"><strong>Até onde vai</strong>As assinaturas impedem que alguém se passe por outro membro ou altere um fluxo sem ser notado. Quem tem acesso à pasta ainda pode apagar arquivos: as permissões da pasta (rede, OneDrive, SharePoint) continuam sendo a primeira barreira.</div>
 </section>
-
-<!-- ================================================================ 9. SEGURANÇA -->
+<!-- ================================================================ PARTE VII -->
+<section class="part" data-part="Parte VII · Referência">
+  <div class="part-num">Parte VII</div>
+  <h1 class="part-title">Referência</h1>
+  <p class="part-what">Segurança, escopo e limitações, todas as ferramentas, atalhos e perguntas frequentes.</p>
+  <ol class="part-list"><li><span>26</span>Segurança e privacidade</li><li><span>27</span>Escopo e limitações</li><li><span>28</span>Todas as ferramentas</li><li><span>29</span>Atalhos e perguntas frequentes</li></ol>
+</section>
+<!-- ================================================================ 26. SEGURANÇA E PRIVACIDADE -->
 <section class="chapter">
-  <div class="eyebrow">21 · Confiança</div>
+  <div class="eyebrow">26 · Referência</div>
   <h2>Segurança e privacidade</h2>
   <div class="grid-3">
-    <div class="card"><h4>Tudo local</h4><p>O {{produto}} roda inteiramente no seu computador e funciona offline. A única saída para a rede é a que você cadastra: bancos e APIs. O programa não envia nada por conta própria.</p></div>
+    <div class="card"><h4>Tudo local</h4><p>O {{produto}} roda inteiramente no seu computador e funciona offline. A saída para a rede é a que você cadastra (bancos e APIs) e a dos dados públicos. O programa não envia nada por conta própria.</p></div>
+    <div class="card"><h4>Dados públicos sob controle</h4><p>O catálogo só acessa os endereços oficiais de uma lista fixa, só para ler, e só com o catálogo aberto, no Atualizar ou quando um fluxo executa uma caixa Dados públicos. O download do CNPJ grava só na pasta que você escolhe, nunca na pasta do programa nem na de um espaço da equipe. Nada de token: são os dados abertos do próprio órgão.</p></div>
     <div class="card"><h4>Senhas no cofre do Windows</h4><p>Senhas de banco ficam no Gerenciador de Credenciais do Windows, criptografadas pelo sistema. Nunca aparecem em arquivos, fluxos ou mensagens de erro.</p></div>
     <div class="card"><h4>APIs sob controle</h4><p>Tokens e senhas ficam no cofre do Windows e nunca viajam por <code>http</code> para fora, nem seguem para outro servidor. APIs públicas funcionam sem configuração; rede interna, só com a lista da TI. POST e API Loop não rodam sozinhos ao abrir um fluxo.</p></div>
     <div class="card"><h4>Rótulos</h4><p>Público, Interno, Confidencial ou Restrito. No HTML, os dois últimos exigem senha; a imagem e o Excel saem marcados, e a dica avisa.</p></div>
     <div class="card"><h4>Registro das exportações</h4><p><code>logs\exportacoes.log</code> guarda quando, quem, o arquivo, o rótulo, quantas linhas e colunas, e se teve senha. Nunca os dados.</p></div>
     <div class="card"><h4>Bancos somente leitura</h4><p>Comandos que alteram dados (<code>DELETE</code>, <code>UPDATE</code>, <code>DROP</code>…) são recusados antes de chegar ao banco. No PostgreSQL, a sessão é aberta em modo somente leitura.</p></div>
-    <div class="card"><h4>Fluxos recebidos</h4><p>Um fluxo de fora abre em modo protegido (capítulo 19): nada executa até você confiar. No espaço da equipe, cada versão é assinada por quem salvou (capítulo 20). Fórmulas e a caixa SQL não acessam arquivos nem a internet.</p></div>
+    <div class="card"><h4>Fluxos recebidos</h4><p>Um fluxo de fora abre em modo protegido (capítulo 24): nada executa até você confiar. No espaço da equipe, cada versão é assinada por quem salvou (capítulo 25). Fórmulas e a caixa SQL não acessam arquivos nem a internet.</p></div>
     <div class="card"><h4>Dados preservados</h4><p>Fluxos, arquivos e conexões ficam em <code>%LOCALAPPDATA%\{{produto}}</code> e sobrevivem a atualizações e à desinstalação. Fora dela, o programa só grava onde você mandar.</p></div>
     <div class="card"><h4>Rastreabilidade</h4><p>Fluxos são salvos em JSON legível — dá para versionar, revisar e auditar cada regra aplicada aos dados.</p></div>
   </div>
@@ -1789,34 +2033,9 @@
   <div class="anatomy">{ "servidores_internos": ["erp.empresa.local", "*.intra.local", "10.1.0.0/16"] }</div>
   <div class="callout warn"><strong>Até onde vai esta proteção</strong>O {{produto}} roda no computador de cada pessoa, sem servidor central: estes controles evitam engano e distração, não um usuário decidido a burlar. O rótulo é do {{produto}}, e não o rótulo de sensibilidade da Microsoft (Purview), que depende de configuração da empresa.</div>
 </section>
-<!-- ================================================================ 10. INSTALAÇÃO -->
+<!-- ================================================================ 27. ESCOPO E LIMITAÇÕES -->
 <section class="chapter">
-  <div class="eyebrow">22 · Comece agora</div>
-  <h2>Instalação e requisitos</h2>
-  <h3>Duas formas de usar</h3>
-  <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.5-setup.exe</code> (260 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.5-portable.zip</code> (347 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
-    <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
-  </div>
-  <h3>Requisitos</h3>
-  <table>
-    <tr><th style="width:30%">Item</th><th>Requisito</th></tr>
-    <tr><td class="tool">Sistema</td><td>Windows 10 ou 11, 64 bits.</td></tr>
-    <tr><td class="tool">Componentes</td><td>WebView2 e .NET Framework 4.x — já presentes no Windows 11 e no Windows 10 atualizado. <strong>Não é preciso instalar Python.</strong></td></tr>
-    <tr><td class="tool">Espaço em disco</td><td>Cerca de 600 MB para o programa, mais o tamanho dos seus dados.</td></tr>
-    <tr><td class="tool">Memória</td><td>Os dados são processados em memória: reserve RAM compatível com o tamanho das suas tabelas (como regra prática, 3 a 5 vezes o tamanho dos arquivos).</td></tr>
-  </table>
-  <h3>Primeira execução</h3>
-  <div class="steps">
-    <div class="step"><div><h4>Abra o {{produto}}</h4><p>Pelo Menu Iniciar ou pelo atalho. Na primeira vez o Windows pode exibir "Editor desconhecido" (veja o capítulo 23): clique em <em>Mais informações → Executar assim mesmo</em>.</p></div></div>
-    <div class="step"><div><h4>Explore o exemplo</h4><p>O fluxo de demonstração já vem pronto. Clique em <strong>Executar</strong>, clique nas caixas, abra o Dashboard e siga os quadros <strong>Experimente</strong> deste guia.</p></div></div>
-    <div class="step"><div><h4>Comece o seu</h4><p>Siga o capítulo 3 com um arquivo seu: envie na vista Dados e arraste para o canvas.</p></div></div>
-  </div>
-</section>
-<!-- ================================================================ 11. ESCOPO E LIMITAÇÕES -->
-<section class="chapter">
-  <div class="eyebrow">23 · Transparência</div>
+  <div class="eyebrow">27 · Referência</div>
   <h2>Escopo e limitações</h2>
   <p class="intro">O que esta versão faz, o que não faz e onde ela tem limites — para você decidir com clareza.</p>
   <div class="two-col">
@@ -1847,7 +2066,12 @@
         <li>Versão oficial publicada por um Publicador, agendamentos que rodam só a oficial e ficam visíveis para o time, com Assumir</li>
         <li>Constantes, conexões, consultas e APIs da equipe (sem senha: cada pessoa digita a sua) e comentários nas caixas</li>
         <li>Recomendações de limpeza no Perfil, com Corrigir; número em texto brasileiro ou estrangeiro, reconhecido pela coluna</li>
-        <li>Aplicativo de desktop para Windows, que funciona offline (exceto as fontes em rede que você cadastrar)</li>
+        <li>Catálogo Dados públicos do Brasil: Banco Central, IBGE, Ipeadata, Tesouro, Siconfi, Comex Stat, feriados e dias úteis editáveis e 16 portais de dados abertos, lidos direto do órgão, sem token, com a situação de cada órgão, leitura guardada e o aviso Dados novos</li>
+        <li>Dicionário de colunas no Perfil e citação automática das fontes no dashboard, na imagem e no HTML</li>
+        <li>Receitas Corrigir pelo IPCA, Converter pela PTAX e Juntar com municípios do IBGE; Join pela data anterior mais próxima</li>
+        <li>CNPJ da Receita: download em partes, com pausa e retomada, filtro na leitura (UF, município, CNAE, situação e CNPJ) e aviso antes de passar de 1/4 da memória</li>
+        <li>Zeros à esquerda e códigos longos preservados na leitura de CSV; curingas no rótulo do leitor de PDF</li>
+        <li>Aplicativo de desktop para Windows, que funciona offline (exceto as fontes em rede que você cadastrar e os dados públicos)</li>
       </ul>
     </div>
     <div>
@@ -1859,6 +2083,7 @@
         <li>Comandos que gravam ou alteram dados na caixa SQL: ela aceita só uma consulta SELECT</li>
         <li>Gravar dados de volta no banco ou publicar no lake (o {{produto}} gera o código; quem publica é o time de dados)</li>
         <li>Fontes na nuvem e bancos sem driver ODBC</li>
+        <li>Fontes públicas que exigem cadastro ou token, como o dados.gov.br e o Portal da Transparência (ficam para uma próxima versão)</li>
         <li>Escrever no Jira, Jira Data Center e GIF da página inteira</li>
         <li>Versões para macOS e Linux</li>
         <li>Atualização automática do programa</li>
@@ -1871,7 +2096,9 @@
   <h3>Limitações conhecidas</h3>
   <table>
     <tr><th style="width:30%">Limitação</th><th>O que significa na prática</th></tr>
-    <tr><td class="tool">Volume de dados</td><td>Cada caixa carrega a própria tabela inteira na memória; acima de um quarto da memória, os resultados menos usados vão para o disco. Bases com dezenas de milhões de linhas ainda não foram validadas.</td></tr>
+    <tr><td class="tool">Volume de dados</td><td>Cada caixa carrega a própria tabela inteira na memória; acima de um quarto da memória, os resultados menos usados vão para o disco. Bases com dezenas de milhões de linhas ainda não foram validadas. O CNPJ é a exceção: com o filtro na leitura, os arquivos são lidos aos poucos e só as linhas que passam ficam na memória.</td></tr>
+    <tr><td class="tool">Dados públicos</td><td>Cada órgão publica no seu ritmo e pode mudar o formato: a caixa confere as colunas a cada execução e para com o motivo quando algo muda. Os conjuntos de <em>Leitura automática</em> dos portais vêm como o órgão publicou, sem a revisão dos destaques. Arquivos dos portais acima de 200 MB não são lidos na hora.</td></tr>
+    <tr><td class="tool">CNPJ do Brasil inteiro</td><td>Estabelecimentos passa de 20 GB de texto: sem filtro, não cabe na memória da maioria dos computadores. O programa pergunta antes de passar de 1/4 da memória; o caminho é filtrar por UF, município, CNAE, situação ou CNPJ.</td></tr>
     <tr><td class="tool">Modelos de ML</td><td>O modelo fica neste computador, não no arquivo do fluxo. Para outra pessoa usar o mesmo, exporte o arquivo .modelo e ela importa no Model Input; sem isso, ela treina o próprio modelo.</td></tr>
     <tr><td class="tool">ODBC</td><td>Conferido só com um driver local de teste. Em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado conhecido.</td></tr>
     <tr><td class="tool">SQL para o Fabric</td><td>Spark SQL e T-SQL são convertidos do DuckDB e não foram conferidos num Fabric de verdade. Leitura de arquivos e funções próprias do {{produto}} precisam ser reescritas.</td></tr>
@@ -1882,27 +2109,28 @@
     <tr><td class="tool">Visuais com muitos dados</td><td>A dispersão desenha até 2.000 pontos e avisa; gráficos mostram até 50 categorias e 8 séries. No Venn de 3 grupos, os círculos são ilustrativos.</td></tr>
   </table>
 </section>
-<!-- ================================================================ FERRAMENTAS -->
+<!-- ================================================================ 28. TODAS AS FERRAMENTAS -->
 <section class="chapter">
-  <div class="eyebrow">24 · Referência</div>
+  <div class="eyebrow">28 · Referência</div>
   <h2>Todas as ferramentas</h2>
   <p class="intro">As 46 ferramentas, por família. Algumas têm mais de uma saída: o <em>Filter</em> separa o que atende à condição (T) do que não atende (F), e o <em>Join</em> separa o que só existe à esquerda (L), o que casou (J) e o que só existe à direita (R).</p>
   <table>
     <tr><th style="width:23%">Ferramenta</th><th>Para que serve</th></tr>
     <tr><td colspan="2"><span class="tag">Entrada e saída</span></td></tr>
     <tr><td class="tool">Input Data</td><td>Lê qualquer fonte da vista Dados: arquivos (com detecção automática de formato), pastas de arquivos, consultas de banco ou APIs.</td></tr>
+    <tr><td class="tool">Dados públicos</td><td>Lê uma fonte do catálogo Dados públicos do Brasil (Banco Central, IBGE, Ipeadata, Tesouro, portais, feriados), direto do órgão, sem configurar API. Com o órgão fora do ar, usa a última leitura guardada e avisa. Veja o capítulo 8.</td></tr>
     <tr><td class="tool">API Loop</td><td>Chama uma API para cada linha da tabela e junta as respostas, com as falhas numa saída própria.</td></tr>
     <tr><td class="tool">Text Input</td><td>Tabela pequena digitada ou colada (de-para, metas).</td></tr>
     <tr><td class="tool">Browse</td><td>Ponto de inspeção para conferir os dados no meio do fluxo.</td></tr>
     <tr><td class="tool">Output Data</td><td>Exporta para Excel, CSV, Parquet, JSON ou Arrow, na pasta que você escolher, com um <strong>rótulo de confidencialidade</strong>. No Excel, ligue várias tabelas na mesma caixa: cada uma vira uma planilha. Se o arquivo já existe, pergunta: substituir ou criar um novo. Com uma coluna entre chaves no nome, como <code>vendas_{regiao}</code>, grava um arquivo por valor dela.</td></tr>
-    <tr><td class="tool">Generate Rows</td><td>Cria um calendário ou uma sequência de números, sem ler arquivo. Veja o capítulo 16.</td></tr>
+    <tr><td class="tool">Generate Rows</td><td>Cria um calendário ou uma sequência de números, sem ler arquivo. Veja o capítulo 20.</td></tr>
     <tr><td colspan="2"><span class="tag">Preparação</span></td></tr>
     <tr><td class="tool">Select</td><td>Escolhe, renomeia, reordena (arrastando) e muda o tipo das colunas. Entende números no padrão brasileiro, datas como 29/10/2026 e sim/não, e avisa quantos valores não converteram.</td></tr>
     <tr><td class="tool">Filter</td><td>Separa linhas por condição, com modo simples ou expressão. No simples, coluna de data tem calendário (com hora opcional em data e hora).</td></tr>
     <tr><td class="tool">Formula</td><td>Cria colunas calculadas ou altera colunas existentes (SE/ENTÃO, texto, matemática, datas).</td></tr>
     <tr><td class="tool">Multi-Row Formula</td><td>Olha outras linhas, com receitas prontas: preencher para baixo, diferença, variação %, valor anterior, próximo valor, "mudou?", média móvel e soma móvel. Tem o próprio <strong>Ordenar por</strong>.</td></tr>
     <tr><td class="tool">Rank</td><td>Dá a posição de cada linha pela ordem de uma coluna, por grupo, com três jeitos de tratar o empate, e fica com o top N.</td></tr>
-    <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 7.</td></tr>
+    <tr><td class="tool">Data Quality</td><td>Confere regras prontas (não vazio, sem duplicados, CPF, CNPJ, e-mail, faixa de número, data, lista de valores ou uma fórmula sua) e separa o que passou (P) do que falhou (F), com o motivo de cada falha. Veja o capítulo 15.</td></tr>
     <tr><td class="tool">Data Cleansing</td><td>Remove espaços, padroniza maiúsculas e trata vazios em um passo.</td></tr>
     <tr><td class="tool">Unique</td><td>Separa a primeira ocorrência de cada chave das duplicadas.</td></tr>
     <tr><td class="tool">Sort · Sample</td><td>Ordena por uma ou mais colunas (o <em>order by</em>); tira amostras (primeiras, últimas, aleatórias, percentual).</td></tr>
@@ -1912,7 +2140,7 @@
     <tr><td class="tool">Multi-Field Formula</td><td>Aplica a mesma fórmula a várias colunas de uma vez. <code>[_Atual_]</code> é a coluna da vez.</td></tr>
     <tr><td class="tool">Mask</td><td>Mascara dados pessoais (LGPD): máscara de CPF, CNPJ e e-mail, só o início ou o fim, texto fixo ou código estável.</td></tr>
     <tr><td colspan="2"><span class="tag">Combinar e transformar</span></td></tr>
-    <tr><td class="tool">Join</td><td>Cruza duas tabelas por uma ou mais chaves, com saídas L, J e R. Dá para escolher se o J mantém as chaves dos dois lados, só a da esquerda ou só a da direita, e escolher, renomear, converter e reordenar as colunas do J ali mesmo, como num Select. O Configurar mostra quantas linhas saem em cada uma e avisa quando a chave repetida multiplica linhas. A saída U opcional empilha L + J + R, L + J, J + R ou L + R.</td></tr>
+    <tr><td class="tool">Join</td><td>Cruza duas tabelas por uma ou mais chaves, com saídas L, J e R. Dá para escolher se o J mantém as chaves dos dois lados, só a da esquerda ou só a da direita, e escolher, renomear, converter e reordenar as colunas do J ali mesmo, como num Select. O Configurar mostra quantas linhas saem em cada uma e avisa quando a chave repetida multiplica linhas. A saída U opcional empilha L + J + R, L + J, J + R ou L + R. Em <strong>Como casar</strong>, a última chave pode procurar a data anterior mais próxima, como a cotação do último dia útil.</td></tr>
     <tr><td class="tool">Fuzzy Match</td><td>Cruza duas tabelas por texto parecido, como razão social e endereço, com nota de 0 a 100.</td></tr>
     <tr><td class="tool">Summarize</td><td>Agrupa e calcula soma, média, mediana, moda, desvio padrão, contagens, mínimo e máximo. Só oferece o que serve para o tipo da coluna: texto não soma. O Configurar mostra um esquema do antes e depois.</td></tr>
     <tr><td class="tool">Union</td><td>Empilha tabelas, alinhando colunas pelo nome ou posição. Pelo nome, a coluna que só existe numa tabela fica vazia nas linhas da outra.</td></tr>
@@ -1921,9 +2149,9 @@
     <tr><td class="tool">Append Fields</td><td>Combina tudo com tudo (CROSS JOIN): anexa uma tabela pequena (parâmetros, cenários) a todas as linhas, com a conta de linhas antes de executar.</td></tr>
     <tr><td class="tool">SQL</td><td>Para quem conhece SQL: consulta livre sobre os dados do fluxo.</td></tr>
     <tr><td colspan="2"><span class="tag">Conferência e reúso</span></td></tr>
-    <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 7.</td></tr>
-    <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 7.</td></tr>
-    <tr><td class="tool">Loop (Início e Fim do loop)</td><td>Repete as caixas entre o Início e o Fim: para cada valor, para cada número ou data, ou enquanto uma condição valer. Veja o capítulo 16.</td></tr>
+    <tr><td class="tool">Reconcile</td><td>Confere se duas tabelas fecham em linhas, soma ou valores distintos, e pode interromper o fluxo. Veja o capítulo 15.</td></tr>
+    <tr><td class="tool">Compare Runs</td><td>Mostra o que mudou desde a execução de um dia ou de um mês anterior. Veja o capítulo 15.</td></tr>
+    <tr><td class="tool">Loop (Início e Fim do loop)</td><td>Repete as caixas entre o Início e o Fim: para cada valor, para cada número ou data, ou enquanto uma condição valer. Veja o capítulo 20.</td></tr>
     <tr><td class="tool">Subflow · Subflow Input · Subflow Output</td><td>Executa outro fluxo da biblioteca como uma etapa, para manter num lugar só o que vários fluxos usam.</td></tr>
     <tr><td colspan="2"><span class="tag">BI e indicadores</span></td></tr>
     <tr><td class="tool">Chart</td><td>Colunas, barras, linha, rosca, empilhado, agrupado, 100%, área, Pareto, funil e dispersão.</td></tr>
@@ -1935,9 +2163,9 @@
     <tr><td class="tool">Model Input</td><td>Traz um modelo da biblioteca de modelos, treinado noutro fluxo ou importado de um arquivo <code>.modelo</code>, sem treinar de novo.</td></tr>
   </table>
 </section>
-<!-- ================================================================ 12. ATALHOS E FAQ -->
+<!-- ================================================================ 29. ATALHOS E PERGUNTAS FREQUENTES -->
 <section class="chapter">
-  <div class="eyebrow">25 · Referência rápida</div>
+  <div class="eyebrow">29 · Referência</div>
   <h2>Atalhos e perguntas frequentes</h2>
   <h3>Atalhos de teclado</h3>
   <table>
@@ -1958,17 +2186,19 @@
   <h3>Perguntas frequentes</h3>
   <div class="avoid"><h4>Esqueci de salvar. Perco o trabalho?</h4><p>Não, com <strong>Salvar automaticamente</strong> ligado, na seta do Salvar. Sem ele, o {{produto}} pergunta antes de fechar.</p></div>
   <div class="avoid"><h4>Preciso saber programar?</h4><p>Não. Tudo é feito por arrastar, ligar e preencher formulários. Quem conhece SQL ou fórmulas tem recursos extras, mas eles são opcionais.</p></div>
-  <div class="avoid"><h4>Meus dados vão para a nuvem?</h4><p>Não. O {{produto}} roda no seu computador e funciona sem internet. A rede só é usada para as fontes que você cadastrar, como um banco ou uma API. O exemplo do IBGE só chama a internet quando você clica em Executar.</p></div>
+  <div class="avoid"><h4>Meus dados vão para a nuvem?</h4><p>Não. O {{produto}} roda no seu computador e funciona sem internet. A rede só é usada para as fontes que você cadastrar, como um banco ou uma API, e para ler os dados públicos. O exemplo do IBGE só chama a internet quando você clica em Executar.</p></div>
+  <div class="avoid"><h4>Sem internet, o fluxo com dados públicos para?</h4><p>Não. A caixa Dados públicos usa a última leitura guardada da mesma consulta e avisa a data. Se o número precisa ser o de hoje, ligue <strong>Exigir dados atuais</strong> na caixa: sem conexão, ela falha com o motivo (capítulo 8).</p></div>
+  <div class="avoid"><h4>O CNPJ do Brasil inteiro cabe no meu computador?</h4><p>No disco, sim, se houver espaço: o programa confere antes de baixar. Na memória, quase nunca: use o <strong>Filtro na leitura</strong> (UF, município, CNAE, situação ou uma lista de CNPJs). Se uma leitura for passar de 1/4 da memória, o programa pergunta antes (capítulo 8).</p></div>
   <div class="avoid"><h4>Posso estragar meu banco de dados?</h4><p>Não. As conexões são somente leitura; comandos que alteram dados são bloqueados.</p></div>
   <div class="avoid"><h4>Como atualizo um relatório mensal?</h4><p>Envie o arquivo novo com o mesmo nome (o {{produto}} pergunta se deve substituir) e clique em Executar. Se a planilha é atualizada sozinha numa pasta, use <strong>Vincular arquivo</strong>: basta clicar em Executar.</p></div>
   <div class="avoid"><h4>A exportação vai apagar o arquivo de ontem?</h4><p>Não sem perguntar. Se o arquivo de saída já existe, ao clicar em Executar o {{produto}} pergunta: substituir, criar um novo com data e hora no nome, ou (no Excel) adicionar a planilha. Dá para lembrar a escolha na caixa.</p></div>
   <div class="avoid"><h4>Algo deu errado. Onde vejo?</h4><p>A caixa com problema fica vermelha e explica o motivo na aba Configurar; as caixas seguintes aparecem como "não executado". A aba <strong>Log</strong> lista tudo. Se o programa não abrir, o registro fica em <code>%LOCALAPPDATA%\{{produto}}\logs</code>.</p></div>
-  <div class="avoid"><h4>Posso guardar o fluxo numa pasta da equipe?</h4><p>Sim. Para trabalhar junto, com quem está editando, versões com autor e versão oficial, crie um <strong>espaço da equipe</strong> na pasta (capítulo 20). Para só entregar uma cópia, use <strong>Salvar como…</strong> e escolha a pasta (rede, OneDrive, projeto). Quem abrir em outro computador vê o que falta na vista Dados e aponta cada fonte; para rodar sem os originais, use <strong>Salvar com amostra dos dados…</strong> (capítulo 19). As constantes vão junto.</p></div>
-  <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 19). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
-  <div class="avoid"><h4>Abri um fluxo de outra pessoa e as caixas estão vermelhas.</h4><p>As fontes que ele usa não estão neste computador. A aba <strong>Dados</strong> ganha um selo e a seção <em>Faltam neste computador</em>, com o botão para resolver cada uma. Se veio com amostra, a caixa fica laranja e o fluxo roda com ela até você apontar a fonte (capítulo 19).</p></div>
-  <div class="avoid"><h4>Como escrevo uma data numa fórmula?</h4><p>Como preferir: <code>ToDate('2026-07-08')</code>, <code>08/07/2026</code>, <code>8/7/26</code> ou <code>jul/26</code>. Fora do formato, aparece <em>Você quis dizer…?</em> com a correção. No Filter básico, escolha no calendário (capítulo 5).</p></div>
-  <div class="avoid"><h4>Como repito o mesmo cálculo para cada filial?</h4><p>Com o <strong>Loop</strong>: as caixas entre o Início e o Fim rodam uma vez para cada valor, e <code>[#valor]</code> traz a filial da volta. Para só agrupar e somar, um <em>Summarize</em> agrupado é mais rápido (capítulo 16).</p></div>
-  <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 21). APIs públicas não precisam de nada.</p></div>
+  <div class="avoid"><h4>Posso guardar o fluxo numa pasta da equipe?</h4><p>Sim. Para trabalhar junto, com quem está editando, versões com autor e versão oficial, crie um <strong>espaço da equipe</strong> na pasta (capítulo 25). Para só entregar uma cópia, use <strong>Salvar como…</strong> e escolha a pasta (rede, OneDrive, projeto). Quem abrir em outro computador vê o que falta na vista Dados e aponta cada fonte; para rodar sem os originais, use <strong>Salvar com amostra dos dados…</strong> (capítulo 24). As constantes vão junto.</p></div>
+  <div class="avoid"><h4>Abri um fluxo e ele não executa. Por quê?</h4><p>Ele veio de fora e abriu em modo protegido (capítulo 24). Confira na faixa o que ele lê, calcula e grava, e clique em <strong>Confiar e executar</strong>.</p></div>
+  <div class="avoid"><h4>Abri um fluxo de outra pessoa e as caixas estão vermelhas.</h4><p>As fontes que ele usa não estão neste computador. A aba <strong>Dados</strong> ganha um selo e a seção <em>Faltam neste computador</em>, com o botão para resolver cada uma. Se veio com amostra, a caixa fica laranja e o fluxo roda com ela até você apontar a fonte (capítulo 24).</p></div>
+  <div class="avoid"><h4>Como escrevo uma data numa fórmula?</h4><p>Como preferir: <code>ToDate('2026-07-08')</code>, <code>08/07/2026</code>, <code>8/7/26</code> ou <code>jul/26</code>. Fora do formato, aparece <em>Você quis dizer…?</em> com a correção. No Filter básico, escolha no calendário (capítulo 13).</p></div>
+  <div class="avoid"><h4>Como repito o mesmo cálculo para cada filial?</h4><p>Com o <strong>Loop</strong>: as caixas entre o Início e o Fim rodam uma vez para cada valor, e <code>[#valor]</code> traz a filial da volta. Para só agrupar e somar, um <em>Summarize</em> agrupado é mais rápido (capítulo 20).</p></div>
+  <div class="avoid"><h4>Minha API interna foi recusada. E agora?</h4><p>Peça à TI para incluir o servidor na lista de APIs internas (capítulo 26). APIs públicas não precisam de nada.</p></div>
   <div class="avoid"><h4>Posso pedir ajuda a uma IA sobre um fluxo?</h4><p>Sim. Envie o arquivo <code>.prodata.json</code> junto com o <code>contexto-ia.md</code>, publicado com cada versão. Ele ensina a IA a mexer no fluxo; salve a resposta e abra no programa. O fluxo mostra nomes de colunas, fórmulas e o que foi digitado em Text Input.</p></div>
   <div class="avoid"><h4>Como mando o dashboard por e-mail?</h4><p>No Dashboard, <strong>Baixar imagem</strong> gera um PNG em alta resolução. <strong>Baixar HTML</strong> gera um arquivo que abre em qualquer navegador, com os filtros funcionando.</p></div>
   <div class="avoid"><h4>Desinstalar apaga meus fluxos?</h4><p>Não. Fluxos, arquivos e conexões ficam na sua pasta de dados e continuam lá para uma futura reinstalação.</p></div>

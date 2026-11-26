@@ -26,7 +26,7 @@ export const TARGETS = {
 
 /** Capítulo sugerido, pelo título. A tela e a caixa selecionada decidem; um teste confere que os títulos existem. */
 export const CONTEXT = {
-  views: { data: 'Trazendo dados', dashboard: 'Montando o dashboard', sql: 'Levando a lógica para o banco' },
+  views: { data: 'A vista Dados', dashboard: 'Montando o dashboard', sql: 'Levando a lógica para o banco' },
   tools: {
     'prep.data_quality': 'Dados que dá para confiar',
     'control.reconcile': 'Dados que dá para confiar',
@@ -49,7 +49,14 @@ export const CONTEXT = {
     'ml.predictor': 'Modelos de previsão',
     'ml.train_test_split': 'Modelos de previsão',
     'io.api_loop': 'Dados de APIs, sem programar',
-    'io.input_data': 'Trazendo dados',
+    'io.input_data': 'Arquivos e pastas',
+    'io.public_data': 'Dados públicos do Brasil',
+    'io.database_input': 'Bancos de dados',
+    'prep.formula': 'Fórmulas e cálculos',
+    'prep.multi_field': 'Fórmulas e cálculos',
+    'prep.multirow': 'Fórmulas e cálculos',
+    'prep.rank': 'Fórmulas e cálculos',
+    'prep.running_total': 'Fórmulas e cálculos',
     'transform.period_state': 'Dados do Jira, sem escrever JQL',
     'bi.chart': 'Indicadores e visuais',
     'bi.kpi_card': 'Indicadores e visuais',

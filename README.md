@@ -15,8 +15,8 @@ localmente.
 - **Manual dentro do programa** (`?` ou `F1`): o guia ao lado do trabalho, com busca, imagens no tema da tela,
   "Mostrar onde fica" e exemplos para experimentar. **Ctrl+K** acha ferramenta, ação, caixa, fonte ou capítulo.
 - **Modo foco** (`F11`), painéis recolhidos em faixa e editor de fórmula em janela larga (**Expandir**).
-- **Vista Dados**: a primeira tela reúne arquivos, pastas de arquivos, leitores de PDF, consultas, APIs, conexões e
-  constantes, com situação, prévia, qualidade das colunas e o **mapa de onde cada fonte é usada** nos
+- **Vista Dados**: a primeira tela reúne arquivos, pastas de arquivos, dados públicos do Brasil, leitores de PDF,
+  consultas, APIs, Jira, conexões e constantes (sem nada aberto, **Comece por aqui** mostra as seis origens), com situação, prévia, qualidade das colunas e o **mapa de onde cada fonte é usada** nos
   fluxos da biblioteca. Antes de excluir uma fonte em uso, a tela lista o que deixa de funcionar.
 - **Organização das fontes**: pastas por assunto (arrastar, Ctrl+clique), nome de exibição sem quebrar
   os fluxos, descrição e responsável, fixadas no topo e filtros "Com problema" e "Sem uso".
@@ -60,6 +60,20 @@ localmente.
   pela coluna) ou data guardados como texto
   (com os valores que impedem, como "N/D"), maiúsculas diferentes, texto vazio e linhas repetidas; Corrigir mostra o
   antes e depois e insere a ferramenta certa já configurada, com Desfazer. Nada é corrigido sozinho.
+- **Dados públicos do Brasil** (0.9.6): um catálogo com Selic, IPCA, PTAX, IBGE, feriados e os portais dos órgãos,
+  com prévia lida na hora, situação de cada órgão (no ar, lenta, fora do ar) e a fonte guardada na vista Dados. A
+  caixa Dados públicos guarda só as escolhas, nunca endereço nem dados; sem internet, usa a última leitura e avisa (ou
+  falha, com Exigir dados atuais). O aviso **Dados novos** mostra quando o órgão publicou além da última leitura, e o
+  dashboard cita a fonte sozinho, também na imagem e no HTML. A internet só é usada pelo catálogo, com endereços fixos.
+- **CNPJ do Brasil inteiro**: o download dos dados abertos da Receita com retomada, pausa ao fechar e espaço livre
+  conferido; a extração vira fontes prontas na vista Dados, com **filtro na leitura** (UF, município, CNAE, situação e
+  CNPJs colados em qualquer formato, com dígito conferido) e a pergunta antes de passar de 1/4 da memória.
+- **Receitas no menu da coluna**: Corrigir pelo IPCA, Converter pela PTAX e Juntar com municípios do IBGE (com a
+  conferência de quantas linhas casam antes de inserir), cada uma numa etapa nomeada, com um Desfazer.
+- **Join pela data anterior mais próxima**: a venda do sábado pega a cotação de sexta, com o aviso de quantas linhas
+  usaram a data anterior (na aba SQL, um `ASOF JOIN`).
+- **Rótulo com curinga no PDF**: `[mês]`, `[ano]`, `[data]`, `[número]` e `[*]` fazem o mesmo rótulo valer no
+  relatório de qualquer mês, e a regra pega só as palavras marcadas do valor.
 - **Laços**: o Loop cria o Início e o Fim do loop, e as caixas entre eles repetem para cada valor de uma coluna,
   para cada número ou data de uma faixa, ou enquanto uma condição valer. `[#valor]`, `[#volta]` e `[#total]` nas
   fórmulas e no nome do arquivo; saída empilhada, acumulada ou só a última volta; limite de voltas, Parar, resultado
@@ -304,7 +318,7 @@ Para hooks locais: `uvx pre-commit install`.
 
 ### Testes
 
-São mais de 1.650 testes automáticos (`pytest`, em `tests/`), em camadas:
+São mais de 2.000 testes automáticos (`pytest`, em `tests/`), em camadas:
 
 | Camada | O que garante | Onde |
 |---|---|---|
@@ -315,6 +329,7 @@ São mais de 1.650 testes automáticos (`pytest`, em `tests/`), em camadas:
 | Confiança (0.9.3) | Formato das fontes, troca de coluna, parada sem ninguém olhando, versões anteriores | `test_schema_drift.py`, `test_versions.py` |
 | Equipe (0.9.4) | Assinaturas e papéis (inclusive as tentativas de burlar), marcas de edição, versões com autor, conflito, cópias de conflito, envio adiado, versão oficial e agendamentos do time, com um simulador de sincronização | `test_team_*.py`, `test_sync_sim.py` |
 | Equipe e limpeza (0.9.5) | Definições da equipe sem segredo e assinadas, comentários como eventos assinados, juntar caixa por caixa, recomendações de limpeza e o benchmark | `test_team_definitions.py`, `test_team_comments.py`, `test_team_merge.py`, `test_cleaning.py`, `test_benchmark.py` |
+| Dados públicos (0.9.6) | Catálogo e hosts fixos, cache e leitura guardada sem rede, download do CNPJ com retomada, extração segura (zip slip, bomba, CRC), filtro na leitura, orçamento de memória, receitas e Join pela data anterior conferidos com o SQL | `test_catalog_*.py`, `test_sql_equivalence.py` |
 | Qualidade do código | Nenhum arquivo passa de 800 linhas, o JavaScript não tem importações circulares e o dashboard exportado não depende do programa (a complexidade das funções é limitada pelo ruff) | `test_code_quality.py` |
 | Interface e documentação | Cores e tamanhos de letra pela escala de tokens; Manual e `contexto-ia.md` em dia com o código; todos os prints do Manual e do guia da versão atual, feitos na mesma geração | `test_theme.py`, `test_manual.py`, `test_ai_context.py` |
 

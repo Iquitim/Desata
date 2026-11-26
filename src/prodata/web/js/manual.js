@@ -190,7 +190,9 @@ function homeView() {
   return [
     chapter ? h('button', { type: 'button', class: 'manual-here', onclick: () => openChapter(chapter, section) }, h('small', {}, where), h('b', {}, chapter.title)) : null,
     lessonsBlock(),
-    ...data.chapters.map(chapterRow),
+    // As partes do guia como títulos (0.9.6): onde cada capítulo está no caminho do aprendizado.
+    ...data.chapters.flatMap((c, i) => (c.part && c.part !== data.chapters[i - 1]?.part
+      ? [h('h3', { class: 'manual-part' }, c.part), chapterRow(c)] : [chapterRow(c)])),
   ].filter(Boolean);
 }
 

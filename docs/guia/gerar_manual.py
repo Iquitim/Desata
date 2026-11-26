@@ -26,6 +26,7 @@ _TITLE = re.compile(r"<h2>(.*?)</h2>\s*", re.S)
 _H3 = re.compile(r"<h3>(.*?)</h3>", re.S)
 _IMG = re.compile(r'<img src="[^"]*/manual/img/([^"]+)"')
 _TAG = re.compile(r"<[^>]+>")
+_PART = re.compile(r'<section class="part" data-part="([^"]+)">')
 _ONLY_MANUAL = re.compile(r'<(div|button)[^>]*class="manual-only[^"]*"[^>]*>.*?</\1>', re.S)
 
 
@@ -66,6 +67,8 @@ def build() -> dict[str, Any]:
     source = source[source.index("<body") :]
     names = {spec.name: spec.type for spec in REGISTRY.values() if not getattr(spec, "hidden", False)}
     chapters = []
+    # As partes do guia (0.9.6): cada capítulo sabe em qual está, e o Manual mostra as partes como títulos.
+    parts = [(m.start(), html.unescape(m.group(1))) for m in _PART.finditer(source)]
     for index, match in enumerate(_SECTION.finditer(source)):
         raw = match.group(1)
         eyebrow = _EYEBROW.search(raw)
@@ -77,7 +80,8 @@ def build() -> dict[str, Any]:
         body = _TITLE.sub("", _EYEBROW.sub("", raw, count=1), count=1)
         body = _IMG.sub(r'<img data-img="\1"', body)
         body, sections = _sections(_link_tools(body, names))
-        chapters.append({"id": f"c{index}", "number": number, "label": label, "title": _plain(title.group(1)), "html": body.strip(), "sections": sections})
+        part = next((name for pos, name in reversed(parts) if pos < match.start()), "")
+        chapters.append({"id": f"c{index}", "number": number, "label": label, "part": part, "title": _plain(title.group(1)), "html": body.strip(), "sections": sections})
     return {"chapters": chapters}
 
 

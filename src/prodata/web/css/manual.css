@@ -19,6 +19,7 @@ body.manual-open [data-resize="right"], body.manual-open #slot-right { visibilit
 .manual-here small { color: var(--text-2); font-size: var(--fs-xs); }
 .manual-here b { font-weight: 600; }
 .manual-chapter { display: flex; align-items: baseline; gap: 10px; width: 100%; padding: 6px 8px; border: 0; border-radius: var(--radius); background: none; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.manual-part { margin: 14px 8px 4px; font-size: var(--fs-2xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
 .manual-chapter:hover, .manual-hit:hover { background: var(--surface-3); }
 .manual-chapter i { width: 20px; flex-shrink: 0; text-align: right; color: var(--text-3); font: var(--fs-xs) var(--mono); }
 .manual-hit { display: flex; flex-direction: column; gap: 1px; width: 100%; padding: 7px 8px; border: 0; border-radius: var(--radius); background: none; color: var(--text); text-align: left; font: inherit; cursor: pointer; }

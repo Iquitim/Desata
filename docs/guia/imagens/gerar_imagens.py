@@ -36,6 +36,7 @@ from novas_092 import part_092 as new_092  # noqa: E402
 from novas_093 import part_093 as new_093  # noqa: E402
 from novas_094 import part_094 as new_094  # noqa: E402
 from novas_095 import part_095 as new_095  # noqa: E402
+from novas_096 import part_096 as new_096  # noqa: E402
 from organizar_dados import part_organize as organize  # noqa: E402
 from pasta_dados import part_folder_source as folder_source  # noqa: E402
 
@@ -50,12 +51,43 @@ OUT = ROOT / "src/prodata/web/manual/img"
 NOTICE_SHOTS = {"aviso-fim", "agendamento-falhou"}  # prints cujo assunto é o aviso de fim (spec 044)
 
 
+# Os prints usam pastas temporárias dentro da pasta do usuário de quem gera (C:\Users\<nome>\...). Na hora do print,
+# o caminho aparece como uma pasta neutra; logo depois volta o de verdade, para os passos seguintes usarem a pasta certa.
+MASK_PATHS = r"""() => {
+  const temp = /[A-Za-z]:\\Users\\[^\\\s"]+\\AppData\\Local\\Temp\\prodata-imagens-[^\\\s"]+/gi;
+  const home = /[A-Za-z]:\\Users\\[^\\\s"]+/gi;
+  const fix = (s) => s.replace(temp, 'D:\\Dados').replace(home, 'C:\\Users\\ana');
+  const undo = [];
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const v = fix(n.nodeValue);
+    if (v !== n.nodeValue) { undo.push([n, 'nodeValue', n.nodeValue]); n.nodeValue = v; }
+  }
+  for (const el of document.querySelectorAll('input, textarea')) {
+    const v = fix(el.value);
+    if (v !== el.value) { undo.push([el, 'value', el.value]); el.value = v; }
+  }
+  for (const el of document.querySelectorAll('[title], [placeholder]')) {
+    for (const attr of ['title', 'placeholder']) {
+      const old = el.getAttribute(attr);
+      if (old && fix(old) !== old) { undo.push([el, '@' + attr, old]); el.setAttribute(attr, fix(old)); }
+    }
+  }
+  window.__unmask = () => { for (const [el, key, old] of undo) { if (key[0] === '@') el.setAttribute(key.slice(1), old); else el[key] = old; } };
+}"""
+
+
 def shot(target: Any, name: str, **kw: Any) -> None:
     # Aviso de um passo anterior (ex.: "Imagem salva") não pode aparecer no print. O aviso de fim de execução (spec 044)
     # também sai, menos nos prints que mostram o próprio aviso.
+    page = getattr(target, "page", target)
     hide = ".toast" if name in NOTICE_SHOTS else ".toast, .run-notice"
-    getattr(target, "page", target).evaluate(f"() => document.querySelectorAll('{hide}').forEach((t) => t.remove())")
-    target.screenshot(path=str(OUT / f"{name}.png"), **kw)
+    page.evaluate(f"() => document.querySelectorAll('{hide}').forEach((t) => t.remove())")
+    page.evaluate(MASK_PATHS)
+    try:
+        target.screenshot(path=str(OUT / f"{name}.png"), **kw)
+    finally:
+        page.evaluate("() => window.__unmask?.()")
     done.append(name)
 
 
@@ -609,9 +641,13 @@ def part_095(pg: Pg, tmp: Path) -> None:
     new_095(pg, tmp, shot)
 
 
+def part_096(pg: Pg, tmp: Path) -> None:
+    new_096(pg, tmp, shot)
+
+
 def PARTS(tmp):  # noqa: N802
     every = ((part_screen, ()), (part_cache_dashboard, ()), (part_sql, ()), (part_tools, ()), (part_quality_lists, ()), (part_data_trust, (tmp,)), (part_manual, ()))
-    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()), (part_092, ()), (part_093, ()), (part_094, (tmp,)), (part_095, (tmp,)))
+    every = (*every, (part_jira, ()), (part_replay, ()), (part_075, (tmp,)), (part_folder, (tmp,)), (part_organize, ()), (part_pdf, ()), (part_086, ()), (part_090, ()), (part_091, ()), (part_092, ()), (part_093, ()), (part_094, (tmp,)), (part_095, (tmp,)), (part_096, (tmp,)))
     only = os.environ.get("IMAGENS_SO")
     return [e for e in every if not only or e[0].__name__ in only.split(",")]
 

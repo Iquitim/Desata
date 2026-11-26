@@ -1,6 +1,6 @@
 # Desata: contexto para assistentes de IA
 
-Versão do programa: 0.9.5. Este arquivo é gerado a partir do código.
+Versão do programa: 0.9.6. Este arquivo é gerado a partir do código.
 
 Você está ajudando alguém que usa o Desata, um programa de Windows para montar fluxos visuais de dados, parecido com o Alteryx. A pessoa pode enviar um fluxo (arquivo `.prodata.json`) e pedir para explicar, corrigir ou mudar. Use este documento para responder com um fluxo que abre e executa de primeira.
 
@@ -866,8 +866,8 @@ Entradas: `in` (Entrada). Saídas: `out` (Saída).
 - `series_column` (""): Série (2ª dimensão) [nome de coluna]. Aparece se `chart_type` em stacked, grouped, stacked100, line, area, area_stacked, scatter, sankey. Opcional: uma cor por valor desta coluna (até 8; as demais viram 'Outras'). No Sankey, é o destino
 - `x_value_column` (""): Valor do eixo X [nome de coluna]. Aparece se `chart_type` em bubble
 - `size_column` (""): Tamanho da bolha [nome de coluna]. Aparece se `chart_type` em bubble. Opcional. Sem ela, o tamanho é a quantidade de linhas
-- `sort` ("value_desc"): Ordenação. Opções: `value_desc`, `value_asc`, `label`. O Pareto sempre ordena do maior para o menor
-- `max_items` (12): Máximo de categorias. De 2 a 50
+- `sort` ("value_desc"): Ordenação. Opções: `value_desc`, `value_asc`, `label`. O Pareto sempre ordena do maior para o menor. Linha e área com datas ou números seguem a ordem do eixo
+- `max_items` (12): Máximo de categorias. De 2 a 50. Linha e área com datas ou números mostram a série inteira (até 2.000 pontos, espalhados)
 - `pareto_threshold` (80.0): Linha de corte do Pareto (%). De 1 a 99. Aparece se `chart_type` em pareto
 - `tip_columns` ([]): Colunas extras na dica [lista de colunas]. Aparecem na dica de cada categoria, agregadas como o valor (na contagem, somadas). Edite também no Dashboard
 
