@@ -14,7 +14,7 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-from prodata.catalog import portals
+from prodata.catalog import holidays, portals
 
 DATA = Path(__file__).with_name("municipios_ibge.json")
 
@@ -81,6 +81,9 @@ def search(query: str, limit: int = 12) -> list[dict[str, Any]]:
 def _sources(code: str, uf: str, level: str) -> list[dict[str, Any]]:
     """As fontes federais já filtradas pelo lugar: o mesmo detalhe e as mesmas escolhas da caixa."""
     local = uf if level == "N3" else code
+    # A base traz os feriados municipais só das capitais (RF-4967): avisa antes de adicionar.
+    local_note = ("A base do programa traz os feriados municipais só das capitais: inclua os desta cidade em "
+                  "Editar feriados.") if holidays.outside_base(local) else ""  # fmt: skip
     rows = [
         {
             "id": "ibge.agregado/6579",
@@ -94,8 +97,8 @@ def _sources(code: str, uf: str, level: str) -> list[dict[str, Any]]:
                      "escolhas": {"nivel": "N3", "localidades": code}})  # fmt: skip
     rows += [
         {"id": "siconfi/relatorios", "nome": "Receitas e despesas (Siconfi)", "escolhas": {"ente": code}},
-        {"id": "calendario/feriados", "nome": "Feriados", "escolhas": {"local": local}},
-        {"id": "calendario/dias-uteis", "nome": "Dias úteis", "escolhas": {"local": local}},
+        {"id": "calendario/feriados", "nome": "Feriados", "escolhas": {"local": local}, "nota": local_note},
+        {"id": "calendario/dias-uteis", "nome": "Dias úteis", "escolhas": {"local": local}, "nota": local_note},
         {"id": "receita.cnpj/dados-abertos", "nome": "Empresas (CNPJ)", "escolhas": {},
          "nota": "Baixe o CNPJ e filtre pela " + ("UF" if level == "N3" else "cidade") + " na leitura."},
     ]  # fmt: skip

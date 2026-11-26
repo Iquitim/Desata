@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import date
+from pathlib import Path
 
 import httpx
 import polars as pl
@@ -223,3 +224,39 @@ def test_dia_util_anterior() -> None:
         2026, 4, 2
     )  # domingo de Páscoa → quinta
     assert hol.previous_business_day(date(2026, 4, 6), frame) == date(2026, 4, 6)
+
+
+# ------------------------------------------------------------------ município fora da base (RF-4967, CA-20)
+
+
+def test_ca20_municipio_fora_da_base_avisa(tmp_path: Path) -> None:
+    from prodata.catalog import places, sources
+
+    campinas = "3509502"
+    assert hol.outside_base(campinas) and not hol.outside_base("3550308") and not hol.outside_base("SP")
+    with CatalogClient() as client:
+        choices = {
+            "local": campinas,
+            "periodo": {"kind": "intervalo", "inicio": "2027-01-01", "fim": "2027-12-31"},
+        }
+        result = sources.read(client, "calendario/feriados", choices, tmp_path)
+        assert any("os de Campinas não estão incluídos" in w for w in result.warnings), result.warnings
+        days = sources.read(client, "calendario/dias-uteis", choices, tmp_path)
+        assert any("Editar feriados" in w for w in days.warnings)
+        capital = sources.read(client, "calendario/feriados", {**choices, "local": "3550308"}, tmp_path)
+        assert not any("capitais" in w for w in capital.warnings)
+    edits = Edits()
+    edits.include(
+        Holiday(
+            id=f"{campinas}/padroeira", nome="Padroeira", tipo="municipal", abrangencia=campinas, fixo="12-08"
+        )
+    )
+    assert not hol.outside_base(campinas, edits)
+    note = next(f for f in places.detail(f"mun:{campinas}")["fontes"] if f["id"] == "calendario/feriados")[
+        "nota"
+    ]
+    assert "só das capitais" in note
+    assert (
+        next(f for f in places.detail("mun:3550308")["fontes"] if f["id"] == "calendario/feriados")["nota"]
+        == ""
+    )

@@ -487,6 +487,15 @@ def _read_calendar(
             warnings.append(
                 f"ANBIMA indisponível ({exc.message}): feriados bancários calculados pelo programa."
             )
+    if holidays.outside_base(place, edits):
+        # Nada some sem aviso (RF-4967): sem os municipais, a contagem de dias úteis da cidade ficaria errada.
+        from prodata.catalog import places
+
+        name = next((n for c, n, _uf in places.municipalities() if c == place), f"código {place}")
+        warnings.append(
+            f"A base do programa traz os feriados municipais só das 27 capitais: os de {name} não estão incluídos. "
+            "Inclua em Editar feriados."
+        )
     if kind == "feriados":
         frame = holidays.table(start.year, end.year, place, calendar=calendar, anbima=bank, edits=edits)
         frame = frame.filter((pl.col("data") >= start) & (pl.col("data") <= end))

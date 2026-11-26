@@ -517,3 +517,13 @@ def editor_rows(place: str, year: int, edits: Edits) -> list[dict[str, Any]]:
 
 def find_base(holiday_id: str) -> Holiday | None:
     return next((h for h in (*NATIONAL, *program_holidays()) if h.id == holiday_id), None)
+
+
+def outside_base(place: str, edits: Edits | None = None) -> bool:
+    """Município (código de 7 dígitos) sem feriado municipal na base do programa nem incluído pela pessoa ou pela
+    equipe (RF-4967): a base traz os municipais só das 27 capitais."""
+    if not (len(place) == 7 and place.isdigit()):
+        return False
+    known = {x.abrangencia for x in program_holidays() if x.tipo == "municipal"}
+    mine = {x.abrangencia for x in (edits.incluidos if edits else [])}
+    return place not in known and place not in mine
