@@ -128,9 +128,12 @@
   .toc { columns: 3; column-gap: 14pt; font-size: 9.3pt; }
   .toc div { display: flex; gap: 8pt; padding: 4pt 0; border-bottom: 1px dotted var(--line); break-inside: avoid; }
   .toc span:first-child { color: var(--blue); font-weight: 700; width: 16pt; }
-  .toc-parts { columns: 2; column-gap: 18pt; }
-  .toc-part { break-inside: avoid; margin-bottom: 8pt; }
-  .toc-part b { display: block; padding: 3pt 0; font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-strong); }
+  .toc-parts { columns: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 14pt; font-size: 9pt; }
+  .toc .toc-col { display: block; padding: 0; border-bottom: 0; }
+  .toc-parts .toc-part div { padding: 1.6pt 0; line-height: 1.3; }
+  /* o bloco da parte não é uma linha do sumário: sem o flex do .toc div, que punha tudo numa linha só e alargava a página */
+  .toc .toc-part { display: block; padding: 0; border-bottom: 0; break-inside: avoid; margin-bottom: 6pt; }
+  .toc-part b { display: block; padding: 2pt 0 1pt; font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-strong); }
   /* Abertura de cada parte (0.9.6): onde a pessoa está e o que vem a seguir */
   .part { break-before: page; padding-top: 70mm; }
   .part-num { font-size: 10pt; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-strong); }
@@ -244,13 +247,19 @@
   </div>
   <h3>Neste guia</h3>
   <div class="toc toc-parts">
-    <div class="toc-part"><b>Parte I · Começar</b><div><span>1</span>O que dá para resolver</div><div><span>2</span>Instalação e requisitos</div><div><span>3</span>Conhecendo a tela</div><div><span>4</span>Seu primeiro fluxo</div></div>
-    <div class="toc-part"><b>Parte II · Trazer dados</b><div><span>5</span>A vista Dados</div><div><span>6</span>Arquivos e pastas</div><div><span>7</span>Bancos de dados</div><div><span>8</span>Dados públicos do Brasil</div><div><span>9</span>Dados de APIs, sem programar</div><div><span>10</span>Dados do Jira, sem escrever JQL</div><div><span>11</span>Dados de PDFs, apontando no documento</div></div>
-    <div class="toc-part"><b>Parte III · Transformar</b><div><span>12</span>Montando o fluxo</div><div><span>13</span>Fórmulas e cálculos</div><div><span>14</span>Cruzando tabelas e tratando textos</div><div><span>15</span>Dados que dá para confiar</div></div>
-    <div class="toc-part"><b>Parte IV · Mostrar</b><div><span>16</span>Explorando os resultados</div><div><span>17</span>Indicadores e visuais</div><div><span>18</span>Montando o dashboard</div><div><span>19</span>Linha do tempo e história</div></div>
-    <div class="toc-part"><b>Parte V · Automatizar</b><div><span>20</span>O fechamento que se refaz sozinho</div><div><span>21</span>Levando a lógica para o banco</div><div><span>22</span>Modelos de previsão</div></div>
-    <div class="toc-part"><b>Parte VI · Trabalhar junto</b><div><span>23</span>Organização e personalização</div><div><span>24</span>Compartilhar o fluxo</div><div><span>25</span>Trabalhar em equipe</div></div>
-    <div class="toc-part"><b>Parte VII · Referência</b><div><span>26</span>Segurança e privacidade</div><div><span>27</span>Escopo e limitações</div><div><span>28</span>Todas as ferramentas</div><div><span>29</span>Atalhos e perguntas frequentes</div></div>
+    <div class="toc-col">
+      <div class="toc-part"><b>Parte I · Começar</b><div><span>1</span>O que dá para resolver</div><div><span>2</span>Instalação e requisitos</div><div><span>3</span>Conhecendo a tela</div><div><span>4</span>Seu primeiro fluxo</div></div>
+      <div class="toc-part"><b>Parte II · Trazer dados</b><div><span>5</span>A vista Dados</div><div><span>6</span>Arquivos e pastas</div><div><span>7</span>Bancos de dados</div><div><span>8</span>Dados públicos do Brasil</div><div><span>9</span>Dados de APIs</div><div><span>10</span>Dados do Jira</div><div><span>11</span>Dados de PDFs</div></div>
+    </div>
+    <div class="toc-col">
+      <div class="toc-part"><b>Parte III · Transformar</b><div><span>12</span>Montando o fluxo</div><div><span>13</span>Fórmulas e cálculos</div><div><span>14</span>Cruzando e tratando textos</div><div><span>15</span>Dados que dá para confiar</div></div>
+      <div class="toc-part"><b>Parte IV · Mostrar</b><div><span>16</span>Explorando os resultados</div><div><span>17</span>Indicadores e visuais</div><div><span>18</span>Montando o dashboard</div><div><span>19</span>Linha do tempo e história</div></div>
+    </div>
+    <div class="toc-col">
+      <div class="toc-part"><b>Parte V · Automatizar</b><div><span>20</span>O fechamento que se refaz sozinho</div><div><span>21</span>Do fluxo ao SQL</div><div><span>22</span>Modelos de previsão</div></div>
+      <div class="toc-part"><b>Parte VI · Trabalhar junto</b><div><span>23</span>Organização</div><div><span>24</span>Compartilhar o fluxo</div><div><span>25</span>Trabalhar em equipe</div></div>
+      <div class="toc-part"><b>Parte VII · Referência</b><div><span>26</span>Segurança e privacidade</div><div><span>27</span>Escopo e limitações</div><div><span>28</span>Todas as ferramentas</div><div><span>29</span>Atalhos e perguntas</div></div>
+    </div>
   </div>
 </section>
 <!-- ================================================================ PARTE I -->
@@ -291,8 +300,8 @@
   <h2>Instalação e requisitos</h2>
   <h3>Duas formas de usar</h3>
   <div class="grid-2">
-    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.6-setup.exe</code> (260 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
-    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.6-portable.zip</code> (347 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
+    <div class="card"><h4>Instalador</h4><p><code>{{nome_curto}}-0.9.6-setup.exe</code> (cerca de 270 MB). Instala só para o seu usuário, sem pedir administrador, cria atalho no Menu Iniciar e aparece em <em>Aplicativos</em> para desinstalar.</p></div>
+    <div class="card"><h4>Versão portátil</h4><p><code>{{nome_curto}}-0.9.6-portable.zip</code> (cerca de 360 MB). Descompacte e abra <code>{{produto}}.exe</code>. Nada é instalado — ideal para testar.</p></div>
     <div class="card"><h4>Ao abrir</h4><p>Uma tela com o logo aparece no mesmo instante e mostra cada passo da abertura (motor de dados, servidor local, janela). Na primeira vez depois de instalar, o antivírus pode deixar a abertura mais lenta.</p></div>
   </div>
   <h3>Requisitos</h3>
@@ -300,7 +309,7 @@
     <tr><th style="width:30%">Item</th><th>Requisito</th></tr>
     <tr><td class="tool">Sistema</td><td>Windows 10 ou 11, 64 bits.</td></tr>
     <tr><td class="tool">Componentes</td><td>WebView2 e .NET Framework 4.x — já presentes no Windows 11 e no Windows 10 atualizado. <strong>Não é preciso instalar Python.</strong></td></tr>
-    <tr><td class="tool">Espaço em disco</td><td>Cerca de 600 MB para o programa, mais o tamanho dos seus dados.</td></tr>
+    <tr><td class="tool">Espaço em disco</td><td>Cerca de 800 MB para o programa, mais o tamanho dos seus dados.</td></tr>
     <tr><td class="tool">Memória</td><td>Os dados são processados em memória: reserve RAM compatível com o tamanho das suas tabelas (como regra prática, 3 a 5 vezes o tamanho dos arquivos).</td></tr>
   </table>
   <h3>Primeira execução</h3>
@@ -678,7 +687,7 @@
 <section class="chapter">
   <div class="eyebrow">9 · Trazer dados</div>
   <h2>Dados de APIs, sem programar</h2>
-  <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O {{produto}} faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto. Para os dados oficiais do país, veja antes o catálogo do capítulo 8: ele já traz as fontes prontas. Este capítulo é para o que não está lá, como os sistemas da sua empresa.</p>
+  <p class="intro">Uma API é um endereço na internet que responde com dados, em vez de uma página. O {{produto}} faz a chamada e transforma a resposta em tabela, pronta para cruzar com o resto.</p>
   <div class="goal"><b>Ao final:</b> <span>você sabe cadastrar uma API, testar, e buscar um dado para cada linha da sua tabela.</span></div>
   <h3>Três conceitos que explicam tudo</h3>
   <div class="anatomy">…/estados/<span class="v">{sigla}</span>/municipios<span class="f">?view=nivelado</span>
@@ -708,6 +717,7 @@
         <li>Guarde o link em <strong>Documentação da API</strong>: o botão abre a página no navegador.</li>
         <li>Anote em cada parâmetro <strong>para que serve</strong>: fica salvo para quem usar a API depois.</li>
         <li>Teste primeiro só com o endereço e acrescente o que precisar.</li>
+        <li>Dado oficial do país, como do Banco Central ou do IBGE? Ele já vem pronto no catálogo do capítulo 8, sem cadastrar API.</li>
       </ul>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/api-vars.png" alt="Cadastro com a variável sigla e o parâmetro fixo view"></div><figcaption>A variável e o parâmetro fixo, separados, com o link da documentação.</figcaption></figure>
@@ -2106,7 +2116,7 @@
     <tr><td class="tool">Subfluxos</td><td>Até 3 entradas e 3 saídas, sem parâmetros. O fluxo de origem precisa estar na biblioteca do computador que executa.</td></tr>
     <tr><td class="tool">Excel em modelo</td><td>Gráficos, imagens e tabelas dinâmicas do modelo nem sempre são preservados. O programa avisa quando o modelo tem algum.</td></tr>
     <tr><td class="tool">Aviso do Windows</td><td>O instalador ainda não é assinado digitalmente; por isso o SmartScreen mostra "Editor desconhecido" na primeira execução.</td></tr>
-    <tr><td class="tool">Visuais com muitos dados</td><td>A dispersão desenha até 2.000 pontos e avisa; gráficos mostram até 50 categorias e 8 séries. No Venn de 3 grupos, os círculos são ilustrativos.</td></tr>
+    <tr><td class="tool">Visuais com muitos dados</td><td>A dispersão e a linha no tempo desenham até 2.000 pontos, espalhados, e avisam; colunas, barras e rosca mostram até 50 categorias e 8 séries, e avisam quando cortam. No Venn de 3 grupos, os círculos são ilustrativos.</td></tr>
   </table>
 </section>
 <!-- ================================================================ 28. TODAS AS FERRAMENTAS -->
