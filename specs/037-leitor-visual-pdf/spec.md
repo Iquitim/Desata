@@ -66,7 +66,7 @@ confiável. Nenhum valor é escolhido em silêncio quando há dúvida.
 | ID | Requisito |
 |---|---|
 | RF-3720 | Criar campo sugere nome (a partir do rótulo vizinho) e tipo pelo conteúdo: texto, inteiro, decimal, moeda (R$), data, mês/ano, sim/não. A coluna aparece na prévia **na hora**, com o valor convertido e o original ao lado. Nome e tipo mudam ali mesmo, sem janela. |
-| RF-3721 | O Desata propõe como encontrar o campo nos outros documentos, em linguagem simples: "à direita de 'Total líquido'", "abaixo de 'Competência'", "dentro da seção 'Resumo'". A escolha fica visível em **Como encontrar** e pode ser trocada ou corrigida (inclusive marcando outro rótulo no documento). |
+| RF-3721 | O Desata propõe como encontrar o campo nos outros documentos, em linguagem simples: "à direita de 'Total líquido'", "abaixo de 'Competência'", "dentro da seção 'Resumo'". A escolha fica visível em **Como encontrar** e pode ser trocada ou corrigida (inclusive marcando outro rótulo no documento). Ajuste da 0.9.6: a parte do rótulo que muda de um documento para outro vale com **curinga**: `[mês]`, `[ano]`, `[data]`, `[número]` e `[*]` (qualquer palavra). Ao propor ou marcar um rótulo, o programa já troca nome de mês, ano e data pelo curinga e diz o que trocou ("julho → [mês]"); na lista de rótulos aceitos, clicar numa palavra a transforma em curinga. |
 | RF-3722 | Localizar por posição fixa na página existe como última opção e aparece marcado como **frágil**, com a explicação do porquê. |
 | RF-3723 | Cada campo pode ser obrigatório. Rótulos aceitam variações ("Total líquido", "Valor líquido") e ignoram maiúsculas, acentos e espaços extras. |
 

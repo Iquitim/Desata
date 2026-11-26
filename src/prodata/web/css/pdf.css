@@ -310,3 +310,9 @@ button.pe-mcell:hover { border-color: var(--border-strong); }
 @media (prefers-reduced-motion: reduce) {
   .pe *, .pe *::before, .pe *::after, .pv-action, .pe-fly { animation: none !important; transition: none !important; }
 }
+
+/* Curingas no rótulo (0.9.6): clicar numa palavra que muda de um PDF para outro a transforma em curinga */
+.pe-label-words { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px; min-width: 0; }
+.pe-word { padding: 0 2px; font: inherit; color: inherit; background: none; border: 0; border-radius: 3px; cursor: pointer; }
+.pe-word:hover, .pe-word:focus-visible { background: var(--accent-weak); color: var(--accent); text-decoration: underline dotted; }
+.pe-wild { padding: 0 4px; border-radius: 4px; font-size: var(--fs-xs); font-weight: 600; color: var(--accent); background: var(--accent-weak); }

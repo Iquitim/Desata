@@ -83,9 +83,14 @@ export function formulaToolbar({ columns, insert, rowRefs = false, onExpand = nu
       ARITHMETIC.map((o) => chip(o, 'fx-op')),
       h('span', { class: 'fx-sep' }),
       h('button', {
-        type: 'button', class: 'fx-chip fx-kw', title: 'Condição: IF condição THEN valor ELSE outro ENDIF',
+        type: 'button', class: 'fx-chip fx-kw',
+        title: 'Condição: IF condição THEN valor ELSEIF outra condição THEN valor ELSE outro ENDIF (o ELSEIF é opcional e pode repetir)',
         onmousedown: keepFocus, onclick: () => insert('IF | THEN  ELSE  ENDIF', { spaced: false }),
-      }, 'IF…ENDIF')));
+      }, 'IF…ENDIF'),
+      h('button', {
+        type: 'button', class: 'fx-chip fx-kw', title: 'Mais uma condição dentro do IF, antes do ELSE: ELSEIF condição THEN valor',
+        onmousedown: keepFocus, onclick: () => insert(' ELSEIF | THEN ', { spaced: false }),
+      }, 'ELSEIF')));
 }
 
 // ------------------------------------------------------------------ catálogo de funções

@@ -7,7 +7,8 @@ distâncias horizontais são comparadas com a altura da linha já na mesma escal
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+import re
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -146,9 +147,53 @@ class LabelHit:
         return union(w["b"] for w in self.words)
 
 
+# Curingas do rótulo (0.9.6): a parte que muda de um PDF para o outro ("julho de 2026" no relatório de julho,
+# "agosto de 2026" no de agosto) vale qualquer valor daquele tipo.
+MONTHS = frozenset({"janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro",
+                    "novembro", "dezembro", "jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"})  # fmt: skip
+_YEAR = re.compile(r"^(19|20)\d\d$")
+_DATE = re.compile(r"^(\d{1,2}[/.-])?\d{1,2}[/.-]\d{2,4}$|^\d{4}-\d{2}(-\d{2})?$")
+_NUMBER = re.compile(r"^[-+]?\d[\d.,]*%?$")
+WILDCARDS: dict[str, Callable[[str], bool]] = {
+    "[mes]": lambda t: t in MONTHS,
+    "[ano]": lambda t: bool(_YEAR.match(t)),
+    "[data]": lambda t: bool(_DATE.match(t)),
+    "[numero]": lambda t: bool(_NUMBER.match(t)),
+    "[*]": lambda t: True,
+}
+
+
+def label_matchers(label: str) -> list[Callable[[str], bool]]:
+    """Uma comparação por palavra do rótulo: igual (sem acento nem maiúscula) ou o curinga ([mês], [ano]...)."""
+    out: list[Callable[[str], bool]] = []
+    for raw in label.split():
+        key = normalize(raw).strip(":;,.")
+        if key in WILDCARDS:
+            out.append(WILDCARDS[key])
+        elif word := norm_word(raw):
+            out.append(word.__eq__)
+    return out
+
+
+def generalize(label: str) -> tuple[str, list[str]]:
+    """Troca o que muda de mês para mês (nome do mês, ano, data) pelo curinga. Devolve o rótulo e o que trocou."""
+    words, changed = [], []
+    for raw in label.split():
+        token = norm_word(raw)
+        wild = ("[mês]" if token in MONTHS else "[ano]" if _YEAR.match(token) else "[data]" if _DATE.match(token)
+                else None)  # fmt: skip
+        if wild and not raw.startswith("["):
+            changed.append(f"{raw.strip(':;,.')} → {wild}")
+            words.append(wild)
+        else:
+            words.append(raw)
+    return " ".join(words), changed
+
+
 def find_label(lines: Sequence[Line], label: str) -> list[LabelHit]:
-    """Ocorrências do rótulo, palavra por palavra, sem acento nem maiúscula nem pontuação nas pontas."""
-    wanted = norm_tokens(label)
+    """Ocorrências do rótulo, palavra por palavra, sem acento nem maiúscula nem pontuação nas pontas; com os
+    curingas, a parte que muda vale qualquer valor daquele tipo."""
+    wanted = label_matchers(label)
     if not wanted:
         return []
     hits = []
@@ -158,7 +203,7 @@ def find_label(lines: Sequence[Line], label: str) -> list[LabelHit]:
         real = [(i, t) for i, t in enumerate(line.tokens()) if t]
         tokens = [t for _, t in real]
         for k in range(len(tokens) - n + 1):
-            if tokens[k : k + n] == wanted:
+            if all(match(tok) for match, tok in zip(wanted, tokens[k : k + n], strict=True)):
                 hits.append(LabelHit(line, real[k][0], real[k + n - 1][0] + 1))
     return hits
 

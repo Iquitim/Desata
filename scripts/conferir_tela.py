@@ -1694,6 +1694,104 @@ def municipios(pg: Page) -> None:
     )
 
 
+def ajustes(pg: Page) -> None:
+    """Ajustes da 0.9.6 pedidos antes da T20: Organizar com seleção, ELSEIF, Comece por aqui, ponto de limpeza,
+    abas do painel Formato numa linha só e curinga no rótulo do PDF."""
+    # 1) Organizar com um visual selecionado: a escolha aparece e o padrão é arrumar todos
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    pg.wait_for_timeout(1200)
+    pg.locator(".dash-actions button", has_text="Editar layout").click()
+    pg.wait_for_timeout(600)
+    pg.locator(".dash-page .dash-item").nth(3).click()
+    pg.locator(".dash-actions button", has_text="Organizar").click()
+    dlg = pg.locator("dialog[open]", has=pg.locator(".organize-grid"))
+    dlg.locator(".organize-option").first.wait_for(timeout=15000)
+    scope = dlg.locator(".organize-scope")
+    check(
+        "com seleção, a galeria pergunta todos ou só os selecionados",
+        scope.count() == 1 and "Todos os visuais" in scope.inner_text(),
+    )
+    check(
+        "um só selecionado: o padrão é arrumar todos",
+        "on" in (scope.locator(".seg-btn").first.get_attribute("class") or ""),
+    )
+    thumbs = dlg.locator(".organize-thumb").evaluate_all("(els) => new Set(els.map((e) => e.innerHTML)).size")
+    check("os seis layouts saem diferentes", thumbs >= 4, thumbs)
+    _print(pg, "ajuste-organizar")
+    dlg.locator("header button").first.click()
+    # 5) abas do painel Formato numa linha só, mesmo num monitor menor
+    pg.set_viewport_size({"width": 1100, "height": 800})
+    pg.wait_for_timeout(600)
+    pg.locator(".dash-page .dash-item").nth(3).click()
+    pg.locator(".format-tab").first.wait_for(timeout=5000)
+    pg.locator(".format-tab").last.click()
+    tops = pg.locator(".format-tab").evaluate_all(
+        "(els) => [...new Set(els.map((e) => Math.round(e.getBoundingClientRect().top)))]"
+    )
+    heights = pg.locator(".format-tab").evaluate_all(
+        "(els) => [...new Set(els.map((e) => Math.round(e.getBoundingClientRect().height)))]"
+    )
+    check(
+        "as abas do Formato ficam numa linha só, todas da mesma altura",
+        len(tops) == 1 and len(heights) == 1,
+        (tops, heights),
+    )
+    _print(pg, "ajuste-abas")
+    pg.set_viewport_size({"width": 1500, "height": 950})
+    pg.locator(".dash-actions button", has_text="Concluir").click()
+    pg.locator("#viewSwitch .segment[data-view=designer]").click()
+    # 2) ELSEIF na barra da fórmula
+    new_flow(pg)
+    node_id = pg.evaluate("""() => window.__A.addNode('io.text_input', 100, 200, { table: { columns: ['uf', 'v'],
+      rows: [['SP', '1'], ['sp', '2'], ['RJ', '3'], ['MG', '4']] } }).id""")
+    formula, after = pg.evaluate(
+        """(src) => { const f = window.__A.addNode('prep.formula', 360, 200, { formulas: [{ target: 'new', column: 'rotulo',
+      type: 'String', expression: 'IIF([uf] = "RJ", "alto", "Alto")' }] }).id; window.__A.connect(src, 'out', f, 'in');
+      const s = window.__A.addNode('prep.sort', 620, 200, {}).id; window.__A.connect(f, 'out', s, 'in'); return [f, s]; }""",
+        node_id,
+    )
+    configure(pg, formula)
+    pg.locator("#leftPanel textarea").first.click()  # a barra de operadores aparece com a expressão em foco
+    pg.locator(".fx-chip", has_text="ELSEIF").first.wait_for(timeout=5000)
+    tip = pg.locator(".fx-chip", has_text="IF…ENDIF").first.get_attribute("title") or ""
+    check("a dica do IF mostra o ELSEIF", "ELSEIF" in tip, tip)
+    # 4) o ponto de limpeza na caixa onde o problema surge (a fórmula cria "Alto" e "alto" numa coluna nova)
+    run(pg)
+    pg.wait_for_function(
+        f"() => document.querySelector(\".node[data-id='{formula}'] .node-cleaning\")", timeout=20000
+    )
+    check("a caixa do meio que cria um problema ganha o ponto", True)
+    check(
+        "a entrada também tem o dela", pg.locator(f".node[data-id='{node_id}'] .node-cleaning").count() == 1
+    )
+    check(
+        "a caixa seguinte, que só herda os problemas, não repete o ponto",
+        pg.locator(f".node[data-id='{after}'] .node-cleaning").count() == 0,
+    )
+    _print(pg, "ajuste-limpeza")
+    # 6) curinga no rótulo do PDF
+    got = pg.evaluate(
+        "() => import('/static/js/pdf_format.js').then((m) => m.generalizeLabel('a julho de 2026, a arrecadação alcançou'))"
+    )
+    check(
+        "o rótulo marcado no PDF já vira curinga",
+        got["label"] == "a [mês] de [ano] a arrecadação alcançou" and len(got["changed"]) == 2,
+        got,
+    )
+    # 3) Comece por aqui com todas as origens
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.evaluate(
+        "() => import('/static/js/data_view.js').then((m) => { m.openInData(null); m.renderDataView(); })"
+    )
+    welcome = pg.locator(".dv-welcome")
+    welcome.wait_for(timeout=5000)
+    text = welcome.inner_text()
+    check("Comece por aqui mostra todas as origens",
+          all(t in text for t in ("Arquivo ou pasta", "Dados públicos do Brasil", "Banco de dados", "API", "PDF", "Jira")), text[:300])  # fmt: skip
+    pg.wait_for_timeout(700)  # a troca de vista desliza: o print sai com a tela parada
+    _print(pg, "ajuste-comece")
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1729,6 +1827,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "cnpj": cnpj,
     "receitas": receitas,
     "municipios": municipios,
+    "ajustes": ajustes,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

@@ -52,6 +52,17 @@ function newSource(kind, opts = {}) {
   renderDataView();
 }
 
+/** O catálogo Dados públicos do Brasil, com Adicionar ao fluxo e À vista Dados (spec 049). */
+function openCatalog() {
+  openPublicData({
+    onUse: (entry, choices, _target, info) => { if (addPublicNode(entry, choices, info)) handlers.showDesigner(); },
+    onUseData: async (entry, choices, info) => { // À vista Dados: a pasta Dados públicos (RF-4915)
+      const key = await savePublic(entry, choices, info);
+      if (key) { ui.key = key; ui.creating = null; renderDataView(); }
+    },
+  });
+}
+
 function addMenu(e) {
   const r = e.currentTarget.getBoundingClientRect();
   showMenu(r.left, r.bottom + 4, [
@@ -60,13 +71,7 @@ function addMenu(e) {
     { label: 'Pasta de arquivos (vários de uma vez)', icon: 'directory', onSelect: () => newSource('folder') },
     { label: 'PDF (extrair campos e tabelas)', icon: 'file-plus', onSelect: () => newSource('pdf') },
     'separator',
-    { label: 'Dados públicos do Brasil', icon: 'landmark', onSelect: () => openPublicData({
-      onUse: (entry, choices, _target, info) => { if (addPublicNode(entry, choices, info)) handlers.showDesigner(); },
-      onUseData: async (entry, choices, info) => { // À vista Dados: a pasta Dados públicos (RF-4915)
-        const key = await savePublic(entry, choices, info);
-        if (key) { ui.key = key; ui.creating = null; renderDataView(); }
-      },
-    }) },
+    { label: 'Dados públicos do Brasil', icon: 'landmark', onSelect: openCatalog },
     'separator',
     { label: 'Nova conexão com banco', icon: 'database', onSelect: () => newSource('conn') },
     { label: 'Nova consulta de banco', icon: 'server', disabled: !store.connections.length, onSelect: () => newSource('query') },
@@ -106,17 +111,27 @@ function listPane() {
 
 /** Primeira vez, ou nenhuma fonte escolhida: explica os tipos de fonte e leva a cada um (RF-2809). */
 function welcome() {
+  // Cada origem: tipo (cor e ícone), título, quando usar, o mini-esquema, o que faz e os botões.
   const kinds = [
-    ['file', 'Arquivo', 'Excel, CSV, Parquet ou JSON do seu computador', [['vendas.xlsx', '3 planilhas'], ['Tabela', '1.800 linhas']],
-      'Envie uma cópia ou vincule o arquivo onde ele está, para ler sempre a versão mais nova.',
+    ['file', 'Arquivo ou pasta', 'Excel, CSV, Parquet ou JSON; uma pasta com vários de uma vez', [['vendas_*.xlsx', '12 arquivos'], ['Tabela', '1.800 linhas']],
+      'Envie uma cópia, vincule onde está (lê sempre a versão mais nova) ou junte todos os arquivos de uma pasta.',
       button({ icon: 'upload', label: 'Enviar arquivo', variant: 'primary', onClick: () => { fileInput.accept = accept(); fileInput.click(); } }),
-      button({ label: 'ou vincular um arquivo', variant: 'ghost', onClick: () => linkFile().then(afterChange) })],
+      button({ icon: 'directory', label: 'Pasta de arquivos', variant: 'ghost', onClick: () => newSource('folder') })],
+    ['public', 'Dados públicos do Brasil', 'Banco Central, IBGE, Ipea, Tesouro, CNPJ, feriados e portais', [['Selic, IPCA…', 'catálogo'], ['Tabela', 'direto do órgão']],
+      'Escolha no catálogo, confira a prévia e use no fluxo: sem configurar API, com a citação da fonte pronta.',
+      button({ icon: 'landmark', label: 'Abrir o catálogo', variant: 'primary', onClick: openCatalog }), null],
     ['conn', 'Banco de dados', 'PostgreSQL e SQL Server, só para leitura', [['ERP', 'conexão'], ['Consulta', 'SELECT …'], ['Tabela', '512 linhas']],
       'Cadastre a conexão uma vez, com a senha no cofre do Windows, e depois as consultas que os fluxos usam.',
       button({ icon: 'database', label: 'Conectar a um banco', variant: 'primary', onClick: () => newSource('conn') }), null],
-    ['api', 'API', 'Serviços na internet, como o IBGE, e sistemas da empresa', [['Pedido', 'GET /estados'], ['Resposta', '[{"sigla"…'], ['Tabela', '27 linhas']],
+    ['api', 'API', 'Serviços na internet e sistemas da empresa', [['Pedido', 'GET /estados'], ['Resposta', '[{"sigla"…'], ['Tabela', '27 linhas']],
       'Cole o endereço e teste na hora. APIs públicas funcionam sem configuração; as internas, com a lista da TI.',
       button({ icon: 'globe', label: 'Cadastrar API', variant: 'primary', onClick: () => newSource('api') }), null],
+    ['pdf', 'PDF', 'Campos e tabelas de relatórios, notas e extratos', [['relatorio.pdf', '3 páginas'], ['Campos', 'valor, data…'], ['Tabela', '1 por PDF']],
+      'Marque no próprio PDF o que extrair; vale para todos os PDFs com o mesmo leiaute, de uma pasta inteira.',
+      button({ icon: 'file-plus', label: 'Ler um PDF', variant: 'primary', onClick: () => newSource('pdf') }), null],
+    ['jira', 'Jira', 'Demandas, histórico e comentários, só leitura', [['Jira', 'conexão'], ['Filtro', 'project = …'], ['Tabela', 'demandas']],
+      'Conecte uma vez, com o token no cofre do Windows, e monte as consultas sem escrever JQL se preferir.',
+      button({ icon: 'link', label: 'Conectar ao Jira', variant: 'primary', onClick: () => newSource('jiraconn') }), null],
   ];
   return h('div', { class: 'dv-welcome' },
     h('span', { class: 'dv-eyebrow' }, 'Comece por aqui'),

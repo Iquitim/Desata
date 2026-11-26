@@ -238,7 +238,7 @@ function newsBadge(n) {
   }, 'Dados novos');
 }
 
-/** Ponto discreto de recomendação de limpeza (spec 048, RF-4834): só nas caixas de entrada; abre o Perfil. */
+/** Ponto discreto de recomendação de limpeza (spec 048, RF-4834): na caixa onde o problema surge; abre o Perfil. */
 function cleaningBadge(n) {
   const count = cleaningCount(n.id);
   if (!count) return null;

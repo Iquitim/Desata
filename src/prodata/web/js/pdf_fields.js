@@ -4,7 +4,7 @@
 import { api } from './api.js';
 import { button, h } from './dom.js';
 import { icon } from './icons.js';
-import { chip, howText, showValue, slug } from './pdf_format.js';
+import { chip, howText, isWildcard, showValue, slug, wildcardFor } from './pdf_format.js';
 import { toast, toastError } from './ui.js';
 
 /** Clique em campo, lista, botão ou resumo do cartão não navega: só o resto do cartão leva ao documento. */
@@ -73,11 +73,24 @@ export function variations(ctx, spec) {
     change(`aceitar “${text}” como rótulo de ${spec.nome}`, (r) => { r.campos.find((x) => x.nome === spec.nome).regra.rotulos.push(text); });
   };
   return h('details', { class: 'pe-more' }, h('summary', {}, `Rótulos aceitos (${spec.regra.rotulos.length})`),
-    h('ul', { class: 'pe-labels' }, spec.regra.rotulos.map((label) => h('li', {}, h('span', {}, `“${label}”`),
+    h('ul', { class: 'pe-labels' }, spec.regra.rotulos.map((label) => h('li', {}, labelWords(label, (word, i) => {
+      const wild = wildcardFor(word);
+      change(`“${word}” vira ${wild} no rótulo de ${spec.nome}`, (r) => {
+        const g = r.campos.find((x) => x.nome === spec.nome).regra;
+        g.rotulos = g.rotulos.map((x) => (x === label ? x.split(/\s+/).filter(Boolean).map((w, k) => (k === i ? wild : w)).join(' ') : x));
+      });
+    }),
       spec.regra.rotulos.length > 1 ? button({ icon: 'x', title: `Tirar “${label}”`, variant: 'ghost', size: 'sm',
         onClick: () => change(`tirar “${label}” de ${spec.nome}`, (r) => { const g = r.campos.find((x) => x.nome === spec.nome).regra; g.rotulos = g.rotulos.filter((x) => x !== label); }) }) : null))),
     h('div', { class: 'row' }, input, button({ icon: 'plus', label: 'Aceitar', size: 'sm', onClick: add })),
-    h('p', { class: 'field-help' }, 'Maiúsculas, acentos e espaços a mais não contam.'));
+    h('p', { class: 'field-help' }, 'Maiúsculas, acentos e espaços a mais não contam. Uma palavra que muda de um PDF para outro (o mês, o ano, uma data): clique nela e ela vira curinga, como [mês], [ano], [data], [número] ou [*] (qualquer palavra).'));
+}
+
+/** O rótulo palavra por palavra: clicar numa palavra que muda a transforma em curinga (0.9.6). */
+function labelWords(label, onWild) {
+  return h('span', { class: 'pe-label-words' }, '“', label.split(/\s+/).filter(Boolean).map((word, i) => (isWildcard(word)
+    ? h('span', { class: 'pe-wild', title: 'Curinga: vale qualquer valor deste tipo' }, word)
+    : h('button', { type: 'button', class: 'pe-word', title: `“${word}” muda de um PDF para outro? Clique para virar ${wildcardFor(word)}`, onclick: () => onWild(word, i) }, word))), '”');
 }
 
 /** RF-3762: corrigir só neste documento, sem mudar a regra, com registro de quem, quando e o valor de antes. */

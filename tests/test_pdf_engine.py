@@ -365,3 +365,53 @@ def test_bordas_da_tabela_arrastadas() -> None:
     assert header.cabecalho == cut.cabecalho and header.linhas_cabecalho == 1
     with pytest.raises(ValueError):
         adjust_edge(info, cut, 0, "bottom", page0[head].words[0]["b"][3] + 0.001)  # antes de qualquer linha
+
+
+# ------------------------------------------------------------------ curingas no rótulo (0.9.6)
+
+
+def _sentence(text: str) -> dict:
+    """Uma linha de texto como o leitor entrega: uma palavra ao lado da outra."""
+    words, x = [], 0.05
+    for t in text.split():
+        width = 0.012 * len(t)
+        words.append({"t": t, "p": 0, "b": [x, 0.1, x + width, 0.12]})
+        x += width + 0.008
+    return {"words": words, "pages": [{"w": 600, "h": 800}]}
+
+
+@pytest.mark.parametrize("month", ["julho", "agosto", "Dezembro"])
+def test_rotulo_com_mes_e_ano_que_mudam(month: str) -> None:
+    """O relatório de cada mês diz "a julho de 2026", "a agosto de 2026"...: o rótulo com curinga acha nos dois."""
+    info = _sentence(f"a {month} de 2027, a arrecadação alcançou R$ 1.791.203 milhões")
+    spec = FieldSpec(
+        nome="arrecadacao",
+        tipo="texto",
+        regra=LabelRule(rotulos=["a [mês] de [ano], a arrecadação alcançou"]),
+    )
+    field = extract(Recipe(id="x", nome="x", campos=[spec]), info).as_dict()["campos"][0]
+    assert field["estado"] == ENCONTRADO, field
+    assert field["valor"] == "R$ 1.791.203 milhões"
+
+
+def test_sem_curinga_o_mes_novo_nao_e_achado() -> None:
+    info = _sentence("a agosto de 2026, a arrecadação alcançou R$ 1.791.203 milhões")
+    spec = FieldSpec(
+        nome="arrecadacao", tipo="moeda", regra=LabelRule(rotulos=["a julho de 2026, a arrecadação alcançou"])
+    )
+    assert extract(Recipe(id="x", nome="x", campos=[spec]), info).as_dict()["campos"][0]["estado"] == AUSENTE
+
+
+def test_rotulo_proposto_ja_vem_com_curinga() -> None:
+    from prodata.documents.layout import generalize
+
+    label, changed = generalize("a julho de 2026, a arrecadação alcançou")
+    assert label == "a [mês] de [ano] a arrecadação alcançou"
+    assert changed == ["julho → [mês]", "2026 → [ano]"]
+    assert generalize("Competência 10/2026")[0] == "Competência [data]"
+    assert generalize("Total líquido")[1] == []  # nada que mude: fica como está
+    info = _sentence("a julho de 2026, a arrecadação alcançou R$ 1.791.203 milhões")
+    value = [w for w in info["words"] if w["t"] in ("R$", "1.791.203", "milhões")]
+    rule = suggest_field(info, value)["campo"]["regra"]
+    assert rule["tipo"] == "rotulo", rule
+    assert rule["rotulos"] == ["a [mês] de [ano] a arrecadação alcançou"]

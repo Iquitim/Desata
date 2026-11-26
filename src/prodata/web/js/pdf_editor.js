@@ -7,7 +7,7 @@ import { api } from './api.js';
 import { button, debounce, h } from './dom.js';
 import { icon } from './icons.js';
 import { fieldCard, tableCard } from './pdf_fields.js';
-import { chip, clone, howText, reduced, showValue, STATE } from './pdf_format.js';
+import { chip, clone, generalizeLabel, howText, reduced, showValue, STATE } from './pdf_format.js';
 import { createViewer, toReading } from './pdf_page.js';
 import { exportRecipe, importRecipe, recipesDialog } from './pdf_recipes.js';
 import { outputText, refreshPdfSources } from './pdf_sources.js';
@@ -399,7 +399,8 @@ export function pdfEditor(source, opts = {}) {
     const spec = E.focus ? E.recipe.campos.find((f) => f.nome === E.focus) : null;
     const words = viewer.selection();
     if (!spec || !words.length) { viewer.announce('Escolha um campo na lista e marque o rótulo no documento.'); return; }
-    const label = words.map((w) => w.t).join(' ').replace(/:\s*$/, '').trim();
+    // O que muda de mês para mês (julho, 2026, 10/2026) vira curinga: o rótulo vale nos PDFs dos outros meses.
+    const { label, changed } = generalizeLabel(words.map((w) => w.t).join(' ').replace(/:\s*$/, '').trim());
     const current = E.results[E.doc]?.campos?.find((f) => f.nome === spec.nome);
     const target = current?.candidatos?.[0]?.origem?.[0];
     let direcao = 'direita';
@@ -421,7 +422,8 @@ export function pdfEditor(source, opts = {}) {
     });
     viewer.clearSelection();
     E.labelMode = false;
-    toast(found ? `“${label}” vale como rótulo de ${spec.nome}` : `${spec.nome} agora fica ${direcao === 'direita' ? 'à direita' : 'abaixo'} de “${label}”`, { kind: 'success' });
+    toast(found ? `“${label}” vale como rótulo de ${spec.nome}` : `${spec.nome} agora fica ${direcao === 'direita' ? 'à direita' : 'abaixo'} de “${label}”`,
+      { kind: 'success', detail: changed.length ? `O que muda de um PDF para outro virou curinga: ${changed.join(', ')}.` : undefined });
   }
 
   function flyTo(from, text, target) {

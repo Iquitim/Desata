@@ -469,16 +469,19 @@ html.compact .dash-actions .btn.dash-download { width: auto; padding: 0 7px; gap
 
 /* ---------------------------------------------------------------- spec 042: fundo da página e painel Formato em abas */
 .dash-backdrop { position: absolute; inset: 0; pointer-events: none; }
+/* Uma linha só, em qualquer largura do painel (0.9.6): as abas dividem o espaço e o rótulo longo vira reticências. */
 .format-tabs {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); gap: 2px; margin: 0 -4px 12px;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; margin: 0 -4px 12px;
   padding: 3px; background: var(--surface-2, var(--bg)); border-radius: var(--radius);
 }
 .format-tab {
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border: 0; border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 6px 2px; border: 0; border-radius: 6px;
   background: transparent; color: var(--text-2); font: inherit; font-size: var(--fs-2xs); cursor: pointer;
 }
 .format-tab:hover { color: var(--text); background: var(--surface); }
-.format-tab.on { color: var(--accent); background: var(--surface); box-shadow: 0 1px 2px rgb(0 0 0 / .12); font-weight: 600; }
+.format-tab span { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* A selecionada se distingue pela cor e pelo fundo, sem negrito: a largura não muda ao clicar. */
+.format-tab.on { color: var(--accent); background: var(--surface); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
 .format-tab:focus-visible, .palette-opt:focus-visible, .seg-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .dash-panel .form { flex-direction: row; flex-wrap: wrap; column-gap: 12px; }
 .dash-panel .form > .field { flex: 1 1 100%; min-width: 0; }
@@ -603,3 +606,4 @@ html.compact .dash-actions .btn.dash-download { width: auto; padding: 0 7px; gap
 .dash-citation-off { align-items: center; border-style: dashed; background: transparent; }
 .dash-citation-off span { flex: 1; }
 .dash-workspace .dash-citation { margin-left: 0; }
+.organize-scope { max-width: 440px; margin-bottom: 10px; }

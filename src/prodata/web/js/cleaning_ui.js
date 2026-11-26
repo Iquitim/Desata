@@ -1,6 +1,6 @@
 // Recomendações de limpeza (spec 048, RF-4831..4835): no Perfil, cada problema comum vira uma linha com a contagem,
 // exemplos "antes → depois" e Corrigir, que insere logo depois da caixa a ferramenta que já existe, configurada (um
-// Desfazer volta). No canvas, só um ponto discreto nas caixas de entrada; nada abre sozinho e nada corrige sozinho.
+// Desfazer volta). No canvas, só um ponto discreto na caixa onde o problema surge; nada abre sozinho e nada corrige sozinho.
 
 import { api } from './api.js';
 import { button, h, uid } from './dom.js';
@@ -18,7 +18,7 @@ let runSeq = 0; // muda a cada execução: as recomendações são do último re
 const runStamp = () => runSeq;
 const keyOf = (nodeId, anchor) => `${store.workflow?.id}|${nodeId}|${anchor}|${runStamp()}|${JSON.stringify(store.workflow?.ignored_cleaning?.[nodeId] || [])}`;
 
-/** Quantas recomendações a caixa tem (o ponto discreto no canvas, só nas caixas de entrada). */
+/** Quantas recomendações a caixa tem (o ponto discreto no canvas, onde o problema surge). */
 export const cleaningCount = (nodeId) => counts[nodeId] || 0;
 
 async function fetchFor(nodeId, anchor) {
@@ -29,18 +29,40 @@ async function fetchFor(nodeId, anchor) {
   return cache.get(key);
 }
 
-/** Depois de executar: conta as recomendações das caixas de entrada, para o ponto no canvas. */
+const recKey = (r) => `${r.tipo}|${r.coluna}`;
+
+/**
+ * Depois de executar: o ponto no canvas fica na caixa onde cada problema surge. Uma caixa de entrada mostra todos;
+ * uma caixa do meio, só os que as caixas antes dela não tinham (o mesmo problema herdado não repete o ponto). O
+ * Perfil de qualquer caixa continua com a lista completa.
+ */
 async function refreshCounts() {
   const wf = store.workflow;
   if (!wf || !store.execution) { counts = {}; emit('cleaning'); return; }
-  const sources = wf.nodes.filter((n) => n.type.startsWith('io.') && store.tools?.[n.type]?.outputs?.length);
-  const next = {};
-  await Promise.all(sources.map(async (n) => {
-    const anchor = store.tools[n.type].outputs[0]?.id || 'out';
-    const recs = await fetchFor(n.id, anchor);
-    if (recs.length) next[n.id] = recs.length;
-  }));
+  const results = store.execution.node_results || {};
+  const tables = wf.nodes.filter((n) => {
+    const spec = store.tools?.[n.type];
+    return spec?.outputs?.some((p) => p.kind !== 'model') && !n.type.startsWith('bi.') && !n.disabled
+      && ['executed', 'cached'].includes(results[n.id]?.status);
+  });
+  const found = new Map();
+  const queue = [...tables];
+  const worker = async () => { // poucas de cada vez: o servidor calcula sobre o resultado guardado
+    while (queue.length) {
+      const n = queue.shift();
+      const anchor = store.tools[n.type].outputs.find((p) => p.kind !== 'model')?.id || 'out';
+      found.set(n.id, new Set((await fetchFor(n.id, anchor)).map(recKey)));
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
   if (store.workflow !== wf) return;
+  const next = {};
+  for (const n of tables) {
+    const mine = found.get(n.id) || new Set();
+    const before = new Set(wf.edges.filter((e) => e.target === n.id).flatMap((e) => [...(found.get(e.source) || [])]));
+    const fresh = [...mine].filter((k) => !before.has(k)).length;
+    if (fresh) next[n.id] = fresh;
+  }
   counts = next;
   emit('cleaning');
 }

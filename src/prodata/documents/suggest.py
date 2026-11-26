@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from prodata.documents.extract import ENCONTRADO, extract_field, extract_table
-from prodata.documents.layout import Box, Line, Word, group_lines, norm_tokens, to_reading, union
+from prodata.documents.layout import Box, Line, Word, generalize, group_lines, norm_tokens, to_reading, union
 from prodata.documents.recipe import Column, FieldSpec, LabelRule, PositionRule, TableSpec
 from prodata.documents.types import guess_type, normalize
 
@@ -61,7 +61,8 @@ def _above_label(lines: Sequence[Line], idx: int, box: Box) -> list[Word]:
 
 
 def _label_text(words: Sequence[Word]) -> str:
-    return " ".join(w["t"] for w in words)
+    """O rótulo proposto, com o que muda de mês para mês (mês, ano, data) já como curinga (0.9.6)."""
+    return generalize(" ".join(w["t"] for w in words))[0]
 
 
 def _proposal(name: str, kind: str, rule: Any, why: str, fragile: bool = False) -> dict[str, Any]:
