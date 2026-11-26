@@ -250,7 +250,7 @@ def _places(pg: Any, shot: Shot) -> None:
     dlg.locator(".pd-refreshing").wait_for(timeout=15000)
     pg.wait_for_function(
         r"() => /[1-9]\d* de \d+ catálogos lidos/.test(document.querySelector('.pd-refreshing')?.textContent || '')",
-        timeout=60000,
+        timeout=300000,  # o primeiro catálogo (Banco Central) pode levar mais de um minuto
     )
     _quiet(pg)
     top = dlg.locator(".pd-top").bounding_box()
