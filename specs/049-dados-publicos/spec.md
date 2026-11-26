@@ -115,6 +115,7 @@ conferida e o motivo em palavras, e acrescenta a navegação pelo mapa do Brasil
 | RF-4959 | **Atualizar sem atrapalhar.** Enquanto o catálogo é lido de novo (RF-4933), a tela não é redesenhada inteira: a rolagem da lista e do menu, o foco e o texto da busca ficam onde estão. Uma barra fina no topo mostra o progresso ("12 de 41 catálogos lidos") e cada órgão ganha a contagem e o selo no lugar, assim que termina; quem falhou mostra o motivo. O catálogo anterior continua navegável e buscável durante a leitura. A atualização segue com o catálogo fechado, e reabrir mostra o progresso. No fim, a lista e as contagens se atualizam no lugar, sem pular a rolagem. |
 | RF-4965 | **A busca acha lugares.** A busca do topo procura também os 27 estados e os 5.571 municípios do IBGE (contagem de 2026-11-26) (sem diferenciar acento nem maiúsculas: "sao jose dos campos", "juiz de fora"). Cada lugar vem num cartão próprio, antes das fontes, com a UF e o que há nele ("Juiz de Fora (MG) · dados do município"; "Bahia · portal do estado e dados federais"), e clicar abre o mesmo painel do mapa (RF-4958). Nomes repetidos em estados diferentes ("Bom Jesus") aparecem um por estado. A lista de municípios é a guardada do IBGE: a busca funciona sem internet. |
 | RF-4966 | **Demais municípios no menu.** Em **Municipais**, depois das 27 capitais, o item **Demais municípios** abre uma lista com busca, agrupada por estado, com as prefeituras que têm portal próprio no topo (na conferência, Mogi das Cruzes). Clicar num município abre o mesmo painel do mapa. Os três caminhos — mapa, busca e menu — levam ao mesmo painel, e nada é lido da internet até a pessoa escolher uma fonte. |
+| RF-4967 | **Feriados de município fora da base, com aviso.** A base do programa traz os feriados municipais só das 27 capitais. Feriados e Dias úteis de outro município, sem nenhum feriado dele incluído em Editar feriados (da pessoa ou da equipe), avisam na caixa e no resultado: "A base do programa traz os feriados municipais só das 27 capitais: os de Campinas não estão incluídos. Inclua em Editar feriados." O painel do município diz o mesmo na fonte Feriados, antes de adicionar. Nada some sem aviso: uma contagem de dias úteis não fica errada em silêncio. |
 | RF-4964 | **Conferência dos portais de novo.** `scripts/conferir_catalogo.py` testa, de verdade, os 27 estados, as 27 capitais e as prefeituras do mapa, com o mesmo cliente e a mesma identificação do programa, e diz o que mudou em relação à situação gravada no programa (um portal que voltou, mudou de endereço ou passou a bloquear). |
 
 ### Fontes de partida
@@ -365,6 +366,8 @@ Prefeituras que não são capitais: das 120 cidades grandes testadas, só **Mogi
 - CA-18: Abrir o Mapa do Brasil não faz nenhuma requisição externa (teste automatizado).
 - CA-19: Buscar "campinas" mostra o cartão Campinas (SP) antes das fontes, e clicar abre o painel com a população
   e o PIB de Campinas; em Municipais › Demais municípios, Mogi das Cruzes aparece no topo de São Paulo.
+- CA-20: Feriados de Campinas (3509502) avisam que os feriados municipais não estão na base; os de São Paulo
+  (capital) e os de um município com um feriado incluído em Editar feriados não avisam.
 
 ## Fora do escopo
 
