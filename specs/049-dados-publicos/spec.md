@@ -101,6 +101,20 @@ ES (512) e SC (111), e prefeituras de São Paulo (564), Recife (223), Fortaleza 
 | RF-4939 | **Pronto ou Leitura automática.** O cartão e o detalhe dizem de que tipo é a fonte: **Pronto** (destaque conferido um a um, com dicionário de colunas) ou **Leitura automática: confira a prévia** (conjunto de portal ou OData). A leitura automática traz a descrição e as colunas que o portal informa, quando informa. |
 | RF-4940 | **Tamanho, formato e endereço.** O tamanho vem do portal ou de um HEAD antes de ler. Até 200 MB, o arquivo é lido direto (com a leitura guardada de RF-4925). Acima disso, ou sem tamanho conhecido e passando do limite durante a leitura, vai pelo download com pasta escolhida (RF-4952..4954), com a fonte de pasta pronta no fim. ZIP é conferido antes de abrir (caminhos dentro da pasta, tamanho descompactado máximo). PDF, página HTML, formato que o programa não lê ou arquivo num endereço fora da lista aparecem com **Abrir no navegador** e o motivo ("arquivo PDF: o programa não lê tabelas de PDF de portais"; "arquivo em outro site, fora da lista oficial"). |
 
+### O Brasil inteiro: estados, capitais e mapa (revisão de 2026-11-26)
+
+Na primeira versão, a lista de portais ficou com 6 estados: o portal do Rio de Janeiro foi testado num endereço antigo
+e o do estado de São Paulo nem foi testado. A revisão lista **todos** os estados e capitais, cada um com a situação
+conferida e o motivo em palavras, e acrescenta a navegação pelo mapa do Brasil.
+
+| ID | Requisito |
+|----|-----------|
+| RF-4949 | **Todos os estados.** Em Portais, **Estaduais** lista as 27 UFs, sempre, em ordem alfabética. Cada uma mostra uma situação, com a data da conferência: **Lê direto** (CKAN aberto: quantidade de conjuntos e o selo do RF-4922); **Bloqueia leitura automática** (o portal recusa programas; o programa se identifica com o próprio nome e não se passa por navegador, então oferece **Abrir no navegador**); **Outra plataforma** (o portal existe, mas não usa o CKAN — Drupal, Liferay, ArcGIS, WordPress — e o programa ainda não o lê: **Abrir no navegador**); **Fora do ar** (respondeu erro ou não respondeu na conferência; o programa confere de novo ao abrir); **Sem dados para ler** (portal vazio, ou conjuntos sem endereço de arquivo); **Sem portal encontrado** (nenhum portal de dados abertos do governo foi encontrado na conferência). Um portal que lê direto e passa a recusar o programa (página de "Acesso negado", erro 403) mostra o motivo em palavras, não "fora do ar". Toda situação diferente de Lê direto leva ao mapa do estado (RF-4958), onde as fontes federais do estado funcionam. |
+| RF-4950 | **Só as capitais em Municipais.** **Municipais** lista as 27 capitais, com as mesmas situações do RF-4949; Brasília aponta para o portal do Distrito Federal. Prefeituras que não são capitais (na conferência, Mogi das Cruzes) ficam no mapa, dentro do estado delas. |
+| RF-4958 | **Mapa do Brasil.** O menu ganha **Mapa do Brasil**, acima de Portais: os 27 estados desenhados, coloridos pela situação do portal estadual (lê direto, lê com ressalva, não lê), com o nome e a situação ao passar o mouse e a mesma lista em botões para quem usa o teclado. O desenho vem da malha oficial do IBGE, simplificado uma vez por um script do repositório e guardado no programa: abrir o mapa não usa internet. Clicar num estado abre o painel do estado: o portal estadual e a capital, com a situação e **Ver conjuntos**; as outras prefeituras com portal; **Dados do estado** nas fontes federais (população e PIB do IBGE, receitas e despesas no Siconfi, feriados, empresas do CNPJ do estado), já filtrados pela UF; e **Buscar um município** do estado, sobre a lista de municípios do IBGE guardada. Escolher um município mostra as fontes federais filtradas por ele (população, PIB, Siconfi, feriados e dias úteis; empresas do CNPJ quando a pessoa já baixou o CNPJ). Nada é lido até a pessoa escolher a fonte, como no resto do catálogo. |
+| RF-4959 | **Atualizar sem atrapalhar.** Enquanto o catálogo é lido de novo (RF-4933), a tela não é redesenhada inteira: a rolagem da lista e do menu, o foco e o texto da busca ficam onde estão. Uma barra fina no topo mostra o progresso ("12 de 41 catálogos lidos") e cada órgão ganha a contagem e o selo no lugar, assim que termina; quem falhou mostra o motivo. O catálogo anterior continua navegável e buscável durante a leitura. A atualização segue com o catálogo fechado, e reabrir mostra o progresso. No fim, a lista e as contagens se atualizam no lugar, sem pular a rolagem. |
+| RF-4964 | **Conferência dos portais de novo.** `scripts/conferir_catalogo.py` testa, de verdade, os 27 estados, as 27 capitais e as prefeituras do mapa, com o mesmo cliente e a mesma identificação do programa, e diz o que mudou em relação à situação gravada no programa (um portal que voltou, mudou de endereço ou passou a bloquear). |
+
 ### Fontes de partida
 
 | ID | Requisito |
@@ -221,6 +235,62 @@ Verificados e **não disponíveis** agora (ficam no script de conferência, que 
 ANTT (não respondeu em 45 s), Bahia, Rio de Janeiro e Natal (sem conexão), Paraná, Curitiba e Saúde
 (sem a API do CKAN aberta), Paraíba (recursos sem endereço), dados.gov.br (pede token: segunda camada).
 
+## Verificação dos estados e das capitais (revisão, 2026-11-26)
+
+Testados com o cliente do programa (certificados do Windows, identificação "Desata/0.9.6 (catalogo de dados
+publicos)"), com os endereços prováveis de cada governo e a busca na web pelos portais oficiais.
+
+| UF | Portal | Situação |
+|----|--------|----------|
+| AC | `dados.ac.gov.br` | Lê direto (20 conjuntos) |
+| AL | `dados.al.gov.br/catalogo` | Lê direto (398); arquivos também em `portal.dados.al.gov.br` |
+| AP | — | Sem portal encontrado |
+| AM | — | Sem portal encontrado |
+| BA | `dados.ba.gov.br` | Lê direto (22). O servidor não envia o certificado intermediário: num computador que ainda não o tem, a leitura falha com o motivo (o programa não desliga a conferência do certificado) |
+| CE | `dados.ce.gov.br` | Bloqueia leitura automática (403) |
+| DF | `dados.df.gov.br` | Outra plataforma (Liferay) |
+| ES | `dados.es.gov.br` | Lê direto (512) |
+| GO | `dadosabertos.go.gov.br` | Lê direto (451) quando o portal aceita; na revisão, recusou a identificação do programa ("Acesso negado"), e o programa mostra esse motivo |
+| MA | — | Sem portal encontrado |
+| MT | `dadosabertos.mt.gov.br` | Lê direto (26) |
+| MS | — | Sem portal encontrado |
+| MG | `dados.mg.gov.br` | Lê direto (105) |
+| PA | `dados.pa.gov.br` | Fora do ar (não respondeu em 20 s) |
+| PB | `dados.pb.gov.br` | Sem dados para ler (7 conjuntos, nenhum com endereço de arquivo) |
+| PR | `www.dados.pr.gov.br` | Outra plataforma (Drupal) |
+| PE | `dados.pe.gov.br` | Lê direto (47) |
+| PI | `dados.pi.gov.br` | Outra plataforma (WordPress, Observatório de Dados) |
+| RJ | `dadosabertos.rj.gov.br` | Lê direto (1.155); arquivos também em `www.ispdados.rj.gov.br` |
+| RN | `dados.rn.gov.br` | Sem dados para ler (portal vazio) |
+| RS | `dados.rs.gov.br` | Lê direto (416) |
+| RO | `dados.ro.gov.br` | Fora do ar (erro 500) |
+| RR | — | Sem portal encontrado |
+| SC | `dados.sc.gov.br` | Lê direto (111) |
+| SP | `dadosabertos.sp.gov.br` | Lê direto (456); arquivos também no Infosiga e no armazenamento oficial do Detran, na Seade, no DER e na Fazenda |
+| SE | — | Sem portal encontrado |
+| TO | — | Sem portal encontrado |
+
+| Capital | Portal | Situação |
+|---------|--------|----------|
+| Rio Branco, Maceió, Macapá, Manaus, São Luís, Cuiabá, Campo Grande, Belém, João Pessoa, Boa Vista, Florianópolis, Aracaju, Palmas | — | Sem portal encontrado |
+| Salvador | `dados.salvador.ba.gov.br` | Outra plataforma (ArcGIS) |
+| Fortaleza | `dados.fortaleza.ce.gov.br` | Lê direto (640) |
+| Brasília | o portal do DF | Outra plataforma |
+| Vitória | `dadosabertos.vitoria.es.gov.br` | Bloqueia leitura automática ("Request Rejected") |
+| Goiânia | `dadosabertos.goiania.go.gov.br` | Lê direto (29); arquivos em `www4.goiania.go.gov.br` |
+| Belo Horizonte | `dados.pbh.gov.br` | Lê direto (615); arquivos em `ckan.pbh.gov.br` |
+| Curitiba | `dadosabertos.curitiba.pr.gov.br` | Outra plataforma |
+| Recife | `dados.recife.pe.gov.br` | Lê direto (223) |
+| Teresina | `dados.teresina.pi.gov.br` | Outra plataforma (OpenMetadata) |
+| Rio de Janeiro | `www.data.rio` | Outra plataforma (ArcGIS Hub) |
+| Natal | `dados.natal.br` | Fora do ar (não respondeu em 20 s) |
+| Porto Alegre | `dadosabertos.poa.br` | Lê direto (62) |
+| Porto Velho | `dados.portovelho.ro.gov.br` | Fora do ar (erro 502) |
+| São Paulo | `dados.prefeitura.sp.gov.br` | Lê direto (584) |
+
+Prefeituras que não são capitais: das 120 cidades grandes testadas, só **Mogi das Cruzes** (`dados.mogidascruzes.sp.gov.br`,
+88 conjuntos) tem CKAN aberto. Por isso o mapa traz, para qualquer município, as fontes federais filtradas por ele.
+
 ## Como fica na tela
 
 ```
@@ -284,13 +354,21 @@ ANTT (não respondeu em 45 s), Bahia, Rio de Janeiro e Natal (sem conexão), Par
   (teste automatizado); o fluxo salvo com a caixa Dados públicos não contém URL montada nem dados.
 - CA-09: A verificação manual `scripts/conferir_catalogo.py` lê, de verdade, um dado de cada fonte destaque e o
   catálogo de cada órgão, e mostra o tempo de cada um.
+- CA-15: Em Portais, Estaduais lista as 27 UFs e Municipais as 27 capitais, cada uma com a situação e o motivo;
+  São Paulo e Rio de Janeiro leem direto, com a quantidade de conjuntos.
+- CA-16: Durante Atualizar o catálogo, a rolagem do menu e da lista não se mexe sozinha e dá para rolar e buscar; a
+  barra mostra "N de M catálogos lidos" e cada órgão ganha a contagem no lugar.
+- CA-17: No Mapa do Brasil, clicar em Minas Gerais mostra o portal do estado e o de Belo Horizonte; buscar
+  "Juiz de Fora" e escolher População estimada coloca no fluxo a caixa já filtrada pelo código 3136702.
+- CA-18: Abrir o Mapa do Brasil não faz nenhuma requisição externa (teste automatizado).
 
 ## Fora do escopo
 
 - Fontes que pedem conta, token ou chave (API do dados.gov.br, Portal da Transparência): segunda camada.
 - Microdados enormes além do CNPJ (Censo, RAIS, DATASUS, INEP, TSE): o mecanismo de download desta spec serve de
   base, mas cada um vem numa spec própria.
-- Malhas geográficas do IBGE para mapas.
+- Malhas do IBGE como fonte de dados (mapas com as divisas para os visuais). O desenho simplificado dos estados
+  serve só à navegação do catálogo (RF-4958).
 - Banco de dados local de CNPJ (importar para DuckDB, consultar por CNPJ): a fonte de pasta já permite filtrar;
   um índice próprio fica para depois.
 - Avisar fora do programa (notificação do Windows) sobre dados novos.
