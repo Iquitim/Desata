@@ -23,6 +23,7 @@ def part_096(pg: Any, tmp: Path, shot: Shot) -> None:
         ("health", lambda: _seed_health(tmp / "dados")),
         ("welcome", lambda: _welcome(pg, shot)),
         ("catalog", lambda: _catalog(pg, shot)),
+        ("places", lambda: _places(pg, shot)),
         ("public_box", lambda: _public_box(pg, shot)),
         ("saved", lambda: _saved(pg, tmp / "dados", shot)),
         ("citation", lambda: _citation(pg, shot)),
@@ -219,6 +220,45 @@ def _catalog(pg: Any, shot: Shot) -> None:
     pg.wait_for_timeout(2500)
     _quiet(pg)
     shot(dlg, "catalogo-portal")
+    dlg.locator("header button").first.click()
+
+
+def _places(pg: Any, shot: Shot) -> None:
+    """Revisão de 2026-11-26: o mapa do Brasil, o painel de um estado, os lugares na busca e a barra de progresso."""
+    dlg = _open_catalog(pg)
+    dlg.locator(".pd-menu-item", has_text="Mapa do Brasil").click()
+    dlg.locator(".pd-uf").first.wait_for(timeout=15000)
+    pg.wait_for_timeout(600)
+    _quiet(pg)
+    shot(dlg, "catalogo-mapa")
+    dlg.locator('.pd-uf[data-uf="MG"]').click()
+    pg.wait_for_function("() => (document.querySelector('.pd-place')?.textContent || '').includes('Belo Horizonte')", timeout=15000)
+    dlg.locator(".pd-place-finder input").fill("juiz")
+    pg.wait_for_timeout(800)
+    _quiet(pg)
+    shot(dlg, "catalogo-estado")
+    dlg.locator(".pd-search input").fill("campinas")
+    dlg.locator(".pd-place-card").first.wait_for(timeout=15000)
+    pg.wait_for_timeout(800)
+    _quiet(pg)
+    shot(dlg, "catalogo-lugares")
+    dlg.locator(".pd-search input").fill("")
+    dlg.locator(".pd-menu-item", has_text="Destaques").click()
+    refresh = dlg.locator(".pd-top button", has_text="Atualizar o catálogo")
+    if refresh.is_enabled():  # num servidor novo, o catálogo nunca lido já começa a atualizar sozinho ao abrir
+        refresh.click()
+    dlg.locator(".pd-refreshing").wait_for(timeout=15000)
+    pg.wait_for_function(
+        r"() => /[1-9]\d* de \d+ catálogos lidos/.test(document.querySelector('.pd-refreshing')?.textContent || '')",
+        timeout=60000,
+    )
+    _quiet(pg)
+    top = dlg.locator(".pd-top").bounding_box()
+    shot(pg, "catalogo-progresso", clip={"x": top["x"], "y": top["y"], "width": top["width"], "height": top["height"] + 6})
+    for _ in range(300):  # a leitura segue; espera terminar para as etapas seguintes acharem o catálogo pronto
+        if not pg.evaluate("() => fetch('/api/catalogo/atualizar').then((r) => r.json()).then((s) => s.rodando)"):
+            break
+        pg.wait_for_timeout(1000)
     dlg.locator("header button").first.click()
 
 

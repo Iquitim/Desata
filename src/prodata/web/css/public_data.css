@@ -41,7 +41,7 @@
 .pd-menu-sub { display: block; padding: 6px 8px 2px; font-size: var(--fs-xs); color: var(--text-3); }
 .pd-menu-group { display: flex; flex-direction: column; gap: 1px; }
 .pd-menu-item {
-  display: grid; grid-template-columns: 18px 1fr auto auto; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   min-height: 30px; padding: 4px 8px; border: 0; border-radius: var(--radius-sm);
   background: none; color: var(--text); text-align: left; cursor: pointer; font-size: var(--fs-sm);
 }
@@ -370,3 +370,80 @@
 .rc-misses th, .rc-misses td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: left; }
 .rc-misses th { color: var(--text-2); font-weight: 600; }
 .rc-misses .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* revisão de 2026-11-26: atualizar sem atrapalhar, estados e capitais, mapa e lugares (RF-4949..4966) */
+.pd-menu-slot, .pd-results-slot, .pd-detail-slot { display: contents; }
+.pd-menu-item .pd-menu-name { flex: 1; min-width: 0; }
+.pd-menu-dot:empty, .pd-menu-warn:empty, .pd-menu-count:empty { display: none; }
+.pd-bar-slot { display: contents; }
+.pd-refreshing { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.pd-progress {
+  display: inline-block; width: 140px; height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden;
+}
+.pd-progress > span { display: block; height: 100%; background: var(--accent); transition: width 0.4s ease; }
+@media (prefers-reduced-motion: reduce) { .pd-progress > span { transition: none; } }
+
+.pd-tone-ok { --tone: var(--ok); --tone-weak: var(--ok-weak); }
+.pd-tone-partial { --tone: var(--warn); --tone-weak: var(--warn-weak); }
+.pd-tone-none { --tone: var(--text-3); --tone-weak: var(--surface-3); }
+
+.pd-map { display: flex; flex-direction: column; gap: 10px; }
+.pd-map-canvas { position: relative; max-width: 560px; }
+.pd-map-svg { width: 100%; height: auto; display: block; }
+.pd-uf { fill: var(--tone-weak); stroke: var(--tone); stroke-width: 1.2; cursor: pointer; transition: fill 0.15s ease; }
+.pd-uf:hover { fill: var(--tone); }
+.pd-map-tip {
+  position: absolute; pointer-events: none; padding: 4px 8px; border-radius: var(--radius-sm);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-md); font-size: var(--fs-xs); white-space: nowrap;
+}
+.pd-map-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--fs-xs); color: var(--text-2); }
+.pd-map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.pd-map-swatch { width: 14px; height: 10px; border-radius: 2px; background: var(--tone-weak); border: 1px solid var(--tone); }
+.pd-map-keys { display: flex; flex-wrap: wrap; gap: 4px; }
+.pd-map-key {
+  display: inline-flex; gap: 4px; align-items: center; padding: 3px 8px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--tone); background: var(--tone-weak); color: var(--text); font-size: var(--fs-xs);
+}
+.pd-map-key:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+.pd-place { display: flex; flex-direction: column; gap: 14px; }
+.pd-place-head { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.pd-place-head h2 { font-size: var(--fs-xl); font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
+.pd-place-uf { font-size: var(--fs-sm); font-weight: 400; color: var(--text-3); }
+.pd-place-portals { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.pd-place-portal {
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface);
+}
+.pd-place-portal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pd-place-portal-title { font-weight: 600; font-size: var(--fs-sm); }
+.pd-place-pill {
+  flex: none; padding: 1px 8px; border-radius: 999px; font-size: var(--fs-2xs); font-weight: 600;
+  background: var(--tone-weak); color: var(--tone);
+}
+.pd-place-why, .pd-place-when { margin: 0; font-size: var(--fs-xs); color: var(--text-2); }
+.pd-place-when { color: var(--text-3); }
+.pd-place-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.pd-place-sources h3, .pd-place-finder h3, .pd-results-sub { font-size: var(--fs-md); font-weight: 600; margin: 0 0 6px; }
+.pd-place-source-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.pd-place-source, .pd-place-mun, .pd-place-card {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); color: var(--text); text-align: left; cursor: pointer; font-size: var(--fs-sm);
+}
+.pd-place-source { flex-wrap: wrap; }
+.pd-place-source small { flex-basis: 100%; font-size: var(--fs-xs); color: var(--text-3); }
+.pd-place-source:hover, .pd-place-mun:hover, .pd-place-card:hover { border-color: var(--accent); }
+.pd-place-source:focus-visible, .pd-place-mun:focus-visible, .pd-place-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.pd-place-finder .input { max-width: 360px; margin-bottom: 6px; }
+.pd-place-mun-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; }
+.pd-place-mun { width: 100%; justify-content: space-between; padding: 5px 9px; }
+.pd-place-cards { margin-bottom: 12px; }
+.pd-place-card-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pd-place-card span { display: flex; flex-direction: column; }
+.pd-place-card small { font-size: var(--fs-xs); color: var(--text-3); }
+.pd-others { display: flex; flex-direction: column; gap: 10px; }
+.pd-others > .input { max-width: 320px; }
+.pd-others-list { display: flex; flex-direction: column; gap: 4px; }
+.pd-others-state { border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; background: var(--surface); }
+.pd-others-state summary { cursor: pointer; font-size: var(--fs-sm); }
+.pd-others-state .pd-place-mun-list { margin-top: 8px; }

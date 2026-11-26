@@ -52,6 +52,8 @@ export const api = {
     const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== null && v !== undefined && v !== ''));
     return request('GET', `/api/catalogo/busca?${query}`);
   },
+  publicPlace: (id) => request('GET', `/api/catalogo/lugar?id=${enc(id)}`),
+  publicMunicipalities: (uf) => request('GET', `/api/catalogo/municipios?uf=${enc(uf)}`),
   publicRefresh: (orgaos = null) => request('POST', '/api/catalogo/atualizar', { orgaos }),
   publicRefreshStatus: () => request('GET', '/api/catalogo/atualizar'),
   publicFavorite: (id) => request('POST', `/api/catalogo/favoritos/${id.split('/').map(enc).join('/')}`),

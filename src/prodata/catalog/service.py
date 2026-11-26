@@ -121,11 +121,20 @@ class CatalogService:
             }
             for p in portals.PORTALS
         ]
+        # Os 27 estados e as 27 capitais, sempre listados, com a situação conferida (RF-4949, RF-4950); as
+        # prefeituras que não são capitais ficam no mapa (RF-4958).
+        place_rows = [
+            {"id": pl.id, "uf": pl.uf, "nome": pl.nome, "ibge": pl.ibge, "esfera": pl.esfera, "capital": pl.capital,
+             "situacao": pl.situacao, "portal": pl.portal, "pagina": pl.pagina, "motivo": pl.motivo,
+             "conferido": portals.CHECKED, "mapa": pl in portals.MAP_CITIES}
+            for pl in (*portals.PLACES, *portals.MAP_CITIES)
+        ]  # fmt: skip
         agencies = {a: _state_json(state[a]) for a in ("bcb", "ibge", "ipea")}
         read = [s.lido_em for s in state.values() if s.lido_em]
         return {
             "categorias": categories,
             "portais": portal_rows,
+            "lugares": place_rows,
             "orgaos": agencies,
             "lido_em": min(read).isoformat() if read else None,
             "desatualizado": self.store.stale(),

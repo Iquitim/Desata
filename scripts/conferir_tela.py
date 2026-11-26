@@ -1792,6 +1792,140 @@ def ajustes(pg: Page) -> None:
     _print(pg, "ajuste-comece")
 
 
+# ---------------------------------------------------------------- 0.9.6: estados, capitais, mapa e lugares
+
+
+def estados_mapa(pg: Page) -> None:
+    """Revisão de 2026-11-26 (CA-15..CA-19): todos os estados e capitais com o motivo, o mapa, a busca de lugares,
+    Demais municípios e a atualização que não mexe na rolagem."""
+    new_flow(pg)
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.locator(".dv-list-head button", has_text="Adicionar").click()
+    pg.locator(".menu .menu-item", has_text="Dados públicos do Brasil").click()
+    dlg = pg.locator("dialog.pd-dialog[open]")
+    dlg.locator(".pd-card").first.wait_for(timeout=30000)
+    groups = dlg.locator(".pd-menu-group")
+    states = groups.filter(has_text="Estaduais").locator(".pd-menu-item")
+    capitals = groups.filter(has_text="Municipais").locator(".pd-menu-item")
+    check("Estaduais lista os 27 estados", states.count() == 27, states.count())
+    check("Municipais lista as 27 capitais e Demais municípios", capitals.count() == 28, capitals.count())
+    names = states.all_inner_texts()
+    check(
+        "São Paulo e Rio de Janeiro estão entre os estados",
+        any("São Paulo" in n for n in names) and any("Rio de Janeiro" in n for n in names),
+    )
+    ceara = states.filter(has_text="Ceará")
+    check(
+        "um estado que não lê diz o motivo na dica",
+        "Bloqueia" in (ceara.get_attribute("title") or ""),
+        ceara.get_attribute("title"),
+    )
+    ceara.click()
+    panel = dlg.locator(".pd-place")
+    panel.wait_for(timeout=10000)
+    check("o painel do Ceará mostra a situação e Abrir no navegador",
+          "Bloqueia leitura automática" in panel.inner_text() and panel.locator("button", has_text="Abrir no navegador").count() >= 1,
+          panel.inner_text()[:300])  # fmt: skip
+    # Durante a atualização, a rolagem do menu não se mexe sozinha (CA-16)
+    nav = dlg.locator(".pd-menu")
+    dlg.locator(".pd-top button", has_text="Atualizar o catálogo").click()
+    dlg.locator(".pd-refreshing").wait_for(timeout=15000)
+    nav.evaluate("(el) => { el.scrollTop = el.scrollHeight; }")
+    before = nav.evaluate("(el) => el.scrollTop")
+    pg.wait_for_timeout(3500)
+    after = nav.evaluate("(el) => el.scrollTop")
+    bar = dlg.locator(".pd-refreshing").inner_text() if dlg.locator(".pd-refreshing").count() else ""
+    check(
+        "durante a atualização a rolagem do menu fica onde está",
+        before > 0 and abs(after - before) < 2,
+        (before, after),
+    )
+    check(
+        "a barra mostra quantos catálogos já foram lidos",
+        bool(re.search(r"\d+ de \d+ catálogos lidos", bar)) or not bar,
+        bar,
+    )
+    # O mapa (CA-17)
+    dlg.locator(".pd-menu-item", has_text="Mapa do Brasil").click()
+    dlg.locator(".pd-uf").first.wait_for(timeout=10000)
+    check("o mapa desenha os 27 estados", dlg.locator(".pd-uf").count() == 27, dlg.locator(".pd-uf").count())
+    check("a lista em botões tem os 27 estados", dlg.locator(".pd-map-key").count() == 27)
+    dlg.locator('.pd-uf[data-uf="MG"]').click()
+    panel.wait_for(timeout=10000)
+    pg.wait_for_function(
+        "() => (document.querySelector('.pd-place')?.textContent || '').includes('Belo Horizonte')",
+        timeout=10000,
+    )
+    text = panel.inner_text()
+    check(
+        "Minas Gerais mostra o portal do estado e o de Belo Horizonte",
+        "Portal do estado" in text and "Belo Horizonte" in text,
+        text[:300],
+    )
+    finder = panel.locator(".pd-place-finder input")
+    finder.fill("juiz de fora")
+    panel.locator(".pd-place-mun", has_text="Juiz de Fora").first.click()
+    pg.wait_for_function(
+        "() => (document.querySelector('.pd-place h2')?.textContent || '').includes('Juiz de Fora')",
+        timeout=10000,
+    )
+    dlg.locator(".pd-place-source", has_text="População estimada").click()
+    add = dlg.locator(".pd-detail .pd-actions button", has_text="Adicionar ao fluxo")
+    add.wait_for(timeout=30000)
+    pg.wait_for_function(
+        "() => { const b = [...document.querySelectorAll('.pd-actions button')].find((x) => x.textContent.includes('Adicionar ao fluxo')); return b && !b.disabled; }",
+        timeout=60000,
+    )
+    add.click()
+    pg.wait_for_function(
+        "() => window.__S.store.workflow.nodes.some((n) => n.type === 'io.public_data')", timeout=10000
+    )
+    node = pg.evaluate("() => window.__S.store.workflow.nodes.find((n) => n.type === 'io.public_data')")
+    escolhas = node["config"]["fonte"]["escolhas"]
+    check("a população entra no fluxo filtrada por Juiz de Fora (3136702)",
+          escolhas.get("localidades") == "3136702" and escolhas.get("nivel") == "N6", escolhas)  # fmt: skip
+    run(pg)
+    status = pg.evaluate(f"() => window.__S.store.execution?.node_results?.['{node['id']}']")
+    rows = pg.evaluate(
+        f"() => fetch('/api/results/' + window.__S.store.workflow.id + '/{node['id']}/out').then((r) => r.json()).then((d) => d.rows)"
+    )
+    check("a caixa executa e só traz Juiz de Fora", status and status.get("status") in ("executed", "cached")
+          and rows and all(r.get("codigo") == "3136702" for r in rows), (status or {}).get("error"))  # fmt: skip
+    # A busca acha lugares e Demais municípios (CA-19)
+    pg.locator("#viewSwitch .segment", has_text="Dados").click()
+    pg.locator(".dv-list-head button", has_text="Adicionar").click()
+    pg.locator(".menu .menu-item", has_text="Dados públicos do Brasil").click()
+    dlg.locator(".pd-card").first.wait_for(timeout=30000)
+    dlg.locator(".pd-search input").fill("campinas")
+    first = dlg.locator(".pd-place-card").first
+    first.wait_for(timeout=10000)
+    check(
+        "buscar campinas mostra Campinas (SP) primeiro",
+        "Campinas (SP)" in first.inner_text(),
+        first.inner_text(),
+    )
+    first.click()
+    pg.wait_for_function(
+        "() => (document.querySelector('.pd-place h2')?.textContent || '').includes('Campinas')",
+        timeout=10000,
+    )
+    check(
+        "o painel de Campinas traz a população e o PIB",
+        dlg.locator(".pd-place-source", has_text="PIB").count() == 1,
+    )
+    dlg.locator(".pd-menu-item", has_text="Demais municípios").click()
+    sp = dlg.locator(".pd-others-state", has_text="São Paulo")
+    sp.locator("summary").click()
+    first_city = sp.locator(".pd-place-mun").first
+    first_city.wait_for(timeout=10000)
+    check(
+        "em Demais municípios, Mogi das Cruzes vem no topo de São Paulo",
+        "Mogi das Cruzes" in first_city.inner_text(),
+        first_city.inner_text(),
+    )
+    dlg.locator("header button").first.click()
+
+
 # ---------------------------------------------------------------- 0.9.6: linha no tempo, motor e HTML iguais
 
 CHART_DEFAULTS = {"title": "Série", "series_column": "", "sort": "value_desc", "max_items": 12, "tip_columns": [],
@@ -1895,6 +2029,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "municipios": municipios,
     "ajustes": ajustes,
     "grafico_serie": grafico_serie,
+    "estados_mapa": estados_mapa,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

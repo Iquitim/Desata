@@ -519,7 +519,7 @@ def conferir_parametros_odata() -> int:
 def conferir_portais(gravar: bool) -> int:
     """Os portais verificados respondem e os indisponíveis são testados de novo (RF-4936)."""
     from prodata.catalog.http import CatalogClient
-    from prodata.catalog.portals import PORTALS, UNAVAILABLE
+    from prodata.catalog.portals import PORTALS
     from prodata.catalog.readers import ckan
 
     failures = 0
@@ -542,15 +542,41 @@ def conferir_portais(gravar: bool) -> int:
             show = raw.get("https://dados.cvm.gov.br/api/3/action/package_show", params={"id": name}).json()
             (FIXTURES / "ckan_cvm_conjunto.json").write_bytes(_json(show))
             print(f"gravado: ckan_cvm_busca.json e ckan_cvm_conjunto.json ({name})")
-    with httpx.Client(timeout=20, follow_redirects=False, headers={"User-Agent": "prodata-catalogo"}) as raw:
-        for base, why in UNAVAILABLE.items():
-            try:
-                r = raw.get(f"{base}/api/3/action/package_search", params={"rows": 0})
-                ok = r.headers.get("content-type", "").startswith("application/json")
-                state = "VOLTOU: verificar e incluir" if ok else f"ainda indisponível (HTTP {r.status_code})"
-            except Exception as exc:
-                state = f"ainda indisponível ({type(exc).__name__})"
-            print(f"info  portais  {base[8:40]:32} {state} — antes: {why}")
+    # Estados e capitais que não leem direto (RF-4964): o mesmo cliente e a mesma identificação do programa
+    # (certificados do Windows, "Desata/<versão> (catalogo de dados publicos)"), sem se passar por navegador.
+    # Diz só o que mudou em relação à situação gravada no programa.
+    import ssl
+
+    from prodata.catalog.http import blocked, user_agent
+    from prodata.catalog.portals import PLACES
+
+    def now_state(base: str) -> tuple[str, int]:
+        """(situação vista agora, conjuntos com arquivo) com o mesmo critério da revisão de 2026-11-26."""
+        try:
+            r = raw.get(f"{base}/api/3/action/package_search", params={"rows": 100})
+        except httpx.TimeoutException:
+            return "fora_do_ar", 0
+        except httpx.HTTPError:
+            return "sem_resposta", 0
+        if r.headers.get("content-type", "").startswith("application/json") and r.json().get("success"):
+            res = r.json()["result"]
+            with_files = sum(1 for d in res["results"] if any(x.get("url") for x in d.get("resources", [])))
+            return ("le_direto" if with_files else "sem_dados"), res["count"]
+        if blocked(r.content) or r.status_code == 403:
+            return "bloqueia", 0
+        return ("fora_do_ar" if r.status_code >= 500 else "outra_plataforma"), 0
+
+    with httpx.Client(timeout=20, follow_redirects=True, verify=ssl.create_default_context(),
+                      headers={"User-Agent": user_agent()}) as raw:  # fmt: skip
+        seen: set[str] = set()
+        for place in PLACES:
+            if place.situacao == "le_direto" or not place.pagina or place.pagina in seen:
+                continue
+            seen.add(place.pagina)
+            found, count = now_state(place.pagina)
+            same = found == place.situacao or (found == "sem_resposta" and place.situacao == "fora_do_ar")
+            note = "igual" if same else f"MUDOU: agora {found}" + (f" ({count} conjuntos)" if count else "")
+            print(f"info  lugares  {place.pagina[8:44]:36} {note} — gravado: {place.situacao} ({place.nome})")
     return failures
 
 

@@ -187,6 +187,9 @@ def _choices_for(source: curated.Source) -> list[dict[str, Any]]:
                 "padrao": source.params.get("nivel", "N1"),
             }
         )
+        # Um estado ou município só (o mapa e a busca de lugares preenchem; RF-4958): vazio = todos do nível.
+        out.append({"id": "localidades", "rotulo": "Só estes lugares (códigos do IBGE, vazio = todos)", "tipo": "texto",
+                    "padrao": ""})  # fmt: skip
     if "moeda" in e:
         out.append(
             {"id": "moeda", "rotulo": "Moeda", "tipo": "texto", "padrao": e["moeda"], "lista": "moedas"}
@@ -447,8 +450,15 @@ def _read_ibge(
     if choices.get("ultimos_periodos"):  # a prévia: os últimos períodos publicados, seja qual for a data
         span = f"-{int(choices['ultimos_periodos'])}"
     variable = int(params.get("variavel") or meta["variaveis"][0]["id"])
+    places = str(params.get("localidades") or "all").replace(" ", "")
     return ibge.read_table(
-        client, table, variable, period=span, level=str(params.get("nivel", "N1")), frequency=freq
+        client,
+        table,
+        variable,
+        period=span,
+        level=str(params.get("nivel", "N1")),
+        places=places,
+        frequency=freq,
     )
 
 

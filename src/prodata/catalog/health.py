@@ -42,8 +42,13 @@ def probe(client: CatalogClient, service: hosts.Service) -> tuple[Situation, flo
             client.propfind(service.probe, _PROPFIND, auth=(hosts.CNPJ_LINKS[0][0], ""), timeout=TIMEOUT, retries=0,
                             max_bytes=2 * 1024 * 1024)  # fmt: skip
         else:
-            method = "HEAD" if service.probe_method == "HEAD" else "GET"
-            client.request(method, service.probe, timeout=TIMEOUT, retries=0, max_bytes=2 * 1024 * 1024)  # type: ignore[arg-type]
+            method: Literal["GET", "HEAD"] = "HEAD" if service.probe_method == "HEAD" else "GET"
+            answer = client.request(
+                method, service.probe, timeout=TIMEOUT, retries=0, max_bytes=2 * 1024 * 1024
+            )
+            if "/api/3/action/" in service.probe:
+                # Portal CKAN: a página de "Acesso negado" chega com 200; só conta como no ar se a API respondeu.
+                answer.json()
     except CatalogError as exc:
         return "fora", time.perf_counter() - start, exc.message, exc.kind
     took = time.perf_counter() - start

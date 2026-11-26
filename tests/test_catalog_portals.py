@@ -29,7 +29,7 @@ def _q(request: httpx.Request) -> dict[str, str]:
 
 
 def test_cada_portal_tem_servico_e_hosts_na_lista() -> None:
-    assert len(portals.PORTALS) == 16
+    assert len(portals.PORTALS) == 25
     for p in portals.PORTALS:
         service = hosts.SERVICES[hosts.PORTAL_SERVICE[p.id]]
         assert p.host in service.hosts or p.id in ("bcb_portal", "tesouro_portal"), p.id
@@ -256,3 +256,49 @@ def test_aviso_do_portal_fica_guardado(
     with CatalogClient() as client:
         store.refresh(client, ["cvm"])
     assert store.state()["cvm"].aviso == "1 conjunto(s) não puderam ser lidos"
+
+
+# ------------------------------------------------------------------ estados e capitais (revisão de 2026-11-26)
+
+
+def test_todos_os_estados_e_as_capitais_com_situacao() -> None:
+    states = [pl for pl in portals.PLACES if pl.esfera == "estadual"]
+    capitals = [pl for pl in portals.PLACES if pl.capital]
+    assert len(states) == 27 and len({pl.uf for pl in states}) == 27
+    assert len(capitals) == 27 and len({pl.uf for pl in capitals}) == 27
+    for pl in (*portals.PLACES, *portals.MAP_CITIES):
+        if pl.situacao == "le_direto":
+            assert portals.BY_ID[pl.portal].esfera == pl.esfera, pl.nome
+        else:
+            assert pl.motivo and not pl.portal, pl.nome
+        assert len(pl.ibge) == (2 if pl.esfera == "estadual" else 7), pl.nome
+    by_uf = {pl.uf: pl for pl in states}
+    assert by_uf["SP"].situacao == by_uf["RJ"].situacao == "le_direto"
+    assert {pl.nome for pl in portals.MAP_CITIES} == {"Mogi das Cruzes"}
+
+
+def test_portal_que_recusa_o_programa_diz_o_motivo(catalog_server: Server) -> None:
+    page = b"<!DOCTYPE html><html><head><title>Acesso Negado</title></head><body>Acesso Negado</body></html>"
+    catalog_server(lambda r: httpx.Response(200, content=page, headers={"content-type": "text/html"}))
+    with CatalogClient() as client, pytest.raises(CatalogError) as err:
+        ckan.catalog(client, "go")
+    assert err.value.kind == "bloqueio"
+    assert "recusou o programa" in err.value.message and "Abra no navegador" in err.value.message
+
+
+def test_erro_403_com_pagina_de_bloqueio(catalog_server: Server) -> None:
+    page = b"<html><head><title>Request Rejected</title></head><body>The requested URL was rejected.</body></html>"
+    catalog_server(lambda r: httpx.Response(403, content=page))
+    with CatalogClient() as client, pytest.raises(CatalogError) as err:
+        client.get("https://dadosabertos.rj.gov.br/api/3/action/package_search", retries=0)
+    assert err.value.kind == "bloqueio" and "o portal bloqueia a leitura automática" in err.value.message
+
+
+def test_sonda_do_portal_bloqueado_nao_conta_como_no_ar(catalog_server: Server) -> None:
+    from prodata.catalog import health
+
+    page = b"<html><head><title>Acesso Negado</title></head></html>"
+    catalog_server(lambda r: httpx.Response(200, content=page, headers={"content-type": "text/html"}))
+    with CatalogClient() as client:
+        situation, _took, reason, kind = health.probe(client, hosts.SERVICES["go"])
+    assert situation == "fora" and kind == "bloqueio" and "recusou o programa" in reason

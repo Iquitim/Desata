@@ -33,7 +33,10 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 Method = Literal["GET", "HEAD", "PROPFIND", "POST"]
-FailureKind = Literal["recusado", "conexao", "tempo", "http", "limite", "resposta"]
+FailureKind = Literal["recusado", "conexao", "tempo", "http", "limite", "resposta", "bloqueio"]
+
+# Página de bloqueio de leitura automática no lugar da resposta (Goiás, Vitória: "Acesso negado", "Request Rejected").
+_BLOCK_MARKS = ("acesso negado", "request rejected", "access denied", "the requested url was rejected")
 
 READ_METHODS: frozenset[str] = frozenset({"GET", "HEAD", "PROPFIND"})
 MAX_REDIRECTS = 5
@@ -77,13 +80,30 @@ class Answer:
         try:
             return json.loads(self.body)
         except ValueError:
+            if blocked(self.body):
+                raise block_error(self.url) from None
             raise CatalogError(
-                f"{_site(self.url)} devolveu uma resposta que não é JSON.", "resposta"
+                f"{_cap(_site(self.url))} devolveu uma resposta que não é JSON.", "resposta"
             ) from None
 
     @property
     def text(self) -> str:
         return self.body.decode("utf-8", "replace")
+
+
+def blocked(body: bytes) -> bool:
+    """A resposta é uma página de bloqueio de programas (e não o dado pedido)."""
+    head = body[:4000].decode("utf-8", "replace").lower()
+    return "<html" in head and any(mark in head for mark in _BLOCK_MARKS)
+
+
+def block_error(url: str) -> CatalogError:
+    # O programa se identifica com o próprio nome e não se passa por navegador: o motivo vai em palavras.
+    return CatalogError(
+        f"{_cap(_site(url))} recusou o programa: o portal bloqueia a leitura automática. Abra no navegador.",
+        "bloqueio",
+        403,
+    )
 
 
 def basic_header(auth: tuple[str, str]) -> str:
@@ -170,7 +190,9 @@ class CatalogClient:
         text = str(exc)
         if "CERTIFICATE_VERIFY_FAILED" in text or "certificate" in text.lower():
             return CatalogError(
-                f"O certificado de {hosts.host_of(url)} não é confiável neste computador. Fale com a TI da empresa.",
+                f"O certificado de {hosts.host_of(url)} não pôde ser conferido neste computador: o site pode estar "
+                "enviando o certificado incompleto, ou a rede da empresa troca o certificado. O programa não lê sem "
+                "conferir; se persistir, fale com a TI.",
                 "conexao",
             )
         if isinstance(exc, httpx.ConnectError | httpx.NetworkError):
@@ -402,6 +424,8 @@ class CatalogClient:
 
 def http_error(answer: Answer) -> CatalogError:
     status = answer.status
+    if status == 403 and blocked(answer.body):
+        return block_error(answer.url)
     try:
         phrase = _STATUS_TEXT.get(status) or HTTPStatus(status).phrase
     except ValueError:

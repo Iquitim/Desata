@@ -65,6 +65,10 @@ localmente.
   caixa Dados públicos guarda só as escolhas, nunca endereço nem dados; sem internet, usa a última leitura e avisa (ou
   falha, com Exigir dados atuais). O aviso **Dados novos** mostra quando o órgão publicou além da última leitura, e o
   dashboard cita a fonte sozinho, também na imagem e no HTML. A internet só é usada pelo catálogo, com endereços fixos.
+- **O Brasil inteiro no catálogo**: os 27 estados e as 27 capitais, cada um com a situação do portal e o motivo quando
+  não dá para ler (portal que bloqueia programas, outra plataforma, fora do ar, sem portal); o **Mapa do Brasil**, a
+  busca que acha estados e os 5.571 municípios, e os dados federais de qualquer município (população, PIB, Siconfi,
+  feriados) já filtrados. Atualizar o catálogo mostra o progresso sem atrapalhar a rolagem nem a busca.
 - **CNPJ do Brasil inteiro**: o download dos dados abertos da Receita com retomada, pausa ao fechar e espaço livre
   conferido; a extração vira fontes prontas na vista Dados, com **filtro na leitura** (UF, município, CNAE, situação e
   CNPJs colados em qualquer formato, com dígito conferido) e a pergunta antes de passar de 1/4 da memória.

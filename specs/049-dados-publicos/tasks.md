@@ -45,12 +45,12 @@
 
 ## Marco 8 — O Brasil inteiro (revisão de 2026-11-26)
 
-- [ ] T22 Portais dos 27 estados e das 27 capitais com a situação conferida e o motivo; novos portais lidos (SP, RJ, AL, BA, MT, AC, Belo Horizonte, Goiânia, Mogi das Cruzes) com os endereços dos arquivos; recusa do portal em palavras; mensagem do certificado incompleto (RF-4949, RF-4950)
-- [ ] T23 Atualizar sem atrapalhar: sem redesenhar a janela, barra de progresso, contagens no lugar, segue com o catálogo fechado (RF-4959, CA-16)
-- [ ] T24 Menu Estaduais (27) e Municipais (capitais), com a situação, o motivo e Abrir no navegador (RF-4949, RF-4950, CA-15)
-- [ ] T25 Mapa do Brasil: desenho dos estados gerado da malha do IBGE, painel do estado, fontes federais do estado e do município, busca de município (RF-4958, CA-17, CA-18)
-- [ ] T25b Busca acha estados e municípios; Demais municípios no menu de Municipais (RF-4965, RF-4966, CA-19)
-- [ ] T26 `conferir_catalogo.py` testa estados, capitais e prefeituras do mapa; conferências de tela do catálogo e do mapa (RF-4964)
+- [x] T22 Portais dos 27 estados e das 27 capitais com a situação conferida e o motivo; novos portais lidos (SP, RJ, AL, BA, MT, AC, Belo Horizonte, Goiânia, Mogi das Cruzes) com os endereços dos arquivos; recusa do portal em palavras; mensagem do certificado incompleto (RF-4949, RF-4950)
+- [x] T23 Atualizar sem atrapalhar: sem redesenhar a janela, barra de progresso, contagens no lugar, segue com o catálogo fechado (RF-4959, CA-16)
+- [x] T24 Menu Estaduais (27) e Municipais (capitais), com a situação, o motivo e Abrir no navegador (RF-4949, RF-4950, CA-15)
+- [x] T25 Mapa do Brasil: desenho dos estados gerado da malha do IBGE, painel do estado, fontes federais do estado e do município, busca de município (RF-4958, CA-17, CA-18)
+- [x] T25b Busca acha estados e municípios; Demais municípios no menu de Municipais (RF-4965, RF-4966, CA-19)
+- [x] T26 `conferir_catalogo.py` testa estados, capitais e prefeituras do mapa; conferências de tela do catálogo e do mapa (RF-4964)
 
 ## Marco 7 — Conferências e publicação
 

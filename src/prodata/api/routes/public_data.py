@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from prodata.api.deps import ServicesDep
-from prodata.catalog import recipes
+from prodata.catalog import places, recipes
 from prodata.catalog.download import DownloadError
 from prodata.catalog.http import CatalogError
 from prodata.catalog.model import SourceNotFoundError
@@ -44,7 +44,26 @@ def search(
     rows = services.catalog.search(
         q, agency=orgao, category=categoria, periodicity=periodicidade, special=especial, limit=limite
     )
-    return {"resultados": rows}
+    # Estados e municípios com o nome buscado, antes das fontes (RF-4965); só na busca geral, não dentro de um portal.
+    found = places.search(q) if q and not orgao and not categoria else []
+    return {"resultados": rows, "lugares": found}
+
+
+@router.get("/lugar")
+def place(id: str = Query(..., pattern=r"^(est:\d{2}|mun:\d{7})$")) -> dict[str, Any]:
+    """O painel de um estado ou município (RF-4958): portais com a situação e as fontes federais filtradas."""
+    try:
+        return places.detail(id)
+    except KeyError:
+        raise NotFoundError("Lugar não encontrado no IBGE.") from None
+
+
+@router.get("/municipios")
+def municipalities(uf: str = Query(..., pattern=r"^[A-Z]{2}$")) -> dict[str, Any]:
+    """Demais municípios de uma UF, sem a capital, com os que têm portal próprio primeiro (RF-4966)."""
+    if uf not in places.STATES:
+        raise NotFoundError(f"UF {uf} não existe.")
+    return {"uf": uf, "estado": places.STATES[uf].nome, "municipios": places.municipalities_of(uf)}
 
 
 class RefreshRequest(BaseModel):

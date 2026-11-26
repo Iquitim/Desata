@@ -565,8 +565,8 @@
   <div class="goal"><b>Ao final:</b> <span>você acha uma fonte no catálogo, confere a prévia, usa no fluxo, cita a origem no dashboard e corrige valores pela inflação ou converte pelo dólar com um clique.</span></div>
   <h3>O catálogo</h3>
   <div class="steps">
-    <div class="step"><div><h4>Abra o catálogo</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Dados públicos do Brasil</strong>. Na primeira vez, ele lê a lista de fontes de cada órgão; os destaques já funcionam antes disso.</p></div></div>
-    <div class="step"><div><h4>Procure</h4><p>Pelo menu de categorias (economia, preços, câmbio, território, empresas, calendário, contas públicas…), pelos portais de dados abertos ou pela busca, que não liga para acento: <em>ipca</em>, <em>municipios</em>, <em>432</em>, <em>cnpj</em>.</p></div></div>
+    <div class="step"><div><h4>Abra o catálogo</h4><p>Na vista <strong>Dados</strong>, em <strong>Adicionar &gt; Dados públicos do Brasil</strong>. Na primeira vez, ele lê a lista de fontes de cada órgão, com uma barra que diz quantos catálogos já leu; dá para buscar e rolar enquanto isso, e os destaques já funcionam.</p></div></div>
+    <div class="step"><div><h4>Procure</h4><p>Pelo menu de categorias (economia, preços, câmbio, território, empresas, calendário, contas públicas…), pelo <strong>Mapa do Brasil</strong>, pelos portais de dados abertos ou pela busca, que não liga para acento e acha também estados e municípios: <em>ipca</em>, <em>432</em>, <em>cnpj</em>, <em>campinas</em>.</p></div></div>
     <div class="step"><div><h4>Leia o selo</h4><p><strong>Pronto</strong> são as fontes conferidas uma a uma, com as colunas explicadas. <strong>Leitura automática</strong> são os conjuntos dos portais, lidos como vierem: a prévia é obrigatória antes de usar.</p></div></div>
   </div>
   <figure>
@@ -578,7 +578,7 @@
     <tr><td class="tool">Banco Central</td><td>Selic, CDI, as séries do SGS pelo código, a PTAX do dólar e de outras moedas, as expectativas do mercado (Focus) e os conjuntos do portal de dados abertos</td></tr>
     <tr><td class="tool">IBGE</td><td>IPCA, INPC, PIB dos municípios, população, desocupação; regiões, estados e os 5.571 municípios com códigos de 7 e de 6 dígitos</td></tr>
     <tr><td class="tool">Outros órgãos</td><td>Ipeadata (qualquer série, pela busca), Tesouro Direto, Siconfi (contas de estados e municípios), Comex Stat (exportações e importações) e o CNPJ da Receita</td></tr>
-    <tr><td class="tool">Portais de dados abertos</td><td>ANEEL, CVM, IBAMA, TSE, estados e prefeituras: milhares de conjuntos, com o arquivo escolhido na hora</td></tr>
+    <tr><td class="tool">Portais de dados abertos</td><td>ANEEL, CVM, IBAMA, TSE, os portais dos estados (São Paulo, Rio de Janeiro, Minas Gerais e outros) e das prefeituras: milhares de conjuntos, com o arquivo escolhido na hora</td></tr>
     <tr><td class="tool">Calendário</td><td>Feriados nacionais, estaduais, das capitais e bancários, e os dias úteis de qualquer local</td></tr>
   </table>
   <h3>O detalhe de uma fonte</h3>
@@ -616,6 +616,28 @@
       <p>Arquivos grandes demais para ler na hora, PDFs e páginas da web aparecem com <strong>Abrir no navegador</strong> e o motivo.</p>
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/catalogo-portal.png" alt="Conjunto de um portal de dados abertos com a prévia do arquivo"></div><figcaption>Um conjunto da ANEEL: o arquivo escolhido e a prévia conferida antes de usar.</figcaption></figure>
+  </div>
+  <h3>Todos os estados e as capitais</h3>
+  <div class="side">
+    <div>
+      <p>Em Portais, <strong>Estaduais</strong> lista os 27 estados e <strong>Municipais</strong> as 27 capitais, sempre. Os que o {{produto}} lê aparecem com a quantidade de conjuntos. Os outros dizem por que não, com a data da conferência:</p>
+      <ul>
+        <li><strong>Bloqueia leitura automática</strong>: o portal recusa programas. O {{produto}} se identifica com o próprio nome e não se passa por navegador.</li>
+        <li><strong>Outra plataforma</strong>: o portal existe, mas usa um sistema que o programa ainda não lê.</li>
+        <li><strong>Fora do ar</strong>, <strong>Sem dados para ler</strong> (portal vazio ou sem arquivos) ou <strong>Sem portal encontrado</strong>.</li>
+      </ul>
+      <p>Quando há página, <strong>Abrir no navegador</strong> leva até ela. E os dados federais do lugar (população, PIB, contas no Siconfi, feriados, empresas) funcionam em qualquer estado ou município, com ou sem portal.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/catalogo-estado.png" alt="Painel de Minas Gerais com o portal do estado, o de Belo Horizonte e os dados federais"></div><figcaption>Minas Gerais: os dois portais, os dados do estado já filtrados e a busca de outros municípios.</figcaption></figure>
+  </div>
+  <h3>Mapa do Brasil e busca de lugares</h3>
+  <div class="side">
+    <div>
+      <p>No <strong>Mapa do Brasil</strong>, cada estado tem a cor da situação do portal dele. Clicar abre o painel do estado: o portal estadual, o da capital, as outras prefeituras com portal e os <strong>dados do estado</strong> nas fontes federais, já filtrados. Em <strong>Outros municípios</strong>, digite o nome: o painel do município traz as mesmas fontes filtradas por ele.</p>
+      <p>A busca do topo também acha lugares: <em>campinas</em> mostra Campinas (SP) antes das fontes. Em Municipais, <strong>Demais municípios</strong> lista os municípios de cada estado, com os que têm portal próprio no topo.</p>
+      <p>O desenho do mapa e a lista dos municípios vão no programa: nada é lido da internet até você escolher uma fonte.</p>
+    </div>
+    <figure><div class="frame"><img src="../../src/prodata/web/manual/img/catalogo-mapa.png" alt="Mapa do Brasil com os estados coloridos pela situação do portal"></div><figcaption>Verde: o programa lê o portal do estado. Laranja: há portal, mas o programa não lê agora. Cinza: nenhum portal encontrado.</figcaption></figure>
   </div>
   <h3>Feriados e dias úteis</h3>
   <div class="side">
@@ -2076,7 +2098,8 @@
         <li>Versão oficial publicada por um Publicador, agendamentos que rodam só a oficial e ficam visíveis para o time, com Assumir</li>
         <li>Constantes, conexões, consultas e APIs da equipe (sem senha: cada pessoa digita a sua) e comentários nas caixas</li>
         <li>Recomendações de limpeza no Perfil, com Corrigir; número em texto brasileiro ou estrangeiro, reconhecido pela coluna</li>
-        <li>Catálogo Dados públicos do Brasil: Banco Central, IBGE, Ipeadata, Tesouro, Siconfi, Comex Stat, feriados e dias úteis editáveis e 16 portais de dados abertos, lidos direto do órgão, sem token, com a situação de cada órgão, leitura guardada e o aviso Dados novos</li>
+        <li>Catálogo Dados públicos do Brasil: Banco Central, IBGE, Ipeadata, Tesouro, Siconfi, Comex Stat, feriados e dias úteis editáveis e 25 portais de dados abertos, lidos direto do órgão, sem token, com a situação de cada órgão, leitura guardada e o aviso Dados novos</li>
+        <li>Todos os estados e capitais no catálogo, com o motivo quando o portal não pode ser lido; Mapa do Brasil, busca de estados e municípios e os dados federais de qualquer município</li>
         <li>Dicionário de colunas no Perfil e citação automática das fontes no dashboard, na imagem e no HTML</li>
         <li>Receitas Corrigir pelo IPCA, Converter pela PTAX e Juntar com municípios do IBGE; Join pela data anterior mais próxima</li>
         <li>CNPJ da Receita: download em partes, com pausa e retomada, filtro na leitura (UF, município, CNAE, situação e CNPJ) e aviso antes de passar de 1/4 da memória</li>
@@ -2107,7 +2130,7 @@
   <table>
     <tr><th style="width:30%">Limitação</th><th>O que significa na prática</th></tr>
     <tr><td class="tool">Volume de dados</td><td>Cada caixa carrega a própria tabela inteira na memória; acima de um quarto da memória, os resultados menos usados vão para o disco. Bases com dezenas de milhões de linhas ainda não foram validadas. O CNPJ é a exceção: com o filtro na leitura, os arquivos são lidos aos poucos e só as linhas que passam ficam na memória.</td></tr>
-    <tr><td class="tool">Dados públicos</td><td>Cada órgão publica no seu ritmo e pode mudar o formato: a caixa confere as colunas a cada execução e para com o motivo quando algo muda. Os conjuntos de <em>Leitura automática</em> dos portais vêm como o órgão publicou, sem a revisão dos destaques. Arquivos dos portais acima de 200 MB não são lidos na hora.</td></tr>
+    <tr><td class="tool">Dados públicos</td><td>Cada órgão publica no seu ritmo e pode mudar o formato: a caixa confere as colunas a cada execução e para com o motivo quando algo muda. Os conjuntos de <em>Leitura automática</em> dos portais vêm como o órgão publicou, sem a revisão dos destaques. Arquivos dos portais acima de 200 MB não são lidos na hora. Dos 27 estados, 12 têm portal que o programa lê; os outros aparecem com o motivo (portal que bloqueia programas, outra plataforma, fora do ar ou sem portal), e os dados federais deles funcionam normalmente.</td></tr>
     <tr><td class="tool">CNPJ do Brasil inteiro</td><td>Estabelecimentos passa de 20 GB de texto: sem filtro, não cabe na memória da maioria dos computadores. O programa pergunta antes de passar de 1/4 da memória; o caminho é filtrar por UF, município, CNAE, situação ou CNPJ.</td></tr>
     <tr><td class="tool">Modelos de ML</td><td>O modelo fica neste computador, não no arquivo do fluxo. Para outra pessoa usar o mesmo, exporte o arquivo .modelo e ela importa no Model Input; sem isso, ela treina o próprio modelo.</td></tr>
     <tr><td class="tool">ODBC</td><td>Conferido só com um driver local de teste. Em Oracle, MySQL e ERPs, confira a primeira leitura com um resultado conhecido.</td></tr>
