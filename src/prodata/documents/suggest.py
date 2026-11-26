@@ -70,6 +70,25 @@ def _proposal(name: str, kind: str, rule: Any, why: str, fragile: bool = False) 
     return {"campo": spec, "explicacao": why, "fragil": fragile}
 
 
+def _position_area(lines: Sequence[Line], chosen: Sequence[Word], box: Box) -> Box:
+    """A área da posição fixa: a caixa marcada com uma folga, mas sem chegar ao meio da linha vizinha. Em PDFs com
+    caixas de palavra altas, a folga pegava o fim da linha de cima ("de 7,71%," antes de "R$ 1.791.203")."""
+    pad = 0.004
+    page = chosen[0]["p"]
+    mine = {id(w) for w in chosen}
+    centers = [(w["b"][1] + w["b"][3]) / 2 for w in chosen]
+    others = [(ln.top + ln.bottom) / 2 for ln in lines
+              if ln.page == page and not any(id(w) in mine for w in ln.words)]  # fmt: skip
+    top, bottom = box[1] - pad, box[3] + pad
+    above = [c for c in others if c < min(centers)]
+    below = [c for c in others if c > max(centers)]
+    if above:
+        top = max(top, (max(above) + min(centers)) / 2)
+    if below:
+        bottom = min(bottom, (min(below) + max(centers)) / 2)
+    return (max(0.0, box[0] - pad), max(0.0, top), min(1.0, box[2] + pad), min(1.0, bottom))
+
+
 def suggest_field(info: dict[str, Any], selected: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """``selected``: palavras marcadas (como vieram do leitor). Devolve a proposta conferida e o resultado nela."""
     lines = group_lines(info["words"], info["pages"])
@@ -103,8 +122,7 @@ def suggest_field(info: dict[str, Any], selected: Sequence[dict[str, Any]]) -> d
         label = _label_text(above)
         rule = LabelRule(rotulos=[label.rstrip(":").strip() or label], direcao="abaixo")
         proposals.append(_proposal(field_name(label), kind, rule, f"abaixo de “{label.rstrip(':')}”"))
-    pad = 0.004
-    area = (max(0.0, box[0] - pad), max(0.0, box[1] - pad), min(1.0, box[2] + pad), min(1.0, box[3] + pad))
+    area = _position_area(lines, chosen, box)
     fallback_name = field_name(proposals[0]["campo"].nome if proposals else "campo")
     proposals.append(
         _proposal(
@@ -119,9 +137,15 @@ def suggest_field(info: dict[str, Any], selected: Sequence[dict[str, Any]]) -> d
         result = extract_field(prop["campo"], lines)
         hit = result.candidatos[0] if result.candidatos else None
         exact = hit is not None and normalize(hit.texto).endswith(normalize(text))
-        if not exact and hit is not None and normalize(hit.texto).startswith(normalize(text)):
-            # O rótulo achou o valor e mais palavras grudadas depois ("R$ 1.791.203 milhões"): a regra passa a
-            # pegar só as palavras marcadas, em vez de cair na posição fixa da página, que é frágil.
+        glued = any(normalize(c.texto).startswith(normalize(text)) for c in result.candidatos)
+        if (
+            not (exact and result.estado == ENCONTRADO)
+            and glued
+            and isinstance(prop["campo"].regra, LabelRule)
+        ):
+            # O rótulo achou o valor e mais palavras grudadas depois ("R$ 1.791.203 milhões"), sozinho ou entre
+            # outros candidatos: a regra passa a pegar só as palavras marcadas, em vez de cair na posição fixa da
+            # página, que é frágil.
             rule = prop["campo"].regra
             rule = rule.model_copy(update={"palavras": len(chosen)})
             prop = {**prop, "campo": prop["campo"].model_copy(update={"regra": rule}),

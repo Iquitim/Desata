@@ -444,3 +444,61 @@ def test_regra_sem_limite_pega_todas_as_palavras_grudadas() -> None:
     spec = FieldSpec(nome="obs", tipo="texto", regra=LabelRule(rotulos=["Observação"]))
     field = extract(Recipe(id="x", nome="x", campos=[spec]), info).as_dict()["campos"][0]
     assert field["valor"] == "entregue no prazo combinado"
+
+
+# ------------------------------------------------------------------ relatório real da Receita (0.9.6)
+
+RECEITA = Path(__file__).parents[1] / "src" / "prodata" / "samples" / "pdf_receita"
+
+
+def _receita(month: str) -> dict:
+    return reader.inspect(str(RECEITA / f"arrecadacao_2026-{month}.pdf"))
+
+
+def _marked(info: dict) -> list[dict]:
+    """ "R$ 1.791.203" em "acumulado de janeiro a julho de 2026, a arrecadação alcançou R$ 1.791.203 milhões",
+    marcado como a tela marca (caixas de tela)."""
+    from prodata.documents.layout import group_lines
+
+    for line in group_lines(info["words"], info["pages"]):
+        ws = line.words
+        for i in range(1, len(ws) - 1):
+            if ws[i]["t"] == "R$" and ws[i + 1]["t"] == "1.791.203" and ws[i - 1]["t"] == "alcançou":
+                return [{"p": w["p"], "b": w["d"], "t": w["t"]} for w in ws[i : i + 2]]
+    raise AssertionError("frase do acumulado não encontrada")
+
+
+def test_relatorio_real_valor_com_frase_parecida_na_pagina_usa_o_rotulo() -> None:
+    """Na mesma página, "...a arrecadação alcançou o valor de R$ 1.876.516" e "...a arrecadação alcançou R$ 1.791.203
+    milhões": o rótulo casa com as duas frases. Com só as palavras marcadas, a primeira dá "o valor" (não é número) e
+    fica só o valor certo, em vez de cair na posição fixa da página (frágil), que antes nascia inválida."""
+    proposal = suggest_field(_receita("07"), _marked(_receita("07")))
+    rule = proposal["campo"]["regra"]
+    assert proposal["fragil"] is False and rule["tipo"] == "rotulo" and rule["palavras"] == 2, proposal[
+        "explicacao"
+    ]
+    assert rule["rotulos"] == ["acumulado de [mês] a [mês] de [ano] a arrecadação alcançou"]
+    assert proposal["resultado"]["estado"] == ENCONTRADO and proposal["resultado"]["valor"] == "1791203.00"
+    spec = FieldSpec.model_validate(proposal["campo"])
+    for month, value in (("08", "2019069"), ("09", "2250495")):
+        field = extract(Recipe(id="x", nome="x", campos=[spec]), _receita(month)).as_dict()["campos"][0]
+        assert field["estado"] == ENCONTRADO and Decimal(str(field["valor"])) == Decimal(value), (
+            month,
+            field,
+        )
+
+
+def test_posicao_fixa_nao_pega_a_linha_de_cima() -> None:
+    """Caixas de palavra altas: a folga da área chegava ao fim da linha de cima e o valor vinha "de 7,71%, R$ 1.791.203"
+    (inválido). A área fica antes do meio da linha vizinha."""
+    from prodata.documents.layout import group_lines, union
+    from prodata.documents.suggest import _position_area
+
+    info = _receita("07")
+    picked = {(w["p"], tuple(w["b"])) for w in _marked(info)}
+    lines = group_lines(info["words"], info["pages"])
+    chosen = [w for ln in lines for w in ln.words if (w["p"], tuple(w["d"])) in picked]
+    area = _position_area(lines, chosen, union(w["b"] for w in chosen))
+    spec = FieldSpec(nome="v", tipo="moeda", regra=PositionRule(pagina=3, area=area))
+    field = extract(Recipe(id="x", nome="x", campos=[spec]), info).as_dict()["campos"][0]
+    assert field["estado"] == ENCONTRADO and field["valor"] == "1791203.00", field
