@@ -222,7 +222,7 @@ def test_block_that_cannot_be_converted_stays_and_says_why() -> None:
 
 def test_guide_index_lists_every_chapter_in_order() -> None:
     html = (ROOT / "docs/guia/guia.html").read_text(encoding="utf-8")
-    start = html.index('<div class="toc">')
+    start = html.index('<div class="toc')  # o sumário agrupado por parte (0.9.6): "toc toc-parts"
     index = html[start : html.index("</section>", start)]
     listed = [int(n) for n in re.findall(r"<div><span>(\d+)</span>", index)]
     chapters = [int(n) for n in re.findall(r'<div class="eyebrow">(\d+) ·', html)]
