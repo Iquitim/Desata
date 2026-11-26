@@ -19,6 +19,7 @@ from prodata.forms import ui
 from prodata.nodes.base import NodeContext, NodeOutput, ToolConfig, tool
 from prodata.nodes.bi_motion import bubble, sankey
 from prodata.nodes.bi_ref import REF_CHARTS, RefLineFields, reference
+from prodata.nodes.bi_series import MAX_POINTS, axis_order, continuous, counts, spread
 from prodata.nodes.bi_tip import Row, others_extras, series_item, tip_aggregates, tip_columns, tip_extras
 from prodata.nodes.venn_geometry import venn2_geometry
 
@@ -51,7 +52,6 @@ RANKED_CHARTS = ("pareto", "race")
 # Gráficos com segunda dimensão (uma série por valor da coluna de série).
 SERIES_CHARTS = ["stacked", "grouped", "stacked100", "line", "area", "area_stacked"]
 MAX_SERIES = 8
-MAX_POINTS = 2000
 
 
 class ChartConfig(RefLineFields):
@@ -82,7 +82,7 @@ class ChartConfig(RefLineFields):
     sort: Literal["value_desc", "value_asc", "label"] = Field(
         "value_desc",
         title="Ordenação",
-        description="O Pareto sempre ordena do maior para o menor.",
+        description="O Pareto sempre ordena do maior para o menor. Linha e área com datas ou números seguem a ordem do eixo.",
         json_schema_extra=ui(
             labels={
                 "value_desc": "Maior valor primeiro",
@@ -91,7 +91,13 @@ class ChartConfig(RefLineFields):
             }
         ),
     )
-    max_items: int = Field(12, ge=2, le=50, title="Máximo de categorias")
+    max_items: int = Field(
+        12,
+        ge=2,
+        le=50,
+        title="Máximo de categorias",
+        description="Linha e área com datas ou números mostram a série inteira (até 2.000 pontos, espalhados).",
+    )
     pareto_threshold: float = Field(
         80,
         ge=1,
@@ -124,7 +130,8 @@ def _rows(grouped: pl.DataFrame, cfg: ChartConfig, tips: list[str] | None = None
         grouped = grouped.sort("label")
     else:
         descending = cfg.sort != "value_asc" or cfg.chart_type in RANKED_CHARTS
-        grouped = grouped.sort("value", descending=descending, nulls_last=True)
+        # empate desempatado pela categoria: a mesma ordem a cada execução e no HTML exportado
+        grouped = grouped.sort(["value", "label"], descending=[descending, False], nulls_last=True)
     names = tips or []
     rows = grouped.select("label", "value", *[f"__tip_{c}" for c in names]).rows()
     return [(str(r[0]), float(r[1] or 0), tip_extras(names, r[2:])) for r in rows]
@@ -152,7 +159,7 @@ def pareto(series: list[dict[str, Any]], threshold: float) -> list[dict[str, Any
     return out
 
 
-def _multi_series(df: pl.DataFrame, cfg: ChartConfig) -> tuple[list[dict[str, Any]], list[str]]:
+def _multi_series(df: pl.DataFrame, cfg: ChartConfig) -> tuple[list[dict[str, Any]], list[str], int]:
     """Categorias × séries. As 8 séries de maior total ficam; as demais somam em 'Outras'."""
     data = df.with_columns(_label(cfg.x_column).alias("label"), _label(cfg.series_column).alias("serie"))
     cells = data.group_by("label", "serie").agg(_aggregate(cfg.y_column, cfg.agg))
@@ -167,7 +174,14 @@ def _multi_series(df: pl.DataFrame, cfg: ChartConfig) -> tuple[list[dict[str, An
         cells = cells.filter(pl.col("serie") != "Outras")
     cells = cells.group_by("label", "serie").agg(pl.col("value").sum())
     by_label = cells.group_by("label").agg(pl.col("value").sum())
-    order = _rows(by_label, cfg)[: cfg.max_items]
+    rows = _rows(by_label, cfg)
+    if continuous(df, cfg.x_column, cfg.chart_type):
+        by = {r[0]: r for r in rows}
+        order = spread(
+            [by[label] for label in axis_order(df, cfg.x_column, _label(cfg.x_column)) if label in by]
+        )
+    else:
+        order = rows[: cfg.max_items]
     values: dict[str, dict[str, float]] = {}
     for label, serie, v in cells.rows():
         values.setdefault(label, {})[serie] = round(float(v or 0), 4)
@@ -175,7 +189,7 @@ def _multi_series(df: pl.DataFrame, cfg: ChartConfig) -> tuple[list[dict[str, An
         {"label": label, "value": round(total, 4), "values": values.get(label, {})}
         for label, total, _ in order
     ]
-    return series, [*keep, *(["Outras"] if folds else [])]
+    return series, [*keep, *(["Outras"] if folds else [])], len(rows)
 
 
 def _scatter(df: pl.DataFrame, cfg: ChartConfig) -> dict[str, Any]:
@@ -248,17 +262,25 @@ def chart(ctx: NodeContext, cfg: ChartConfig) -> NodeOutput:
     elif cfg.chart_type == "sankey":
         widget.update(sankey(df, cfg.x_column, cfg.series_column, cfg.y_column, cfg.agg))
     elif cfg.series_column and cfg.chart_type in SERIES_CHARTS:
-        widget["series"], widget["series_names"] = _multi_series(df, cfg)
+        widget["series"], widget["series_names"], total = _multi_series(df, cfg)
+        counts(widget, df, cfg.x_column, cfg.chart_type, cfg.max_items, total)
     else:
         tips = tip_columns(df, cfg.tip_columns, cfg.x_column)
         grouped = df.group_by(_label(cfg.x_column).alias("label")).agg(
             _aggregate(cfg.y_column, cfg.agg), *tip_aggregates(tips, cfg.agg)
         )
-        series = _limit(_rows(grouped, cfg, tips), cfg)
+        rows = _rows(grouped, cfg, tips)
+        if continuous(df, cfg.x_column, cfg.chart_type):
+            by = {r[0]: r for r in rows}
+            series = [series_item(*by[label]) for label in
+                      spread([label for label in axis_order(df, cfg.x_column, _label(cfg.x_column)) if label in by])]  # fmt: skip
+        else:
+            series = _limit(rows, cfg)
         if cfg.chart_type == "pareto":
             series = pareto(series, cfg.pareto_threshold)
             widget["threshold"] = cfg.pareto_threshold
         widget["series"] = series
+        counts(widget, df, cfg.x_column, cfg.chart_type, cfg.max_items, len(rows))
     if cfg.chart_type in REF_CHARTS and (
         ref := reference(cfg.ref_line, cfg.ref_value, cfg.ref_label, widget)
     ):

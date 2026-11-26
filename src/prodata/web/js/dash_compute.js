@@ -1,5 +1,5 @@
 // Cálculo dos visuais no HTML exportado (spec 021), que não tem servidor: espelho de prodata/nodes/bi.py e
-// prodata/dashboard/filters.py. O motor continua sendo a referência: um teste compara os dois número a número.
+// prodata/dashboard/filters.py. O motor continua sendo a referência: a conferência de tela grafico_serie compara os dois ponto a ponto.
 
 const MAX_SERIES = 8;
 const MAX_POINTS = 2000;
@@ -10,6 +10,9 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
 const TRUE = new Set(['true', '1', 'sim', 's', 'yes', 'y', 'verdadeiro', 'x']);
 const NUMBER_TEXT = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
 const compareText = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+// Linha e área no tempo (0.9.6), espelho de prodata/nodes/bi_series.py: a série inteira, na ordem do eixo.
+const CONTINUOUS = ['line', 'area', 'area_stacked'];
+const DATE_TEXT = /^\d{4}-\d{2}(-\d{2})?([ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?)?$/;
 
 const round = (v, places = 4) => {
   const k = 10 ** places;
@@ -99,6 +102,45 @@ function aggregate(values, agg) {
   return agg === 'min' ? Math.min(...nums) : Math.max(...nums);
 }
 
+/** Linha ou área com o eixo X de datas, números ou texto de data: a série vai inteira, na ordem do eixo. */
+export function isContinuous(table, cfg) {
+  if (!CONTINUOUS.includes(cfg.chart_type) || !has(table, cfg.x_column)) return false;
+  const type = table.types[cfg.x_column];
+  if (['int', 'float', 'date'].includes(type)) return true;
+  if (type !== 'string') return false;
+  const values = table.columns[cfg.x_column].filter((v) => v !== null && v !== undefined);
+  return values.length > 0 && values.every((v) => DATE_TEXT.test(String(v)));
+}
+
+/** Os rótulos do eixo na ordem dos valores (números em ordem numérica); o vazio por último. */
+function axisOrder(table, cfg) {
+  const type = table.types[cfg.x_column];
+  const first = new Map();
+  for (const v of table.columns[cfg.x_column]) {
+    const label = labelOf(v, type);
+    if (!first.has(label)) first.set(label, v);
+  }
+  const numeric = ['int', 'float'].includes(type);
+  return [...first].sort(([, a], [, b]) => {
+    if (a === null || a === undefined) return b === null || b === undefined ? 0 : 1;
+    if (b === null || b === undefined) return -1;
+    return numeric ? a - b : compareText(String(a), String(b));
+  }).map(([label]) => label);
+}
+
+/** No máximo MAX_POINTS itens espalhados pela sequência inteira, com o primeiro e o último. */
+export function spread(items, limit = MAX_POINTS) {
+  const n = items.length;
+  if (n <= limit) return [...items];
+  return Array.from({ length: limit }, (_, i) => items[Math.floor((i * (n - 1)) / (limit - 1) + 0.5)]);
+}
+
+/** O que ficou de fora, para o visual avisar: pontos da série (linha e área no tempo) ou categorias cortadas. */
+function counts(w, table, cfg, total) {
+  if (isContinuous(table, cfg)) return { ...w, point_count: total, sampled: w.series.length < total };
+  return total > cfg.max_items ? { ...w, category_count: total } : w;
+}
+
 function ordered(pairs, cfg) {
   const rows = [...pairs];
   if (cfg.sort === 'label' && !RANKED.includes(cfg.chart_type)) rows.sort((a, b) => compareText(a[0], b[0]));
@@ -107,7 +149,7 @@ function ordered(pairs, cfg) {
     rows.sort((a, b) => {
       if (a[1] === null) return b[1] === null ? 0 : 1;
       if (b[1] === null) return -1;
-      return desc ? b[1] - a[1] : a[1] - b[1];
+      return (desc ? b[1] - a[1] : a[1] - b[1]) || compareText(a[0], b[0]); // empate: pela categoria, como o motor
     });
   }
   return rows.map(([label, v, tip]) => [label, v || 0, tip]);
@@ -188,10 +230,16 @@ function multiSeries(table, cfg) {
     byLabel.set(label, (byLabel.get(label) || 0) + v);
     (values[label] ||= {})[serie] = round(v);
   }
-  const order = ordered([...byLabel], cfg).slice(0, cfg.max_items);
+  const rows = ordered([...byLabel], cfg);
+  let order = rows.slice(0, cfg.max_items);
+  if (isContinuous(table, cfg)) {
+    const by = new Map(rows.map((r) => [r[0], r]));
+    order = spread(axisOrder(table, cfg).filter((l) => by.has(l)).map((l) => by.get(l)));
+  }
   return {
     series: order.map(([label, total]) => ({ label, value: round(total), values: values[label] || {} })),
     series_names: [...keep, ...(folds ? ['Outras'] : [])],
+    total: rows.length,
   };
 }
 
@@ -282,13 +330,23 @@ function chart(table, cfg) {
   if (cfg.chart_type === 'scatter') return { ...w, ...scatter(table, cfg), agg: 'none', y_column: cfg.y_column };
   if (cfg.chart_type === 'bubble') return { ...w, ...bubble(table, cfg), x_value: cfg.x_value_column, size_column: cfg.size_column };
   if (cfg.chart_type === 'sankey') return { ...w, ...sankey(table, cfg) };
-  if (cfg.series_column && SERIES_CHARTS.includes(cfg.chart_type)) return { ...w, ...multiSeries(table, cfg) };
-  let series = limited(ordered(groupValues(table, cfg), cfg), cfg);
+  if (cfg.series_column && SERIES_CHARTS.includes(cfg.chart_type)) {
+    const { total, ...multi } = multiSeries(table, cfg);
+    return counts({ ...w, ...multi }, table, cfg, total);
+  }
+  const rows = ordered(groupValues(table, cfg), cfg);
+  let series;
+  if (isContinuous(table, cfg)) {
+    const by = new Map(rows.map((r) => [r[0], r]));
+    series = limited(spread(axisOrder(table, cfg).filter((l) => by.has(l)).map((l) => by.get(l))), { ...cfg, max_items: Infinity });
+  } else {
+    series = limited(rows, cfg);
+  }
   if (cfg.chart_type === 'pareto') {
     series = paretoOf(series, cfg.pareto_threshold);
     w.threshold = cfg.pareto_threshold;
   }
-  return { ...w, series };
+  return counts({ ...w, series }, table, cfg, rows.length);
 }
 
 // ------------------------------------------------------------------ KPI

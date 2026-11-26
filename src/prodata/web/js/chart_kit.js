@@ -204,11 +204,17 @@ export function roundedBar(x, y, w, hgt, vertical) {
     : `M${x},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + hgt - r} Q${x + w},${y + hgt} ${x + w - r},${y + hgt} H${x} Z`;
 }
 
+/** Valor do eixo com as casas que o passo pede (0,02 · 0,04 · 0,06), em vez de arredondar tudo para "0". */
+export function tickText(v, step) {
+  if (!step || step >= 1 || Math.abs(v) >= 1000) return fmt.compact(v);
+  return fmt.number(v, Math.min(6, Math.max(0, Math.ceil(-Math.log10(step) - 1e-9))));
+}
+
 export function yGrid(sc, y, m, width, o) {
   const out = [];
   for (const v of sc.ticks) {
     if (o.grid) out.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    if (o.yValues !== false) out.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, fmt.compact(v)));
+    if (o.yValues !== false) out.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, tickText(v, sc.step)));
   }
   return out;
 }

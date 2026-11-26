@@ -1792,6 +1792,72 @@ def ajustes(pg: Page) -> None:
     _print(pg, "ajuste-comece")
 
 
+# ---------------------------------------------------------------- 0.9.6: linha no tempo, motor e HTML iguais
+
+CHART_DEFAULTS = {"title": "Série", "series_column": "", "sort": "value_desc", "max_items": 12, "tip_columns": [],
+                  "pareto_threshold": 80, "x_value_column": "", "size_column": ""}  # fmt: skip
+
+
+def grafico_serie(pg: Page) -> None:
+    """A linha de datas vai inteira (amostra espalhada acima de 2.000 pontos), e o cálculo do HTML exportado
+    (dash_compute.js) dá o mesmo que o motor, ponto a ponto; colunas cortadas avisam quantas categorias eram."""
+    from datetime import date, timedelta
+
+    rows = [
+        [(date(2019, 1, 1) + timedelta(days=i)).isoformat(), str(i % 17), f"Loja {i % 20:02d}"]
+        for i in range(2500)
+    ]
+    cases = [
+        {"chart_type": "line", "x_column": "data", "y_column": "valor", "agg": "mean"},
+        {
+            "chart_type": "area",
+            "x_column": "data",
+            "y_column": "valor",
+            "agg": "sum",
+            "series_column": "loja",
+        },
+        {"chart_type": "bar", "x_column": "loja", "y_column": "valor", "agg": "sum"},
+        {"chart_type": "line", "x_column": "loja", "y_column": "valor", "agg": "mean"},
+    ]
+    new_flow(pg)
+    ids = pg.evaluate(
+        """([rows, cases, base]) => { const t = window.__A.addNode('io.text_input', 80, 80, { table: { columns: ['data', 'valor', 'loja'], rows } }).id;
+          return cases.map((c, i) => { const id = window.__A.addNode('bi.chart', 420, 80 + i * 140, { ...base, ...c }).id;
+            window.__A.connect(t, 'out', id, 'in'); return id; }); }""",
+        [rows, cases, CHART_DEFAULTS],
+    )
+    run(pg)
+    for node_id, case in zip(ids, cases, strict=True):
+        engine = pg.evaluate("id => window.__S.store.execution.node_results[id]?.extra?.bi_widget", node_id)
+        page = pg.evaluate(
+            """async ([rows, cfg]) => { const m = await import('/static/js/dash_compute.js');
+              const table = m.makeTable({ data: rows.map((r) => r[0]), valor: rows.map((r) => r[1]), loja: rows.map((r) => r[2]) },
+                { data: 'string', valor: 'string', loja: 'string' }, rows.length);
+              return m.computeWidget('bi.chart', cfg, table); }""",
+            [rows, {**CHART_DEFAULTS, **case}],
+        )
+        name = f"{case['chart_type']} por {case['x_column']}"
+        same = engine is not None and [(s["label"], s["value"]) for s in engine["series"]] == [
+            (s["label"], s["value"]) for s in page["series"]
+        ]
+        check(f"{name}: o HTML exportado calcula o mesmo que o motor", same,
+              [(a, b) for a, b in zip([(s["label"], s["value"]) for s in (engine or {}).get("series", [])], [(s["label"], s["value"]) for s in page["series"]], strict=False) if a != b][:4])  # fmt: skip
+        keys = ("point_count", "sampled", "category_count")
+        check(f"{name}: o mesmo aviso do que ficou de fora", {k: (engine or {}).get(k) for k in keys} == {k: page.get(k) for k in keys},
+              ({k: (engine or {}).get(k) for k in keys}, {k: page.get(k) for k in keys}))  # fmt: skip
+    line = pg.evaluate("id => window.__S.store.execution.node_results[id].extra.bi_widget", ids[0])
+    labels = [s["label"] for s in line["series"]]
+    check("a linha de 2.500 dias vira 2.000 pontos, do primeiro ao último dia",
+          len(labels) == 2000 and labels[0] == "2019-01-01" and labels[-1] == rows[-1][0] and line["sampled"], labels[:2])  # fmt: skip
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    notes = pg.locator(".chart-note")
+    notes.first.wait_for(timeout=20000)
+    text = " ".join(notes.all_inner_texts())
+    check("o dashboard avisa a amostra e as categorias cortadas",
+          "2.000 de 2.500 pontos" in text and "12 de 20 categorias" in text, text)  # fmt: skip
+    pg.locator("#viewSwitch .segment[data-view=designer]").click()
+
+
 # ---------------------------------------------------------------- spec 046, E: pílula deslizante
 
 PILL = """() => { const p = document.querySelector('#viewSwitch .seg-pill').getBoundingClientRect();
@@ -1828,6 +1894,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "receitas": receitas,
     "municipios": municipios,
     "ajustes": ajustes,
+    "grafico_serie": grafico_serie,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

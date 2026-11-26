@@ -217,7 +217,7 @@ export function chartCard(original, { width, height = 260, className = '', actio
   } else {
     const canCross = cross && isCrossChart(w);
     const filterable = cross && isClickChart(w) && env.canFilter(original);
-    const note = logNote(w, f); // o aviso do rodapé tira uma linha da altura do gráfico
+    const note = [logNote(w, f), limitNote(w)].filter(Boolean).join(' '); // o aviso do rodapé tira uma linha da altura
     const body = h('div', { class: 'chart-body' }, renderChart(w.chart_type, w.series || [], Math.max(220, width - 34), note ? height - 20 : height, {
       ...f, _keyOf: w._keyOf, _filterable: filterable, _selected: canCross ? env.selectedFor(original) : null, _page_palette: currentPagePalette(),
     }, w));
@@ -254,6 +254,16 @@ const LOG_CHARTS = new Set(['bar', 'hbar', 'line', 'area', 'grouped', 'scatter']
 const STACKED = new Set(['stacked', 'stacked100', 'area_stacked']);
 
 /** O aviso do rodapé quando a escala logarítmica não vale do jeito pedido (ou null). */
+/** O que ficou de fora do gráfico (0.9.6): nunca em silêncio. A dispersão já escreve a amostra dentro do gráfico. */
+export function limitNote(w) {
+  if (w.widget_type !== 'chart' || w.chart_type === 'scatter') return null;
+  if (w.sampled && w.point_count) return `Mostrando ${fmt.int(w.series?.length)} de ${fmt.int(w.point_count)} pontos, espalhados pela série inteira.`;
+  if (!w.category_count) return null;
+  const shown = (w.series || []).filter((s) => s.label !== 'Outros').length;
+  const rest = (w.series || []).some((s) => s.label === 'Outros') ? 'as demais estão somadas em Outros' : 'as demais ficam de fora';
+  return `${fmt.int(shown)} de ${fmt.int(w.category_count)} categorias; ${rest}. Mude em Máximo de categorias, na caixa.`;
+}
+
 export function logNote(w, f) {
   if (f.y_scale !== 'log') return null;
   const type = w.chart_type;

@@ -65,6 +65,7 @@ export function clear(el) {
 
 const NUMBER = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 const COMPACT = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+const SMALL = new Intl.NumberFormat('pt-BR', { maximumSignificantDigits: 2 });
 
 // Separador decimal escolhido pela pessoa (spec 038): 'virgula' (1.234,56, o padrão) ou 'ponto' (1,234.56).
 // Formata sempre em pt-BR e só troca os separadores: "mil", "mi" e "R$" continuam em português.
@@ -100,7 +101,8 @@ export const fmt = {
       : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v))),
   /** Com opções do Intl (moeda, casas mínimas…), sempre com os separadores da escolha. */
   intl: (v, options) => localNumber(new Intl.NumberFormat('pt-BR', options).format(v)),
-  compact: (v) => localNumber(COMPACT.format(v)),
+  // Abaixo de 1, dois algarismos significativos: 0,05 continua 0,05 (com uma casa só, virava 0 ou 0,1).
+  compact: (v) => localNumber((v && Math.abs(v) < 1 ? SMALL : COMPACT).format(v)),
   int: (v) => localNumber(NUMBER.format(Math.round(v ?? 0))),
   bytes(n) {
     if (n < 1024) return `${n} B`;

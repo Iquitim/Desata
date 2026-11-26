@@ -2,7 +2,7 @@
 // Série única usa --series-1; a rosca usa a paleta categórica em ordem fixa (máx. 8).
 // `opts` (formato do visual, spec 014) é opcional: sem ele, cada gráfico mantém o visual de sempre.
 
-import { axisLabels, axisTitles, catAttr, esc, framed, isDim, labelled, LEGEND_H, LEGEND_LINE, legendLayout, legendRow, margins, MAX_SLICES, multiTip, options, paint, PARETO_LEGEND_W, refFill, refLine, roundedBar, spaced, svg, tipHtml, withRef, tone, truncate, yGrid, yScale } from './chart_kit.js';
+import { axisLabels, axisTitles, tickText, catAttr, esc, framed, isDim, labelled, LEGEND_H, LEGEND_LINE, legendLayout, legendRow, margins, MAX_SLICES, multiTip, options, paint, PARETO_LEGEND_W, refFill, refLine, roundedBar, spaced, svg, tipHtml, withRef, tone, truncate, yGrid, yScale } from './chart_kit.js';
 import { bubbleChart, raceChart, sankeyChart } from './charts_motion.js';
 import { fmt, h } from './dom.js';
 
@@ -229,7 +229,7 @@ function multiChart(w, width, height, opts, mode) {
   const yTicks = [];
   for (const v of sc.ticks) {
     if (o.grid) yTicks.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    yTicks.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, pct ? `${v}%` : fmt.compact(v)));
+    yTicks.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, pct ? `${v}%` : tickText(v, sc.step)));
   }
   return framed(o, legendRow(names, colors, width),
     svg('svg', { class: 'chart', width, height: svgH, viewBox: `0 0 ${width} ${svgH}` }, yTicks,
@@ -331,10 +331,10 @@ function scatterChart(w, width, height, opts) {
   const grid = [];
   for (const v of ys.ticks) {
     if (o.grid) grid.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    grid.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, fmt.compact(v)));
+    grid.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, tickText(v, ys.step)));
   }
   for (let v = xs.lo; v <= xs.hi + 1e-9; v += xs.step) {
-    grid.push(svg('text', { class: 'tick x-tick', x: x(v), y: svgH - 9 - (w.sampled ? 14 : 0) - (o.xTitle ? 18 : 0), 'text-anchor': 'middle' }, fmt.compact(v)));
+    grid.push(svg('text', { class: 'tick x-tick', x: x(v), y: svgH - 9 - (w.sampled ? 14 : 0) - (o.xTitle ? 18 : 0), 'text-anchor': 'middle' }, tickText(v, xs.step)));
   }
   const dots = pts.map((p) => svg('circle', {
     class: 'scatter-dot', cx: x(p.x), cy: y(p.y), r: 4,
