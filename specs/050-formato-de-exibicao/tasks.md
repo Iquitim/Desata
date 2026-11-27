@@ -9,4 +9,4 @@
 - [x] T07 Excel: formato de número nos três caminhos (RF-5027, RF-5028)
 - [x] T08 Criar coluna de texto (RF-5041)
 - [x] T09 Testes (`test_display_formats.py`) e conferência de tela `formato_coluna`
-- [ ] T10 Guia e manual, prints nas duas marcas e nos dois temas (RF-5061)
+- [x] T10 Guia e manual, prints nas duas marcas e nos dois temas (RF-5061)

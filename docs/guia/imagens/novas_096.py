@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -32,6 +33,7 @@ def part_096(pg: Any, tmp: Path, shot: Shot) -> None:
         ("join", lambda: _join_previous(pg, shot)),
         ("pdf", lambda: _pdf_wildcard(pg, shot)),
         ("cnpj", lambda: _cnpj(pg, tmp, shot)),
+        ("formato", lambda: _formato(pg, shot)),
     ]
     only = os.environ.get("IMAGENS_096")  # para refazer só algumas etapas: IMAGENS_096=pdf,cnpj
     for name, step in steps:
@@ -232,7 +234,10 @@ def _places(pg: Any, shot: Shot) -> None:
     _quiet(pg)
     shot(dlg, "catalogo-mapa")
     dlg.locator('.pd-uf[data-uf="MG"]').click()
-    pg.wait_for_function("() => (document.querySelector('.pd-place')?.textContent || '').includes('Belo Horizonte')", timeout=15000)
+    pg.wait_for_function(
+        "() => (document.querySelector('.pd-place')?.textContent || '').includes('Belo Horizonte')",
+        timeout=15000,
+    )
     dlg.locator(".pd-place-finder input").fill("juiz")
     pg.wait_for_timeout(800)
     _quiet(pg)
@@ -245,7 +250,9 @@ def _places(pg: Any, shot: Shot) -> None:
     dlg.locator(".pd-search input").fill("")
     dlg.locator(".pd-menu-item", has_text="Destaques").click()
     refresh = dlg.locator(".pd-top button", has_text="Atualizar o catálogo")
-    if refresh.is_enabled():  # num servidor novo, o catálogo nunca lido já começa a atualizar sozinho ao abrir
+    if (
+        refresh.is_enabled()
+    ):  # num servidor novo, o catálogo nunca lido já começa a atualizar sozinho ao abrir
         refresh.click()
     dlg.locator(".pd-refreshing").wait_for(timeout=15000)
     pg.wait_for_function(
@@ -254,9 +261,17 @@ def _places(pg: Any, shot: Shot) -> None:
     )
     _quiet(pg)
     top = dlg.locator(".pd-top").bounding_box()
-    shot(pg, "catalogo-progresso", clip={"x": top["x"], "y": top["y"], "width": top["width"], "height": top["height"] + 6})
-    for _ in range(300):  # a leitura segue; espera terminar para as etapas seguintes acharem o catálogo pronto
-        if not pg.evaluate("() => fetch('/api/catalogo/atualizar').then((r) => r.json()).then((s) => s.rodando)"):
+    shot(
+        pg,
+        "catalogo-progresso",
+        clip={"x": top["x"], "y": top["y"], "width": top["width"], "height": top["height"] + 6},
+    )
+    for _ in range(
+        300
+    ):  # a leitura segue; espera terminar para as etapas seguintes acharem o catálogo pronto
+        if not pg.evaluate(
+            "() => fetch('/api/catalogo/atualizar').then((r) => r.json()).then((s) => s.rodando)"
+        ):
             break
         pg.wait_for_timeout(1000)
     dlg.locator("header button").first.click()
@@ -376,7 +391,9 @@ def _column_menu(pg: Any, column: str, label: str) -> Any:
 
 def _recipes(pg: Any, shot: Shot) -> None:
     _new_flow(pg)
-    node_id = _sales(pg, ["data", "valor"], [["2025-01-15", "100"], ["2025-06-14", "250"], ["2025-09-20", "80"]])
+    node_id = _sales(
+        pg, ["data", "valor"], [["2025-01-15", "100"], ["2025-06-14", "250"], ["2025-09-20", "80"]]
+    )
     dlg = _column_menu(pg, "valor", "Corrigir valores pelo IPCA")
     pg.wait_for_timeout(500)
     _quiet(pg)
@@ -463,7 +480,9 @@ def _pdf_wildcard(pg: Any, shot: Shot) -> None:
         }""",
         doc,
     )
-    pg.locator('.pv-page[data-page="3"]').scroll_into_view_if_needed()  # as páginas são desenhadas ao aparecer
+    pg.locator(
+        '.pv-page[data-page="3"]'
+    ).scroll_into_view_if_needed()  # as páginas são desenhadas ao aparecer
     word = pg.locator(f'.pv-w[data-i="{index}"]')
     word.wait_for(timeout=30000)
     word.scroll_into_view_if_needed()
@@ -581,3 +600,75 @@ def _cnpj(pg: Any, tmp: Path, shot: Shot) -> None:
     _quiet(pg)
     shot(mem, "memoria-pergunta")
     mem.locator("button", has_text="Parar").click()
+
+
+# ---------------------------------------------------------------- formato de exibição (spec 050)
+
+_CHART = {"title": "Valor por cliente", "series_column": "", "sort": "value_desc", "max_items": 12, "tip_columns": [],
+          "pareto_threshold": 80, "x_value_column": "", "size_column": "", "chart_type": "bar", "x_column": "cliente",
+          "y_column": "valor", "agg": "sum"}  # fmt: skip
+
+
+def _format_dialog(pg: Any, column: str) -> Any:
+    name = pg.locator(".th-name", has_text=re.compile(f"^{column}$"))
+    pg.locator("#results th.sortable", has=name).first.click(button="right")
+    pg.locator(".menu .menu-item", has_text="Formato de exibição").click()
+    dlg = pg.locator("dialog[open]", has=pg.locator(".cf-dialog"))
+    dlg.wait_for(timeout=10000)
+    return dlg
+
+
+def _formato(pg: Any, shot: Shot) -> None:
+    _new_flow(pg)
+    ids = pg.evaluate(
+        """(chart) => { const A = window.__A;
+          const t = A.addNode('io.text_input', 100, 200, { table: { columns: ['cliente', 'valor', 'cpf', 'data'], rows: [
+            ['Ana Souza', '1234,5', '1234567890', '2026-11-26'], ['Bruno Lima', '-10', '12345678901', '2026-01-02'],
+            ['Carla Dias', '9876,25', '123456789012', '2026-03-05'], ['Davi Rocha', '4500', '9876543210', '2026-07-19']] } }).id;
+          const f = A.addNode('prep.formula', 380, 200, { formulas: [{ target: 'existing', existing: 'data', type: 'Date', expression: 'ToDate([data])' }] }).id;
+          const c = A.addNode('bi.chart', 660, 120, chart).id;
+          const k = A.addNode('bi.kpi_card', 660, 300, { title: 'Valor total', column: 'valor', metric: 'sum' }).id;
+          A.connect(t, 'out', f, 'in'); A.connect(f, 'out', c, 'in'); A.connect(f, 'out', k, 'in');
+          return { t, f }; }""",
+        _CHART,
+    )
+    _run(pg)
+    _inspect(pg, ids["t"])
+    dlg = _format_dialog(pg, "cpf")
+    pg.wait_for_timeout(400)
+    _quiet(pg)
+    shot(dlg, "formato-dialogo")
+    dlg.locator(".dialog-footer button", has_text="Aplicar").click()
+    dlg = _format_dialog(pg, "valor")
+    dlg.locator(".cf-kind[data-kind=currency]").click()
+    dlg.locator(".dialog-footer button", has_text="Aplicar").click()
+    _inspect(pg, ids["f"])
+    dlg = _format_dialog(pg, "data")
+    dlg.locator(".dialog-footer button", has_text="Aplicar").click()
+    # a tabela em modo foco: as quatro colunas cabem no print
+    pg.evaluate("() => import('/static/js/results.js').then((m) => m.toggleTableFocus(true))")
+    pg.wait_for_timeout(900)
+    _quiet(pg)
+    panel = pg.locator("#results").bounding_box()
+    table = pg.locator("#results .data-table").bounding_box()
+    width = min(panel["width"], table["x"] + table["width"] + 12 - panel["x"])
+    shot(pg, "formato-resultado", clip={"x": panel["x"], "y": panel["y"], "width": width,
+                                        "height": table["y"] + table["height"] + 12 - panel["y"]})  # fmt: skip
+    pg.evaluate("() => import('/static/js/results.js').then((m) => m.toggleTableFocus(false))")
+    pg.wait_for_timeout(500)
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    pg.locator(".dash-item").first.wait_for(timeout=20000)
+    chart = pg.locator(".dash-item", has=pg.locator(".chart-card", has_text="Valor por cliente")).first
+    kpi = pg.locator(".dash-item", has=pg.locator(".kpi", has_text="Valor total")).first
+    chart.scroll_into_view_if_needed()
+    pg.wait_for_timeout(2500)  # as barras crescem ao aparecer: o print sai com o gráfico parado
+    _quiet(pg)
+    a, b = chart.bounding_box(), kpi.bounding_box()
+    left, top = min(a["x"], b["x"]) - 8, min(a["y"], b["y"]) - 8
+    right, bottom = (
+        max(a["x"] + a["width"], b["x"] + b["width"]) + 8,
+        max(a["y"] + a["height"], b["y"] + b["height"]) + 8,
+    )
+    shot(pg, "formato-dashboard", clip={"x": left, "y": top, "width": right - left, "height": bottom - top})
+    pg.locator("#viewSwitch .segment[data-view=designer]").click()
+    pg.wait_for_timeout(600)

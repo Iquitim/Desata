@@ -109,11 +109,14 @@ Peça para salvar a resposta como `nome.prodata.json` e abrir pelo botão **Abri
 
 ```text
 Workflow: id (obrigatório; letras, números, _ e -), name, description, containers[], nodes[], edges[], dashboard,
-          constants[], shared_constants{{}}
+          constants[], shared_constants{{}}, column_formats{{}}
 Node:     id (mesmo formato; único), type, label, x, y, config{{}}, disabled, cache_point, cache_refresh (changes, daily, hourly)
 Edge:     id, source, sourceHandle (porta de saída), target, targetHandle (porta de entrada)
 Container: id, title, description, color, opacity (0 a 0,4), disabled, x, y, width, height
 Constant: name (letra ou _, depois letras, números e _), type (text, number, date), value (texto), description
+column_formats: {{id da caixa: {{coluna: formato}}}}; formato: kind (number, currency, percent, document, date, none) e,
+          conforme o kind, decimals (0 a 6), thousands, symbol (até 6 caracteres), base (fraction, hundred),
+          mask (cpf, cnpj, cep, phone ou máscara com # por dígito), pattern (dmy, my, dmy_hm, long, iso)
 ```
 
 - O programa recusa um arquivo com `id` de caixa repetido, ligação para caixa inexistente ou caixa ligada a ela mesma.
@@ -122,6 +125,7 @@ Constant: name (letra ou _, depois letras, números e _), type (text, number, da
 - **Posição:** cada caixa tem 188 px de largura. O fluxo corre da esquerda para a direita: use cerca de 260 px entre colunas e 120 px entre linhas, em múltiplos de 10.
 - **Etapa** (`containers`): é só um retângulo com título e cor. Uma caixa pertence a ela por estar dentro da área, não por uma referência.
 - Mudar `type`, `config` ou ligações basta: o programa recalcula sozinho o que depende disso.
+- **Formato de exibição** (`column_formats`): muda só como a coluna aparece (Resultado, Perfil, Dashboard e o formato de número do Excel); o dado e o CSV não mudam. Vale na caixa e nas seguintes enquanto a coluna mantiver o nome; `none` tira o herdado. Para gravar o texto formatado, use uma Formula.
 
 ## Como fazer as mudanças mais comuns
 

@@ -129,8 +129,12 @@ export function openFormatDialog({ nodeId, port = 'out', column, rows = [], onDo
   const own = store.workflow.column_formats?.[nodeId]?.[column.name] || null;
   const inheritedFrom = current && current.from !== nodeId ? current : null;
   const kinds = ['none', ...kindsFor(column.type)];
-  let spec = { ...DEFAULTS, ...(current || { kind: own?.kind === 'none' ? 'none' : kinds[1] || 'none' }) };
-  if (column.type === 'Int64' && !current && /cpf|cnpj|cep|telefone|celular|fone/i.test(column.name)) {
+  // Sugestão inicial: número e data começam no primeiro formato que cabe; texto começa sem formato (aplicar Documento
+  // sem olhar marcaria tudo como "não cabe"), a não ser que o nome diga que é documento.
+  const looksLikeDocument = /cpf|cnpj|cep|telefone|celular|fone/i.test(column.name);
+  const first = column.type === 'String' && !looksLikeDocument ? 'none' : kinds[1] || 'none';
+  let spec = { ...DEFAULTS, ...(current || { kind: own?.kind === 'none' ? 'none' : first }) };
+  if ((column.type === 'Int64' || column.type === 'String') && !current && looksLikeDocument) {
     spec = { ...spec, kind: 'document', mask: /cnpj/i.test(column.name) ? 'cnpj' : /cep/i.test(column.name) ? 'cep' : /fone|cel/i.test(column.name) ? 'phone' : 'cpf' };
   }
   if (!kinds.includes(spec.kind)) spec.kind = 'none';

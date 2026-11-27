@@ -135,7 +135,9 @@ export function options(opts = {}) {
     total: opts._total ?? null,
     short: (v) => inFormat(v, opts.label_format !== 'full') ?? affix(opts.label_format === 'full' ? fmt.number(v, decimals) : fmt.compact(v)),
     full: (v) => inFormat(v, false) ?? affix(fmt.number(v, opts.label_format === 'full' ? decimals : undefined)),
-    tick: (v, step) => inFormat(v, true) ?? tickText(v, step),
+    tick: (v, step) => axisText(vf, v, step),
+    // espaço do símbolo no eixo (R$, US$, %), para os valores não saírem cortados
+    axisExtra: vf?.kind === 'currency' ? ((vf.symbol || '').length + 2) * 7 : vf?.kind === 'percent' ? 8 : 0,
     // colunas extras da dica, cada uma no seu formato
     extra: (c, v) => formatValue(opts._formats?.[c], v)?.text ?? fmt.number(v),
   };
@@ -211,6 +213,13 @@ export function roundedBar(x, y, w, hgt, vertical) {
     : `M${x},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + hgt - r} Q${x + w},${y + hgt} ${x + w - r},${y + hgt} H${x} Z`;
 }
 
+/** Valor do eixo no formato da coluna (spec 050): as casas seguem o passo, como sem formato, com o símbolo. */
+function axisText(vf, v, step) {
+  if (vf?.kind === 'currency') return `${v < 0 ? '-' : ''}${vf.symbol ? `${vf.symbol} ` : ''}${tickText(Math.abs(v), step)}`;
+  if (vf?.kind === 'percent') return vf.base === 'hundred' ? `${tickText(v, step)}%` : `${tickText(v * 100, step * 100)}%`;
+  return tickText(v, step);
+}
+
 /** Valor do eixo com as casas que o passo pede (0,02 · 0,04 · 0,06), em vez de arredondar tudo para "0". */
 export function tickText(v, step) {
   if (!step || step >= 1 || Math.abs(v) >= 1000) return fmt.compact(v);
@@ -228,7 +237,7 @@ export function yGrid(sc, y, m, width, o) {
 
 /** Margens com espaço para os títulos dos eixos, quando houver. */
 export function margins(base, o) {
-  const left = o.yValues === false ? 12 : base.left;
+  const left = o.yValues === false ? 12 : base.left + (o.axisExtra || 0);
   const bottom = o.xLabels === false ? 10 : base.bottom;
   return { ...base, left: left + (o.yTitle ? 16 : 0), bottom: bottom + (o.xTitle ? 18 : 0) };
 }
