@@ -1,6 +1,7 @@
 // Arquivos: envio, vínculo, exclusão e o diálogo de pré-visualização com opções de leitura. A lista fica na vista Dados.
 
 import { typeLabel, typeName } from './types.js';
+import { formatValue } from './col_format.js';
 import { addNode } from './actions.js';
 import { api, ApiError } from './api.js';
 import { DND_DATASET, toWorld, viewportCenter } from './canvas.js';
@@ -180,9 +181,14 @@ export function previewTable(columns, rows) {
     h('tbody', {}, rows.map((r) => h('tr', {}, columns.map((c) => cell(r[c.name], c.type)))))));
 }
 
-export function cell(value, type) {
+/** Célula do resultado. `spec`: formato de exibição da coluna (spec 050); o que não cabe sai como veio, marcado. */
+export function cell(value, type, spec = null) {
   if (value === null || value === undefined) return h('td', { class: 'null' }, 'null');
   const numeric = type === 'Int64' || type === 'Float64';
+  const shown = formatValue(spec, value);
+  if (shown) {
+    return h('td', { class: [numeric && 'num', shown.bad && 'fmt-bad'], title: shown.bad ? `Não cabe no formato: ${shown.bad}. Aparece como veio.` : null }, shown.text);
+  }
   const text = numeric ? fmt.number(value) : typeof value === 'boolean' ? (value ? 'verdadeiro' : 'falso') : String(value);
   if (typeof value === 'string') {
     // Espaços invisíveis ficam visíveis (spec 018): célula só com espaços e espaço no início/fim.

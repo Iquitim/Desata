@@ -1,5 +1,6 @@
 // Peças comuns dos gráficos SVG (escalas, legendas, cores e dicas), usadas por charts.js e charts_motion.js.
 
+import { formatValue } from './col_format.js';
 import { fixedColors, paletteColor } from './dash_look.js';
 import { fmt, h } from './dom.js';
 
@@ -60,7 +61,7 @@ export function tipFields(label, value, o, s = null) {
   const fields = { categoria: label, valor: o.full(value), percentual: pct };
   if (o.xName) fields[o.xName] = label;
   if (o.yName) fields[o.yName] = o.full(value);
-  for (const [c, v] of Object.entries(s?.tip || {})) fields[c] = v === null || v === undefined ? '—' : fmt.number(v);
+  for (const [c, v] of Object.entries(s?.tip || {})) fields[c] = v === null || v === undefined ? '—' : (o.extra ? o.extra(c, v) : fmt.number(v));
   return fields;
 }
 
@@ -90,7 +91,7 @@ export function tipHtml(label, value, o, s = null, { percent = false } = {}) {
     const filled = fillTip(t.text, fields);
     if (filled !== null) return `<span class="tip-text">${filled}</span>${click}`;
   }
-  const extras = Object.entries(s?.tip || {}).map(([c, v]) => `<span>${esc(c)}: <b>${esc(v === null || v === undefined ? '—' : fmt.number(v))}</b></span>`).join('');
+  const extras = Object.entries(s?.tip || {}).map(([c, v]) => `<span>${esc(c)}: <b>${esc(v === null || v === undefined ? '—' : (o.extra ? o.extra(c, v) : fmt.number(v)))}</b></span>`).join('');
   return `${t.label === false ? '' : `<span>${esc(label)}</span>`}${t.value === false ? '' : `<b>${esc(o.full(value))}</b>`}`
     + `${(percent || t.percent) && fields.percentual ? `<span>${fields.percentual} do total</span>` : ''}${extras}${click}`;
 }
@@ -98,6 +99,9 @@ export function tipHtml(label, value, o, s = null, { percent = false } = {}) {
 /** Opções completas a partir do formato salvo no item (ou dos padrões de antes). */
 export function options(opts = {}) {
   const affix = (s) => `${opts.prefix || ''}${s}${opts.suffix || ''}`;
+  // Formato da coluna dos valores (spec 050); prefixo ou sufixo escritos no visual valem mais (RF-5025).
+  const vf = opts.prefix || opts.suffix ? null : opts._value_format || null;
+  const inFormat = (v, compact) => (vf ? formatValue(vf, v, { compact })?.text : null);
   const decimals = opts.decimals ?? 1;
   // Com cor por categoria, o que não tem cor própria segue a paleta das demais; "page" é a paleta geral do dashboard.
   const chosen = opts.palette === 'custom' ? opts.other_palette : opts.palette;
@@ -129,8 +133,11 @@ export function options(opts = {}) {
     xName: opts._x || '',
     yName: opts._y || '',
     total: opts._total ?? null,
-    short: (v) => affix(opts.label_format === 'full' ? fmt.number(v, decimals) : fmt.compact(v)),
-    full: (v) => affix(fmt.number(v, opts.label_format === 'full' ? decimals : undefined)),
+    short: (v) => inFormat(v, opts.label_format !== 'full') ?? affix(opts.label_format === 'full' ? fmt.number(v, decimals) : fmt.compact(v)),
+    full: (v) => inFormat(v, false) ?? affix(fmt.number(v, opts.label_format === 'full' ? decimals : undefined)),
+    tick: (v, step) => inFormat(v, true) ?? tickText(v, step),
+    // colunas extras da dica, cada uma no seu formato
+    extra: (c, v) => formatValue(opts._formats?.[c], v)?.text ?? fmt.number(v),
   };
 }
 
@@ -214,7 +221,7 @@ export function yGrid(sc, y, m, width, o) {
   const out = [];
   for (const v of sc.ticks) {
     if (o.grid) out.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    if (o.yValues !== false) out.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, tickText(v, sc.step)));
+    if (o.yValues !== false) out.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, o.tick ? o.tick(v, sc.step) : tickText(v, sc.step)));
   }
   return out;
 }

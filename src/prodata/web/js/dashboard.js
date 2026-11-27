@@ -23,6 +23,7 @@ import { loadFormats, PANEL_W, panelEl } from './dash_panel.js';
 import { exportPage, exportVisual } from './dash_png.js';
 import { brand, LOGO_DARK, LOGO_LIGHT, logoOwner } from './brand.js';
 import { pageLook } from './dash_look.js';
+import { nodeFormats } from './col_format_ui.js';
 
 export { AGG_LABELS, chartCard, kpiTile, tableCard, visualCard } from './dash_cards.js';
 
@@ -44,6 +45,7 @@ export function initDashboard(el, opts) {
       || options.list.some((o) => o.kind === 'list' && o.column === w.x_column)),
     selectedFor: (w) => selectedIn(dash()?.filters, w.x_column),
     onCategory: filterByCategory,
+    formatsFor: nodeFormats, // formato de exibição das colunas (spec 050)
   });
   const refresh = () => store.view === 'dashboard' && render();
   // O logo da marca posto na página troca para a versão de fundo escuro: os dois chegam uma vez só.

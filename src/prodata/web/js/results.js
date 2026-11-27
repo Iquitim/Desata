@@ -14,6 +14,8 @@ import { clearWidths, enableColumnResize, summaryButton, watchSummary } from './
 import { enableCellFocus } from './cell_focus.js';
 import { cleaningCard } from './cleaning_ui.js';
 import { recipeMenu } from './recipes_ui.js';
+import { badge, describe as describeFormat, formatValue } from './col_format.js';
+import { nodeFormats, openFormatDialog, originText } from './col_format_ui.js';
 import { typeLabel, typeName } from './types.js';
 import { showMenu, toast } from './ui.js';
 
@@ -183,6 +185,12 @@ export function initResults(root) {
   on('show:profile', () => { state.tab = 'profile'; persist('prodata.results.tab', 'profile'); draw(); });
   on('execution', () => load());
   on('numbers', () => draw()); // separador decimal (spec 038)
+  // formato de exibição (spec 050): aplicar, trocar e desfazer redesenham sem ler os dados de novo
+  let shownFormats = '';
+  on('workflow:changed', () => {
+    const now = JSON.stringify(store.workflow?.column_formats || {});
+    if (now !== shownFormats) { shownFormats = now; if (state.data) draw(); }
+  });
   on('workflow:loaded', () => { state.data = null; draw(); });
   draw();
 }
@@ -349,9 +357,11 @@ function dataView() {
   const sortBy = (name, desc) => { state.sortCol = name; state.sortDesc = desc; state.offset = 0; load(); };
   const filtered = new Set(currentFilters().map((f) => f.column));
   const source = publicSource(); // dicionário de colunas da fonte pública (RF-4912)
+  const formats = nodeFormats(store.inspect.nodeId); // formato de exibição (spec 050)
+  const fmtTip = (c) => (formats[c.name] ? `Formato: ${describeFormat(formats[c.name])} · ${originText(formats[c.name], store.inspect.nodeId)}` : '');
   const head = h('tr', {}, h('th', { class: 'rownum' }, '#'), cols.map((c) => h('th', {
     class: ['sortable', state.sortCol === c.name && 'sorted', filtered.has(c.name) && 'filtered'],
-    title: [columnMeaning(source, c.name), 'Clique para ordenar · botão direito para mais opções'].filter(Boolean).join('\n\n'),
+    title: [columnMeaning(source, c.name), fmtTip(c), 'Clique para ordenar · botão direito para mais opções'].filter(Boolean).join('\n\n'),
     onclick: () => {
       if (state.sortCol !== c.name) sortBy(c.name, false);
       else if (!state.sortDesc) sortBy(c.name, true);
@@ -366,20 +376,23 @@ function dataView() {
         { label: 'Ordenar decrescente', icon: 'arrow-down', onSelect: () => sortBy(c.name, true) },
         'separator',
         { label: 'Larguras automáticas', icon: 'columns', onSelect: () => { clearWidths(outputKey()); draw(); } },
+        ...(store.readonly ? [] : [{ label: 'Formato de exibição…', icon: 'type', onSelect: () => openFormatDialog({
+          nodeId: store.inspect.nodeId, port: store.inspect.anchor || 'out', column: c, rows: state.data.rows, onDone: draw }) }]),
         ...recipeMenu(c, state.data.profile), // receitas prontas: IPCA e PTAX (spec 049)
       ]);
     },
   },
   h('div', { class: 'th-top' }, h('span', { class: 'th-name' }, c.name), spacesBadge(c.empty_count || 0, c.padded_count || 0), sortIcon(c.name),
+    formats[c.name] ? h('span', { class: 'th-fmt', title: fmtTip(c) }, badge(formats[c.name])) : null,
     h('button', {
       type: 'button', class: 'th-filter', title: `Filtrar ${c.name}`, 'aria-label': `Filtrar ${c.name}`,
       onclick: (e) => { e.stopPropagation(); filterAt(e.currentTarget, null, { column: c.name }); },
     }, icon('filter', 12)),
     h('span', { class: 'th-type', title: typeName(c.type) }, typeLabel(c.type))),
-  columnTotal(c), qualityBar(c), sparkline(c))));
+  columnTotal(c, formats[c.name]), qualityBar(c), sparkline(c))));
   const body = rows.length
     ? rows.map((r, i) => h('tr', {}, h('td', { class: 'rownum' }, state.data.offset + i + 1), cols.map((c, ci) => {
-      const td = cell(r[c.name], c.type);
+      const td = cell(r[c.name], c.type, formats[c.name]);
       td.dataset.ci = ci;
       return td;
     })))
@@ -409,15 +422,17 @@ function dataView() {
   enableColumnResize(table, outputKey(), ['#', ...cols.map((c) => c.name)]); // spec 041
   const foot = enableCellFocus(wrap, table, {
     firstCol: 1, nameAt: (ci) => cols[ci - 1]?.name, valueAt: (td, r, ci) => rows[r]?.[cols[ci - 1]?.name], rowLabel: (r) => state.data.offset + r + 1,
+    shownAt: (td, r, ci) => (formats[cols[ci - 1]?.name] ? td.textContent : null),
   });
   return h('div', { class: 'table-shell' }, wrap, foot);
 }
 
 /** Soma das colunas numéricas e contagem de não nulos nas demais, da tabela inteira ou dos filtros ativos (spec 021). */
-function columnTotal(c) {
+function columnTotal(c, spec = null) {
   const sum = c.stats?.sum;
-  if (typeof sum === 'number') {
-    return h('div', { class: 'th-total', title: `Soma: ${fmt.number(sum)}` }, `Σ ${fmt.compact(sum)}`);
+  // soma de documento (CPF, CNPJ) não diz nada: mostra os preenchidos; a soma sai no formato da coluna (spec 050)
+  if (typeof sum === 'number' && spec?.kind !== 'document') {
+    return h('div', { class: 'th-total', title: `Soma: ${formatValue(spec, sum)?.text ?? fmt.number(sum)}` }, `Σ ${formatValue(spec, sum, { compact: true })?.text ?? fmt.compact(sum)}`);
   }
   const empty = (c.null_count ?? 0) + (c.empty_count ?? 0);
   const filled = Math.max(0, (c.total ?? 0) - empty);
@@ -434,22 +449,27 @@ function profileView() {
     : null;
   // recomendações de limpeza (spec 048): o cartão aparece no alto quando a resposta chega
   const source = publicSource();
+  const formats = nodeFormats(store.inspect.nodeId); // spec 050: os números do perfil no formato da coluna
   return h('div', {}, note, publicSourceCard(source), cleaningCard(), h('div', { class: 'profile-grid' }, state.data.profile.columns.map((c) => {
     const s = c.stats || {};
     const meaning = columnMeaning(source, c.name);
     const numeric = s.mean !== undefined;
+    // contagens ficam como número; média, desvio e soma de documento (CPF) também
+    const plainFact = (k) => ['Distintos', 'Ocorrências'].includes(k) || (formats[c.name]?.kind === 'document' && ['Média', 'Desvio', 'Soma'].includes(k));
+    const show = (k, v) => (plainFact(k) ? null : formatValue(formats[c.name], v)?.text) ?? (typeof v === 'number' ? fmt.number(v) : v);
     const facts = numeric
       ? [['Mín', s.min], ['Média', s.mean], ['Mediana', s.median], ['Máx', s.max], ['Desvio', s.std], ['Soma', s.sum]]
       : [['Distintos', c.unique_count], ['Mais comum', s.top ?? '—'], ['Ocorrências', s.top_count ?? 0]];
     return h('section', { class: 'profile-card' },
-      h('header', {}, h('strong', { class: 'mono ellipsis' }, c.name), h('span', { class: 'th-type', title: `${typeName(c.type)} (${c.raw_type})` }, typeLabel(c.type))),
+      h('header', {}, h('strong', { class: 'mono ellipsis' }, c.name),
+        formats[c.name] ? h('span', { class: 'th-fmt', title: describeFormat(formats[c.name]) }, badge(formats[c.name])) : null, h('span', { class: 'th-type', title: `${typeName(c.type)} (${c.raw_type})` }, typeLabel(c.type))),
       meaning ? h('p', { class: 'profile-meaning' }, meaning) : null,
       qualityBar(c),
       h('div', { class: 'q-legend' }, h('span', {}, h('i', { class: 'q-ok' }), `${c.ok_pct}% ok`),
         h('span', {}, h('i', { class: 'q-empty' }), `${c.empty_pct}% vazio`), h('span', {}, h('i', { class: 'q-null' }), `${c.null_pct}% nulo`),
         c.padded_count ? h('span', { class: 'th-spaces', title: 'Valores com espaço no início ou no fim: "SP " não casa com "SP"' }, icon('alert', 11), `${fmt.int(c.padded_count)} com espaço sobrando`) : null),
       h('dl', { class: 'facts' }, facts.map(([k, v]) => h('div', {}, h('dt', {}, k),
-        h('dd', { class: 'ellipsis', title: String(v) }, typeof v === 'number' ? fmt.number(v) : v)))),
+        h('dd', { class: 'ellipsis', title: String(v) }, show(k, v))))),
       c.histogram.length ? h('div', { class: 'hist' }, c.histogram.map((b) => h('div', { class: 'hist-row', title: `${binLabel(b)}: ${fmt.int(b.count)}` },
         h('span', { class: 'hist-label ellipsis' }, binLabel(b)), h('span', { class: 'hist-bar' }, h('i', { style: { width: `${b.pct}%` } })),
         h('span', { class: 'hist-count' }, fmt.compact(b.count))))) : null);

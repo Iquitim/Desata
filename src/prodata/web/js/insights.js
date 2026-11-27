@@ -36,7 +36,12 @@ export function initInsights(el, opts) {
   on('numbers', render);
   on('running', render); // os esqueletos aparecem assim que a execução começa
   // Caixa de BI excluída ou desativada: o visual some na hora (spec 010, RF-1005).
-  on('workflow:changed', ({ structural }) => structural && render());
+  // formato de exibição das colunas (spec 050): os gráficos daqui também mudam de aparência
+  let shownFormats = JSON.stringify(store.workflow?.column_formats || {});
+  on('workflow:changed', ({ structural }) => {
+    const now = JSON.stringify(store.workflow?.column_formats || {});
+    if (structural || now !== shownFormats) { shownFormats = now; render(); }
+  });
   on('workflow:loaded', render);
   on('layout', render);
   new ResizeObserver(debounce(() => render(), 150)).observe(root);

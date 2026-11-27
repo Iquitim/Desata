@@ -22,6 +22,7 @@ from pydantic.fields import FieldInfo
 from prodata.connectors.api_store import ApiStore
 from prodata.connectors.queries import QueryStore
 from prodata.connectors.store import ConnectionStore
+from prodata.domain.display_formats import DisplayFormat, effective_formats
 from prodata.errors import InvalidInputError
 from prodata.forms import ui
 from prodata.ingestion.datasets import DatasetStore
@@ -99,6 +100,8 @@ class NodeContext:
     # portais, feriados editados) e, num fluxo do espaço, as edições de feriados da equipe.
     catalog_root: Path | None = None
     team_holidays: Any = None
+    # Formato de exibição das colunas (spec 050): o Excel grava o formato de número equivalente.
+    column_formats: dict[str, DisplayFormat] = field(default_factory=dict)
     # A pessoa respondeu Continuar assim mesmo: esta leitura pode passar de 1/4 da memória (spec 049, RF-4957).
     memory_ok: bool = False
 
@@ -297,3 +300,13 @@ def catalog() -> list[dict[str, Any]]:
     order = {c["id"]: i for i, c in enumerate(CATEGORIES)}
     specs = sorted(REGISTRY.values(), key=lambda s: order.get(s.category, 99))
     return [s.describe() for s in specs]
+
+
+def formats_for(workflow: Any, node_id: str) -> dict[str, DisplayFormat]:
+    """Formato de exibição que vale na caixa (spec 050), com a ordem das entradas de cada ferramenta."""
+
+    def ports(type_: str) -> tuple[str, ...]:
+        spec = REGISTRY.get(type_)
+        return tuple(p.id for p in spec.inputs) if spec else ()
+
+    return effective_formats(workflow.column_formats, workflow.nodes, workflow.edges, node_id, ports)

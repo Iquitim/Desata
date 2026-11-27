@@ -686,9 +686,12 @@ def _write_one(
                 header=cfg.template_header,
                 clear=cfg.template_clear,
                 label=cfg.confidentiality,
+                formats=ctx.column_formats,
             )
         case "excel":
-            write_excel_book(sheets, path, cfg.if_exists == "add_sheet", cfg.confidentiality)
+            write_excel_book(
+                sheets, path, cfg.if_exists == "add_sheet", cfg.confidentiality, ctx.column_formats
+            )
         case "json":
             df.write_json(path)
         case "arrow":

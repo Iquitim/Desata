@@ -38,7 +38,7 @@ from prodata.engine.loop_run import LoopRun
 from prodata.engine.profiling import simple_type
 from prodata.errors import MemoryAskError, NotFoundError, ProdataError
 from prodata.ingestion.datasets import DatasetStore
-from prodata.nodes import REGISTRY, NodeContext, ToolSpec
+from prodata.nodes import REGISTRY, NodeContext, ToolSpec, formats_for
 from prodata.nodes.io import OutputDataConfig, export_path
 from prodata.services.constants import ConstantStore
 
@@ -623,6 +623,7 @@ class WorkflowRunner:
             catalog_root=self.catalog_root,
             team_holidays=self.team_holidays,
             memory_ok=node.id in self.memory_ok,
+            column_formats=formats_for(workflow, node.id),
         )
         ctx.run_subflow = lambda child: subflow.run(self, workflow, node, child, ctx)
         ctx.subflow_signature = lambda child: subflow.signature(self, child)
@@ -793,8 +794,7 @@ def _expired(snapshot: FrozenEntry, refresh: str) -> bool:
     """Prazo do ponto de cache (spec 017): "daily" vale até o fim do dia (hora local); "hourly", por uma hora."""
     if refresh == "changes":
         return False
-    frozen_at = datetime.fromisoformat(snapshot.frozen_at)
-    now = datetime.now(UTC)
+    frozen_at, now = datetime.fromisoformat(snapshot.frozen_at), datetime.now(UTC)
     if refresh == "hourly":
         return now - frozen_at >= timedelta(hours=1)
     return frozen_at.astimezone().date() != now.astimezone().date()

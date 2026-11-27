@@ -150,6 +150,7 @@ function start(data) {
   setCardEnv({
     open: null,
     brandLogo: data.logo && data.logo_dark ? { light: data.logo, dark: data.logo_dark } : null,
+    formatsFor: (id) => data.column_formats?.[id] || {}, // spec 050
     clickable: () => false,
     // O arquivo só leva as colunas dos filtros: sem filtro naquela coluna, não há como recalcular.
     canFilter: (w) => filters.some((f) => f.kind === 'list' && f.column === w.x_column),

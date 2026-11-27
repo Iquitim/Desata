@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
 from prodata.domain.constants import Constant, ConstantValue
 from prodata.domain.dashboard import Dashboard
+from prodata.domain.display_formats import ColumnFormats
 from prodata.domain.samples import MAX_BYTES as MAX_SAMPLE_BYTES
 from prodata.domain.samples import SourceSample
 from prodata.domain.schemas import RememberedSchema
@@ -76,6 +77,8 @@ class Workflow(BaseModel):
     # Recomendações de limpeza ignoradas (spec 048, RF-4834): caixa → chaves "tipo:coluna". Vazio fica fora do
     # arquivo, para não mudar a impressão de confiança, a assinatura nem a base dos fluxos que já existem.
     ignored_cleaning: dict[str, list[str]] = Field(default_factory=dict, exclude_if=lambda v: not v)
+    # Formato de exibição (spec 050): caixa → coluna → formato. Vazio fica fora do arquivo, pelo mesmo motivo.
+    column_formats: ColumnFormats = Field(default_factory=dict, exclude_if=lambda v: not v)
 
     @model_validator(mode="after")
     def _check_references(self) -> Workflow:
@@ -94,9 +97,15 @@ class Workflow(BaseModel):
             raise ValueError(f"Constantes do fluxo com o mesmo nome: {', '.join(repeated)}")
         if self.dashboard:
             self.dashboard.prune(known)
+        # formatos de caixas apagadas somem com elas (spec 050, RF-5014)
+        self.column_formats = {k: v for k, v in self.column_formats.items() if k in known and v}
         if sum(s.size() for s in self.samples.values()) > MAX_SAMPLE_BYTES:
             raise ValueError("A amostra do fluxo passa de 5 MB: tire fontes da amostra.")
         return self
+
+    @field_serializer("column_formats")
+    def _compact_formats(self, value: ColumnFormats) -> dict[str, dict[str, dict[str, Any]]]:
+        return {nid: {col: f.compact() for col, f in cols.items()} for nid, cols in value.items()}
 
     def node(self, node_id: str) -> Node:
         for n in self.nodes:

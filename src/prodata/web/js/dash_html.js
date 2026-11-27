@@ -14,6 +14,8 @@ import { mutate, store } from './store.js';
 import { openDialog, toast, toastError } from './ui.js';
 import { brand, logoOwner } from './brand.js';
 import { brandLogos } from './dash_insert.js';
+import { compact } from './col_format.js';
+import { nodeFormats } from './col_format_ui.js';
 
 const MIN_PASSWORD = 8;
 // O arquivo não busca nada fora dele: nem um dado malicioso consegue mandar o conteúdo para outro endereço.
@@ -65,6 +67,9 @@ function snapshot(displayed) {
     frozen_filters: d.filters || [], // sem os filtros no arquivo, ainda apagam as categorias de fora
     // de onde vêm os dados públicos (spec 049, RF-4963), a menos que a citação esteja desligada no dashboard
     citation: d.cite_sources === false ? null : buildCitation(store.workflow.nodes, store.execution?.node_results),
+    // formato de exibição das colunas de cada visual (spec 050, RF-5026): só as escolhas, sem a caixa de origem
+    column_formats: Object.fromEntries(Object.keys(displayed || {}).map((id) => [id,
+      Object.fromEntries(Object.entries(nodeFormats(id)).map(([col, spec]) => [col, compact(spec)]))])),
   };
 }
 

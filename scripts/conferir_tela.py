@@ -1834,6 +1834,187 @@ def visual_isolado(pg: Page) -> None:
     print(f"      print: {path}")
 
 
+def formato_coluna(pg: Page) -> None:
+    """Spec 050: formato de exibição — herança igual à do motor, formatos, diálogo com prévia, Resultado da caixa e da
+    seguinte, foco da célula, Perfil, gráfico e KPI, HTML exportado, Excel e Criar coluna de texto."""
+    cases = json.loads((ROOT / "tests" / "fixtures" / "formatos_heranca.json").read_text(encoding="utf-8"))
+    got = pg.evaluate(
+        """async (fx) => { const F = await import('/static/js/col_format.js');
+          return fx.cases.map((c) => Object.fromEntries(Object.keys(c.expect).map((id) => [id, Object.fromEntries(
+            Object.entries(F.effectiveFormats(c.formats, c.nodes.map(([i, t]) => ({ id: i, type: t })),
+              c.edges.map(([s, t, h]) => ({ source: s, target: t, targetHandle: h })), id, (t) => fx.ports[t] || []))
+              .map(([col, s]) => [col, s.kind]))]))); }""",
+        cases,
+    )
+    check(
+        "herança na tela igual à do motor (mesmos casos)", got == [c["expect"] for c in cases["cases"]], got
+    )
+    samples = pg.evaluate(
+        """async () => { const F = await import('/static/js/col_format.js');
+          const t = (s, v, o) => { const r = F.formatValue(s, v, o); return r && (r.bad ? `!${r.text}` : r.text); };
+          return [t({ kind: 'document', mask: 'cpf' }, 1234567890), t({ kind: 'document', mask: 'cpf' }, 123456789012),
+            t({ kind: 'document', mask: 'cpf' }, '123.456.789-01'), t({ kind: 'document', mask: 'phone' }, 11987654321),
+            t({ kind: 'document', mask: 'phone' }, '1132345678'), t({ kind: 'document', mask: 'AB-##' }, 7),
+            t({ kind: 'currency', symbol: 'R$', decimals: 2 }, -10), t({ kind: 'currency', symbol: 'US$', decimals: 0 }, 2500000, { compact: true }),
+            t({ kind: 'percent', decimals: 1, base: 'fraction' }, 0.153), t({ kind: 'percent', decimals: 0, base: 'hundred' }, 15),
+            t({ kind: 'number', decimals: 2, thousands: false }, 1234.5), t({ kind: 'date', pattern: 'dmy' }, '2026-11-26'),
+            t({ kind: 'date', pattern: 'long' }, '2026-11-26'), t({ kind: 'date', pattern: 'dmy_hm' }, '2026-11-26T14:30:00'),
+            t({ kind: 'date', pattern: 'my' }, 'ontem'), t({ kind: 'currency' }, 'abc')]; }"""
+    )
+    check(
+        "formatos: documento, moeda, porcentagem, número e data; o que não cabe vem marcado",
+        samples
+        == [
+            "012.345.678-90", "!123456789012", "123.456.789-01", "(11) 98765-4321", "(11) 3234-5678", "AB-07",
+            "-R$ 10,00", "US$ 2,5 mi", "15,3%", "15%", "1234,50", "26/11/2026", "26 de nov. de 2026",
+            "26/11/2026 14:30", "!ontem", "!abc",
+        ],
+        samples,
+    )  # fmt: skip
+
+    new_flow(pg)
+    ids = pg.evaluate(
+        """(base) => { const A = window.__A;
+          const t = A.addNode('io.text_input', 80, 80, { table: { columns: ['nome', 'valor', 'cpf', 'data_txt'],
+            rows: [['Ana', '1234,5', '1234567890', '2026-11-26'], ['Bia', '-10', '12345678901', '2026-01-02'],
+                   ['Caio', '99', '123456789012', '2026-03-05']] } }).id;
+          const f = A.addNode('prep.formula', 360, 80, { formulas: [{ target: 'new', column: 'data', type: 'Date', expression: 'ToDate([data_txt])' }] }).id;
+          const c = A.addNode('bi.chart', 640, 0, { ...base, title: 'Valor por nome', chart_type: 'bar', x_column: 'nome', y_column: 'valor', agg: 'sum' }).id;
+          const k = A.addNode('bi.kpi_card', 640, 160, { title: 'Total', column: 'valor', metric: 'sum' }).id;
+          const o = A.addNode('io.output_data', 640, 320, { filename: 'formatos', format: 'excel', if_exists: 'replace' }).id;
+          A.connect(t, 'out', f, 'in'); A.connect(f, 'out', c, 'in'); A.connect(f, 'out', k, 'in'); A.connect(f, 'out', o, 'in');
+          return { t, f, c, k, o }; }""",
+        CHART_DEFAULTS,
+    )
+    run(pg)
+    results = pg.locator("#results")
+
+    def inspect(node_id: str) -> None:
+        pg.evaluate("id => { window.__S.select(id); window.__S.inspect(id); }", node_id)
+        results.locator(".tabs .tab[data-tab=data]").click()
+        results.locator(".data-table tbody tr").first.wait_for(timeout=15000)
+
+    def open_dialog(column: str) -> Any:
+        results.locator(
+            ".data-table th", has=pg.locator(".th-name", has_text=re.compile(f"^{column}$"))
+        ).click(button="right")
+        pg.locator(".menu .menu-item", has_text="Formato de exibição").click()
+        dlg = pg.locator("dialog[open]", has=pg.locator(".cf-dialog"))
+        dlg.wait_for(timeout=5000)
+        return dlg
+
+    inspect(ids["t"])
+    dlg = open_dialog("cpf")
+    check("CPF guardado como número: o diálogo já sugere Documento CPF",
+          dlg.locator(".cf-kind.on").get_attribute("data-kind") == "document")  # fmt: skip
+    preview = dlg.locator(".cf-table tbody")
+    check(
+        "prévia: zero à esquerda volta e o valor com 12 dígitos vem marcado, com a contagem",
+        "012.345.678-90" in preview.inner_text()
+        and preview.locator(".fmt-bad").count() == 1
+        and "1 de 3 valores" in dlg.locator(".cf-preview").inner_text(),
+        preview.inner_text(),
+    )
+    check("esquema Guardado → Formato → Na tela", "012.345.678-90" in dlg.locator(".cf-scheme").inner_text())
+    dlg.locator(".dialog-footer button", has_text="Aplicar").click()
+    dlg = open_dialog("valor")
+    dlg.locator(".cf-kind[data-kind=currency]").click()
+    check(
+        "prévia da moeda",
+        "R$ 1.234,50" in dlg.locator(".cf-table").inner_text(),
+        dlg.locator(".cf-table").inner_text(),
+    )
+    dlg.locator(".dialog-footer button", has_text="Aplicar").click()
+    inspect(ids["f"])
+    dlg = open_dialog("data")
+    dlg.locator("select[aria-label='Formato da data']").select_option("long")
+    dlg.locator(".dialog-footer button", has_text="Aplicar").click()
+    pg.wait_for_timeout(300)
+    texts = results.locator(".data-table tbody tr").first.inner_text()
+    badges = results.locator(".th-fmt").all_inner_texts()
+    check(
+        "na caixa seguinte: moeda, CPF e data formatados, com os selos no cabeçalho",
+        "R$ 1.234,50" in texts and "012.345.678-90" in texts and "26 de nov. de 2026" in texts
+        and sorted(badges) == sorted(["R$", "CPF", "nov."]),
+        [texts, badges],
+    )  # fmt: skip
+    tip = (
+        results.locator(
+            ".data-table th", has=pg.locator(".th-name", has_text=re.compile("^cpf$"))
+        ).get_attribute("title")
+        or ""
+    )
+    check("a dica diz o formato e de onde veio", "Documento: CPF" in tip and "definido em" in tip, tip)
+    check("valor que não cabe: marcado, com o motivo", results.locator("td.fmt-bad").count() == 1
+          and "12 dígitos" in (results.locator("td.fmt-bad").get_attribute("title") or ""))  # fmt: skip
+    results.locator(".data-table tbody tr").first.locator("td").nth(2).click()  # coluna valor
+    foot = results.locator(".cell-foot").inner_text()
+    check(
+        "foco da célula: o texto da tela e o valor guardado",
+        "R$ 1.234,50" in foot and "guardado: 1234.5" in foot,
+        foot,
+    )
+    results.locator(".tabs .tab[data-tab=profile]").click()
+    card = results.locator(".profile-card", has=pg.locator("strong", has_text=re.compile("^valor$")))
+    check("Perfil: soma e média no formato", "R$ 1.323,50" in card.inner_text(), card.inner_text())
+    results.locator(".tabs .tab[data-tab=data]").click()
+
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    pg.locator(".dash-item").first.wait_for(timeout=20000)
+    pg.wait_for_timeout(800)
+    kpi = pg.locator(".dash-item[data-id] .kpi").first.inner_text()
+    chart = pg.locator(".chart-card", has_text="Valor por nome")
+    tips = chart.locator("[data-tip]").evaluate_all(
+        "els => els.map((e) => e.getAttribute('data-tip')).join(' ')"
+    )
+    check("Dashboard: KPI, eixo e dica do gráfico na moeda", "R$ 1.323,50" in kpi
+          and "R$" in (chart.locator(".y-tick").first.text_content() or "") and "R$ 1.234,50" in tips, [kpi, tips[:200]])  # fmt: skip
+    pg.locator(".dash-download").click()
+    pg.locator(".dash-export-menu button", has_text="Baixar HTML").click()
+    box = pg.locator("dialog[open]")
+    box.wait_for(timeout=10000)
+    with pg.expect_download(timeout=30000) as info:
+        box.locator("button", has_text="Salvar HTML").click()
+    html_path = Path(tempfile.gettempdir()) / "conferir-formatos.html"
+    info.value.save_as(str(html_path))
+    viewer = pg.context.new_page()
+    viewer.goto(html_path.as_uri())
+    viewer.locator(".kpi").first.wait_for(timeout=10000)
+    check("HTML exportado: os mesmos formatos", "R$ 1.323,50" in viewer.locator(".kpi").first.inner_text())
+    viewer.close()
+    pg.locator("#viewSwitch .segment[data-view=designer]").click()
+
+    run(pg)  # o Output Data grava de novo, agora com os formatos
+    from openpyxl import load_workbook
+
+    xlsx = DATA / "exports" / "formatos.xlsx"
+    ws = load_workbook(xlsx).active
+    heads = {ws.cell(1, i).value: i for i in range(1, ws.max_column + 1)}
+    codes = {name: ws.cell(2, heads[name]).number_format for name in ("valor", "cpf", "data")}
+    check(
+        "Excel: moeda, máscara do CPF e data, com as células numéricas",
+        codes == {"valor": '"R$" #,##0.00;-"R$" #,##0.00', "cpf": '000"."000"."000"-"00', "data": '[$-416]d" de "mmm". de "yyyy'}
+        and ws.cell(2, heads["cpf"]).value == 1234567890,
+        codes,
+    )  # fmt: skip
+
+    inspect(ids["t"])
+    dlg = open_dialog("cpf")
+    dlg.locator(".dialog-footer button", has_text="Criar coluna de texto").click()
+    recipe = pg.locator("dialog[open]", has_text="Criar coluna de texto").last
+    expr = recipe.locator(".cf-expr").inner_text()
+    recipe.locator("button", has_text="Criar a Formula").click()
+    pg.wait_for_timeout(400)
+    created = pg.evaluate(
+        "() => window.__S.store.workflow.nodes.find((n) => n.type === 'prep.formula' && n.config.formulas?.[0]?.column === 'cpf_texto')?.id"
+    )
+    run(pg)
+    inspect(created)
+    texts = results.locator(".data-table tbody").inner_text()
+    check("Criar coluna de texto: a Formula dá o mesmo texto da tela", bool(created) and "RegexReplace" in expr
+          and texts.count("012.345.678-90") >= 2 and "123456789012" in texts, [expr, texts[:300]])  # fmt: skip
+
+
 def logo_tema(pg: Page) -> None:
     """O logo da marca posto na página troca para a versão de fundo escuro: no tema escuro, numa página de cor
     escura e na imagem PNG; a cor de página clara traz de volta a versão de fundo claro."""
@@ -2167,6 +2348,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "estados_mapa": estados_mapa,
     "visual_isolado": visual_isolado,
     "logo_tema": logo_tema,
+    "formato_coluna": formato_coluna,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

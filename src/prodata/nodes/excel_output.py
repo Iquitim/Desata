@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 import polars as pl
 import xlsxwriter
 
+from prodata.domain.display_formats import DOCUMENT_MASKS, DisplayFormat
 from prodata.domain.labels import (
     DEFAULT_LABEL,
     EXCEL_PROPERTY,
@@ -23,6 +24,75 @@ _BAD_SHEET_CHARS = set("[]:*?/\\")
 
 if TYPE_CHECKING:
     from prodata.nodes.io import OutputDataConfig
+
+
+# ------------------------------------------------------------------ formato de exibição (spec 050, RF-5027)
+
+_DATES = {
+    "dmy": "dd/mm/yyyy",
+    "my": "mm/yyyy",
+    "dmy_hm": "dd/mm/yyyy hh:mm",
+    "long": '[$-416]d" de "mmm". de "yyyy',
+    "iso": "yyyy-mm-dd",
+}
+_PHONE = '[<=9999999999]"("00") "0000"-"0000;"("00") "00000"-"0000'
+
+
+def _mask_format(mask: str) -> str:
+    """Máscara com # (um dígito) no formato do Excel: # vira 0 e o resto vai entre aspas."""
+    out, literal = [], ""
+    for ch in mask:
+        if ch == "#":
+            if literal:
+                out.append(f'"{literal}"')
+                literal = ""
+            out.append("0")
+        else:
+            literal += ch
+    if literal:
+        out.append(f'"{literal}"')
+    return "".join(out)
+
+
+def excel_number_format(spec: DisplayFormat, dtype: pl.DataType) -> str | None:
+    """Formato de número do Excel equivalente, ou None quando o tipo da coluna não aceita (texto, por exemplo).
+    A célula continua com o número ou a data: só a aparência muda."""
+    numeric = dtype.is_numeric()
+    decimals = "." + "0" * spec.decimals if spec.decimals else ""
+    match spec.kind:
+        case "number" if numeric:
+            return ("#,##0" if spec.thousands else "0") + decimals
+        case "currency" if numeric:
+            body = "#,##0" + decimals
+            return f'"{spec.symbol}" {body};-"{spec.symbol}" {body}' if spec.symbol else body
+        case "percent" if numeric:
+            return f"0{decimals}%" if spec.base == "fraction" else f'0{decimals}"%"'
+        case "date" if dtype.is_temporal():
+            return _DATES[spec.pattern]
+        case "document" if dtype.is_integer():
+            if spec.mask == "phone":
+                return _PHONE
+            return _mask_format(DOCUMENT_MASKS.get(spec.mask, spec.mask))
+    return None
+
+
+def excel_formats(df: pl.DataFrame, formats: dict[str, DisplayFormat] | None) -> dict[str, str]:
+    """Formato do Excel por coluna da tabela, só das colunas que têm formato e aceitam."""
+    out: dict[str, str] = {}
+    for col, spec in (formats or {}).items():
+        if col in df.columns and (code := excel_number_format(spec, df.schema[col])):
+            out[col] = code
+    return out
+
+
+def format_cells(
+    ws: Any, df: pl.DataFrame, codes: dict[str, str], first_row: int, first_col: int = 1
+) -> None:
+    """Aplica o formato do Excel célula a célula (openpyxl), da primeira linha de dados até a última."""
+    for i, col in enumerate(df.columns):
+        if code := codes.get(col):
+            for r in range(first_row, first_row + df.height):
+                ws.cell(row=r, column=first_col + i).number_format = code
 
 
 MAX_SHEETS = 8
@@ -40,11 +110,16 @@ def sheet_title(raw: str) -> str:
 
 
 def write_excel_sheet(
-    df: pl.DataFrame, path: Path, sheet: str, add: bool, label: str = DEFAULT_LABEL
+    df: pl.DataFrame,
+    path: Path,
+    sheet: str,
+    add: bool,
+    label: str = DEFAULT_LABEL,
+    formats: dict[str, DisplayFormat] | None = None,
 ) -> None:
     """Grava a planilha. Com ``add`` e arquivo existente, mantém as outras planilhas (e a posição desta)."""
     if not (add and path.exists()):
-        write_excel_book([(sheet, df)], path, False, label)
+        write_excel_book([(sheet, df)], path, False, label, formats)
         return
     from openpyxl import load_workbook
     from openpyxl.packaging.custom import StringProperty
@@ -63,6 +138,7 @@ def write_excel_sheet(
     ws.append(df.columns)
     for row in df.iter_rows():
         ws.append(list(row))
+    format_cells(ws, df, excel_formats(df, formats), 2)
     for i, col in enumerate(df.columns, start=1):  # largura aproximada, como o autofit do write_excel
         sample = [len(str(v)) for v in df[col].head(200).to_list() if v is not None]
         ws.column_dimensions[ws.cell(1, i).column_letter].width = min(60, max([len(col), *sample]) + 2)
@@ -107,12 +183,16 @@ def _label_new_sheet(sheet: Any, label: str) -> None:
 
 
 def write_excel_book(
-    sheets: list[tuple[str, pl.DataFrame]], path: Path, add: bool, label: str = DEFAULT_LABEL
+    sheets: list[tuple[str, pl.DataFrame]],
+    path: Path,
+    add: bool,
+    label: str = DEFAULT_LABEL,
+    formats: dict[str, DisplayFormat] | None = None,
 ) -> None:
     """Grava as planilhas com o rótulo, sem tocar nas células. Sem ``add``, o arquivo é criado de uma vez."""
     if add and path.exists():
         for name, table in sheets:
-            write_excel_sheet(table, path, name, True, label)
+            write_excel_sheet(table, path, name, True, label, formats)
         return
     tmp = path.with_name(path.name + ".tmp.xlsx")
     name = LABEL_NAMES[label]
@@ -120,6 +200,7 @@ def write_excel_book(
         book.set_properties({"category": name, "keywords": f"Classificação: {name}"})
         book.set_custom_property(EXCEL_PROPERTY, name)
         for sheet_name, table in sheets:
-            table.write_excel(book, worksheet=sheet_name, autofit=True)
+            codes: dict[Any, str] = excel_formats(table, formats)  # polars aceita seletor como chave
+            table.write_excel(book, worksheet=sheet_name, autofit=True, column_formats=codes or None)
             _label_new_sheet(book.get_worksheet_by_name(sheet_name), label)
     os.replace(tmp, path)

@@ -3,6 +3,7 @@
 
 import { withTooltip } from './chart_kit.js';
 import { enableCellFocus } from './cell_focus.js';
+import { autoLabels, formatValue, valueFormatFor } from './col_format.js';
 import { gaugeChart, renderChart, sparkline } from './charts.js';
 import { isClickChart, isCrossChart } from './dash_filters.js';
 import { button, fmt, h } from './dom.js';
@@ -15,8 +16,10 @@ export const AGG_LABELS = {
 
 // Quem desenha decide o que acontece ao clicar: no HTML exportado não há fluxo para abrir.
 // `cross` no cartão liga o filtro por clique: só na página do dashboard, não no painel de insights.
-const env = { open: null, clickable: () => true, canFilter: () => false, selectedFor: () => null, onCategory: null };
+// `formatsFor(caixa)`: formato de exibição das colunas que valem na caixa do visual (spec 050).
+const env = { open: null, clickable: () => true, canFilter: () => false, selectedFor: () => null, onCategory: null, formatsFor: () => ({}) };
 export function setCardEnv(next) { Object.assign(env, next); }
+const formatsOf = (w) => env.formatsFor?.(w.node_id) || {};
 
 /** As duas versões do logo; só uma aparece, pelas variáveis --logo-on-light e --logo-on-dark (brand.css). */
 export function logoPair(light, dark, attrs = {}) {
@@ -78,6 +81,12 @@ function ruleFor(rules, value, column = null) {
 /** Número do KPI no formato escolhido na caixa (automático, compacto, completo ou percentual). */
 function kpiNumber(w, v = w.value) {
   const nf = w.number_format || 'auto';
+  // Sem prefixo, sufixo nem formato escolhidos na caixa, vale o formato da coluna (spec 050, RF-5024 e RF-5025).
+  const spec = !w.prefix && !w.suffix && nf === 'auto' ? valueFormatFor(w, formatsOf(w)) : null;
+  if (spec) {
+    const exactText = formatValue(spec, v)?.text ?? fmt.number(v);
+    return { exact: exactText, shown: Math.abs(v) >= 1e6 ? formatValue(spec, v, { compact: true })?.text ?? exactText : exactText };
+  }
   const pct = nf === 'percent';
   const n = pct ? v * 100 : v;
   const affix = (s) => `${w.prefix || ''}${s}${pct ? '%' : ''}${w.suffix || ''}`;
@@ -141,7 +150,7 @@ const SUBTITLES = {
 };
 
 /** Linhas da tabela equivalente a cada visual (modo tabela: o dado nunca depende só do gráfico). */
-function tableData(w) {
+function tableData(w, num = fmt.number) {
   if (w.widget_type === 'venn') {
     return {
       head: ['Região', 'Quantidade', '%'],
@@ -156,15 +165,15 @@ function tableData(w) {
     return { head: [w.x_column, w.x_value, w.y_column, w.size_column || 'linhas'], rows: (w.points || []).map((p) => [p.label, fmt.number(p.x), fmt.number(p.y), fmt.number(p.size)]) };
   }
   if (w.chart_type === 'sankey') {
-    return { head: [w.x_column, w.series_column, w.y_column || 'contagem'], rows: (w.links || []).map((l) => [l.source, l.target, fmt.number(l.value)]) };
+    return { head: [w.x_column, w.series_column, w.y_column || 'contagem'], rows: (w.links || []).map((l) => [l.source, l.target, num(l.value)]) };
   }
   if (w.series_names?.length) {
-    return { head: [w.x_column, ...w.series_names, 'Total'], rows: w.series.map((c) => [c.label, ...w.series_names.map((n) => fmt.number(c.values[n] || 0)), fmt.number(c.value)]) };
+    return { head: [w.x_column, ...w.series_names, 'Total'], rows: w.series.map((c) => [c.label, ...w.series_names.map((n) => num(c.values[n] || 0)), num(c.value)]) };
   }
   if (w.chart_type === 'pareto') {
-    return { head: [w.x_column, w.y_column || 'contagem', 'Acumulado'], rows: w.series.map((s) => [s.label, fmt.number(s.value), `${fmt.number(s.cum_pct, 1)}%`]) };
+    return { head: [w.x_column, w.y_column || 'contagem', 'Acumulado'], rows: w.series.map((s) => [s.label, num(s.value), `${fmt.number(s.cum_pct, 1)}%`]) };
   }
-  return { head: [w.x_column, w.y_column || 'contagem'], rows: w.series.map((s) => [s.label, fmt.number(s.value)]) };
+  return { head: [w.x_column, w.y_column || 'contagem'], rows: w.series.map((s) => [s.label, num(s.value)]) };
 }
 
 /**
@@ -195,7 +204,13 @@ function relabel(w, labels) {
  * origem. `actions`: botões extras no cabeçalho; `fmt`: formato do visual.
  */
 export function chartCard(original, { width, height = 260, className = '', actions = [], fmt: f = {}, cross = false } = {}) {
-  const w = relabel(original, f.labels);
+  // Formato das colunas (spec 050): as categorias pelo mesmo caminho dos nomes trocados no painel Formato (que valem
+  // mais), e os valores pelas opções do gráfico.
+  const formats = original.widget_type === 'venn' ? {} : formatsOf(original);
+  const w = relabel(original, { ...autoLabels(original, formats), ...(f.labels || {}) });
+  const valueFormat = valueFormatFor(original, formats);
+  const own = f.prefix || f.suffix;
+  const num = (v) => (!own && valueFormat ? formatValue(valueFormat, v)?.text : null) ?? fmt.number(v);
   const card = h('article', { class: ['chart-card', className], style: cardStyle(f) });
   const asTable = tableMode.has(w.node_id);
   const subtitle = f.subtitle || w.subtitle || (w.widget_type === 'venn' ? `${fmt.int(w.union)} em pelo menos um conjunto`
@@ -217,7 +232,7 @@ export function chartCard(original, { width, height = 260, className = '', actio
   if (empty) {
     card.append(h('div', { class: 'empty' }, 'Sem dados para exibir.'));
   } else if (asTable) {
-    const t = tableData(w);
+    const t = tableData(w, num);
     const table = h('table', { class: 'data-table compact' },
       h('thead', {}, h('tr', {}, t.head.map((c, i) => h('th', { class: i ? 'num' : null }, c)))),
       h('tbody', {}, t.rows.map((r) => h('tr', {}, r.map((v, i) => h('td', { class: i ? 'num' : null }, v))))));
@@ -229,6 +244,7 @@ export function chartCard(original, { width, height = 260, className = '', actio
     const note = [logNote(w, f), limitNote(w)].filter(Boolean).join(' '); // o aviso do rodapé tira uma linha da altura
     const body = h('div', { class: 'chart-body' }, renderChart(w.chart_type, w.series || [], Math.max(220, width - 34), note ? height - 20 : height, {
       ...f, _keyOf: w._keyOf, _filterable: filterable, _selected: canCross ? env.selectedFor(original) : null, _page_palette: currentPagePalette(),
+      _value_format: valueFormat, _formats: formats,
     }, w));
     // Eixos escondidos (spec 042, RF-4236): as margens já encolheram; aqui saem os textos.
     if (f.show_x_labels === false) body.querySelectorAll('.x-tick').forEach((t) => t.remove());
@@ -300,16 +316,18 @@ export function tableCard(w, { className = '', fmt: f = {}, actions = [] } = {})
       showTitle ? h('h3', { style: { fontSize: f.title_size ? `${f.title_size}px` : null } }, f.title || w.title) : null,
       showSub ? h('p', { class: 'muted' }, f.subtitle || `${fmt.int(Math.min(w.rows.length, w.row_count))} de ${fmt.int(w.row_count)} linhas`) : null) : h('span', { class: 'grow' }),
     h('div', { class: 'chart-actions' }, actions)));
+  const formats = formatsOf(w); // cada coluna no seu formato, também nos totais (spec 050, RF-5024)
+  const show = (col, v) => formatValue(formats[col.name], v)?.text ?? (col.numeric && typeof v === 'number' ? fmt.number(v) : (v ?? '—'));
   const cellOf = (col, v) => {
     const status = col.numeric ? ruleFor(f.rules, v, col.name) : null;
     return h('td', { class: [col.numeric && 'num', status && `cell-${status}`] },
-      status ? icon(STATUS_ICON[status], 12) : null, col.numeric && typeof v === 'number' ? fmt.number(v) : (v ?? '—'));
+      status ? icon(STATUS_ICON[status], 12) : null, show(col, v));
   };
   const table = h('table', { class: 'data-table compact dash-table' },
     h('thead', {}, h('tr', {}, w.columns.map((c) => h('th', { class: c.numeric ? 'num' : null }, c.name)))),
     h('tbody', {}, w.rows.map((r) => h('tr', {}, r.map((v, i) => cellOf(w.columns[i], v))))),
     w.totals ? h('tfoot', {}, h('tr', {}, w.columns.map((c, i) => h('td', { class: c.numeric ? 'num' : null },
-      c.numeric ? fmt.number(w.totals[c.name]) : i === 0 ? 'Total' : '')))) : null);
+      c.numeric ? show(c, w.totals[c.name]) : i === 0 ? 'Total' : '')))) : null);
   const wrap = h('div', { class: 'chart-body table-wrap' }, table);
   card.append(wrap, enableCellFocus(wrap, table, { nameAt: (i) => w.columns[i]?.name })); // célula em destaque (spec 041)
   return card;

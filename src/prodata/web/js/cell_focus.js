@@ -6,11 +6,12 @@ import { h } from './dom.js';
 
 /**
  * Liga o destaque numa tabela. `wrap` é o elemento que rola (recebe o foco do teclado).
- * `valueAt(td, row, col)`: o valor inteiro a mostrar; `nameAt(col)`: o nome da coluna; `firstCol`: a primeira coluna
+ * `valueAt(td, row, col)`: o valor inteiro a mostrar; `shownAt`: o texto formatado da tela, quando difere do valor
+ * guardado (spec 050); `nameAt(col)`: o nome da coluna; `firstCol`: a primeira coluna
  * que pode ser destacada (1 quando a 0 é o número da linha); `rowLabel(row)`: o número da linha no rodapé.
  * Devolve o rodapé, para quem chama pôr logo abaixo da tabela.
  */
-export function enableCellFocus(wrap, table, { valueAt, nameAt, firstCol = 0, rowLabel = (r) => r + 1 } = {}) {
+export function enableCellFocus(wrap, table, { valueAt, nameAt, shownAt, firstCol = 0, rowLabel = (r) => r + 1 } = {}) {
   const foot = h('div', { class: 'cell-foot', hidden: true, role: 'status', 'aria-live': 'polite' });
   let at = null; // { row, col }
   const rows = () => table.tBodies[0]?.rows || [];
@@ -33,10 +34,14 @@ export function enableCellFocus(wrap, table, { valueAt, nameAt, firstCol = 0, ro
     td.classList.add('cell-focus');
     td.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const value = valueAt ? valueAt(td, r, c) : td.textContent;
+    const shown = shownAt ? shownAt(td, r, c) : null;
     const name = nameAt ? nameAt(c) : table.tHead?.rows[0]?.cells[c]?.textContent || '';
     foot.replaceChildren(
       h('span', { class: 'cell-foot-where' }, `${name} · linha ${rowLabel(r)}`),
-      h('span', { class: ['cell-foot-value', (value === null || value === undefined) && 'null'] }, value === null || value === undefined ? 'nulo' : String(value)),
+      // com formato de exibição (spec 050), o texto da tela e o valor guardado lado a lado
+      shown && shown !== String(value) ? h('span', { class: 'cell-foot-shown' }, shown) : null,
+      h('span', { class: ['cell-foot-value', (value === null || value === undefined) && 'null'], title: shown && shown !== String(value) ? 'Valor guardado' : null },
+        shown && shown !== String(value) ? `guardado: ${value}` : value === null || value === undefined ? 'nulo' : String(value)),
       h('span', { class: 'cell-foot-keys' }, 'Ctrl+C copia · Esc tira'));
     foot.hidden = false;
   };

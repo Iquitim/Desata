@@ -21,6 +21,24 @@ from prodata.nodes import (  # noqa: F401  (registro por efeito de import)
     transform,
     window,
 )
-from prodata.nodes.base import CATEGORIES, REGISTRY, NodeContext, NodeOutput, Port, ToolSpec, catalog
+from prodata.nodes.base import (
+    CATEGORIES,
+    REGISTRY,
+    NodeContext,
+    NodeOutput,
+    Port,
+    ToolSpec,
+    catalog,
+    formats_for,
+)
 
-__all__ = ["CATEGORIES", "REGISTRY", "NodeContext", "NodeOutput", "Port", "ToolSpec", "catalog"]
+__all__ = [
+    "CATEGORIES",
+    "REGISTRY",
+    "NodeContext",
+    "NodeOutput",
+    "Port",
+    "ToolSpec",
+    "catalog",
+    "formats_for",
+]

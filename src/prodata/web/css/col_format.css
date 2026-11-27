@@ -1,0 +1,52 @@
+/* Formato de exibição da coluna (spec 050): selo no cabeçalho, valor que não coube e o diálogo. */
+
+/* Valor que não cabe no formato: aparece como veio, com sublinhado pontilhado e o motivo na dica (RF-5031). */
+.fmt-bad { text-decoration: underline dotted var(--warn); text-underline-offset: 3px; }
+
+/* Selo do formato no cabeçalho da coluna (RF-5013). */
+.th-fmt {
+  flex: none; padding: 0 5px; border-radius: 999px; font: 600 var(--fs-2xs) var(--font); line-height: 16px;
+  color: var(--accent); background: var(--accent-weak); white-space: nowrap;
+}
+
+/* Diálogo: tipos e opções à esquerda, prévia à direita, esquema embaixo. */
+.cf-dialog { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 18px; }
+.cf-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.cf-right { min-width: 0; }
+.cf-foot { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
+.cf-kinds { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.cf-kind {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center;
+  padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  color: var(--text); text-align: left; cursor: pointer; font: inherit;
+}
+.cf-kind > svg { grid-row: 1 / 3; color: var(--text-3); }
+.cf-kind b { font-size: var(--fs-sm); font-weight: 600; }
+.cf-kind span { font-size: var(--fs-2xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cf-kind:hover { border-color: var(--accent); }
+.cf-kind.on { border-color: var(--accent); background: var(--accent-weak); box-shadow: 0 0 0 1px var(--accent) inset; }
+.cf-kind.on > svg { color: var(--accent); }
+.cf-kind:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+.cf-options { display: flex; flex-direction: column; gap: 10px; }
+.cf-inline { display: flex; gap: 8px; }
+.cf-inline .input { flex: 1; }
+.cf-table td { white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.cf-why { font-size: var(--fs-2xs); color: var(--warn); text-decoration: none; display: inline-block; }
+.cf-warn { color: var(--warn); }
+.cf-scheme {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-lg);
+  background: var(--surface-2); border: 1px dashed var(--border); color: var(--text-3); flex-wrap: wrap;
+}
+.cf-step { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cf-step span { font-size: var(--fs-2xs); text-transform: uppercase; letter-spacing: .04em; }
+.cf-step b { color: var(--text); font-weight: 600; overflow-wrap: anywhere; }
+.cf-step-fmt b { color: var(--accent); }
+.cf-expr { margin: 0; padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--fs-xs); }
+
+@media (max-width: 720px) {
+  .cf-dialog { grid-template-columns: 1fr; }
+}
+.cell-foot-shown { flex: none; font-weight: 600; color: var(--text); white-space: nowrap; }
+.cell-foot-shown + .cell-foot-value { color: var(--text-3); }
+.cf-table td.fmt-bad { white-space: normal; }
+.cf-table .cf-why { display: block; }

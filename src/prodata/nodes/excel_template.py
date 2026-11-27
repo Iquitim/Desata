@@ -11,6 +11,7 @@ from typing import Any
 
 import polars as pl
 
+from prodata.domain.display_formats import DisplayFormat
 from prodata.domain.labels import (
     DEFAULT_LABEL,
     EXCEL_PROPERTY,
@@ -20,6 +21,7 @@ from prodata.domain.labels import (
     most_restrictive,
 )
 from prodata.errors import InvalidInputError
+from prodata.nodes.excel_output import excel_formats, format_cells
 
 MAX_TEMPLATE_ROWS = 200_000
 _PLAIN = (str, int, float, bool, date, datetime, time)
@@ -94,6 +96,7 @@ def write_template(
     header: bool,
     clear: bool,
     label: str = DEFAULT_LABEL,
+    formats: dict[str, DisplayFormat] | None = None,
 ) -> None:
     from openpyxl import load_workbook
     from openpyxl.packaging.custom import StringProperty
@@ -128,6 +131,7 @@ def write_template(
         raise InvalidInputError("O modelo não tem planilha.")
 
     last_row = _fill(ws, df, first_row, first_col, header, clear)
+    format_cells(ws, df, excel_formats(df, formats), first_row + (1 if header else 0), first_col)  # spec 050
     last_col = first_col + max(df.width, 1) - 1
     # Tabela do Excel que começa na célula inicial acompanha o tamanho dos dados.
     for table in ws.tables.values():

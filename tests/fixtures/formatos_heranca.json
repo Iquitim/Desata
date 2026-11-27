@@ -1,0 +1,54 @@
+{
+  "_sobre": "Herança do formato de exibição (spec 050, RF-5011 e RF-5012). Os mesmos casos valem no motor (tests/test_display_formats.py) e na tela (col_format.js, conferência formato_coluna).",
+  "ports": { "join": ["L", "R"], "append": ["T", "S"], "simple": ["in"] },
+  "cases": [
+    {
+      "name": "vale na caixa e nas seguintes",
+      "nodes": [["a", "source"], ["b", "simple"], ["c", "simple"]],
+      "edges": [["a", "b", "in"], ["b", "c", "in"]],
+      "formats": { "a": { "valor": { "kind": "currency", "symbol": "R$", "decimals": 2 } } },
+      "expect": { "a": { "valor": "currency" }, "b": { "valor": "currency" }, "c": { "valor": "currency" } }
+    },
+    {
+      "name": "trocar adiante vale dali em diante",
+      "nodes": [["a", "source"], ["b", "simple"], ["c", "simple"]],
+      "edges": [["a", "b", "in"], ["b", "c", "in"]],
+      "formats": {
+        "a": { "valor": { "kind": "currency" } },
+        "b": { "valor": { "kind": "number", "decimals": 0 } }
+      },
+      "expect": { "a": { "valor": "currency" }, "b": { "valor": "number" }, "c": { "valor": "number" } }
+    },
+    {
+      "name": "sem formato adiante bloqueia o herdado",
+      "nodes": [["a", "source"], ["b", "simple"], ["c", "simple"]],
+      "edges": [["a", "b", "in"], ["b", "c", "in"]],
+      "formats": { "a": { "cpf": { "kind": "document", "mask": "cpf" } }, "b": { "cpf": { "kind": "none" } } },
+      "expect": { "a": { "cpf": "document" }, "b": {}, "c": {} }
+    },
+    {
+      "name": "duas entradas: vale a primeira porta da ferramenta",
+      "nodes": [["e", "source"], ["d", "source"], ["j", "join"]],
+      "edges": [["d", "j", "R"], ["e", "j", "L"]],
+      "formats": {
+        "e": { "valor": { "kind": "currency" } },
+        "d": { "valor": { "kind": "percent" }, "data": { "kind": "date", "pattern": "dmy" } }
+      },
+      "expect": { "j": { "valor": "currency", "data": "date" } }
+    },
+    {
+      "name": "a ordem é a da ferramenta, não a alfabética",
+      "nodes": [["t", "source"], ["s", "source"], ["ap", "append"]],
+      "edges": [["s", "ap", "S"], ["t", "ap", "T"]],
+      "formats": { "t": { "valor": { "kind": "number" } }, "s": { "valor": { "kind": "currency" } } },
+      "expect": { "ap": { "valor": "number" } }
+    },
+    {
+      "name": "caixa sem ligação não herda",
+      "nodes": [["a", "source"], ["x", "simple"]],
+      "edges": [],
+      "formats": { "a": { "valor": { "kind": "currency" } } },
+      "expect": { "x": {} }
+    }
+  ]
+}

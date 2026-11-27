@@ -229,7 +229,7 @@ function multiChart(w, width, height, opts, mode) {
   const yTicks = [];
   for (const v of sc.ticks) {
     if (o.grid) yTicks.push(svg('line', { class: 'grid', x1: m.left, x2: width - m.right, y1: y(v), y2: y(v) }));
-    yTicks.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, pct ? `${v}%` : tickText(v, sc.step)));
+    yTicks.push(svg('text', { class: 'tick y-tick', x: m.left - 8, y: y(v) + 4, 'text-anchor': 'end' }, pct ? `${v}%` : o.tick(v, sc.step)));
   }
   return framed(o, legendRow(names, colors, width),
     svg('svg', { class: 'chart', width, height: svgH, viewBox: `0 0 ${width} ${svgH}` }, yTicks,
