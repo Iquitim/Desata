@@ -58,13 +58,41 @@ const FITS = {
   center: { backgroundSize: 'auto', backgroundRepeat: 'no-repeat' },
 };
 
+/** Luminância relativa (WCAG) de uma cor #rgb, #rrggbb ou rgb(...); null quando não dá para saber (variável, nome). */
+export function luminance(color) {
+  const text = String(color || '').trim();
+  let rgb = null;
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text);
+  if (hex) {
+    const d = hex[1].length === 3 ? [...hex[1]].map((c) => c + c).join('') : hex[1];
+    rgb = [0, 2, 4].map((i) => parseInt(d.slice(i, i + 2), 16));
+  } else {
+    const m = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i.exec(text);
+    if (m) rgb = m.slice(1, 4).map(Number);
+  }
+  if (!rgb) return null;
+  const [r, g, b] = rgb.map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * Qual versão do logo da marca aparece: com cor de página própria, a que contrasta com ela; sem cor, a do tema.
+ * O limite 0,18 é onde o branco e o preto têm o mesmo contraste com o fundo.
+ */
+export function logoTone(background) {
+  const lum = luminance(background);
+  if (lum === null) return {};
+  const dark = lum < 0.18;
+  return { '--logo-on-light': dark ? 'none' : 'block', '--logo-on-dark': dark ? 'block' : 'none' };
+}
+
 /**
  * Estilo e camada de fundo da página. Chame antes de montar os cartões: guarda a paleta geral.
  * A imagem é uma camada própria (não o fundo do elemento) para ter transparência sem apagar os visuais.
  */
 export function pageLook(page, size) {
   setPagePalette(page?.palette, page?.personal_colors);
-  const style = { width: `${size.width}px`, height: `${size.height}px`, backgroundColor: page?.background || null };
+  const style = { width: `${size.width}px`, height: `${size.height}px`, backgroundColor: page?.background || null, ...logoTone(page?.background) };
   const image = String(page?.image || '');
   const backdrop = image.startsWith('data:image/')
     ? h('div', { class: 'dash-backdrop', 'aria-hidden': 'true', style: {

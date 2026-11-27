@@ -3,7 +3,7 @@
 // imagem PNG. Os cartões de visual também são usados pelo painel de insights.
 
 import { api } from './api.js';
-import { chartChrome, freeEl, placeItem, setCardEnv, visualCard } from './dash_cards.js';
+import { chartChrome, freeEl, logoPair, placeItem, setCardEnv, visualCard } from './dash_cards.js';
 import { buildCitation, citationFooter } from './dash_citation.js';
 import { clickedValues, filterBar, isFilterActive, noFilterBadge, selectedIn } from './dash_filters.js';
 import { gifAction, initReplay, momentNote, openTimelineSetup, replaySlot, replayWidgets, stillMark, syncReplay } from './dash_replay_app.js';
@@ -16,12 +16,12 @@ import { inspect, mutate, on, select, store } from './store.js';
 import { showMenu, toast, toastError } from './ui.js';
 import { commitLayout, dash, els, itemById, newId, nodeLabel, nodeOf, page as dashPage, ui } from './dash_state.js';
 import { bbox, drawGuides, overlaps, resizeRect, snapBox } from './dash_snap.js';
-import { insertItems } from './dash_insert.js';
+import { brandLogos, insertItems } from './dash_insert.js';
 import { openOrganize } from './dash_organize.js';
 import { applyPaint, startPaint, stopPaint } from './dash_paint.js';
 import { loadFormats, PANEL_W, panelEl } from './dash_panel.js';
 import { exportPage, exportVisual } from './dash_png.js';
-import { brand, LOGO_LIGHT, logoOwner } from './brand.js';
+import { brand, LOGO_DARK, LOGO_LIGHT, logoOwner } from './brand.js';
 import { pageLook } from './dash_look.js';
 
 export { AGG_LABELS, chartCard, kpiTile, tableCard, visualCard } from './dash_cards.js';
@@ -46,6 +46,8 @@ export function initDashboard(el, opts) {
     onCategory: filterByCategory,
   });
   const refresh = () => store.view === 'dashboard' && render();
+  // O logo da marca posto na página troca para a versão de fundo escuro: os dois chegam uma vez só.
+  brandLogos().then((logos) => { if (logos) { setCardEnv({ brandLogo: logos }); refresh(); } });
   on('execution', refresh);
   on('numbers', refresh); // separador decimal (spec 038)
   on('workflow:loaded', () => { ui.selected.clear(); ui.mode = 'view'; ui.paint = null; refresh(); });
@@ -276,7 +278,7 @@ function headEl() {
   // Com página montada, título e logo estão nela; a barra fica só com a situação e as ações (spec 029, RF-2951).
   if (!d) {
     return h('header', { class: 'dash-head' }, h('div', { class: 'dash-brand' },
-      h('img', { class: 'dash-logo', src: LOGO_LIGHT, alt: logoOwner() }),
+      logoPair(LOGO_LIGHT, LOGO_DARK, { class: 'dash-logo', alt: logoOwner() }),
       h('div', {}, h('div', { class: 'dash-org' }, brand.organizacao), h('h1', {}, store.workflow?.name || 'Dashboard'), h('p', { class: 'muted' }, status))));
   }
   const actions = editing ? [

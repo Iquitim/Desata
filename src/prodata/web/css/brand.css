@@ -39,10 +39,10 @@
 .dash-logo { height: 44px; width: auto; }
 .dash-org { font-size: var(--fs-2xs); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--marca-org); }
 .dash-org:empty { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .dash-logo[src="/marca/logo-claro.svg"] { content: url('/marca/logo-escuro.svg'); }
-}
-:root[data-theme="dark"] .dash-logo[src="/marca/logo-claro.svg"] { content: url('/marca/logo-escuro.svg'); }
+/* As duas versões do logo vão juntas e só uma aparece, pelas variáveis do tema (tokens.css) ou da cor da página
+   (dash_look.js). Por variável, e não por seletor de tema, para valer também na imagem PNG e no GIF. */
+img.logo-on-light { display: var(--logo-on-light, block); }
+img.logo-on-dark { display: var(--logo-on-dark, none); }
 
 /* Títulos na fonte de títulos da marca (sem ela, a fonte do texto). */
 h1, h2, h3, .brand-name { font-family: var(--font-title, var(--font)); }

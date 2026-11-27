@@ -14,7 +14,8 @@ LOGO = marca().dir / "logo-claro.svg"
 KNOWN_LOGOS = frozenset(
     {
         "4d74ffb8d0c1fc758b40f43c988bdea0648f4a0449b80f3001779ced8cf1b1f5",  # Protege (escudo)
-        "8b9619b2e7b025d8eea47a5b78e823105224aa691efb73a742d18767a58818ee",  # Protege, tema escuro
+        "8b9619b2e7b025d8eea47a5b78e823105224aa691efb73a742d18767a58818ee",  # Protege, tema escuro (até a 0.9.6)
+        "fe8ebef26539af83441fb898b17f00eb7b12676427010332de32d8b3d617ca43",  # Protege, tema escuro (branco)
         "b8cc2edc87dd8e4e7bc86107a7d4b60460a1479ccf65b6db2c526182b05bcf90",  # Desata
         "3d28b860ecb9f463f046cf4e463fd330c46eab625a7fa4407bf1a1244a858fef",  # Desata, tema escuro
         "ee90e88f2463ab27c16fb874557748aa11fd2ca26af6930f9096491954cbe2f1",  # neutra

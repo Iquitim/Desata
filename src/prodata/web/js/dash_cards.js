@@ -18,6 +18,15 @@ export const AGG_LABELS = {
 const env = { open: null, clickable: () => true, canFilter: () => false, selectedFor: () => null, onCategory: null };
 export function setCardEnv(next) { Object.assign(env, next); }
 
+/** As duas versões do logo; só uma aparece, pelas variáveis --logo-on-light e --logo-on-dark (brand.css). */
+export function logoPair(light, dark, attrs = {}) {
+  const cls = [].concat(attrs.class || []);
+  return [
+    h('img', { ...attrs, class: [...cls, 'logo-on-light'], src: light }),
+    h('img', { ...attrs, class: [...cls, 'logo-on-dark'], src: dark, alt: '' }),
+  ];
+}
+
 const tableMode = new Set();
 
 /** Fundo, borda, cantos e sombra do cartão. */
@@ -330,10 +339,11 @@ export function freeEl(item, { editing }) {
   }
   if (item.kind === 'image') {
     if (!item.content) return editing ? h('div', { class: 'dash-placeholder' }, icon('file', 22), h('span', {}, 'Escolha uma imagem no painel Formato')) : null;
-    return h('img', {
-      class: 'dash-image', src: item.content, alt: '', draggable: false,
-      style: { objectFit: f.fit || 'contain', opacity: f.opacity !== undefined ? f.opacity / 100 : null, borderRadius: f.radius ? `${f.radius}px` : null },
-    });
+    const style = { objectFit: f.fit || 'contain', opacity: f.opacity !== undefined ? f.opacity / 100 : null, borderRadius: f.radius ? `${f.radius}px` : null };
+    const logo = env.brandLogo;
+    // O logo da marca, reconhecido pelo conteúdo (também em fluxos antigos), leva a versão para fundo escuro junto.
+    if (logo?.dark && item.content === logo.light) return logoPair(logo.light, logo.dark, { class: 'dash-image', alt: '', draggable: false, style });
+    return h('img', { class: 'dash-image', src: item.content, alt: '', draggable: false, style });
   }
   if (item.kind === 'shape') {
     const opacity = f.opacity !== undefined ? f.opacity / 100 : null;

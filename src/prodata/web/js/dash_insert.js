@@ -7,7 +7,7 @@ import { h } from './dom.js';
 import { icon } from './icons.js';
 import { store } from './store.js';
 import { toastError } from './ui.js';
-import { LOGO_LIGHT, logoOwner } from './brand.js';
+import { LOGO_DARK, LOGO_LIGHT, logoOwner } from './brand.js';
 
 export function insertItems() {
   return [
@@ -95,10 +95,27 @@ export function pickImage({ maxMb = 1 } = {}) {
   });
 }
 
+const svgDataUrl = async (url) => {
+  const text = await (await fetch(url)).text();
+  return { text, data: await readAsDataUrl(new Blob([text], { type: 'image/svg+xml' })) };
+};
+
+let logos = null;
+/**
+ * As duas versões do logo da marca como data URI, do mesmo jeito que o logo inserido fica gravado no fluxo:
+ * é por esse texto que a imagem é reconhecida como logo e troca no fundo escuro (dash_cards.js).
+ */
+export function brandLogos() {
+  logos ||= Promise.all([svgDataUrl(LOGO_LIGHT), svgDataUrl(LOGO_DARK)])
+    .then(([light, dark]) => ({ light: light.data, dark: dark.data, text: light.text }))
+    .catch(() => { logos = null; return null; });
+  return logos;
+}
+
 /** Logo da marca como imagem do dashboard, no tamanho que o próprio SVG declara (viewBox). */
 export async function logoImage() {
-  const text = await (await fetch(LOGO_LIGHT)).text();
-  const box = /viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(text);
-  const data = await readAsDataUrl(new Blob([text], { type: 'image/svg+xml' }));
-  return { data, width: box ? Math.round(Number(box[1])) : 200, height: box ? Math.round(Number(box[2])) : 200 };
+  const pair = await brandLogos();
+  if (!pair) throw new Error('Não foi possível ler o logo da marca.');
+  const box = /viewBox="\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/.exec(pair.text);
+  return { data: pair.light, width: box ? Math.round(Number(box[1])) : 200, height: box ? Math.round(Number(box[2])) : 200 };
 }

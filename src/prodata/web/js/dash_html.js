@@ -6,13 +6,14 @@ import { api } from './api.js';
 import { buildCitation } from './dash_citation.js';
 import { encryptText } from './dash_crypt.js';
 import { widgetsByNode, pageHeight } from './dash_model.js';
-import { collectCss, saveDownload, stamp, toDataUri } from './dash_export.js';
+import { collectCss, saveDownload, stamp } from './dash_export.js';
 import { activeFiltersText, isFilterActive } from './dash_filters.js';
 import { button, fmt, getNumberStyle, h } from './dom.js';
 import { LABELS, labelPicker, passwordRequired } from './label_picker.js';
 import { mutate, store } from './store.js';
 import { openDialog, toast, toastError } from './ui.js';
-import { brand, LOGO_LIGHT, logoOwner } from './brand.js';
+import { brand, logoOwner } from './brand.js';
+import { brandLogos } from './dash_insert.js';
 
 const MIN_PASSWORD = 8;
 // O arquivo não busca nada fora dele: nem um dado malicioso consegue mandar o conteúdo para outro endereço.
@@ -25,10 +26,11 @@ const safeJson = (value) => JSON.stringify(value).replace(/</g, '\\u003c').repla
 const escapeHtml = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 async function buildHtml(payload, password) {
-  const [css, script, logo] = await Promise.all([collectCss(), fetch('/api/dashboard/viewer.js').then((r) => r.text()), toDataUri(new URL(LOGO_LIGHT, location.href).href)]);
+  const [css, script, logos] = await Promise.all([collectCss(), fetch('/api/dashboard/viewer.js').then((r) => r.text()), brandLogos()]);
   const theme = document.documentElement.getAttribute('data-theme');
   const name = store.workflow.name || 'Dashboard';
-  const data = { ...payload, name, logo, org: brand.organizacao, owner: logoOwner() };
+  // As duas versões do logo: o arquivo abre no tema de quem recebe, e o logo posto na página troca junto.
+  const data = { ...payload, name, logo: logos?.light || null, logo_dark: logos?.dark || null, org: brand.organizacao, owner: logoOwner() };
   // Com senha, nem o nome do fluxo fica em claro: só o rótulo, para quem recebe saber como tratar o arquivo.
   const block = password
     ? `<script type="application/json" id="prodata-cifrado">${safeJson({ ...(await encryptText(JSON.stringify(data), password)), label: payload.label, label_name: payload.label_name })}</script>`

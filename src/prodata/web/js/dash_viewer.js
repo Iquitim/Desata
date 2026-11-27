@@ -3,7 +3,7 @@
 // só existem cifrados até a pessoa digitá-la.
 
 import { citationFooter } from './dash_citation.js';
-import { chartChrome, freeEl, placeItem, setCardEnv, visualCard } from './dash_cards.js';
+import { chartChrome, freeEl, logoPair, placeItem, setCardEnv, visualCard } from './dash_cards.js';
 import { computeWidget, applyFilters } from './dash_compute.js';
 import { decryptText } from './dash_crypt.js';
 import { activeFiltersText, clickedValues, filterBar, filtersFor, isFilterActive, noFilterBadge, selectedIn } from './dash_filters.js';
@@ -138,7 +138,7 @@ function start(data) {
       onClear: () => { for (const f of filters) { f.selected = []; f.min = null; f.max = null; } schedule(); },
     });
     const head = h('header', { class: 'dash-head' }, h('div', { class: 'dash-brand' },
-      data.logo ? h('img', { class: 'dash-logo', src: data.logo, alt: data.owner || '' }) : null,
+      data.logo ? (data.logo_dark ? logoPair(data.logo, data.logo_dark, { class: 'dash-logo', alt: data.owner || '' }) : h('img', { class: 'dash-logo', src: data.logo, alt: data.owner || '' })) : null,
       h('div', {}, data.org ? h('div', { class: 'dash-org' }, data.org) : null, h('h1', {}, data.name),
         h('p', { class: 'muted' }, `Dados de ${data.exported_at} · ${activeFiltersText(filters) || 'sem filtros aplicados'}`))));
     if (replay && !bar) buildBar();
@@ -149,6 +149,7 @@ function start(data) {
 
   setCardEnv({
     open: null,
+    brandLogo: data.logo && data.logo_dark ? { light: data.logo, dark: data.logo_dark } : null,
     clickable: () => false,
     // O arquivo só leva as colunas dos filtros: sem filtro naquela coluna, não há como recalcular.
     canFilter: (w) => filters.some((f) => f.kind === 'list' && f.column === w.x_column),

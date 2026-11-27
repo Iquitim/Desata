@@ -1834,6 +1834,99 @@ def visual_isolado(pg: Page) -> None:
     print(f"      print: {path}")
 
 
+def logo_tema(pg: Page) -> None:
+    """O logo da marca posto na página troca para a versão de fundo escuro: no tema escuro, numa página de cor
+    escura e na imagem PNG; a cor de página clara traz de volta a versão de fundo claro."""
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    pg.locator(".dash-item").first.wait_for(timeout=20000)
+    pg.evaluate(
+        """async () => {
+          const I = await import('/static/js/dash_insert.js'); const img = await I.logoImage();
+          window.__S.mutate((wf) => { wf.dashboard.items.push({ id: 'logo_t', kind: 'image', x: 0, y: 0, w: 120, h: 150, content: img.data, format: {} }); });
+        }"""
+    )
+    pg.locator(".dash-item[data-id=logo_t] img.logo-on-dark").wait_for(state="attached", timeout=10000)
+    shown = """(bg) => {
+      if (bg !== undefined) window.__S.mutate((wf) => { wf.dashboard.page = { ...wf.dashboard.page, background: bg }; });
+      return new Promise((r) => requestAnimationFrame(() => r(['light', 'dark'].filter((t) =>
+        getComputedStyle(document.querySelector(`.dash-item[data-id=logo_t] img.logo-on-${t}`)).display !== 'none'))));
+    }"""
+    # A imagem PNG do logo na página comparada, pixel a pixel, com as duas versões do logo da marca ativa.
+    pixels = """async () => {
+      const E = await import('/static/js/dash_export.js'); const I = await import('/static/js/dash_insert.js');
+      const logos = await I.brandLogos();
+      const draw = async (el) => {
+        el.style.cssText = 'position:relative;width:120px;height:150px';
+        const img = new Image(); img.src = await E.renderPng(el, 120, 150, { scale: 1, background: '#808080' }); await img.decode();
+        const c = document.createElement('canvas'); c.width = 120; c.height = 150;
+        const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0); return ctx.getImageData(0, 0, 120, 150).data;
+      };
+      const plain = (src) => { const d = document.createElement('div'); const i = document.createElement('img');
+        i.className = 'dash-image'; i.src = src; i.style.objectFit = 'contain'; d.append(i); return d; };
+      const got = await draw(document.querySelector('.dash-item[data-id=logo_t]').cloneNode(true));
+      const diff = async (src) => { const ref = await draw(plain(src)); let s = 0; for (let i = 0; i < got.length; i++) s += Math.abs(got[i] - ref[i]); return s / got.length; };
+      return { claro: await diff(logos.light), escuro: await diff(logos.dark) };
+    }"""
+    root = "document.documentElement"
+    try:
+        pg.evaluate(f"() => {root}.setAttribute('data-theme', 'light')")
+        check(
+            "tema claro: aparece o logo para fundo claro", pg.evaluate(shown) == ["light"], pg.evaluate(shown)
+        )
+        light_px = pg.evaluate(pixels)
+        pg.evaluate(f"() => {root}.setAttribute('data-theme', 'dark')")
+        check(
+            "tema escuro: aparece o logo para fundo escuro",
+            pg.evaluate(shown) == ["dark"],
+            pg.evaluate(shown),
+        )
+        dark_px = pg.evaluate(pixels)
+        check(
+            "na imagem PNG o logo sai na versão do tema: claro no claro, escuro no escuro",
+            light_px["claro"] < 1 < light_px["escuro"] and dark_px["escuro"] < 1 < dark_px["claro"],
+            {"tema claro": light_px, "tema escuro": dark_px},
+        )
+        check(
+            "tema escuro com página branca: volta o logo para fundo claro",
+            pg.evaluate(shown, "#ffffff") == ["light"],
+        )
+        pg.evaluate(f"() => {root}.setAttribute('data-theme', 'light')")
+        check(
+            "tema claro com página marinho: aparece o logo para fundo escuro",
+            pg.evaluate(shown, "#043154") == ["dark"],
+        )
+    finally:
+        pg.evaluate(
+            f"""() => {{ {root}.setAttribute('data-theme', 'light');
+              window.__S.mutate((wf) => {{ wf.dashboard.items = wf.dashboard.items.filter((i) => i.id !== 'logo_t');
+                wf.dashboard.page = {{ ...wf.dashboard.page, background: '' }}; }}); }}"""
+        )
+    # No HTML exportado: o logo do exemplo (d_logo) e o do cabeçalho seguem o tema de quem abre o arquivo.
+    if not pg.locator(".dash-item[data-id=d_logo]").count():
+        check("o exemplo tem o logo da marca na página", False)
+        return
+    pg.locator(".dash-download").click()
+    pg.locator(".dash-export-menu button", has_text="Baixar HTML").click()
+    dlg = pg.locator("dialog[open]")
+    dlg.wait_for(timeout=10000)
+    with pg.expect_download(timeout=30000) as info:
+        dlg.locator("button", has_text="Salvar HTML").click()
+    html_path = Path(tempfile.gettempdir()) / "conferir-logo.html"
+    info.value.save_as(str(html_path))
+    viewer = pg.context.new_page()
+    viewer.goto(html_path.as_uri())
+    viewer.locator(".dash-item[data-id=d_logo] img").first.wait_for(state="attached", timeout=10000)
+    seen = """(theme) => { document.documentElement.setAttribute('data-theme', theme);
+      const vis = (sel) => ['light', 'dark'].filter((t) => { const i = document.querySelector(`${sel} img.logo-on-${t}`);
+        return i && getComputedStyle(i).display !== 'none'; });
+      return { page: vis('.dash-item[data-id=d_logo]'), head: vis('.dash-brand') }; }"""
+    for theme, want in (("dark", ["dark"]), ("light", ["light"])):
+        got = viewer.evaluate(seen, theme)
+        check(f"HTML exportado, tema {'escuro' if theme == 'dark' else 'claro'}: logo da página e do cabeçalho na versão certa",
+              got == {"page": want, "head": want}, got)  # fmt: skip
+    viewer.close()
+
+
 # ---------------------------------------------------------------- 0.9.6: estados, capitais, mapa e lugares
 
 
@@ -2073,6 +2166,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "grafico_serie": grafico_serie,
     "estados_mapa": estados_mapa,
     "visual_isolado": visual_isolado,
+    "logo_tema": logo_tema,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador
