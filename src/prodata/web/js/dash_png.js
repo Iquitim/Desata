@@ -56,14 +56,37 @@ function logImage(file) {
     .catch((err) => toastError(err, 'A imagem foi salva, mas não entrou no registro de exportações'));
 }
 
+/** O rótulo de um visual sozinho: um rodapé dentro da moldura, com o ponto na cor da classificação (sempre presente). */
+export function visualLabel(note = page.stripNote?.()) {
+  const level = dash().confidentiality || 'interno';
+  const recorte = activeFiltersText(dash().filters);
+  const text = [`Classificação: ${LABELS[level]}`, note, recorte ? `Filtros: ${recorte}` : ''].filter(Boolean).join(' · ');
+  return h('p', { class: 'dash-solo-label', title: text }, h('span', { class: ['dash-solo-dot', `label-${level}`] }), h('span', {}, text));
+}
+
+export const SOLO_PAD = 16;
+export const SOLO_FOOT = 34;
+/** Tamanho da imagem de um visual sozinho (moldura, rodapé e margem). */
+export const soloSize = (item) => ({ width: item.w + 2 * SOLO_PAD, height: item.h + SOLO_FOOT + 2 * SOLO_PAD });
+
+/**
+ * Um visual sozinho na imagem: moldura arredondada com o visual e o rodapé do rótulo, sobre a cor da página.
+ * A faixa no topo é da imagem da página inteira; aqui ela ficava colada, de cantos retos, sobre o cartão.
+ */
+export function soloVisual(item, widget, note) {
+  const d = dash();
+  const visual = h('div', { class: 'dash-page dash-export', style: { position: 'relative', width: `${item.w}px`, height: `${item.h}px`, backgroundColor: 'transparent' } },
+    page.itemEl({ ...item, x: 0, y: 0 }, { [item.node_id]: widget }, { exporting: true }));
+  return h('div', { class: 'dash-solo', style: { width: `${item.w + 2 * SOLO_PAD}px`, padding: `${SOLO_PAD}px`, background: d.page.background || 'var(--bg)' } },
+    h('div', { class: 'dash-solo-frame' }, visual, visualLabel(note)));
+}
+
 export async function exportVisual(item) {
   const w = page.shownWidgets()[item.node_id];
   if (!w) { toast('Execute o fluxo antes de baixar este visual.'); return; }
   try {
-    const strip = 40;
-    const wrap = withStrip(h('div', { class: 'dash-page dash-export', style: { width: `${item.w}px`, height: `${item.h}px`, backgroundColor: 'transparent' } },
-      page.itemEl({ ...item, x: 0, y: 0 }, { [item.node_id]: w }, { exporting: true })), item.w, item.h);
-    const data = await renderPng(wrap, item.w, item.h + strip, { background: 'transparent' });
+    const { width, height } = soloSize(item);
+    const data = await renderPng(soloVisual(item, w), width, height, { background: dash().page.background || 'var(--bg)' });
     const saved = await savePng(`${w.title || nodeLabel(item.node_id)} - ${stamp()}`, data);
     if (saved) { logImage(saved); toast(`Imagem salva: ${saved}`, { kind: 'success' }); }
   } catch (err) {

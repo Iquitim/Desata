@@ -1792,6 +1792,48 @@ def ajustes(pg: Page) -> None:
     _print(pg, "ajuste-comece")
 
 
+# ---------------------------------------------------------------- 0.9.6: um visual sozinho na imagem
+
+
+def visual_isolado(pg: Page) -> None:
+    """A imagem de um visual sozinho: moldura única com o rótulo no rodapé, em todos os níveis, e o PNG baixado."""
+    pg.locator("#viewSwitch .segment[data-view=dashboard]").click()
+    pg.locator(".dash-item").first.wait_for(timeout=20000)
+    pg.wait_for_timeout(800)
+    names = {
+        "publico": "Público",
+        "interno": "Interno",
+        "confidencial": "Confidencial",
+        "restrito": "Restrito",
+    }
+    for level, name in names.items():
+        got = pg.evaluate(
+            """async (level) => {
+              window.__S.mutate((wf) => { wf.dashboard.confidentiality = level; });
+              const P = await import('/static/js/dash_png.js'); const st = await import('/static/js/dash_state.js');
+              const item = st.dash().items.find((i) => i.kind === 'visual' && st.page.shownWidgets()[i.node_id]);
+              const el = P.soloVisual(item, st.page.shownWidgets()[item.node_id]);
+              return { text: el.querySelector('.dash-solo-label')?.textContent || '', dot: el.querySelector('.dash-solo-dot')?.className || '',
+                       frames: el.querySelectorAll('.dash-solo-frame').length, top: el.querySelectorAll('.label-bar').length }; }""",
+            level,
+        )
+        check(f"visual sozinho, {name}: o rodapé traz a classificação e o ponto na cor do nível",
+              f"Classificação: {name}" in got["text"] and f"label-{level}" in got["dot"] and got["frames"] == 1 and got["top"] == 0, got)  # fmt: skip
+    pg.evaluate("() => window.__S.mutate((wf) => { wf.dashboard.confidentiality = 'interno'; })")
+    button = pg.locator('.dash-item button[title*="(PNG)"]').first
+    with pg.expect_download(timeout=30000) as info:
+        button.click()
+    path = Path(tempfile.gettempdir()) / "conferir-visual-isolado.png"
+    info.value.save_as(str(path))
+    head = path.read_bytes()[:8]
+    check(
+        "o PNG do visual sozinho é baixado",
+        head[1:4] == b"PNG" and path.stat().st_size > 5000,
+        path.stat().st_size,
+    )
+    print(f"      print: {path}")
+
+
 # ---------------------------------------------------------------- 0.9.6: estados, capitais, mapa e lugares
 
 
@@ -2030,6 +2072,7 @@ CHECKS: dict[str, Callable[[Page], None]] = {
     "ajustes": ajustes,
     "grafico_serie": grafico_serie,
     "estados_mapa": estados_mapa,
+    "visual_isolado": visual_isolado,
 }  # fmt: skip
 
 # ---------------------------------------------------------------- servidor e navegador

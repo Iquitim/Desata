@@ -362,7 +362,7 @@ def transpile(expression: str) -> str:
 
     sql = re.sub(r"\bELSEIF\b", "WHEN", sql, flags=re.IGNORECASE)
     sql = re.sub(r"\bENDIF\b", "END", sql, flags=re.IGNORECASE)
-    sql = re.sub(r"\bIF\b(?!\s*\()", "CASE WHEN", sql, flags=re.IGNORECASE)
+    sql = _if_blocks(sql)
     sql = sql.replace("==", "=")
     # Comparar com Null nunca é verdadeiro em SQL; quem escreve isso quer o teste de nulo.
     sql = re.sub(r"(?:!=|<>)\s*NULL\b", " IS NOT NULL", sql, flags=re.IGNORECASE)
@@ -391,6 +391,40 @@ _ROW_LISTS = {
 }
 _ROW_EXTREMES = {"max": "greatest", "min": "least"}
 _VARIADIC = re.compile(r"\b(average|sum|median|mode|stddev|max|min)\s*\(", re.IGNORECASE)
+
+
+def _if_blocks(sql: str) -> str:
+    """``IF`` do bloco IF … THEN … ENDIF vira ``CASE WHEN``; ``IF(cond, a, b)`` no estilo Excel continua função.
+
+    Depois de ``IF``, um parêntese **sem vírgula no nível de fora** é só o agrupamento da condição
+    (``IF ([a] > 1) THEN``, ``IF ([a] OR [b]) AND [c] THEN``); com vírgula, são os argumentos da função. Textos e
+    colunas já viraram marcadores, então nenhuma vírgula ou parêntese dentro deles atrapalha a contagem."""
+    out: list[str] = []
+    pos = 0
+    for match in re.finditer(r"\bIF\b", sql, flags=re.IGNORECASE):
+        out.append(sql[pos : match.start()])
+        pos = match.end()
+        rest = sql[pos:]
+        stripped = rest.lstrip()
+        if not stripped.startswith("("):
+            out.append("CASE WHEN")
+            continue
+        start = pos + (len(rest) - len(stripped))
+        depth, comma, end = 0, False, len(sql)
+        for k in range(start, len(sql)):
+            ch = sql[k]
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                if depth == 0:
+                    end = k
+                    break
+            elif ch == "," and depth == 1:
+                comma = True
+        out.append(match.group(0) if comma and end < len(sql) else "CASE WHEN")
+    out.append(sql[pos:])
+    return "".join(out)
 
 
 def _split_args(sql: str, open_at: int) -> tuple[int, int]:

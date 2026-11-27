@@ -2,7 +2,7 @@
 
 import { api } from './api.js';
 import { frameMaker, saveDownload, stamp } from './dash_export.js';
-import { withStrip } from './dash_png.js';
+import { soloSize, soloVisual } from './dash_png.js';
 import { momentLabel } from './dash_replay.js';
 import { dash, nodeLabel, page } from './dash_state.js';
 import { button, fmt, h } from './dom.js';
@@ -15,7 +15,6 @@ const MAX_BYTES = 40 * 1024 * 1024;
 const BYTES_PER_PIXEL = 0.02; // medido em gráficos reais; o tamanho final depende de quanto muda entre quadros
 const WIDTHS = [[360, 'Pequeno'], [560, 'Médio'], [800, 'Grande']];
 const FPS = [[6, '6 por segundo'], [10, '10 por segundo'], [15, '15 por segundo']];
-const STRIP = 40;
 
 const size = (bytes) => (bytes >= 1048576 ? `${fmt.number(bytes / 1048576, 1)} MB` : `${fmt.int(Math.ceil(bytes / 1024))} KB`);
 export const gifBlocked = () => (dash()?.confidentiality || 'interno') === 'restrito';
@@ -25,22 +24,23 @@ function optionsOf(list, value) {
 }
 
 function dimensions(item, width) {
-  const scale = width / item.w;
-  return { scale, width, height: Math.round((item.h + STRIP) * scale) };
+  const solo = soloSize(item);
+  const scale = width / solo.width;
+  return { scale, width, height: Math.round(solo.height * scale) };
 }
 
-/** Só o gráfico daquele item, no momento pedido, com a faixa do rótulo e do período. */
+/** Só o gráfico daquele item, no momento pedido, na mesma moldura da imagem PNG, com o rótulo e o período no rodapé. */
 function frameEl(item, widget, note) {
-  const content = page.itemEl({ ...item, x: 0, y: 0 }, { [item.node_id]: widget }, { exporting: true });
-  return withStrip(h('div', { class: 'dash-page dash-export', style: { width: `${item.w}px`, height: `${item.h}px`, backgroundColor: 'transparent' } }, content), item.w, item.h, note);
+  return soloVisual(item, widget, note);
 }
 
 async function generate(item, replay, choice, ui) {
   const { from, to, seconds, fps, width, loop } = choice;
   const count = Math.max(2, Math.round(seconds * fps));
   const box = dimensions(item, width);
-  const background = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#ffffff';
-  const draw = await frameMaker(item.w, item.h + STRIP, { scale: box.scale, background });
+  const background = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#ffffff';
+  const solo = soloSize(item);
+  const draw = await frameMaker(solo.width, solo.height, { scale: box.scale, background });
   const step = replay.timeline.step;
   const widgetAt = (f) => {
     const place = from + ((to - from) * f) / (count - 1);
@@ -104,7 +104,7 @@ export async function openGif(item, replay) {
   const row = (label, control) => h('div', { class: 'field' }, h('label', { class: 'field-label' }, label), control);
   const pick = (key, list, parse = Number) => h('select', { class: 'input', 'aria-label': key, onchange: (e) => { choice[key] = parse(e.target.value); refresh(); } }, optionsOf(list, choice[key]));
   const body = h('div', { class: 'stack-sm' },
-    h('p', {}, 'Só este gráfico, com a faixa do rótulo. O GIF usa os dados já calculados e não tem senha.'),
+    h('p', {}, 'Só este gráfico, com o rótulo no rodapé. O GIF usa os dados já calculados e não tem senha.'),
     h('div', { class: 'replay-gif-grid' },
       row('De', pick('from', moments)),
       row('Até', pick('to', moments)),

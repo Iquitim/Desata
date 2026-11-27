@@ -13,7 +13,7 @@ const OPERATORS = [
   ['=', 'igual a'], ['!=', 'diferente de'], ['>', 'maior que'], ['>=', 'maior ou igual'], ['<', 'menor que'], ['<=', 'menor ou igual'],
 ];
 const ARITHMETIC = [['+', 'soma (ou junta textos com Concat)'], ['-', 'subtração'], ['*', 'multiplicação'], ['/', 'divisão']];
-const LOGIC = [['AND', 'e: as duas condições'], ['OR', 'ou: pelo menos uma'], ['NOT', 'não: inverte a condição']];
+const LOGIC = [['AND', 'e: as duas condições'], ['OR', 'ou: pelo menos uma. O AND vem antes do OR: use parênteses para mudar a ordem'], ['NOT', 'não: inverte a condição']];
 const NO_COLUMNS = [{ label: 'Execute o fluxo para ver as colunas', icon: 'info', disabled: true, onSelect: () => {} }];
 
 const keepFocus = (e) => e.preventDefault(); // clicar no assistente não tira o foco do campo
@@ -84,7 +84,7 @@ export function formulaToolbar({ columns, insert, rowRefs = false, onExpand = nu
       h('span', { class: 'fx-sep' }),
       h('button', {
         type: 'button', class: 'fx-chip fx-kw',
-        title: 'Condição: IF condição THEN valor ELSEIF outra condição THEN valor ELSE outro ENDIF (o ELSEIF é opcional e pode repetir)',
+        title: 'Condição: IF condição THEN valor ELSEIF outra condição THEN valor ELSE outro ENDIF (o ELSEIF é opcional e pode repetir). O AND vem antes do OR; use parênteses para mudar a ordem: IF ([uf] = "SP" OR [uf] = "RJ") AND [valor] > 100 THEN …',
         onmousedown: keepFocus, onclick: () => insert('IF | THEN  ELSE  ENDIF', { spaced: false }),
       }, 'IF…ENDIF'),
       h('button', {

@@ -607,3 +607,19 @@ html.compact .dash-actions .btn.dash-download { width: auto; padding: 0 7px; gap
 .dash-citation-off span { flex: 1; }
 .dash-workspace .dash-citation { margin-left: 0; }
 .organize-scope { max-width: 440px; margin-bottom: 10px; }
+
+/* Um visual sozinho na imagem (0.9.6): moldura única com o rodapé do rótulo, sobre a cor da página */
+.dash-solo { box-sizing: border-box; }
+.dash-solo-frame {
+  border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); overflow: hidden;
+}
+.dash-solo-frame .dash-item > *, .dash-solo-frame .chart-card, .dash-solo-frame .kpi-tile, .dash-solo-frame .table-card {
+  border: 0; border-radius: 0; box-shadow: none;
+}
+.dash-solo-label {
+  box-sizing: border-box; height: 34px; margin: 0; padding: 0 14px; display: flex; align-items: center; gap: 8px;
+  border-top: 1px solid var(--border); font-size: var(--fs-xs); color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dash-solo-label > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.dash-solo-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; }

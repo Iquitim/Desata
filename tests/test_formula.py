@@ -146,3 +146,67 @@ def test_plus_on_text_points_to_concat() -> None:
     result = formula.validate("[nome] + ' x'", [{"name": "nome", "type": "String"}])
     assert not result["valid"] and "Concat" in result["error"]
     assert "Candidate" not in formula.validate("Year([nome])", [{"name": "nome", "type": "String"}])["error"]
+
+
+# ------------------------------------------------------------------ IF com parênteses (correção da 0.9.6)
+
+HIER = pl.DataFrame({"valor": [50, 150, 300, 150], "uf": ["SP", "RJ", "SP", "MG"]})
+
+
+def _one(expression: str) -> list[object]:
+    return formula.evaluate_columns(HIER, [{"column": "r", "type": "String", "expression": expression}])[
+        "r"
+    ].to_list()
+
+
+@pytest.mark.parametrize(
+    ("expression", "expected"),
+    [
+        ('IF ([valor] > 100) THEN "alto" ELSE "baixo" ENDIF', ["baixo", "alto", "alto", "alto"]),
+        ('IF([valor] > 100) THEN "alto" ELSE "baixo" ENDIF', ["baixo", "alto", "alto", "alto"]),
+        ('if ([valor] > 100) then "alto" else "baixo" endif', ["baixo", "alto", "alto", "alto"]),
+        ('IF ([valor] > 200) OR ([uf] = "MG") THEN "a" ELSE "c" ENDIF', ["c", "c", "a", "a"]),
+        ('IF (([valor] > 100) AND ([uf] <> "MG")) THEN "ok" ELSE "x" ENDIF', ["x", "ok", "ok", "x"]),
+        ('IF [valor] > 200 THEN "a" ELSEIF ([valor] > 100) THEN "b" ELSE "c" ENDIF', ["c", "b", "a", "b"]),
+        ('IF (Contains([uf], "S")) THEN "tem S" ELSE "não" ENDIF', ["tem S", "não", "tem S", "não"]),
+    ],
+)
+def test_if_com_parentese_logo_depois(expression: str, expected: list[object]) -> None:
+    """Antes, ``IF (`` passava adiante como função e dava erro de sintaxe perto de THEN."""
+    assert _one(expression) == expected
+
+
+def test_parenteses_mandam_na_ordem() -> None:
+    # agrupar o OR antes do AND, logo depois do IF ou no meio da condição
+    grouped = ["não", "sim", "sim", "não"]
+    assert _one('IF ([uf] = "SP" OR [uf] = "RJ") AND [valor] > 100 THEN "sim" ELSE "não" ENDIF') == grouped
+    assert _one('IF [valor] > 100 AND ([uf] = "SP" OR [uf] = "RJ") THEN "sim" ELSE "não" ENDIF') == grouped
+    # sem parênteses, o AND vem antes do OR (SP de 50 entra)
+    assert _one('IF [uf] = "SP" OR [uf] = "RJ" AND [valor] > 100 THEN "sim" ELSE "não" ENDIF') == [
+        "sim",
+        "sim",
+        "sim",
+        "não",
+    ]
+    # IF dentro de IF, com e sem parênteses, e o resultado de um IF numa conta
+    nested = ["baixo", "alto", "SP alto", "alto"]
+    assert (
+        _one('IF ([valor] > 100) THEN (IF ([uf] = "SP") THEN "SP alto" ELSE "alto" ENDIF) ELSE "baixo" ENDIF')
+        == nested
+    )
+    assert (
+        _one('IF [valor] > 100 THEN IF [uf] = "SP" THEN "SP alto" ELSE "alto" ENDIF ELSE "baixo" ENDIF')
+        == nested
+    )
+    out = formula.evaluate_columns(
+        HIER,
+        [{"column": "n", "type": "Int64", "expression": "(IF [valor] > 100 THEN 1 ELSE 0 ENDIF) * 10 + 1"}],
+    )
+    assert out["n"].to_list() == [1, 11, 11, 11]
+
+
+def test_if_no_estilo_excel_continua_funcao() -> None:
+    assert _one('IF([valor] > 100, "alto", "baixo")') == ["baixo", "alto", "alto", "alto"]
+    assert _one('IF([valor] > 100, IF([valor] > 200, "a", "b"), "c")') == ["c", "b", "a", "b"]
+    assert "CASE WHEN" not in formula.transpile('IF([valor] > 100, "alto", "baixo")')
+    assert formula.transpile("IF ([valor] > 100) THEN 1 ELSE 0 ENDIF").startswith("CASE WHEN")

@@ -996,6 +996,7 @@
       <ul>
         <li><strong>Cores</strong> separam colunas, funções, IF/THEN/ELSE, operadores lógicos (AND, OR, NOT), comparações, textos e números. Coluna inexistente e parêntese sem par ficam sublinhados em vermelho.</li>
         <li><strong>Condições em sequência</strong>: <code>IF [valor] &gt; 1000 THEN "Alto" ELSEIF [valor] &gt; 100 THEN "Médio" ELSE "Baixo" ENDIF</code>. Os botões <strong>IF…ENDIF</strong> e <strong>ELSEIF</strong> inserem a estrutura; o <code>ELSEIF</code> pode repetir quantas vezes precisar.</li>
+        <li><strong>Parênteses mandam na ordem</strong>: sem eles, o <code>AND</code> vem antes do <code>OR</code>. Para agrupar, use <code>IF ([uf] = "SP" OR [uf] = "RJ") AND [valor] &gt; 100 THEN …</code>. Também valem um IF dentro de outro, <code>THEN (IF … ENDIF)</code>, e o resultado de um IF numa conta, <code>(IF … ENDIF) * 10</code>.</li>
         <li><strong>Autocompletar</strong>: comece a digitar e o {{produto}} sugere funções; digite <code>[</code> e ele lista as colunas. <kbd>Enter</kbd> aceita; <kbd>Ctrl</kbd>+<kbd>Espaço</kbd> mostra tudo.</li>
         <li><strong>Dica da função</strong>: dentro dos parênteses aparece o que cada argumento espera.</li>
         <li><strong>Assistente</strong>: botões <em>Coluna</em>, <em>Função</em> (85 funções com descrição e exemplo) e operadores. Para calcular entre colunas da mesma linha: <code>Average([jan], [fev], [mar])</code>, <code>Sum</code>, <code>Median</code>, <code>Mode</code> (moda), <code>StdDev</code> (desvio padrão), <code>Max</code>, <code>Min</code>. Diferente é <code>!=</code>. Para juntar textos use <code>Concat</code>.</li>
@@ -1519,7 +1520,7 @@
   <div class="two-col side-figure">
     <div>
       <p>O botão de filme, no canto do gráfico, gera um GIF só daquele visual. Escolha período, duração, tamanho e quadros por segundo, e veja a estimativa antes de gerar.</p>
-      <p>O GIF não tem senha. Em <strong>Confidencial</strong> ele pede confirmação; em <strong>Restrito</strong> fica bloqueado. Toda imagem sai com a faixa do rótulo.</p>
+      <p>O GIF não tem senha. Em <strong>Confidencial</strong> ele pede confirmação; em <strong>Restrito</strong> fica bloqueado. Toda imagem sai com o rótulo: na página inteira, numa faixa no topo; num gráfico sozinho, no rodapé da moldura, com o ponto na cor do nível.</p>
     </div>
     <figure>
       <div class="frame"><img src="../../src/prodata/web/manual/img/replay-gif.png" alt="Opções do GIF com o tamanho estimado"></div>
