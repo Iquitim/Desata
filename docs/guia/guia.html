@@ -1349,6 +1349,7 @@
     </div>
     <figure><div class="frame"><img src="../../src/prodata/web/manual/img/celula-destaque.png" alt="Célula em destaque na tabela"></div><figcaption>A célula em destaque e o valor inteiro no rodapé, sem o resumo das colunas.</figcaption></figure>
   </div>
+  <div class="try"><strong>Experimente</strong><ol><li>Clique na caixa <em>Clientes</em> e, na tabela, em <strong>Filtros</strong>: filtre <code>uf</code> por SP.</li><li>Repare que o cabeçalho das colunas passa a mostrar a soma e a contagem só das linhas filtradas.</li></ol></div>
   <h3>Formato de exibição: moeda, CPF e data</h3>
   <p>Uma coluna pode <strong>aparecer</strong> do jeito que você quer ler: <code>valor</code> como <strong>R$ 1.234,50</strong>, <code>cpf</code> como <strong>123.456.789-01</strong> (com o zero à esquerda de volta) e <code>data</code> como <strong>26/11/2026</strong>. O dado não muda: contas, filtros, ordenação, junções e o CSV usam o valor guardado, e mudar o formato não pede executar de novo.</p>
   <div class="side">
@@ -1365,9 +1366,22 @@
   <p><strong>Até onde vale.</strong> O formato vale na caixa e nas seguintes enquanto a coluna tiver o <strong>mesmo nome</strong>: renomear no Select deixa a nova sem formato. Numa caixa adiante, dá para trocar o formato ou escolher <strong>Sem formato</strong> dali em diante. Com duas entradas (Join, Union), vale o da primeira.</p>
   <p><strong>Onde aparece.</strong> No Resultado, no Perfil e no Dashboard: soma, média, mínimo e máximo de uma coluna em moeda saem em moeda no eixo, nos rótulos, na dica, no KPI e na Tabela formatada; datas e documentos no eixo saem no formato da coluna. O que você escrever no próprio visual (prefixo, sufixo) vale mais. A imagem, o GIF e o HTML exportado mostram o mesmo. No <strong>Excel</strong>, a coluna é gravada com o formato de número equivalente, e a célula continua número ou data: dá para somar e filtrar.</p>
   <figure class="m60"><div class="frame"><img src="../../src/prodata/web/manual/img/formato-dashboard.png" alt="KPI e gráfico com valores em reais"></div><figcaption>O KPI e o gráfico de soma de <code>valor</code>, em reais, sem configurar nada no visual.</figcaption></figure>
+  <div class="grid-2">
   <div class="callout"><strong>Valor que não cabe</strong>Um CPF com outra quantidade de dígitos, um texto numa coluna de moeda ou uma data inválida aparecem <strong>como estão</strong>, com sublinhado pontilhado e o motivo na dica. Nada é cortado nem completado além dos zeros à esquerda.</div>
   <div class="callout ok"><strong>Precisa do texto formatado num CSV?</strong>No diálogo, <strong>Criar coluna de texto…</strong> mostra a expressão e insere uma Formula que cria <code>cpf_texto</code> com o mesmo texto da tela. A coluna original fica como está.</div>
-  <div class="try"><strong>Experimente</strong><ol><li>Clique na caixa <em>Clientes</em> e, na tabela, em <strong>Filtros</strong>: filtre <code>uf</code> por SP.</li><li>Repare que o cabeçalho das colunas passa a mostrar a soma e a contagem só das linhas filtradas.</li></ol></div>
+  </div>
+  <h4>Os formatos, de relance</h4>
+  <table>
+    <tr><th style="width:20%">Formato</th><th style="width:22%">Para colunas de</th><th style="width:20%">Guardado</th><th style="width:20%">Na tela</th><th>No Excel</th></tr>
+    <tr><td>Número</td><td>número</td><td><code>1234.5</code></td><td>1.234,50</td><td><code>#,##0.00</code></td></tr>
+    <tr><td>Moeda</td><td>número</td><td><code>-10</code></td><td>-R$ 10,00</td><td>número com o símbolo</td></tr>
+    <tr><td>Porcentagem</td><td>número (fração ou pontos)</td><td><code>0.153</code></td><td>15,3%</td><td><code>0.0%</code></td></tr>
+    <tr><td>CPF / CNPJ</td><td>número inteiro ou texto</td><td><code>1234567890</code></td><td>012.345.678-90</td><td>máscara, só em coluna de número</td></tr>
+    <tr><td>CEP / telefone</td><td>número inteiro ou texto</td><td><code>11987654321</code></td><td>(11) 98765-4321</td><td>máscara, só em coluna de número</td></tr>
+    <tr><td>Máscara livre</td><td>número inteiro ou texto</td><td><code>7</code> com <code>AB-##</code></td><td>AB-07</td><td>máscara, só em coluna de número</td></tr>
+    <tr><td>Data</td><td>data ou data e hora</td><td><code>2026-11-26</code></td><td>26/11/2026 · 11/2026 · 26 de nov. de 2026</td><td><code>dd/mm/yyyy</code> e os demais</td></tr>
+  </table>
+  <p class="muted">Os separadores de número seguem a escolha do programa (vírgula ou ponto decimal); no Excel, seguem o Windows de quem abre o arquivo.</p>
 </section>
 <!-- ================================================================ 17. INDICADORES E VISUAIS -->
 <section class="chapter">

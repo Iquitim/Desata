@@ -619,6 +619,10 @@ def _format_dialog(pg: Any, column: str) -> Any:
 
 
 def _formato(pg: Any, shot: Shot) -> None:
+    # a etapa anterior (CNPJ) termina na vista Dados: o Resultado só aparece no Designer
+    pg.keyboard.press("Escape")
+    pg.locator("#viewSwitch .segment[data-view=designer]").click()
+    pg.wait_for_timeout(600)
     _new_flow(pg)
     ids = pg.evaluate(
         """(chart) => { const A = window.__A;
